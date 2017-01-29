@@ -1,0 +1,37 @@
+{
+  "name": "io-ts",
+  "version": "0.0.1",
+  "description": "TypeScript compatible runtime type system for IO validation",
+  "scripts": {
+    "test": "mocha -r ts-node/register test/*.ts",
+    "build": "rm -rf lib/* && tsc -d"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/gcanti/io-ts.git"
+  },
+  "author": "Giulio Canti <giulio.canti@gmail.com>",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/gcanti/io-ts/issues"
+  },
+  "homepage": "https://github.com/gcanti/io-ts",
+  "dependencies": {},
+  "devDependencies": {
+    "@types/mocha": "^2.2.38",
+    "@types/node": "^7.0.4",
+    "mocha": "^3.2.0",
+    "ts-node": "^2.0.0",
+    "typescript": "^2.1.5"
+  },
+  "tags": [
+    "typescript",
+    "IO validation",
+    "runtime type system"
+  ],
+  "keywords": [
+    "typescript",
+    "IO validation",
+    "runtime type system"
+  ]
+}
