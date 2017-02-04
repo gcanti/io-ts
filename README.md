@@ -116,7 +116,7 @@ const Category = t.recursion<ICategory>('Category', self => t.object({
 import * as t from 'io-ts'
 ```
 
-| Type | TypeScript syntax | Runtime type / combinator |
+| Type | TypeScript annotation syntax | Runtime type / combinator |
 |------|-------|-------------|
 | null | `null` | `t.null` |
 | undefined | `undefined` | `t.undefined` |
@@ -132,7 +132,7 @@ import * as t from 'io-ts'
 | maybe | `A | undefined | null` | `t.maybe(A)` |
 | mapping | `{ [key: A]: B }` | `t.mapping(A, B)` |
 | refinement | ✘ | `t.refinement(A, predicate)` |
-| object | `{ name: string }` | `t.object({ name: string })` |
+| object | `{ name: string }` | `t.object({ name: t.string })` |
 | tuple | `[A, B]` | `t.tuple([A, B])` |
 | union | `A | B` | `t.union([A, B])` |
 | intersection | `A & B` | `t.intersection([A, B])` |
