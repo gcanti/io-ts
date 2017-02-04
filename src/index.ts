@@ -1,10 +1,10 @@
 import * as either from './Either'
 
-export interface ContextEntry<T> {
+export interface ContextEntry {
   readonly key: string,
-  readonly type: Type<T>
+  readonly type: Any
 };
-export type Context = Array<ContextEntry<any>>;
+export type Context = Array<ContextEntry>;
 export interface ValidationError {
   readonly value: any,
   readonly context: Context
@@ -30,7 +30,7 @@ export function getFunctionName(f: any): string {
   return f.displayName || f.name || `<function${f.length}>`
 }
 
-function getContextEntry<T>(key: string, type: Type<T>): ContextEntry<T> {
+function getContextEntry(key: string, type: Any): ContextEntry {
   return { key, type }
 }
 
