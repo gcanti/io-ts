@@ -1,6 +1,6 @@
 {
   "name": "io-ts",
-  "version": "0.0.2",
+  "version": "0.1.0",
   "description": "TypeScript compatible runtime type system for IO validation",
   "files": [
     "lib"
@@ -21,14 +21,13 @@
     "url": "https://github.com/gcanti/io-ts/issues"
   },
   "homepage": "https://github.com/gcanti/io-ts",
-  "dependencies": {
-  },
+  "dependencies": {},
   "devDependencies": {
     "@types/mocha": "^2.2.38",
     "@types/node": "^7.0.4",
     "mocha": "^3.2.0",
     "ts-node": "^2.0.0",
-    "typescript": "^2.1.5"
+    "typescript": "^2.2.0"
   },
   "tags": [
     "typescript",

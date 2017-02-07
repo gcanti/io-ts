@@ -14,7 +14,7 @@ describe('union', () => {
   })
 
   it('should return the same reference if validation succeeded', () => {
-    const T = t.union([t.Object, t.number])
+    const T = t.union([t.Pojo, t.number])
     const value = {}
     assertStrictEqual(t.validate(value, T), value)
   })

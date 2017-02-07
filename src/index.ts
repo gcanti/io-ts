@@ -156,9 +156,9 @@ const arrayType: Type<Array<any>> = new Type(
   (v, c) => Array.isArray(v) ? success(v) : failure<Array<any>>(v, c)
 )
 
-const objectType = new Type<{ [key: string]: any }>(
-  'Object',
-  (v, c) => !isNil(v) && typeof v === 'object' && !Array.isArray(v) ? success(v) : failure<Object>(v, c)
+export const Pojo = new Type<{ [key: string]: any }>(
+  'Pojo',
+  (v, c) => !isNil(v) && typeof v === 'object' && !Array.isArray(v) ? success(v) : failure(v, c)
 )
 
 const functionType = new Type<Function>(
@@ -263,16 +263,16 @@ export function array<RT extends Any>(type: RT, name?: string): ArrayType<RT> {
 
 export type Props = { [key: string]: Any };
 
-export class ObjectType<P extends Props> extends Type<{ [K in keyof P]: TypeOf<P[K]> }> {
+export class RecordType<P extends Props> extends Type<{ [K in keyof P]: TypeOf<P[K]> }> {
   constructor(name: string, validate: Validate<{ [K in keyof P]: TypeOf<P[K]> }>, public readonly props: P) {
     super(name, validate)
   }
 }
 
-export function object<P extends Props>(props: P, name?: string): ObjectType<P> {
-  return new ObjectType(
+export function record<P extends Props>(props: P, name?: string): RecordType<P> {
+  return new RecordType(
     name || `{ ${Object.keys(props).map(k => `${k}: ${props[k].name}`).join(', ')} }`,
-    (v, c) => objectType.validate(v, c).chain(o => {
+    (v, c) => Pojo.validate(v, c).chain(o => {
       const t = { ...o }
       const errors: Errors = []
       let changed = false
@@ -309,7 +309,7 @@ export class MappingType<D extends Type<string>, C extends Any> extends Type<Map
 export function mapping<D extends Type<string>, C extends Any>(domain: D, codomain: C, name?: string): MappingType<D, C> {
   return new MappingType(
     name || `{ [key: ${getTypeName(domain)}]: ${getTypeName(codomain)} }`,
-    (v, c) => objectType.validate(v, c).chain(o => {
+    (v, c) => Pojo.validate(v, c).chain(o => {
       const t: { [key: string]: any } = {}
       const errors: Errors = []
       let changed = false
@@ -516,6 +516,5 @@ export {
   nullType as null,
   undefinedType as undefined,
   arrayType as Array,
-  objectType as Object,
   functionType as Function
 }
