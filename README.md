@@ -124,7 +124,7 @@ import * as t from 'io-ts'
 | number | `number` | `t.number` |
 | boolean | `boolean` | `t.boolean` |
 | generic array | `Array<any>` | `t.Array` |
-| generic object | `Object` | `t.Object` |
+| generic object | `{ [key: string]: any }` | `t.Pojo` |
 | generic function | `Function` | `t.Function` |
 | instance of `C` | `C` | `t.instanceOf(C)` |
 | list | `Array<A>` | `t.array(A)` |
@@ -132,7 +132,7 @@ import * as t from 'io-ts'
 | maybe | `A | undefined | null` | `t.maybe(A)` |
 | mapping | `{ [key: A]: B }` | `t.mapping(A, B)` |
 | refinement | ✘ | `t.refinement(A, predicate)` |
-| object | `{ name: string }` | `t.object({ name: t.string })` |
+| record | `{ name: string }` | `t.record({ name: t.string })` |
 | tuple | `[A, B]` | `t.tuple([A, B])` |
 | union | `A | B` | `t.union([A, B])` |
 | intersection | `A & B` | `t.intersection([A, B])` |
