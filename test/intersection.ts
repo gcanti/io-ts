@@ -1,3 +1,4 @@
+import * as assert from 'assert'
 import * as t from '../src/index'
 import {
   assertSuccess,
@@ -14,11 +15,10 @@ describe('intersection', () => {
     assertSuccess(t.validate({ a: 1, b: 2 }, T))
   })
 
-  it('should fail with excess props', () => {
+  it('should remove unknown properties', () => {
     const T = t.intersection([t.interface({ a: t.number }), t.interface({ b: t.number })])
-    assertFailure(t.validate({ a: 1, b: 1, c: true }, T), [
-      'Invalid value true supplied to : ({ a: number } & { b: number })/c: undefined'
-    ])
+    const value = t.fromValidation({ a: 1, b: 1, c: true }, T)
+    assert.deepEqual(value, { a: 1, b: 1 })
   })
 
   it('should return the same reference if validation succeeded and nothing changed', () => {

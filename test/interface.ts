@@ -1,3 +1,4 @@
+import * as assert from 'assert'
 import * as t from '../src/index'
 import {
   assertSuccess,
@@ -12,6 +13,12 @@ describe('interface', () => {
   it('should succeed validating a valid value', () => {
     const T = t.interface({ a: t.string })
     assertSuccess(t.validate({ a: 's' }, T))
+  })
+
+  it('should remove unknown properties', () => {
+    const T = t.interface({ a: t.string })
+    const value = t.fromValidation({ a: 's', b: 1 }, T)
+    assert.deepEqual(value, { a: 's' })
   })
 
   it('should return the same reference if validation succeeded and nothing changed', () => {
@@ -36,13 +43,6 @@ describe('interface', () => {
     ])
     assertFailure(t.validate({ a: 1 }, T), [
       'Invalid value 1 supplied to : { a: string }/a: string'
-    ])
-  })
-
-  it('should fail with excess props', () => {
-    const T = t.interface({ a: t.string })
-    assertFailure(t.validate({ a: 's', b: 1 }, T), [
-      'Invalid value 1 supplied to : { a: string }/b: undefined'
     ])
   })
 

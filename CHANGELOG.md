@@ -16,16 +16,13 @@
 
 - **New Feature**
   - add support for jsnext
+
 - **Breaking Changes**
-  - `t.Object` type. Renamed to `t.Index`, now accepts arrays so is fully equivalent to `{ [key: string]: any }`.
+  - `t.Object` type. Renamed to `t.Dictionary`, now accepts arrays so is fully equivalent to `{ [key: string]: any }`.
   - `t.instanceOf` combinator. Removed.
-  - `t.object` combinator. Renamed to `t.interface`. `ObjectType` to `InterfaceType`. Excess properties are now checked:
-    ```ts
-    const Person = t.interface({ name: t.string })
-    console.log(t.validate({ name: 'Giulio', a: 1 }, Person)) // => Left(...)
-    ```
-  - `mapping` combinator. Renamed to `index`. `MappingType` to `IndexType`.
-  - `intersection` combinator. Due to the new excess property checks in `t.interface` now only accept `InterfaceType`s.
+  - `t.object` combinator. Renamed to `t.interface`. `ObjectType` to `InterfaceType`. Excess properties are now pruned.
+  - `mapping` combinator. Renamed to `dictionary`. `MappingType` to `DictionaryType`.
+  - `intersection` combinator. Due to the new excess property pruning in `t.interface` now only accept `InterfaceType`s.
 
 # 0.0.2
 

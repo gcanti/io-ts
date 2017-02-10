@@ -124,13 +124,13 @@ import * as t from 'io-ts'
 | number | `number` | `t.number` |
 | boolean | `boolean` | `t.boolean` |
 | generic array | `Array<any>` | `t.Array` |
-| generic index | `{ [key: string]: any }` | `t.Index` |
+| generic dictionary | `{ [key: string]: any }` | `t.Dictionary` |
 | function | `Function` | `t.Function` |
 | instance of `C` | `C` | `t.instanceOf(C)` |
 | arrays | `Array<A>` | `t.array(A)` |
 | literal | `'s'` | `t.literal('s')` |
 | maybe | `A | undefined | null` | `t.maybe(A)` |
-| indexes | `{ [key: A]: B }` | `t.index(A, B)` |
+| dictionaries | `{ [key: A]: B }` | `t.dictionary(A, B)` |
 | refinement | ✘ | `t.refinement(A, predicate)` |
 | interface | `{ name: string }` | `t.interface({ name: t.string })` |
 | tuple | `[A, B]` | `t.tuple([A, B])` |

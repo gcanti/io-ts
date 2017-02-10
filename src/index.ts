@@ -50,14 +50,13 @@ function pushAll<A>(xs: Array<A>, ys: Array<A>): void {
   Array.prototype.push.apply(xs, ys)
 }
 
-function checkExcessProps(props: Props, o: { [key: string]: any }, c: Context): Array<ValidationError> {
-  const errors = []
+function hasExcessProps(props: Props, o: { [key: string]: any }): boolean {
   for (let k in o) {
     if (!props.hasOwnProperty(k)) {
-      errors.push(getValidationError(o[k], c.concat(getContextEntry(k, undefinedType))))
+      return true
     }
   }
-  return errors
+  return false
 }
 
 function failures<T>(errors: Errors): Validation<T> {
@@ -148,8 +147,8 @@ const arrayType: Type<Array<any>> = new Type(
   (v, c) => Array.isArray(v) ? success(v) : failure<Array<any>>(v, c)
 )
 
-export const Index = new Type<{ [key: string]: any }>(
-  'Index',
+export const Dictionary = new Type<{ [key: string]: any }>(
+  'Dictionary',
   (v, c) => v !== null && typeof v === 'object' ? success(v) : failure(v, c)
 )
 
@@ -260,7 +259,7 @@ export class InterfaceType<P extends Props> extends Type<{ [K in keyof P]: TypeO
 function interfaceType<P extends Props>(props: P, name?: string): InterfaceType<P> {
   return new InterfaceType(
     name || `{ ${Object.keys(props).map(k => `${k}: ${props[k].name}`).join(', ')} }`,
-    (v, c) => Index.validate(v, c).chain(o => {
+    (v, c) => Dictionary.validate(v, c).chain(o => {
       const t: { [key: string]: any } = {}
       const errors: Errors = []
       let changed = false
@@ -276,7 +275,9 @@ function interfaceType<P extends Props>(props: P, name?: string): InterfaceType<
           }
         )
       }
-      pushAll(errors, checkExcessProps(props, o, c))
+      if (!changed) {
+        changed = hasExcessProps(props, o)
+      }
       return errors.length ? failures(errors) : success((changed ? t : o) as any)
     }),
     props
@@ -284,19 +285,19 @@ function interfaceType<P extends Props>(props: P, name?: string): InterfaceType<
 }
 
 //
-// indexes
+// dictionaries
 //
 
-export class IndexType<D extends Type<string>, C extends Any> extends Type<{ [key: string]: TypeOf<C> }> {
+export class DictionaryType<D extends Type<string>, C extends Any> extends Type<{ [key: string]: TypeOf<C> }> {
   constructor(name: string, validate: Validate<{ [key: string]: TypeOf<C> }>, public readonly domain: D, public readonly codomain: C) {
     super(name, validate)
   }
 }
 
-export function index<D extends Type<string>, C extends Any>(domain: D, codomain: C, name?: string): IndexType<D, C> {
-  return new IndexType(
+export function dictionary<D extends Type<string>, C extends Any>(domain: D, codomain: C, name?: string): DictionaryType<D, C> {
+  return new DictionaryType(
     name || `{ [key: ${getTypeName(domain)}]: ${getTypeName(codomain)} }`,
-    (v, c) => Index.validate(v, c).chain(o => {
+    (v, c) => Dictionary.validate(v, c).chain(o => {
       const t: { [key: string]: any } = {}
       const errors: Errors = []
       let changed = false

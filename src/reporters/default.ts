@@ -1,4 +1,3 @@
-// @flow
 import { Reporter } from './Reporter'
 import { Context, getFunctionName, isFailure } from '../index'
 
