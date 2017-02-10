@@ -8,7 +8,7 @@ import {
 describe('recursion', () => {
 
   it('should succeed validating a valid value', () => {
-    const T = t.recursion('T', self => t.record({
+    const T = t.recursion('T', self => t.interface({
       a: t.number,
       b: t.maybe(self)
     }))
@@ -17,7 +17,7 @@ describe('recursion', () => {
   })
 
   it('should return the same reference if validation succeeded', () => {
-    const T = t.recursion('T', self => t.record({
+    const T = t.recursion('T', self => t.interface({
       a: t.number,
       b: t.maybe(self)
     }))
@@ -26,7 +26,7 @@ describe('recursion', () => {
   })
 
   it('should fail validating an invalid value', () => {
-    const T = t.recursion('T', self => t.record({
+    const T = t.recursion('T', self => t.interface({
       a: t.number,
       b: t.maybe(self)
     }))

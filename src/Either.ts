@@ -18,16 +18,16 @@ export abstract class Either<L, A> extends HKT<HKT<'Either', L>, A> {
 
 export class Left<L, A> extends Either<L, A> {
   constructor(private value: L){ super() }
-  map<B>(f: (a: A) => B): Either<L, B> {
+  map<B>(_: (a: A) => B): Either<L, B> {
     return this as any as Either<L, B>
   }
-  ap<B>(fab: Either<L, (a: A) => B>): Either<L, B> {
+  ap<B>(_: Either<L, (a: A) => B>): Either<L, B> {
     return this as any as Either<L, B>
   }
-  chain<B>(f: (a: A) => Either<L, B>): Either<L, B> {
+  chain<B>(_: (a: A) => Either<L, B>): Either<L, B> {
     return this as any as Either<L, B>
   }
-  fold<B>(l: (l: L) => B, r: (a: A) => B): B {
+  fold<B>(l: (l: L) => B, _: (a: A) => B): B {
     return l(this.value)
   }
 }
@@ -43,7 +43,7 @@ export class Right<L, A> extends Either<L, A> {
   chain<B>(f: (a: A) => Either<L, B>): Either<L, B> {
     return f(this.value)
   }
-  fold<B>(l: (l: L) => B, r: (a: A) => B): B {
+  fold<B>(_: (l: L) => B, r: (a: A) => B): B {
     return r(this.value)
   }
 }
