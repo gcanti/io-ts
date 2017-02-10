@@ -261,7 +261,7 @@ function interfaceType<P extends Props>(props: P, name?: string): InterfaceType<
   return new InterfaceType(
     name || `{ ${Object.keys(props).map(k => `${k}: ${props[k].name}`).join(', ')} }`,
     (v, c) => Index.validate(v, c).chain(o => {
-      const t = { ...o }
+      const t: { [key: string]: any } = {}
       const errors: Errors = []
       let changed = false
       for (let k in props) {
