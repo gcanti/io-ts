@@ -108,6 +108,24 @@ export function literal<T extends string | number | boolean>(value: T): LiteralT
 }
 
 //
+// keyof types
+//
+
+export class KeyofType<D extends { [key: string]: any }> extends Type<keyof D> {
+  constructor(name: string, validate: Validate<keyof D>, public readonly map: D) {
+    super(name, validate)
+  }
+}
+
+export function keyof<D extends { [key: string]: any }>(map: D, name?: string): KeyofType<D> {
+  return new KeyofType<D>(
+    name || `(keyof ${JSON.stringify(Object.keys(map))})`,
+    (v, c) => map.hasOwnProperty(v) ? success(v) : failure(v, c),
+    map
+  )
+}
+
+//
 // irreducibles
 //
 

@@ -136,4 +136,5 @@ import * as t from 'io-ts'
 | tuple | `[A, B]` | `t.tuple([A, B])` |
 | union | `A | B` | `t.union([A, B])` |
 | intersection | `A & B` | `t.intersection([A, B])` |
+| keyof | `keyof M` | `t.keyof(M)` |
 | recursive types |  | `t.recursion(name, definition)` |
