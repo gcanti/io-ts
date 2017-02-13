@@ -205,10 +205,8 @@ export function recursion<T>(name: string, definition: (self: Any) => Any): Type
 // maybes
 //
 
-export type MaybeOf<RT extends Any> = TypeOf<RT> | undefined | null;
-
-export class MaybeType<RT extends Any> extends Type<MaybeOf<RT>> {
-  constructor(name: string, validate: Validate<MaybeOf<RT>>, public readonly type: RT) {
+export class MaybeType<RT extends Any> extends Type<TypeOf<RT> | undefined | null> {
+  constructor(name: string, validate: Validate<TypeOf<RT> | undefined | null>, public readonly type: RT) {
     super(name, validate)
   }
 }
@@ -225,10 +223,8 @@ export function maybe<RT extends Any>(type: RT, name?: string): MaybeType<RT> {
 // arrays
 //
 
-export type ArrayOf<RT extends Any> = Array<TypeOf<RT>>;
-
-export class ArrayType<RT extends Any> extends Type<ArrayOf<RT>> {
-  constructor(name: string, validate: Validate<ArrayOf<RT>>, public readonly type: RT) {
+export class ArrayType<RT extends Any> extends Type<Array<TypeOf<RT>>> {
+  constructor(name: string, validate: Validate<Array<TypeOf<RT>>>, public readonly type: RT) {
     super(name, validate)
   }
 }
@@ -298,10 +294,8 @@ export function object<P extends Props>(props: P, name?: string): ObjectType<P> 
 // mappings
 //
 
-export type MappingOf<D extends Type<string>, C extends Any> = { [key: string]: TypeOf<C> };
-
-export class MappingType<D extends Type<string>, C extends Any> extends Type<MappingOf<D, C>> {
-  constructor(name: string, validate: Validate<MappingOf<D, C>>, public readonly domain: D, public readonly codomain: C) {
+export class MappingType<D extends Type<string>, C extends Any> extends Type<{ [key: string]: TypeOf<C> }> {
+  constructor(name: string, validate: Validate<{ [key: string]: TypeOf<C> }>, public readonly domain: D, public readonly codomain: C) {
     super(name, validate)
   }
 }
