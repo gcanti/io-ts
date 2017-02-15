@@ -124,15 +124,15 @@ import * as t from 'io-ts'
 | number | `number` | `t.number` |
 | boolean | `boolean` | `t.boolean` |
 | generic array | `Array<any>` | `t.Array` |
-| generic object | `{ [key: string]: any }` | `t.Pojo` |
-| generic function | `Function` | `t.Function` |
+| generic dictionary | `{ [key: string]: any }` | `t.Dictionary` |
+| function | `Function` | `t.Function` |
 | instance of `C` | `C` | `t.instanceOf(C)` |
-| list | `Array<A>` | `t.array(A)` |
+| arrays | `Array<A>` | `t.array(A)` |
 | literal | `'s'` | `t.literal('s')` |
 | maybe | `A | undefined | null` | `t.maybe(A)` |
-| mapping | `{ [key: A]: B }` | `t.mapping(A, B)` |
+| dictionaries | `{ [key: A]: B }` | `t.dictionary(A, B)` |
 | refinement | ✘ | `t.refinement(A, predicate)` |
-| record | `{ name: string }` | `t.record({ name: t.string })` |
+| interface | `{ name: string }` | `t.interface({ name: t.string })` |
 | tuple | `[A, B]` | `t.tuple([A, B])` |
 | union | `A | B` | `t.union([A, B])` |
 | intersection | `A & B` | `t.intersection([A, B])` |

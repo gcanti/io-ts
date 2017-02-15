@@ -15,7 +15,7 @@ describe('maybe', () => {
   })
 
   it('should return the same reference if validation succeeded', () => {
-    const T = t.maybe(t.Pojo)
+    const T = t.maybe(t.Dictionary)
     const value = {}
     assertStrictEqual(t.validate(value, T), value)
   })

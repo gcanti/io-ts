@@ -11,7 +11,7 @@
   "typings": "lib/index.d.ts",
   "scripts": {
     "test": "mocha -r ts-node/register test/*.ts",
-    "build": "rm -rf lib/* && tsc && tsc -m es6 --outDir lib-jsnext"
+    "build": "rm -rf lib/* && rm -rf lib-jsnext/* && tsc && tsc -m es6 --outDir lib-jsnext"
   },
   "repository": {
     "type": "git",

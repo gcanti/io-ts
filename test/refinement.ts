@@ -14,7 +14,7 @@ describe('refinement', () => {
   })
 
   it('should return the same reference if validation succeeded', () => {
-    const T = t.refinement(t.Pojo, () => true)
+    const T = t.refinement(t.Dictionary, () => true)
     const value = {}
     assertStrictEqual(t.validate(value, T), value)
   })
