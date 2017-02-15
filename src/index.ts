@@ -20,6 +20,9 @@ export type TypeOf<RT extends Any> = RT['t'];
 export class Type<T> {
   readonly t: T
   constructor(public readonly name: string, public readonly validate: Validate<T>) {}
+  is(x: any): x is T {
+    return isSuccess(validate(x, this))
+  }
 }
 
 function getTypeName(type: Any): string {
