@@ -25,6 +25,7 @@
   - `intersection` combinator. Due to the new excess property pruning in `t.interface` now only accept `InterfaceType`s.
   - API `isSuccess` removed, use `either.isRight` instead
   - API `isFailure` removed, use `either.isLeft` instead
+  - API `fromValidation` removed
 
 # 0.0.2
 

@@ -70,13 +70,6 @@ export function validate<T>(value: any, type: Type<T>): Validation<T> {
   return type.validate(value, getDefaultContext(type))
 }
 
-export function fromValidation<T>(value: any, type: Type<T>): T {
-  return validate(value, type).fold<T>(
-    () => { throw new Error('Validation returned a Left') },
-    x => x
-  )
-}
-
 //
 // literal types
 //
