@@ -38,3 +38,17 @@ describe('Dictionary', () => {
   })
 
 })
+
+describe('Integer', () => {
+
+  it('should validate integers', () => {
+    assertSuccess(t.validate(1, t.Integer))
+    assertFailure(t.validate(0.5, t.Integer), [
+      'Invalid value 0.5 supplied to : Integer'
+    ])
+    assertFailure(t.validate('foo', t.Integer), [
+      'Invalid value "foo" supplied to : Integer'
+    ])
+  })
+
+})

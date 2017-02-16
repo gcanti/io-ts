@@ -122,6 +122,7 @@ import * as t from 'io-ts'
 | undefined | `undefined` | `t.undefined` |
 | string | `string` | `t.string` |
 | number | `number` | `t.number` |
+| integer | ✘ | `t.Integer` |
 | boolean | `boolean` | `t.boolean` |
 | generic array | `Array<any>` | `t.Array` |
 | generic dictionary | `{ [key: string]: any }` | `t.Dictionary` |
