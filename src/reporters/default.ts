@@ -1,5 +1,6 @@
 import { Reporter } from './Reporter'
-import { Context, getFunctionName, isFailure } from '../index'
+import { isLeft } from 'fp-ts/lib/Either'
+import { Context, getFunctionName } from '../index'
 
 function stringify(value: any): string {
   return typeof value === 'function' ? getFunctionName(value) : JSON.stringify(value)
@@ -18,7 +19,7 @@ export const PathReporter: Reporter<Array<string>> = {
 
 export const ThrowReporter: Reporter<void> = {
   report: validation => {
-    if (isFailure(validation)) {
+    if (isLeft(validation)) {
       throw PathReporter.report(validation).join('\n')
     }
   }

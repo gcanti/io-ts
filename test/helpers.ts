@@ -1,4 +1,5 @@
 import * as assert from 'assert'
+import { isRight, isLeft } from 'fp-ts/lib/Either'
 import { Validation, Type } from '../src/index'
 import * as t from '../src/index'
 import { PathReporter } from '../src/reporters/default'
@@ -8,11 +9,11 @@ function identity<A>(a: A): A {
 }
 
 export function assertSuccess<T>(validation: Validation<T>): void {
-  assert.ok(t.isSuccess(validation))
+  assert.ok(isRight(validation))
 }
 
 export function assertFailure<T>(validation: Validation<T>, descriptions: Array<string>): void {
-  assert.ok(t.isFailure(validation))
+  assert.ok(isLeft(validation))
   assert.deepEqual(PathReporter.report(validation), descriptions)
 }
 

@@ -1,4 +1,4 @@
-import * as either from './Either'
+import { Either, Left, Right, isRight } from 'fp-ts/lib/Either'
 
 export interface ContextEntry {
   readonly key: string,
@@ -9,7 +9,7 @@ export interface ValidationError {
   readonly value: any,
   readonly context: Context
 };
-export type Validation<T> = either.Either<Array<ValidationError>, T>;
+export type Validation<T> = Either<Array<ValidationError>, T>;
 export type Validate<T> = (value: any, context: Context) => Validation<T>;
 export type Any = Type<any>
 
@@ -21,7 +21,7 @@ export class Type<T> {
   readonly t: T
   constructor(public readonly name: string, public readonly validate: Validate<T>) {}
   is(x: any): x is T {
-    return isSuccess(validate(x, this))
+    return isRight(validate(x, this))
   }
 }
 
@@ -35,14 +35,6 @@ export function getFunctionName(f: any): string {
 
 function getContextEntry(key: string, type: Any): ContextEntry {
   return { key, type }
-}
-
-export function isSuccess<T>(validation: Validation<T>): boolean {
-  return validation instanceof either.Right
-}
-
-export function isFailure<T>(validation: Validation<T>): boolean {
-  return validation instanceof either.Left
 }
 
 function getValidationError(value: any, context: Context): ValidationError {
@@ -62,16 +54,12 @@ function hasExcessProps(props: Props, o: { [key: string]: any }): boolean {
   return false
 }
 
-function failures<T>(errors: Errors): Validation<T> {
-  return new either.Left<Errors, T>(errors)
-}
-
 export function failure<T>(value: any, context: Context): Validation<T> {
-  return new either.Left<Errors, T>([getValidationError(value, context)])
+  return new Left<Errors, T>([getValidationError(value, context)])
 }
 
 export function success<T>(value: T): Validation<T> {
-  return new either.Right<Errors, T>(value)
+  return new Right<Errors, T>(value)
 }
 
 function getDefaultContext<T>(type: Type<T>): Context {
@@ -85,7 +73,7 @@ export function validate<T>(value: any, type: Type<T>): Validation<T> {
 export function fromValidation<T>(value: any, type: Type<T>): T {
   return validate(value, type).fold<T>(
     () => { throw new Error('Validation returned a Left') },
-    either.identity
+    x => x
   )
 }
 
@@ -259,7 +247,7 @@ export function array<RT extends Any>(type: RT, name?: string): ArrayType<RT> {
           }
         )
       }
-      return errors.length ? failures<Array<TypeOf<RT>>>(errors) : success(changed ? t : as)
+      return errors.length ? new Left<Errors, Array<TypeOf<RT>>>(errors) : success(changed ? t : as)
     }),
     type
   )
@@ -299,7 +287,7 @@ function interfaceType<P extends Props>(props: P, name?: string): InterfaceType<
       if (!changed) {
         changed = hasExcessProps(props, o)
       }
-      return errors.length ? failures(errors) : success((changed ? t : o) as any)
+      return errors.length ? new Left(errors) : success((changed ? t : o) as any)
     }),
     props
   )
@@ -341,7 +329,7 @@ export function dictionary<D extends Type<string>, C extends Any>(domain: D, cod
           }
         )
       }
-      return errors.length ? failures(errors) : success((changed ? t : o) as any)
+      return errors.length ? new Left(errors) : success((changed ? t : o) as any)
     }),
     domain,
     codomain
@@ -390,7 +378,7 @@ export function union<RTS extends Array<Any>>(types: RTS, name?: string): UnionT
     (v, c) => {
       for (let i = 0, len = types.length; i < len; i++) {
         const validation = types[i].validate(v, c)
-        if (isSuccess(validation)) {
+        if (isRight(validation)) {
           return validation
         }
       }
@@ -502,7 +490,7 @@ export function tuple<RTS extends Array<Any>>(types: RTS, name?: string): TupleT
           }
         )
       }
-      return errors.length ? failures(errors) : success(changed ? t : as)
+      return errors.length ? new Left(errors) : success(changed ? t : as)
     }),
     types
   )

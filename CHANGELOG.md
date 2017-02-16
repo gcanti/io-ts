@@ -23,6 +23,8 @@
   - `t.object` combinator. Renamed to `t.interface`. `ObjectType` to `InterfaceType`. Excess properties are now pruned.
   - `mapping` combinator. Renamed to `dictionary`. `MappingType` to `DictionaryType`.
   - `intersection` combinator. Due to the new excess property pruning in `t.interface` now only accept `InterfaceType`s.
+  - API `isSuccess` removed, use `either.isRight` instead
+  - API `isFailure` removed, use `either.isLeft` instead
 
 # 0.0.2
 
