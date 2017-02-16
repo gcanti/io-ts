@@ -254,8 +254,11 @@ export function array<RT extends Any>(type: RT, name?: string): ArrayType<RT> {
 
 export type Props = { [key: string]: Any };
 
-export class InterfaceType<P extends Props> extends Type<{ [K in keyof P]: TypeOf<P[K]> }> {
-  constructor(name: string, validate: Validate<{ [K in keyof P]: TypeOf<P[K]> }>, public readonly props: P) {
+// TODO remove this once https://github.com/Microsoft/TypeScript/issues/14041 is fixed
+export type InterfaceOf<P extends Props> = { [K in keyof P]: TypeOf<P[K]> };
+
+export class InterfaceType<P extends Props> extends Type<InterfaceOf<P>> {
+  constructor(name: string, validate: Validate<InterfaceOf<P>>, public readonly props: P) {
     super(name, validate)
   }
 }
