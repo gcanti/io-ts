@@ -16,6 +16,7 @@
 
 - **New Feature**
   - add support for jsnext
+  - add `Integer` type
 
 - **Breaking Changes**
   - `t.Object` type. Renamed to `t.Dictionary`, now accepts arrays so is fully equivalent to `{ [key: string]: any }`.
