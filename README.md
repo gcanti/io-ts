@@ -141,3 +141,34 @@ import * as t from 'io-ts'
 | intersection | `A & B` | `t.intersection([A, B])` |
 | keyof | `keyof M` | `t.keyof(M)` |
 | recursive types |  | `t.recursion(name, definition)` |
+
+# Known issues
+
+Due to an upstream [bug](https://github.com/Microsoft/TypeScript/issues/14041), VS Code might display weird types for nested interfaces
+
+```ts
+const NestedInterface = t.interface({
+  foo: t.interface({
+    bar: t.string
+  })
+});
+
+type NestedInterfaceType = t.TypeOf<typeof NestedInterface>;
+/*
+Hover on NestedInterfaceType will display
+
+type NestedInterfaceType = {
+  foo: t.InterfaceOf<{
+    bar: t.Type<string>;
+  }>;
+}
+
+instead of
+
+type NestedInterfaceType = {
+  foo: {
+    bar: string;
+  };
+}
+*/
+```
