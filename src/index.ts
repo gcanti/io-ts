@@ -70,13 +70,6 @@ export function validate<T>(value: any, type: Type<T>): Validation<T> {
   return type.validate(value, getDefaultContext(type))
 }
 
-export function fromValidation<T>(value: any, type: Type<T>): T {
-  return validate(value, type).fold<T>(
-    () => { throw new Error('Validation returned a Left') },
-    x => x
-  )
-}
-
 //
 // literal types
 //
@@ -114,7 +107,7 @@ export function keyof<D extends { [key: string]: any }>(map: D, name?: string): 
 }
 
 //
-// irreducibles
+// default types
 //
 
 function isNil(v: any): v is (null | undefined) {
@@ -186,6 +179,8 @@ export function refinement<RT extends Any>(type: RT, predicate: Predicate<TypeOf
     predicate
   )
 }
+
+export const Integer = refinement(number, n => n % 1 === 0, 'Integer')
 
 //
 // recursive types

@@ -5,6 +5,7 @@ A value of type `Type<T>` (called "runtime type") is the runtime representation 
 ```js
 class Type<T> {
   constructor(public readonly name: string, public readonly validate: Validate<T>) {}
+  is(x: any): x is T
 }
 ```
 
@@ -19,6 +20,7 @@ type Validate<T> = (value: any, context: Context) => Either<Array<ValidationErro
 A runtime type representing `string` can be defined as
 
 ```js
+import { Right, Left } from 'fp-ts/lib/Either'
 import * as t from 'io-ts'
 
 const string = new t.Type<string>(
@@ -30,7 +32,7 @@ const string = new t.Type<string>(
 A runtime type can be used to validate an object in memory (for example an API payload)
 
 ```js
-const Person = t.object({
+const Person = t.interface({
   name: t.string,
   age: t.number
 })
@@ -122,6 +124,7 @@ import * as t from 'io-ts'
 | undefined | `undefined` | `t.undefined` |
 | string | `string` | `t.string` |
 | number | `number` | `t.number` |
+| integer | ✘ | `t.Integer` |
 | boolean | `boolean` | `t.boolean` |
 | generic array | `Array<any>` | `t.Array` |
 | generic dictionary | `{ [key: string]: any }` | `t.Dictionary` |
