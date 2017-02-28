@@ -10,7 +10,9 @@
   "jsnext:main": "lib-jsnext/index.js",
   "typings": "lib/index.d.ts",
   "scripts": {
-    "test": "mocha -r ts-node/register test/*.ts",
+    "typings-checker": "typings-checker --allow-expect-error --project typings-checker/tsconfig.json typings-checker/index.ts",
+    "mocha": "mocha -r ts-node/register test/*.ts",
+    "test": "npm run typings-checker && npm run mocha",
     "build": "rm -rf lib/* && rm -rf lib-jsnext/* && tsc && tsc -m es6 --outDir lib-jsnext"
   },
   "repository": {
@@ -31,7 +33,8 @@
     "@types/node": "^7.0.4",
     "mocha": "^3.2.0",
     "ts-node": "^2.0.0",
-    "typescript": "^2.2.0"
+    "typescript": "^2.2.0",
+    "typings-checker": "^1.1.2"
   },
   "tags": [
     "typescript",
