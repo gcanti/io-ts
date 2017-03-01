@@ -124,15 +124,18 @@ import * as t from 'io-ts'
 | undefined | `undefined` | `t.undefined` |
 | string | `string` | `t.string` |
 | number | `number` | `t.number` |
-| integer | ✘ | `t.Integer` |
 | boolean | `boolean` | `t.boolean` |
+| any | `any` | `t.any` |
+| never | `never` | `t.never` |
+| integer | ✘ | `t.Integer` |
 | generic array | `Array<any>` | `t.Array` |
 | generic dictionary | `{ [key: string]: any }` | `t.Dictionary` |
 | function | `Function` | `t.Function` |
 | instance of `C` | `C` | `t.instanceOf(C)` |
 | arrays | `Array<A>` | `t.array(A)` |
 | literal | `'s'` | `t.literal('s')` |
-| maybe | `A | undefined | null` | `t.maybe(A)` |
+| maybe | `A | null` | `t.maybe(A)` |
+| partial | `Partial<{ name: string }>` | `t.partial({ name: t.string })` |
 | dictionaries | `{ [key: A]: B }` | `t.dictionary(A, B)` |
 | refinement | ✘ | `t.refinement(A, predicate)` |
 | interface | `{ name: string }` | `t.interface({ name: t.string })` |

@@ -45,15 +45,6 @@ function pushAll<A>(xs: Array<A>, ys: Array<A>): void {
   Array.prototype.push.apply(xs, ys)
 }
 
-function hasExcessProps(props: Props, o: { [key: string]: any }): boolean {
-  for (let k in o) {
-    if (!props.hasOwnProperty(k)) {
-      return true
-    }
-  }
-  return false
-}
-
 export function failure<T>(value: any, context: Context): Validation<T> {
   return new Left<Errors, T>([getValidationError(value, context)])
 }
@@ -69,6 +60,60 @@ function getDefaultContext<T>(type: Type<T>): Context {
 export function validate<T>(value: any, type: Type<T>): Validation<T> {
   return type.validate(value, getDefaultContext(type))
 }
+
+//
+// default types
+//
+
+const nullType = new Type<null>(
+  'null',
+  (v, c) => v === null ? success(v) : failure(v, c)
+)
+
+const undefinedType = new Type<undefined>(
+  'undefined',
+  (v, c) => v === void 0 ? success(v) : failure(v, c)
+)
+
+export const any = new Type<any>(
+  'any',
+  (v, _) => success(v)
+)
+
+export const never = new Type<never>(
+  'never',
+  (v, c) => failure<never>(v, c)
+)
+
+export const string = new Type<string>(
+  'string',
+  (v, c) => typeof v === 'string' ? success(v) : failure<string>(v, c)
+)
+
+export const number = new Type<number>(
+  'number',
+  (v, c) => typeof v === 'number' ? success(v) : failure<number>(v, c)
+)
+
+export const boolean = new Type<boolean>(
+  'boolean',
+  (v, c) => typeof v === 'boolean' ? success(v) : failure<boolean>(v, c)
+)
+
+const arrayType: Type<Array<any>> = new Type(
+  'Array',
+  (v, c) => Array.isArray(v) ? success(v) : failure<Array<any>>(v, c)
+)
+
+export const Dictionary = new Type<{ [key: string]: any }>(
+  'Dictionary',
+  (v, c) => v !== null && typeof v === 'object' ? success(v) : failure(v, c)
+)
+
+const functionType = new Type<Function>(
+  'Function',
+  (v, c) => typeof v === 'function' ? success(v) : failure<Function>(v, c)
+)
 
 //
 // literal types
@@ -105,59 +150,6 @@ export function keyof<D extends { [key: string]: any }>(map: D, name?: string): 
     map
   )
 }
-
-//
-// default types
-//
-
-function isNil(v: any): v is (null | undefined) {
-  return v === void 0 || v === null
-}
-
-const nullType = new Type<null>(
-  'null',
-  (v, c) => v === null ? success(v) : failure(v, c)
-)
-
-const undefinedType = new Type<undefined>(
-  'undefined',
-  (v, c) => v === void 0 ? success(v) : failure(v, c)
-)
-
-export const any = new Type<any>(
-  'any',
-  (v, _) => success(v)
-)
-
-export const string = new Type<string>(
-  'string',
-  (v, c) => typeof v === 'string' ? success(v) : failure<string>(v, c)
-)
-
-export const number = new Type<number>(
-  'number',
-  (v, c) => typeof v === 'number' ? success(v) : failure<number>(v, c)
-)
-
-export const boolean = new Type<boolean>(
-  'boolean',
-  (v, c) => typeof v === 'boolean' ? success(v) : failure<boolean>(v, c)
-)
-
-const arrayType: Type<Array<any>> = new Type(
-  'Array',
-  (v, c) => Array.isArray(v) ? success(v) : failure<Array<any>>(v, c)
-)
-
-export const Dictionary = new Type<{ [key: string]: any }>(
-  'Dictionary',
-  (v, c) => v !== null && typeof v === 'object' ? success(v) : failure(v, c)
-)
-
-const functionType = new Type<Function>(
-  'Function',
-  (v, c) => typeof v === 'function' ? success(v) : failure<Function>(v, c)
-)
 
 //
 // refinements
@@ -200,16 +192,16 @@ export function recursion<T>(name: string, definition: (self: Any) => Any): Type
 // maybes
 //
 
-export class MaybeType<RT extends Any> extends Type<TypeOf<RT> | undefined | null> {
-  constructor(name: string, validate: Validate<TypeOf<RT> | undefined | null>, public readonly type: RT) {
+export class MaybeType<RT extends Any> extends Type<TypeOf<RT> | null> {
+  constructor(name: string, validate: Validate<TypeOf<RT> | null>, public readonly type: RT) {
     super(name, validate)
   }
 }
 
 export function maybe<RT extends Any>(type: RT, name?: string): MaybeType<RT> {
   return new MaybeType(
-    name || `?${getTypeName(type)}`,
-    (v, c) => isNil(v) ? success(v) : type.validate(v, c),
+    name || `(${getTypeName(type)} | null)`,
+    (v, c) => v === null ? success(v) : type.validate(v, c),
     type
   )
 }
@@ -267,7 +259,7 @@ function interfaceType<P extends Props>(props: P, name?: string): InterfaceType<
   return new InterfaceType(
     name || `{ ${Object.keys(props).map(k => `${k}: ${props[k].name}`).join(', ')} }`,
     (v, c) => Dictionary.validate(v, c).chain(o => {
-      const t: { [key: string]: any } = {}
+      const t = { ...o }
       const errors: Errors = []
       let changed = false
       for (let k in props) {
@@ -282,12 +274,37 @@ function interfaceType<P extends Props>(props: P, name?: string): InterfaceType<
           }
         )
       }
-      if (!changed) {
-        changed = hasExcessProps(props, o)
-      }
       return errors.length ? new Left(errors) : success((changed ? t : o) as any)
     }),
     props
+  )
+}
+
+//
+// partials
+//
+
+// TODO remove this once https://github.com/Microsoft/TypeScript/issues/14041 is fixed
+export type PartialOf<P extends Props> = { [K in keyof P]?: TypeOf<P[K]> };
+// TODO remove this once https://github.com/Microsoft/TypeScript/issues/14041 is fixed
+export type PartialPropsOf<P extends Props> = { [K in keyof P]: UnionType<[P[K], Type<undefined>], [TypeOf<P[K]>, undefined]> };
+
+export class PartialType<P extends Props> extends Type<PartialOf<P>> {
+  constructor(name: string, validate: Validate<PartialOf<P>>, public readonly props: PartialPropsOf<P>) {
+    super(name, validate)
+  }
+}
+
+export function partial<P extends Props>(props: P, name?: string): PartialType<P> {
+  const partials: Props = {}
+  for (let k in props) {
+    partials[k] = union([props[k], undefinedType])
+  }
+  const type = interfaceType(partials)
+  return new PartialType<P>(
+    name || type.name,
+    (v, c) => type.validate(v, c) as any,
+    partials as any as PartialPropsOf<P>
   )
 }
 
@@ -396,39 +413,52 @@ export class IntersectionType<RTS, I> extends Type<I> {
   }
 }
 
-export function intersection<A extends InterfaceType<any>, B extends InterfaceType<any>, C extends InterfaceType<any>, D extends InterfaceType<any>, E extends InterfaceType<any>, F extends InterfaceType<any>, G extends InterfaceType<any>, H extends InterfaceType<any>, I extends InterfaceType<any>, J extends InterfaceType<any>, K extends InterfaceType<any>, L extends InterfaceType<any>, M extends InterfaceType<any>, N extends InterfaceType<any>, O extends InterfaceType<any>, P extends InterfaceType<any>, Q extends InterfaceType<any>, R extends InterfaceType<any>, S extends InterfaceType<any>, T extends InterfaceType<any>, U extends InterfaceType<any>, V extends InterfaceType<any>, W extends InterfaceType<any>, X extends InterfaceType<any>, Y extends InterfaceType<any>, Z extends InterfaceType<any>>(types: [A, B, C, D, E, F, G, H, I, J, K, L, M, N, O, P, Q, R, S, T, U, V, W, X, Y, Z], name?: string): IntersectionType<[A, B, C, D, E, F, G, H, I, J, K, L, M, N, O, P, Q, R, S, T, U, V, W, X, Y, Z], TypeOf<A> & TypeOf<B> & TypeOf<C> & TypeOf<D> & TypeOf<E> & TypeOf<F> & TypeOf<G> & TypeOf<H> & TypeOf<I> & TypeOf<J> & TypeOf<K> & TypeOf<L> & TypeOf<M> & TypeOf<N> & TypeOf<O> & TypeOf<P> & TypeOf<Q> & TypeOf<R> & TypeOf<S> & TypeOf<T> & TypeOf<U> & TypeOf<V> & TypeOf<W> & TypeOf<X> & TypeOf<Y> & TypeOf<Z>>
-export function intersection<A extends InterfaceType<any>, B extends InterfaceType<any>, C extends InterfaceType<any>, D extends InterfaceType<any>, E extends InterfaceType<any>, F extends InterfaceType<any>, G extends InterfaceType<any>, H extends InterfaceType<any>, I extends InterfaceType<any>, J extends InterfaceType<any>, K extends InterfaceType<any>, L extends InterfaceType<any>, M extends InterfaceType<any>, N extends InterfaceType<any>, O extends InterfaceType<any>, P extends InterfaceType<any>, Q extends InterfaceType<any>, R extends InterfaceType<any>, S extends InterfaceType<any>, T extends InterfaceType<any>, U extends InterfaceType<any>, V extends InterfaceType<any>, W extends InterfaceType<any>, X extends InterfaceType<any>, Y extends InterfaceType<any>>(types: [A, B, C, D, E, F, G, H, I, J, K, L, M, N, O, P, Q, R, S, T, U, V, W, X, Y], name?: string): IntersectionType<[A, B, C, D, E, F, G, H, I, J, K, L, M, N, O, P, Q, R, S, T, U, V, W, X, Y], TypeOf<A> & TypeOf<B> & TypeOf<C> & TypeOf<D> & TypeOf<E> & TypeOf<F> & TypeOf<G> & TypeOf<H> & TypeOf<I> & TypeOf<J> & TypeOf<K> & TypeOf<L> & TypeOf<M> & TypeOf<N> & TypeOf<O> & TypeOf<P> & TypeOf<Q> & TypeOf<R> & TypeOf<S> & TypeOf<T> & TypeOf<U> & TypeOf<V> & TypeOf<W> & TypeOf<X> & TypeOf<Y>>
-export function intersection<A extends InterfaceType<any>, B extends InterfaceType<any>, C extends InterfaceType<any>, D extends InterfaceType<any>, E extends InterfaceType<any>, F extends InterfaceType<any>, G extends InterfaceType<any>, H extends InterfaceType<any>, I extends InterfaceType<any>, J extends InterfaceType<any>, K extends InterfaceType<any>, L extends InterfaceType<any>, M extends InterfaceType<any>, N extends InterfaceType<any>, O extends InterfaceType<any>, P extends InterfaceType<any>, Q extends InterfaceType<any>, R extends InterfaceType<any>, S extends InterfaceType<any>, T extends InterfaceType<any>, U extends InterfaceType<any>, V extends InterfaceType<any>, W extends InterfaceType<any>, X extends InterfaceType<any>>(types: [A, B, C, D, E, F, G, H, I, J, K, L, M, N, O, P, Q, R, S, T, U, V, W, X], name?: string): IntersectionType<[A, B, C, D, E, F, G, H, I, J, K, L, M, N, O, P, Q, R, S, T, U, V, W, X], TypeOf<A> & TypeOf<B> & TypeOf<C> & TypeOf<D> & TypeOf<E> & TypeOf<F> & TypeOf<G> & TypeOf<H> & TypeOf<I> & TypeOf<J> & TypeOf<K> & TypeOf<L> & TypeOf<M> & TypeOf<N> & TypeOf<O> & TypeOf<P> & TypeOf<Q> & TypeOf<R> & TypeOf<S> & TypeOf<T> & TypeOf<U> & TypeOf<V> & TypeOf<W> & TypeOf<X>>
-export function intersection<A extends InterfaceType<any>, B extends InterfaceType<any>, C extends InterfaceType<any>, D extends InterfaceType<any>, E extends InterfaceType<any>, F extends InterfaceType<any>, G extends InterfaceType<any>, H extends InterfaceType<any>, I extends InterfaceType<any>, J extends InterfaceType<any>, K extends InterfaceType<any>, L extends InterfaceType<any>, M extends InterfaceType<any>, N extends InterfaceType<any>, O extends InterfaceType<any>, P extends InterfaceType<any>, Q extends InterfaceType<any>, R extends InterfaceType<any>, S extends InterfaceType<any>, T extends InterfaceType<any>, U extends InterfaceType<any>, V extends InterfaceType<any>, W extends InterfaceType<any>>(types: [A, B, C, D, E, F, G, H, I, J, K, L, M, N, O, P, Q, R, S, T, U, V, W], name?: string): IntersectionType<[A, B, C, D, E, F, G, H, I, J, K, L, M, N, O, P, Q, R, S, T, U, V, W], TypeOf<A> & TypeOf<B> & TypeOf<C> & TypeOf<D> & TypeOf<E> & TypeOf<F> & TypeOf<G> & TypeOf<H> & TypeOf<I> & TypeOf<J> & TypeOf<K> & TypeOf<L> & TypeOf<M> & TypeOf<N> & TypeOf<O> & TypeOf<P> & TypeOf<Q> & TypeOf<R> & TypeOf<S> & TypeOf<T> & TypeOf<U> & TypeOf<V> & TypeOf<W>>
-export function intersection<A extends InterfaceType<any>, B extends InterfaceType<any>, C extends InterfaceType<any>, D extends InterfaceType<any>, E extends InterfaceType<any>, F extends InterfaceType<any>, G extends InterfaceType<any>, H extends InterfaceType<any>, I extends InterfaceType<any>, J extends InterfaceType<any>, K extends InterfaceType<any>, L extends InterfaceType<any>, M extends InterfaceType<any>, N extends InterfaceType<any>, O extends InterfaceType<any>, P extends InterfaceType<any>, Q extends InterfaceType<any>, R extends InterfaceType<any>, S extends InterfaceType<any>, T extends InterfaceType<any>, U extends InterfaceType<any>, V extends InterfaceType<any>>(types: [A, B, C, D, E, F, G, H, I, J, K, L, M, N, O, P, Q, R, S, T, U, V], name?: string): IntersectionType<[A, B, C, D, E, F, G, H, I, J, K, L, M, N, O, P, Q, R, S, T, U, V], TypeOf<A> & TypeOf<B> & TypeOf<C> & TypeOf<D> & TypeOf<E> & TypeOf<F> & TypeOf<G> & TypeOf<H> & TypeOf<I> & TypeOf<J> & TypeOf<K> & TypeOf<L> & TypeOf<M> & TypeOf<N> & TypeOf<O> & TypeOf<P> & TypeOf<Q> & TypeOf<R> & TypeOf<S> & TypeOf<T> & TypeOf<U> & TypeOf<V>>
-export function intersection<A extends InterfaceType<any>, B extends InterfaceType<any>, C extends InterfaceType<any>, D extends InterfaceType<any>, E extends InterfaceType<any>, F extends InterfaceType<any>, G extends InterfaceType<any>, H extends InterfaceType<any>, I extends InterfaceType<any>, J extends InterfaceType<any>, K extends InterfaceType<any>, L extends InterfaceType<any>, M extends InterfaceType<any>, N extends InterfaceType<any>, O extends InterfaceType<any>, P extends InterfaceType<any>, Q extends InterfaceType<any>, R extends InterfaceType<any>, S extends InterfaceType<any>, T extends InterfaceType<any>, U extends InterfaceType<any>>(types: [A, B, C, D, E, F, G, H, I, J, K, L, M, N, O, P, Q, R, S, T, U], name?: string): IntersectionType<[A, B, C, D, E, F, G, H, I, J, K, L, M, N, O, P, Q, R, S, T, U], TypeOf<A> & TypeOf<B> & TypeOf<C> & TypeOf<D> & TypeOf<E> & TypeOf<F> & TypeOf<G> & TypeOf<H> & TypeOf<I> & TypeOf<J> & TypeOf<K> & TypeOf<L> & TypeOf<M> & TypeOf<N> & TypeOf<O> & TypeOf<P> & TypeOf<Q> & TypeOf<R> & TypeOf<S> & TypeOf<T> & TypeOf<U>>
-export function intersection<A extends InterfaceType<any>, B extends InterfaceType<any>, C extends InterfaceType<any>, D extends InterfaceType<any>, E extends InterfaceType<any>, F extends InterfaceType<any>, G extends InterfaceType<any>, H extends InterfaceType<any>, I extends InterfaceType<any>, J extends InterfaceType<any>, K extends InterfaceType<any>, L extends InterfaceType<any>, M extends InterfaceType<any>, N extends InterfaceType<any>, O extends InterfaceType<any>, P extends InterfaceType<any>, Q extends InterfaceType<any>, R extends InterfaceType<any>, S extends InterfaceType<any>, T extends InterfaceType<any>>(types: [A, B, C, D, E, F, G, H, I, J, K, L, M, N, O, P, Q, R, S, T], name?: string): IntersectionType<[A, B, C, D, E, F, G, H, I, J, K, L, M, N, O, P, Q, R, S, T], TypeOf<A> & TypeOf<B> & TypeOf<C> & TypeOf<D> & TypeOf<E> & TypeOf<F> & TypeOf<G> & TypeOf<H> & TypeOf<I> & TypeOf<J> & TypeOf<K> & TypeOf<L> & TypeOf<M> & TypeOf<N> & TypeOf<O> & TypeOf<P> & TypeOf<Q> & TypeOf<R> & TypeOf<S> & TypeOf<T>>
-export function intersection<A extends InterfaceType<any>, B extends InterfaceType<any>, C extends InterfaceType<any>, D extends InterfaceType<any>, E extends InterfaceType<any>, F extends InterfaceType<any>, G extends InterfaceType<any>, H extends InterfaceType<any>, I extends InterfaceType<any>, J extends InterfaceType<any>, K extends InterfaceType<any>, L extends InterfaceType<any>, M extends InterfaceType<any>, N extends InterfaceType<any>, O extends InterfaceType<any>, P extends InterfaceType<any>, Q extends InterfaceType<any>, R extends InterfaceType<any>, S extends InterfaceType<any>>(types: [A, B, C, D, E, F, G, H, I, J, K, L, M, N, O, P, Q, R, S], name?: string): IntersectionType<[A, B, C, D, E, F, G, H, I, J, K, L, M, N, O, P, Q, R, S], TypeOf<A> & TypeOf<B> & TypeOf<C> & TypeOf<D> & TypeOf<E> & TypeOf<F> & TypeOf<G> & TypeOf<H> & TypeOf<I> & TypeOf<J> & TypeOf<K> & TypeOf<L> & TypeOf<M> & TypeOf<N> & TypeOf<O> & TypeOf<P> & TypeOf<Q> & TypeOf<R> & TypeOf<S>>
-export function intersection<A extends InterfaceType<any>, B extends InterfaceType<any>, C extends InterfaceType<any>, D extends InterfaceType<any>, E extends InterfaceType<any>, F extends InterfaceType<any>, G extends InterfaceType<any>, H extends InterfaceType<any>, I extends InterfaceType<any>, J extends InterfaceType<any>, K extends InterfaceType<any>, L extends InterfaceType<any>, M extends InterfaceType<any>, N extends InterfaceType<any>, O extends InterfaceType<any>, P extends InterfaceType<any>, Q extends InterfaceType<any>, R extends InterfaceType<any>>(types: [A, B, C, D, E, F, G, H, I, J, K, L, M, N, O, P, Q, R], name?: string): IntersectionType<[A, B, C, D, E, F, G, H, I, J, K, L, M, N, O, P, Q, R], TypeOf<A> & TypeOf<B> & TypeOf<C> & TypeOf<D> & TypeOf<E> & TypeOf<F> & TypeOf<G> & TypeOf<H> & TypeOf<I> & TypeOf<J> & TypeOf<K> & TypeOf<L> & TypeOf<M> & TypeOf<N> & TypeOf<O> & TypeOf<P> & TypeOf<Q> & TypeOf<R>>
-export function intersection<A extends InterfaceType<any>, B extends InterfaceType<any>, C extends InterfaceType<any>, D extends InterfaceType<any>, E extends InterfaceType<any>, F extends InterfaceType<any>, G extends InterfaceType<any>, H extends InterfaceType<any>, I extends InterfaceType<any>, J extends InterfaceType<any>, K extends InterfaceType<any>, L extends InterfaceType<any>, M extends InterfaceType<any>, N extends InterfaceType<any>, O extends InterfaceType<any>, P extends InterfaceType<any>, Q extends InterfaceType<any>>(types: [A, B, C, D, E, F, G, H, I, J, K, L, M, N, O, P, Q], name?: string): IntersectionType<[A, B, C, D, E, F, G, H, I, J, K, L, M, N, O, P, Q], TypeOf<A> & TypeOf<B> & TypeOf<C> & TypeOf<D> & TypeOf<E> & TypeOf<F> & TypeOf<G> & TypeOf<H> & TypeOf<I> & TypeOf<J> & TypeOf<K> & TypeOf<L> & TypeOf<M> & TypeOf<N> & TypeOf<O> & TypeOf<P> & TypeOf<Q>>
-export function intersection<A extends InterfaceType<any>, B extends InterfaceType<any>, C extends InterfaceType<any>, D extends InterfaceType<any>, E extends InterfaceType<any>, F extends InterfaceType<any>, G extends InterfaceType<any>, H extends InterfaceType<any>, I extends InterfaceType<any>, J extends InterfaceType<any>, K extends InterfaceType<any>, L extends InterfaceType<any>, M extends InterfaceType<any>, N extends InterfaceType<any>, O extends InterfaceType<any>, P extends InterfaceType<any>>(types: [A, B, C, D, E, F, G, H, I, J, K, L, M, N, O, P], name?: string): IntersectionType<[A, B, C, D, E, F, G, H, I, J, K, L, M, N, O, P], TypeOf<A> & TypeOf<B> & TypeOf<C> & TypeOf<D> & TypeOf<E> & TypeOf<F> & TypeOf<G> & TypeOf<H> & TypeOf<I> & TypeOf<J> & TypeOf<K> & TypeOf<L> & TypeOf<M> & TypeOf<N> & TypeOf<O> & TypeOf<P>>
-export function intersection<A extends InterfaceType<any>, B extends InterfaceType<any>, C extends InterfaceType<any>, D extends InterfaceType<any>, E extends InterfaceType<any>, F extends InterfaceType<any>, G extends InterfaceType<any>, H extends InterfaceType<any>, I extends InterfaceType<any>, J extends InterfaceType<any>, K extends InterfaceType<any>, L extends InterfaceType<any>, M extends InterfaceType<any>, N extends InterfaceType<any>, O extends InterfaceType<any>>(types: [A, B, C, D, E, F, G, H, I, J, K, L, M, N, O], name?: string): IntersectionType<[A, B, C, D, E, F, G, H, I, J, K, L, M, N, O], TypeOf<A> & TypeOf<B> & TypeOf<C> & TypeOf<D> & TypeOf<E> & TypeOf<F> & TypeOf<G> & TypeOf<H> & TypeOf<I> & TypeOf<J> & TypeOf<K> & TypeOf<L> & TypeOf<M> & TypeOf<N> & TypeOf<O>>
-export function intersection<A extends InterfaceType<any>, B extends InterfaceType<any>, C extends InterfaceType<any>, D extends InterfaceType<any>, E extends InterfaceType<any>, F extends InterfaceType<any>, G extends InterfaceType<any>, H extends InterfaceType<any>, I extends InterfaceType<any>, J extends InterfaceType<any>, K extends InterfaceType<any>, L extends InterfaceType<any>, M extends InterfaceType<any>, N extends InterfaceType<any>>(types: [A, B, C, D, E, F, G, H, I, J, K, L, M, N], name?: string): IntersectionType<[A, B, C, D, E, F, G, H, I, J, K, L, M, N], TypeOf<A> & TypeOf<B> & TypeOf<C> & TypeOf<D> & TypeOf<E> & TypeOf<F> & TypeOf<G> & TypeOf<H> & TypeOf<I> & TypeOf<J> & TypeOf<K> & TypeOf<L> & TypeOf<M> & TypeOf<N>>
-export function intersection<A extends InterfaceType<any>, B extends InterfaceType<any>, C extends InterfaceType<any>, D extends InterfaceType<any>, E extends InterfaceType<any>, F extends InterfaceType<any>, G extends InterfaceType<any>, H extends InterfaceType<any>, I extends InterfaceType<any>, J extends InterfaceType<any>, K extends InterfaceType<any>, L extends InterfaceType<any>, M extends InterfaceType<any>>(types: [A, B, C, D, E, F, G, H, I, J, K, L, M], name?: string): IntersectionType<[A, B, C, D, E, F, G, H, I, J, K, L, M], TypeOf<A> & TypeOf<B> & TypeOf<C> & TypeOf<D> & TypeOf<E> & TypeOf<F> & TypeOf<G> & TypeOf<H> & TypeOf<I> & TypeOf<J> & TypeOf<K> & TypeOf<L> & TypeOf<M>>
-export function intersection<A extends InterfaceType<any>, B extends InterfaceType<any>, C extends InterfaceType<any>, D extends InterfaceType<any>, E extends InterfaceType<any>, F extends InterfaceType<any>, G extends InterfaceType<any>, H extends InterfaceType<any>, I extends InterfaceType<any>, J extends InterfaceType<any>, K extends InterfaceType<any>, L extends InterfaceType<any>>(types: [A, B, C, D, E, F, G, H, I, J, K, L], name?: string): IntersectionType<[A, B, C, D, E, F, G, H, I, J, K, L], TypeOf<A> & TypeOf<B> & TypeOf<C> & TypeOf<D> & TypeOf<E> & TypeOf<F> & TypeOf<G> & TypeOf<H> & TypeOf<I> & TypeOf<J> & TypeOf<K> & TypeOf<L>>
-export function intersection<A extends InterfaceType<any>, B extends InterfaceType<any>, C extends InterfaceType<any>, D extends InterfaceType<any>, E extends InterfaceType<any>, F extends InterfaceType<any>, G extends InterfaceType<any>, H extends InterfaceType<any>, I extends InterfaceType<any>, J extends InterfaceType<any>, K extends InterfaceType<any>>(types: [A, B, C, D, E, F, G, H, I, J, K], name?: string): IntersectionType<[A, B, C, D, E, F, G, H, I, J, K], TypeOf<A> & TypeOf<B> & TypeOf<C> & TypeOf<D> & TypeOf<E> & TypeOf<F> & TypeOf<G> & TypeOf<H> & TypeOf<I> & TypeOf<J> & TypeOf<K>>
-export function intersection<A extends InterfaceType<any>, B extends InterfaceType<any>, C extends InterfaceType<any>, D extends InterfaceType<any>, E extends InterfaceType<any>, F extends InterfaceType<any>, G extends InterfaceType<any>, H extends InterfaceType<any>, I extends InterfaceType<any>, J extends InterfaceType<any>>(types: [A, B, C, D, E, F, G, H, I, J], name?: string): IntersectionType<[A, B, C, D, E, F, G, H, I, J], TypeOf<A> & TypeOf<B> & TypeOf<C> & TypeOf<D> & TypeOf<E> & TypeOf<F> & TypeOf<G> & TypeOf<H> & TypeOf<I> & TypeOf<J>>
-export function intersection<A extends InterfaceType<any>, B extends InterfaceType<any>, C extends InterfaceType<any>, D extends InterfaceType<any>, E extends InterfaceType<any>, F extends InterfaceType<any>, G extends InterfaceType<any>, H extends InterfaceType<any>, I extends InterfaceType<any>>(types: [A, B, C, D, E, F, G, H, I], name?: string): IntersectionType<[A, B, C, D, E, F, G, H, I], TypeOf<A> & TypeOf<B> & TypeOf<C> & TypeOf<D> & TypeOf<E> & TypeOf<F> & TypeOf<G> & TypeOf<H> & TypeOf<I>>
-export function intersection<A extends InterfaceType<any>, B extends InterfaceType<any>, C extends InterfaceType<any>, D extends InterfaceType<any>, E extends InterfaceType<any>, F extends InterfaceType<any>, G extends InterfaceType<any>, H extends InterfaceType<any>>(types: [A, B, C, D, E, F, G, H], name?: string): IntersectionType<[A, B, C, D, E, F, G, H], TypeOf<A> & TypeOf<B> & TypeOf<C> & TypeOf<D> & TypeOf<E> & TypeOf<F> & TypeOf<G> & TypeOf<H>>
-export function intersection<A extends InterfaceType<any>, B extends InterfaceType<any>, C extends InterfaceType<any>, D extends InterfaceType<any>, E extends InterfaceType<any>, F extends InterfaceType<any>, G extends InterfaceType<any>>(types: [A, B, C, D, E, F, G], name?: string): IntersectionType<[A, B, C, D, E, F, G], TypeOf<A> & TypeOf<B> & TypeOf<C> & TypeOf<D> & TypeOf<E> & TypeOf<F> & TypeOf<G>>
-export function intersection<A extends InterfaceType<any>, B extends InterfaceType<any>, C extends InterfaceType<any>, D extends InterfaceType<any>, E extends InterfaceType<any>, F extends InterfaceType<any>>(types: [A, B, C, D, E, F], name?: string): IntersectionType<[A, B, C, D, E, F], TypeOf<A> & TypeOf<B> & TypeOf<C> & TypeOf<D> & TypeOf<E> & TypeOf<F>>
-export function intersection<A extends InterfaceType<any>, B extends InterfaceType<any>, C extends InterfaceType<any>, D extends InterfaceType<any>, E extends InterfaceType<any>>(types: [A, B, C, D, E], name?: string): IntersectionType<[A, B, C, D, E], TypeOf<A> & TypeOf<B> & TypeOf<C> & TypeOf<D> & TypeOf<E>>
-export function intersection<A extends InterfaceType<any>, B extends InterfaceType<any>, C extends InterfaceType<any>, D extends InterfaceType<any>>(types: [A, B, C, D], name?: string): IntersectionType<[A, B, C, D], TypeOf<A> & TypeOf<B> & TypeOf<C> & TypeOf<D>>
-export function intersection<A extends InterfaceType<any>, B extends InterfaceType<any>, C extends InterfaceType<any>>(types: [A, B, C], name?: string): IntersectionType<[A, B, C], TypeOf<A> & TypeOf<B> & TypeOf<C>>
-export function intersection<A extends InterfaceType<any>, B extends InterfaceType<any>>(types: [A, B], name?: string): IntersectionType<[A, B], TypeOf<A> & TypeOf<B>>
-export function intersection<A extends InterfaceType<any>>(types: [A], name?: string): IntersectionType<[A], TypeOf<A>>
-export function intersection<RTS extends Array<InterfaceType<any>>>(types: RTS, name?: string): IntersectionType<RTS, any> {
-  const displayName = name || `(${types.map(getTypeName).join(' & ')})`
-  const props = types.reduce((acc, x) => ({ ...acc, ...x.props }), {})
-  const type = interfaceType(props, displayName)
+export function intersection<A extends Any, B extends Any, C extends Any, D extends Any, E extends Any, F extends Any, G extends Any, H extends Any, I extends Any, J extends Any, K extends Any, L extends Any, M extends Any, N extends Any, O extends Any, P extends Any, Q extends Any, R extends Any, S extends Any, T extends Any, U extends Any, V extends Any, W extends Any, X extends Any, Y extends Any, Z extends Any>(types: [A, B, C, D, E, F, G, H, I, J, K, L, M, N, O, P, Q, R, S, T, U, V, W, X, Y, Z], name?: string): IntersectionType<[A, B, C, D, E, F, G, H, I, J, K, L, M, N, O, P, Q, R, S, T, U, V, W, X, Y, Z], TypeOf<A> & TypeOf<B> & TypeOf<C> & TypeOf<D> & TypeOf<E> & TypeOf<F> & TypeOf<G> & TypeOf<H> & TypeOf<I> & TypeOf<J> & TypeOf<K> & TypeOf<L> & TypeOf<M> & TypeOf<N> & TypeOf<O> & TypeOf<P> & TypeOf<Q> & TypeOf<R> & TypeOf<S> & TypeOf<T> & TypeOf<U> & TypeOf<V> & TypeOf<W> & TypeOf<X> & TypeOf<Y> & TypeOf<Z>>
+export function intersection<A extends Any, B extends Any, C extends Any, D extends Any, E extends Any, F extends Any, G extends Any, H extends Any, I extends Any, J extends Any, K extends Any, L extends Any, M extends Any, N extends Any, O extends Any, P extends Any, Q extends Any, R extends Any, S extends Any, T extends Any, U extends Any, V extends Any, W extends Any, X extends Any, Y extends Any>(types: [A, B, C, D, E, F, G, H, I, J, K, L, M, N, O, P, Q, R, S, T, U, V, W, X, Y], name?: string): IntersectionType<[A, B, C, D, E, F, G, H, I, J, K, L, M, N, O, P, Q, R, S, T, U, V, W, X, Y], TypeOf<A> & TypeOf<B> & TypeOf<C> & TypeOf<D> & TypeOf<E> & TypeOf<F> & TypeOf<G> & TypeOf<H> & TypeOf<I> & TypeOf<J> & TypeOf<K> & TypeOf<L> & TypeOf<M> & TypeOf<N> & TypeOf<O> & TypeOf<P> & TypeOf<Q> & TypeOf<R> & TypeOf<S> & TypeOf<T> & TypeOf<U> & TypeOf<V> & TypeOf<W> & TypeOf<X> & TypeOf<Y>>
+export function intersection<A extends Any, B extends Any, C extends Any, D extends Any, E extends Any, F extends Any, G extends Any, H extends Any, I extends Any, J extends Any, K extends Any, L extends Any, M extends Any, N extends Any, O extends Any, P extends Any, Q extends Any, R extends Any, S extends Any, T extends Any, U extends Any, V extends Any, W extends Any, X extends Any>(types: [A, B, C, D, E, F, G, H, I, J, K, L, M, N, O, P, Q, R, S, T, U, V, W, X], name?: string): IntersectionType<[A, B, C, D, E, F, G, H, I, J, K, L, M, N, O, P, Q, R, S, T, U, V, W, X], TypeOf<A> & TypeOf<B> & TypeOf<C> & TypeOf<D> & TypeOf<E> & TypeOf<F> & TypeOf<G> & TypeOf<H> & TypeOf<I> & TypeOf<J> & TypeOf<K> & TypeOf<L> & TypeOf<M> & TypeOf<N> & TypeOf<O> & TypeOf<P> & TypeOf<Q> & TypeOf<R> & TypeOf<S> & TypeOf<T> & TypeOf<U> & TypeOf<V> & TypeOf<W> & TypeOf<X>>
+export function intersection<A extends Any, B extends Any, C extends Any, D extends Any, E extends Any, F extends Any, G extends Any, H extends Any, I extends Any, J extends Any, K extends Any, L extends Any, M extends Any, N extends Any, O extends Any, P extends Any, Q extends Any, R extends Any, S extends Any, T extends Any, U extends Any, V extends Any, W extends Any>(types: [A, B, C, D, E, F, G, H, I, J, K, L, M, N, O, P, Q, R, S, T, U, V, W], name?: string): IntersectionType<[A, B, C, D, E, F, G, H, I, J, K, L, M, N, O, P, Q, R, S, T, U, V, W], TypeOf<A> & TypeOf<B> & TypeOf<C> & TypeOf<D> & TypeOf<E> & TypeOf<F> & TypeOf<G> & TypeOf<H> & TypeOf<I> & TypeOf<J> & TypeOf<K> & TypeOf<L> & TypeOf<M> & TypeOf<N> & TypeOf<O> & TypeOf<P> & TypeOf<Q> & TypeOf<R> & TypeOf<S> & TypeOf<T> & TypeOf<U> & TypeOf<V> & TypeOf<W>>
+export function intersection<A extends Any, B extends Any, C extends Any, D extends Any, E extends Any, F extends Any, G extends Any, H extends Any, I extends Any, J extends Any, K extends Any, L extends Any, M extends Any, N extends Any, O extends Any, P extends Any, Q extends Any, R extends Any, S extends Any, T extends Any, U extends Any, V extends Any>(types: [A, B, C, D, E, F, G, H, I, J, K, L, M, N, O, P, Q, R, S, T, U, V], name?: string): IntersectionType<[A, B, C, D, E, F, G, H, I, J, K, L, M, N, O, P, Q, R, S, T, U, V], TypeOf<A> & TypeOf<B> & TypeOf<C> & TypeOf<D> & TypeOf<E> & TypeOf<F> & TypeOf<G> & TypeOf<H> & TypeOf<I> & TypeOf<J> & TypeOf<K> & TypeOf<L> & TypeOf<M> & TypeOf<N> & TypeOf<O> & TypeOf<P> & TypeOf<Q> & TypeOf<R> & TypeOf<S> & TypeOf<T> & TypeOf<U> & TypeOf<V>>
+export function intersection<A extends Any, B extends Any, C extends Any, D extends Any, E extends Any, F extends Any, G extends Any, H extends Any, I extends Any, J extends Any, K extends Any, L extends Any, M extends Any, N extends Any, O extends Any, P extends Any, Q extends Any, R extends Any, S extends Any, T extends Any, U extends Any>(types: [A, B, C, D, E, F, G, H, I, J, K, L, M, N, O, P, Q, R, S, T, U], name?: string): IntersectionType<[A, B, C, D, E, F, G, H, I, J, K, L, M, N, O, P, Q, R, S, T, U], TypeOf<A> & TypeOf<B> & TypeOf<C> & TypeOf<D> & TypeOf<E> & TypeOf<F> & TypeOf<G> & TypeOf<H> & TypeOf<I> & TypeOf<J> & TypeOf<K> & TypeOf<L> & TypeOf<M> & TypeOf<N> & TypeOf<O> & TypeOf<P> & TypeOf<Q> & TypeOf<R> & TypeOf<S> & TypeOf<T> & TypeOf<U>>
+export function intersection<A extends Any, B extends Any, C extends Any, D extends Any, E extends Any, F extends Any, G extends Any, H extends Any, I extends Any, J extends Any, K extends Any, L extends Any, M extends Any, N extends Any, O extends Any, P extends Any, Q extends Any, R extends Any, S extends Any, T extends Any>(types: [A, B, C, D, E, F, G, H, I, J, K, L, M, N, O, P, Q, R, S, T], name?: string): IntersectionType<[A, B, C, D, E, F, G, H, I, J, K, L, M, N, O, P, Q, R, S, T], TypeOf<A> & TypeOf<B> & TypeOf<C> & TypeOf<D> & TypeOf<E> & TypeOf<F> & TypeOf<G> & TypeOf<H> & TypeOf<I> & TypeOf<J> & TypeOf<K> & TypeOf<L> & TypeOf<M> & TypeOf<N> & TypeOf<O> & TypeOf<P> & TypeOf<Q> & TypeOf<R> & TypeOf<S> & TypeOf<T>>
+export function intersection<A extends Any, B extends Any, C extends Any, D extends Any, E extends Any, F extends Any, G extends Any, H extends Any, I extends Any, J extends Any, K extends Any, L extends Any, M extends Any, N extends Any, O extends Any, P extends Any, Q extends Any, R extends Any, S extends Any>(types: [A, B, C, D, E, F, G, H, I, J, K, L, M, N, O, P, Q, R, S], name?: string): IntersectionType<[A, B, C, D, E, F, G, H, I, J, K, L, M, N, O, P, Q, R, S], TypeOf<A> & TypeOf<B> & TypeOf<C> & TypeOf<D> & TypeOf<E> & TypeOf<F> & TypeOf<G> & TypeOf<H> & TypeOf<I> & TypeOf<J> & TypeOf<K> & TypeOf<L> & TypeOf<M> & TypeOf<N> & TypeOf<O> & TypeOf<P> & TypeOf<Q> & TypeOf<R> & TypeOf<S>>
+export function intersection<A extends Any, B extends Any, C extends Any, D extends Any, E extends Any, F extends Any, G extends Any, H extends Any, I extends Any, J extends Any, K extends Any, L extends Any, M extends Any, N extends Any, O extends Any, P extends Any, Q extends Any, R extends Any>(types: [A, B, C, D, E, F, G, H, I, J, K, L, M, N, O, P, Q, R], name?: string): IntersectionType<[A, B, C, D, E, F, G, H, I, J, K, L, M, N, O, P, Q, R], TypeOf<A> & TypeOf<B> & TypeOf<C> & TypeOf<D> & TypeOf<E> & TypeOf<F> & TypeOf<G> & TypeOf<H> & TypeOf<I> & TypeOf<J> & TypeOf<K> & TypeOf<L> & TypeOf<M> & TypeOf<N> & TypeOf<O> & TypeOf<P> & TypeOf<Q> & TypeOf<R>>
+export function intersection<A extends Any, B extends Any, C extends Any, D extends Any, E extends Any, F extends Any, G extends Any, H extends Any, I extends Any, J extends Any, K extends Any, L extends Any, M extends Any, N extends Any, O extends Any, P extends Any, Q extends Any>(types: [A, B, C, D, E, F, G, H, I, J, K, L, M, N, O, P, Q], name?: string): IntersectionType<[A, B, C, D, E, F, G, H, I, J, K, L, M, N, O, P, Q], TypeOf<A> & TypeOf<B> & TypeOf<C> & TypeOf<D> & TypeOf<E> & TypeOf<F> & TypeOf<G> & TypeOf<H> & TypeOf<I> & TypeOf<J> & TypeOf<K> & TypeOf<L> & TypeOf<M> & TypeOf<N> & TypeOf<O> & TypeOf<P> & TypeOf<Q>>
+export function intersection<A extends Any, B extends Any, C extends Any, D extends Any, E extends Any, F extends Any, G extends Any, H extends Any, I extends Any, J extends Any, K extends Any, L extends Any, M extends Any, N extends Any, O extends Any, P extends Any>(types: [A, B, C, D, E, F, G, H, I, J, K, L, M, N, O, P], name?: string): IntersectionType<[A, B, C, D, E, F, G, H, I, J, K, L, M, N, O, P], TypeOf<A> & TypeOf<B> & TypeOf<C> & TypeOf<D> & TypeOf<E> & TypeOf<F> & TypeOf<G> & TypeOf<H> & TypeOf<I> & TypeOf<J> & TypeOf<K> & TypeOf<L> & TypeOf<M> & TypeOf<N> & TypeOf<O> & TypeOf<P>>
+export function intersection<A extends Any, B extends Any, C extends Any, D extends Any, E extends Any, F extends Any, G extends Any, H extends Any, I extends Any, J extends Any, K extends Any, L extends Any, M extends Any, N extends Any, O extends Any>(types: [A, B, C, D, E, F, G, H, I, J, K, L, M, N, O], name?: string): IntersectionType<[A, B, C, D, E, F, G, H, I, J, K, L, M, N, O], TypeOf<A> & TypeOf<B> & TypeOf<C> & TypeOf<D> & TypeOf<E> & TypeOf<F> & TypeOf<G> & TypeOf<H> & TypeOf<I> & TypeOf<J> & TypeOf<K> & TypeOf<L> & TypeOf<M> & TypeOf<N> & TypeOf<O>>
+export function intersection<A extends Any, B extends Any, C extends Any, D extends Any, E extends Any, F extends Any, G extends Any, H extends Any, I extends Any, J extends Any, K extends Any, L extends Any, M extends Any, N extends Any>(types: [A, B, C, D, E, F, G, H, I, J, K, L, M, N], name?: string): IntersectionType<[A, B, C, D, E, F, G, H, I, J, K, L, M, N], TypeOf<A> & TypeOf<B> & TypeOf<C> & TypeOf<D> & TypeOf<E> & TypeOf<F> & TypeOf<G> & TypeOf<H> & TypeOf<I> & TypeOf<J> & TypeOf<K> & TypeOf<L> & TypeOf<M> & TypeOf<N>>
+export function intersection<A extends Any, B extends Any, C extends Any, D extends Any, E extends Any, F extends Any, G extends Any, H extends Any, I extends Any, J extends Any, K extends Any, L extends Any, M extends Any>(types: [A, B, C, D, E, F, G, H, I, J, K, L, M], name?: string): IntersectionType<[A, B, C, D, E, F, G, H, I, J, K, L, M], TypeOf<A> & TypeOf<B> & TypeOf<C> & TypeOf<D> & TypeOf<E> & TypeOf<F> & TypeOf<G> & TypeOf<H> & TypeOf<I> & TypeOf<J> & TypeOf<K> & TypeOf<L> & TypeOf<M>>
+export function intersection<A extends Any, B extends Any, C extends Any, D extends Any, E extends Any, F extends Any, G extends Any, H extends Any, I extends Any, J extends Any, K extends Any, L extends Any>(types: [A, B, C, D, E, F, G, H, I, J, K, L], name?: string): IntersectionType<[A, B, C, D, E, F, G, H, I, J, K, L], TypeOf<A> & TypeOf<B> & TypeOf<C> & TypeOf<D> & TypeOf<E> & TypeOf<F> & TypeOf<G> & TypeOf<H> & TypeOf<I> & TypeOf<J> & TypeOf<K> & TypeOf<L>>
+export function intersection<A extends Any, B extends Any, C extends Any, D extends Any, E extends Any, F extends Any, G extends Any, H extends Any, I extends Any, J extends Any, K extends Any>(types: [A, B, C, D, E, F, G, H, I, J, K], name?: string): IntersectionType<[A, B, C, D, E, F, G, H, I, J, K], TypeOf<A> & TypeOf<B> & TypeOf<C> & TypeOf<D> & TypeOf<E> & TypeOf<F> & TypeOf<G> & TypeOf<H> & TypeOf<I> & TypeOf<J> & TypeOf<K>>
+export function intersection<A extends Any, B extends Any, C extends Any, D extends Any, E extends Any, F extends Any, G extends Any, H extends Any, I extends Any, J extends Any>(types: [A, B, C, D, E, F, G, H, I, J], name?: string): IntersectionType<[A, B, C, D, E, F, G, H, I, J], TypeOf<A> & TypeOf<B> & TypeOf<C> & TypeOf<D> & TypeOf<E> & TypeOf<F> & TypeOf<G> & TypeOf<H> & TypeOf<I> & TypeOf<J>>
+export function intersection<A extends Any, B extends Any, C extends Any, D extends Any, E extends Any, F extends Any, G extends Any, H extends Any, I extends Any>(types: [A, B, C, D, E, F, G, H, I], name?: string): IntersectionType<[A, B, C, D, E, F, G, H, I], TypeOf<A> & TypeOf<B> & TypeOf<C> & TypeOf<D> & TypeOf<E> & TypeOf<F> & TypeOf<G> & TypeOf<H> & TypeOf<I>>
+export function intersection<A extends Any, B extends Any, C extends Any, D extends Any, E extends Any, F extends Any, G extends Any, H extends Any>(types: [A, B, C, D, E, F, G, H], name?: string): IntersectionType<[A, B, C, D, E, F, G, H], TypeOf<A> & TypeOf<B> & TypeOf<C> & TypeOf<D> & TypeOf<E> & TypeOf<F> & TypeOf<G> & TypeOf<H>>
+export function intersection<A extends Any, B extends Any, C extends Any, D extends Any, E extends Any, F extends Any, G extends Any>(types: [A, B, C, D, E, F, G], name?: string): IntersectionType<[A, B, C, D, E, F, G], TypeOf<A> & TypeOf<B> & TypeOf<C> & TypeOf<D> & TypeOf<E> & TypeOf<F> & TypeOf<G>>
+export function intersection<A extends Any, B extends Any, C extends Any, D extends Any, E extends Any, F extends Any>(types: [A, B, C, D, E, F], name?: string): IntersectionType<[A, B, C, D, E, F], TypeOf<A> & TypeOf<B> & TypeOf<C> & TypeOf<D> & TypeOf<E> & TypeOf<F>>
+export function intersection<A extends Any, B extends Any, C extends Any, D extends Any, E extends Any>(types: [A, B, C, D, E], name?: string): IntersectionType<[A, B, C, D, E], TypeOf<A> & TypeOf<B> & TypeOf<C> & TypeOf<D> & TypeOf<E>>
+export function intersection<A extends Any, B extends Any, C extends Any, D extends Any>(types: [A, B, C, D], name?: string): IntersectionType<[A, B, C, D], TypeOf<A> & TypeOf<B> & TypeOf<C> & TypeOf<D>>
+export function intersection<A extends Any, B extends Any, C extends Any>(types: [A, B, C], name?: string): IntersectionType<[A, B, C], TypeOf<A> & TypeOf<B> & TypeOf<C>>
+export function intersection<A extends Any, B extends Any>(types: [A, B], name?: string): IntersectionType<[A, B], TypeOf<A> & TypeOf<B>>
+export function intersection<A extends Any>(types: [A], name?: string): IntersectionType<[A], TypeOf<A>>
+export function intersection<RTS extends Array<Any>>(types: RTS, name?: string): IntersectionType<RTS, any> {
   return new IntersectionType(
-    displayName,
-    type.validate,
+    name || `(${types.map(getTypeName).join(' & ')})`,
+    (v, c) => {
+      let t = v
+      let changed = false
+      const errors: Errors = []
+      for (let i = 0, len = types.length; i < len; i++) {
+        const type = types[i]
+        const validation = type.validate(t, c)
+        validation.fold(
+          error => pushAll(errors, error),
+          vv => {
+            changed = changed || ( vv !== t )
+            t = vv
+          }
+        )
+      }
+      return errors.length ? new Left(errors) : success(changed ? t : v)
+    },
     types
   )
 }

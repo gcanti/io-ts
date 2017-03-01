@@ -12,8 +12,8 @@ describe('recursion', () => {
       a: t.number,
       b: t.maybe(self)
     }))
-    assertSuccess(t.validate({ a: 1 }, T))
-    assertSuccess(t.validate({ a: 1, b: { a: 2 } }, T))
+    assertSuccess(t.validate({ a: 1, b: null }, T))
+    assertSuccess(t.validate({ a: 1, b: { a: 2, b: null } }, T))
   })
 
   it('should return the same reference if validation succeeded', () => {
@@ -21,7 +21,7 @@ describe('recursion', () => {
       a: t.number,
       b: t.maybe(self)
     }))
-    const value = { a: 1, b: { a: 2 } }
+    const value = { a: 1, b: { a: 2, b: null } }
     assertStrictEqual(t.validate(value, T), value)
   })
 
@@ -34,10 +34,12 @@ describe('recursion', () => {
       'Invalid value 1 supplied to : T'
     ])
     assertFailure(t.validate({}, T), [
-      'Invalid value undefined supplied to : T/a: number'
+      'Invalid value undefined supplied to : T/a: number',
+      'Invalid value undefined supplied to : T/b: (T | null)'
     ])
     assertFailure(t.validate({ a: 1, b: {} }, T), [
-      'Invalid value undefined supplied to : T/b: ?T/a: number'
+      'Invalid value undefined supplied to : T/b: (T | null)/a: number',
+      'Invalid value undefined supplied to : T/b: (T | null)/b: (T | null)'
     ])
   })
 

@@ -12,6 +12,17 @@
 **Note**: Gaps between patch versions are faulty/broken releases.
 **Note**: A feature tagged as Experimental is in a high state of flux, you're at risk of it changing without notice.
 
+# 0.2.0
+
+- **New Feature**
+  - add `partial` combinator
+  - add `never` type
+- **Breaking Changes**
+  - remove `undefined` as valid value for `maybe` combinator
+- **Bug Fix**
+  - revert pruning excess properties
+  - revert `intersection` combinator accepting only `InterfaceType`s
+
 # 0.1.0
 
 - **New Feature**

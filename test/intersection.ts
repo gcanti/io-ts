@@ -16,11 +16,11 @@ describe('intersection', () => {
     assertSuccess(t.validate({ a: 1, b: 2 }, T))
   })
 
-  it('should remove unknown properties', () => {
+  it('should keep unknown properties', () => {
     const T = t.intersection([t.interface({ a: t.number }), t.interface({ b: t.number })])
     const validation = t.validate({ a: 1, b: 1, c: true }, T)
     if (isRight(validation)) {
-      assert.deepEqual(validation.value, { a: 1, b: 1 })
+      assert.deepEqual(validation.value, { a: 1, b: 1, c: true })
     } else {
       assert.ok(false)
     }

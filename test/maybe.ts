@@ -10,7 +10,6 @@ describe('maybe', () => {
   it('should succeed validating a valid value', () => {
     const T = t.maybe(t.number)
     assertSuccess(t.validate(null, T))
-    assertSuccess(t.validate(undefined, T))
     assertSuccess(t.validate(1, T))
   })
 
@@ -22,8 +21,11 @@ describe('maybe', () => {
 
   it('should fail validating an invalid value', () => {
     const T = t.maybe(t.number)
+    assertFailure(t.validate(undefined, T), [
+      'Invalid value undefined supplied to : (number | null)'
+    ])
     assertFailure(t.validate('s', T), [
-      'Invalid value "s" supplied to : ?number'
+      'Invalid value "s" supplied to : (number | null)'
     ])
   })
 
