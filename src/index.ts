@@ -116,6 +116,29 @@ const functionType = new Type<Function>(
 )
 
 //
+// refinements
+//
+
+export type Predicate<T> = (value: T) => boolean;
+
+export class RefinementType<RT extends Any> extends Type<TypeOf<RT>> {
+  constructor(name: string, validate: Validate<TypeOf<RT>>, public readonly type: Type<any>, public readonly predicate: Predicate<TypeOf<RT>>) {
+    super(name, validate)
+  }
+}
+
+export function refinement<RT extends Any>(type: RT, predicate: Predicate<TypeOf<RT>>, name?: string): RefinementType<RT> {
+  return new RefinementType(
+    name || `(${getTypeName(type)} | ${getFunctionName(predicate)})`,
+    (v, c) => type.validate(v, c).chain(t => predicate(t) ? success(t) : failure(v, c)),
+    type,
+    predicate
+  )
+}
+
+export const Integer = refinement(number, n => n % 1 === 0, 'Integer')
+
+//
 // literal types
 //
 
@@ -150,29 +173,6 @@ export function keyof<D extends { [key: string]: any }>(map: D, name?: string): 
     map
   )
 }
-
-//
-// refinements
-//
-
-export type Predicate<T> = (value: T) => boolean;
-
-export class RefinementType<RT extends Any> extends Type<TypeOf<RT>> {
-  constructor(name: string, validate: Validate<TypeOf<RT>>, public readonly type: Type<any>, public readonly predicate: Predicate<TypeOf<RT>>) {
-    super(name, validate)
-  }
-}
-
-export function refinement<RT extends Any>(type: RT, predicate: Predicate<TypeOf<RT>>, name?: string): RefinementType<RT> {
-  return new RefinementType(
-    name || `(${getTypeName(type)} | ${getFunctionName(predicate)})`,
-    (v, c) => type.validate(v, c).chain(t => predicate(t) ? success(t) : failure(v, c)),
-    type,
-    predicate
-  )
-}
-
-export const Integer = refinement(number, n => n % 1 === 0, 'Integer')
 
 //
 // recursive types
@@ -521,6 +521,20 @@ export function tuple<RTS extends Array<Any>>(types: RTS, name?: string): TupleT
       return errors.length ? new Left(errors) : success(changed ? t : as)
     }),
     types
+  )
+}
+
+export class ReadonlyType<RT extends Any> extends Type<Readonly<TypeOf<RT>>> {
+  constructor(name: string, validate: Validate<Readonly<TypeOf<RT>>>, public readonly type: RT) {
+    super(name, validate)
+  }
+}
+
+export function readonly<RT extends Any>(type: RT, name?: string): ReadonlyType<RT> {
+  return new ReadonlyType(
+    name || `Readonly<${getTypeName(type)}>`,
+    (v, c) => type.validate(v, c).map(x => Object.freeze(x)),
+    type
   )
 }
 

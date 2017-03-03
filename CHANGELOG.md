@@ -16,6 +16,7 @@
 
 - **New Feature**
   - add `partial` combinator
+  - add `readonly` combinator
   - add `never` type
 - **Breaking Changes**
   - remove `undefined` as valid value for `maybe` combinator

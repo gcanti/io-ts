@@ -136,6 +136,7 @@ import * as t from 'io-ts'
 | literal | `'s'` | `t.literal('s')` |
 | maybe | `A | null` | `t.maybe(A)` |
 | partial | `Partial<{ name: string }>` | `t.partial({ name: t.string })` |
+| readonly | `Readonly<{ name: string }>` | `t.readonly({ name: t.string })` |
 | dictionaries | `{ [key: A]: B }` | `t.dictionary(A, B)` |
 | refinement | ✘ | `t.refinement(A, predicate)` |
 | interface | `{ name: string }` | `t.interface({ name: t.string })` |
