@@ -19,7 +19,7 @@
   - add `readonly` combinator
   - add `never` type
 - **Breaking Changes**
-  - remove `undefined` as valid value for `maybe` combinator
+  - remove `maybe` combinator
 - **Bug Fix**
   - revert pruning excess properties
   - revert `intersection` combinator accepting only `InterfaceType`s

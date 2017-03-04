@@ -62,7 +62,7 @@ This package exports two default reporters
 Example
 
 ```js
-import { PathReporter, ThrowReporter } from '../src/reporters/default'
+import { PathReporter, ThrowReporter } from 'io-ts/reporters/default'
 
 const validation = t.validate({"name":"Giulio"}, Person)
 
@@ -145,6 +145,26 @@ import * as t from 'io-ts'
 | intersection | `A & B` | `t.intersection([A, B])` |
 | keyof | `keyof M` | `t.keyof(M)` |
 | recursive types |  | `t.recursion(name, definition)` |
+
+# Custom combinators
+
+You can define your own combinators. Let's see some interesting examples
+
+## The `maybe` combinator
+
+```ts
+export function maybe<RT extends t.Any>(type: RT, name?: string): t.UnionType<[RT, typeof t.null], t.TypeOf<RT> | null> {
+  return t.union([type, t.null], name)
+}
+```
+
+## The `brand` combinator
+
+```ts
+export function brand<T, B extends string>(type: t.Type<T>, brand: B): t.Type<T & { readonly __brand: B }> {
+  return type as any
+}
+```
 
 # Known issues
 

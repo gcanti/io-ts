@@ -189,24 +189,6 @@ export function recursion<T>(name: string, definition: (self: Any) => Any): Type
 }
 
 //
-// maybes
-//
-
-export class MaybeType<RT extends Any> extends Type<TypeOf<RT> | null> {
-  constructor(name: string, validate: Validate<TypeOf<RT> | null>, public readonly type: RT) {
-    super(name, validate)
-  }
-}
-
-export function maybe<RT extends Any>(type: RT, name?: string): MaybeType<RT> {
-  return new MaybeType(
-    name || `(${getTypeName(type)} | null)`,
-    (v, c) => v === null ? success(v) : type.validate(v, c),
-    type
-  )
-}
-
-//
 // arrays
 //
 

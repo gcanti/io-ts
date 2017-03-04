@@ -46,18 +46,6 @@ const R1 = t.refinement(t.number, n => n % 2 === 0)
 ;(2 as TypeOf<typeof R1>)
 
 //
-// maybes
-//
-
-const M1 = t.maybe(t.number)
-// $ExpectError Type 'string' cannot be converted to type 'number | null'
-;('s' as TypeOf<typeof M1>)
-// $ExpectError Type 'undefined' cannot be converted to type 'number | null'
-;(undefined as TypeOf<typeof M1>)
-;(2 as TypeOf<typeof M1>)
-;(null as TypeOf<typeof M1>)
-
-//
 // arrays
 //
 
