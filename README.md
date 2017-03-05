@@ -146,9 +146,33 @@ import * as t from 'io-ts'
 | keyof | `keyof M` | `t.keyof(M)` |
 | recursive types |  | `t.recursion(name, definition)` |
 
+# Custom types
+
+You can define your own types. Let's see some examples
+
+```ts
+import * as t from 'io-ts'
+import { pathReporterFailure } from 'io-ts/lib/reporters/default'
+
+// return a Date from an ISO string
+const ISODate = new t.Type<Date>(
+  'ISODate',
+  (v, c) => t.string.validate(v, c).chain(s => {
+    const d = new Date(s)
+    return isNaN(d.getTime()) ? t.failure<Date>(s, c) : t.success(d)
+  })
+)
+
+const s = new Date(1973, 10, 30).toISOString()
+t.validate(s, ISODate).fold(pathReporterFailure, x => [String(x)])
+// => [ 'Fri Nov 30 1973 00:00:00 GMT+0100 (CET)' ]
+t.validate('foo', ISODate).fold(pathReporterFailure, x => [String(x)])
+// => [ 'Invalid value "foo" supplied to : ISODate' ]
+```
+
 # Custom combinators
 
-You can define your own combinators. Let's see some interesting examples
+You can define your own combinators. Let's see some examples
 
 ## The `maybe` combinator
 
