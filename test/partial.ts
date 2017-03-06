@@ -1,8 +1,10 @@
+import * as assert from 'assert'
 import * as t from '../src/index'
 import {
   assertSuccess,
   assertFailure,
-  assertStrictEqual
+  assertStrictEqual,
+  identity
 } from './helpers'
 
 describe('partial', () => {
@@ -11,6 +13,12 @@ describe('partial', () => {
     const T = t.partial({ a: t.number })
     assertSuccess(t.validate({}, T))
     assertSuccess(t.validate({ a: 1 }, T))
+  })
+
+  it('should not add optional keys', () => {
+    const T = t.partial({ a: t.number })
+    assert.strictEqual(t.validate({}, T).fold<any>(identity, identity).hasOwnProperty('a'), false)
+    assert.strictEqual(t.validate({ b: 1 }, T).fold<any>(identity, identity).hasOwnProperty('a'), false)
   })
 
   it('should return the same reference if validation succeeded', () => {

@@ -4,7 +4,7 @@ import { Validation, Type } from '../src/index'
 import * as t from '../src/index'
 import { PathReporter } from '../src/reporters/default'
 
-function identity<A>(a: A): A {
+export function identity<A>(a: A): A {
   return a
 }
 
