@@ -515,7 +515,12 @@ export class ReadonlyType<RT extends Any> extends Type<Readonly<TypeOf<RT>>> {
 export function readonly<RT extends Any>(type: RT, name?: string): ReadonlyType<RT> {
   return new ReadonlyType(
     name || `Readonly<${getTypeName(type)}>`,
-    (v, c) => type.validate(v, c).map(x => Object.freeze(x)),
+    (v, c) => type.validate(v, c).map(x => {
+      if (process.env.NODE_ENV !== 'production') {
+        return Object.freeze(x)
+      }
+      return x
+    }),
     type
   )
 }
