@@ -12,6 +12,25 @@
 **Note**: Gaps between patch versions are faulty/broken releases.
 **Note**: A feature tagged as Experimental is in a high state of flux, you're at risk of it changing without notice.
 
+# 0.2.0
+
+- **New Feature**
+  - add `partial` combinator
+  - add `readonly` combinator
+  - add `never` type
+- **Breaking Changes**
+  - remove `maybe` combinator, can be defined in userland as
+    ```ts
+    export function maybe<RT extends t.Any>(type: RT, name?: string): t.UnionType<[RT, typeof t.null], t.TypeOf<RT> | null> {
+      return t.union([type, t.null], name)
+    }
+    ```
+- **Polish**
+  - export `pathReporterFailure` function from default reporters
+- **Bug Fix**
+  - revert pruning excess properties
+  - revert `intersection` combinator accepting only `InterfaceType`s
+
 # 0.1.0
 
 - **New Feature**

@@ -16,11 +16,11 @@ describe('interface', () => {
     assertSuccess(t.validate({ a: 's' }, T))
   })
 
-  it('should remove unknown properties', () => {
+  it('should keep unknown properties', () => {
     const T = t.interface({ a: t.string })
     const validation = t.validate({ a: 's', b: 1 }, T)
     if (isRight(validation)) {
-      assert.deepEqual(validation.value, { a: 's' })
+      assert.deepEqual(validation.value, { a: 's', b: 1 })
     } else {
       assert.ok(false)
     }

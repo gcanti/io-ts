@@ -62,7 +62,7 @@ This package exports two default reporters
 Example
 
 ```js
-import { PathReporter, ThrowReporter } from '../src/reporters/default'
+import { PathReporter, ThrowReporter } from 'io-ts/reporters/default'
 
 const validation = t.validate({"name":"Giulio"}, Person)
 
@@ -124,15 +124,19 @@ import * as t from 'io-ts'
 | undefined | `undefined` | `t.undefined` |
 | string | `string` | `t.string` |
 | number | `number` | `t.number` |
-| integer | ✘ | `t.Integer` |
 | boolean | `boolean` | `t.boolean` |
+| any | `any` | `t.any` |
+| never | `never` | `t.never` |
+| integer | ✘ | `t.Integer` |
 | generic array | `Array<any>` | `t.Array` |
 | generic dictionary | `{ [key: string]: any }` | `t.Dictionary` |
 | function | `Function` | `t.Function` |
 | instance of `C` | `C` | `t.instanceOf(C)` |
 | arrays | `Array<A>` | `t.array(A)` |
 | literal | `'s'` | `t.literal('s')` |
-| maybe | `A | undefined | null` | `t.maybe(A)` |
+| maybe | `A | null` | `t.maybe(A)` |
+| partial | `Partial<{ name: string }>` | `t.partial({ name: t.string })` |
+| readonly | `Readonly<{ name: string }>` | `t.readonly({ name: t.string })` |
 | dictionaries | `{ [key: A]: B }` | `t.dictionary(A, B)` |
 | refinement | ✘ | `t.refinement(A, predicate)` |
 | interface | `{ name: string }` | `t.interface({ name: t.string })` |
@@ -141,6 +145,50 @@ import * as t from 'io-ts'
 | intersection | `A & B` | `t.intersection([A, B])` |
 | keyof | `keyof M` | `t.keyof(M)` |
 | recursive types |  | `t.recursion(name, definition)` |
+
+# Custom types
+
+You can define your own types. Let's see some examples
+
+```ts
+import * as t from 'io-ts'
+import { pathReporterFailure } from 'io-ts/lib/reporters/default'
+
+// return a Date from an ISO string
+const ISODate = new t.Type<Date>(
+  'ISODate',
+  (v, c) => t.string.validate(v, c).chain(s => {
+    const d = new Date(s)
+    return isNaN(d.getTime()) ? t.failure<Date>(s, c) : t.success(d)
+  })
+)
+
+const s = new Date(1973, 10, 30).toISOString()
+t.validate(s, ISODate).fold(pathReporterFailure, x => [String(x)])
+// => [ 'Fri Nov 30 1973 00:00:00 GMT+0100 (CET)' ]
+t.validate('foo', ISODate).fold(pathReporterFailure, x => [String(x)])
+// => [ 'Invalid value "foo" supplied to : ISODate' ]
+```
+
+# Custom combinators
+
+You can define your own combinators. Let's see some examples
+
+## The `maybe` combinator
+
+```ts
+export function maybe<RT extends t.Any>(type: RT, name?: string): t.UnionType<[RT, typeof t.null], t.TypeOf<RT> | null> {
+  return t.union([type, t.null], name)
+}
+```
+
+## The `brand` combinator
+
+```ts
+export function brand<T, B extends string>(type: t.Type<T>, brand: B): t.Type<T & { readonly __brand: B }> {
+  return type as any
+}
+```
 
 # Known issues
 
