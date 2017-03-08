@@ -15,17 +15,18 @@ where `Validate<T>` is a specific validation function for `T`
 type Validate<T> = (value: any, context: Context) => Either<Array<ValidationError>, T>;
 ```
 
+Note. The `Either` type is defined in [fp-ts](https://github.com/gcanti/fp-ts), a library containing implementations of common algebraic types in TypeScript.
+
 **Example**
 
 A runtime type representing `string` can be defined as
 
 ```js
-import { Right, Left } from 'fp-ts/lib/Either'
 import * as t from 'io-ts'
 
 const string = new t.Type<string>(
   'string',
-  (value, context) => typeof value === 'string' ? new Right(value) : new Left([{ value, context }])
+  (value, context) => typeof value === 'string' ? t.success(v) : t.failure<string>(v, c)
 )
 ```
 
@@ -131,7 +132,6 @@ import * as t from 'io-ts'
 | generic array | `Array<any>` | `t.Array` |
 | generic dictionary | `{ [key: string]: any }` | `t.Dictionary` |
 | function | `Function` | `t.Function` |
-| instance of `C` | `C` | `t.instanceOf(C)` |
 | arrays | `Array<A>` | `t.array(A)` |
 | literal | `'s'` | `t.literal('s')` |
 | maybe | `A | null` | `t.maybe(A)` |
@@ -146,9 +146,33 @@ import * as t from 'io-ts'
 | keyof | `keyof M` | `t.keyof(M)` |
 | recursive types |  | `t.recursion(name, definition)` |
 
+# Mixing required and optional props
+
+Note. You can mix required and optional props using an intersection
+
+```ts
+const A = t.interface({
+  foo: t.string
+})
+
+const B = t.partial({
+  bar: t.number
+})
+
+const C = t.intersection([A, B])
+
+type CT = t.TypeOf<typeof C>
+
+// same as
+type CT = {
+  foo: string,
+  bar?: number
+}
+```
+
 # Custom types
 
-You can define your own types. Let's see some examples
+You can define your own types. Let's see an example
 
 ```ts
 import * as t from 'io-ts'
@@ -184,10 +208,53 @@ export function maybe<RT extends t.Any>(type: RT, name?: string): t.UnionType<[R
 
 ## The `brand` combinator
 
+The problem
+
+```ts
+const payload = {
+  celsius: 100,
+  fahrenheit: 100
+}
+
+const Payload = t.interface({
+  celsius: t.number,
+  fahrenheit: t.number
+})
+
+// x can be anything
+function naiveConvertFtoC(x: number): number {
+  return (x - 32) / 1.8;
+}
+
+// typo: celsius instead of fahrenheit
+console.log(t.validate(payload, Payload).map(x => naiveConvertFtoC(x.celsius))) // NO error :(
+```
+
+Solution (branded types)
+
 ```ts
 export function brand<T, B extends string>(type: t.Type<T>, brand: B): t.Type<T & { readonly __brand: B }> {
   return type as any
 }
+
+const Fahrenheit = brand(t.number, 'Fahrenheit')
+const Celsius = brand(t.number, 'Celsius')
+
+type CelsiusT = t.TypeOf<typeof Celsius>
+type FahrenheitT = t.TypeOf<typeof Fahrenheit>
+
+const Payload2 = t.interface({
+  celsius: Celsius,
+  fahrenheit: Fahrenheit
+})
+
+// narrowed types
+function convertFtoC(fahrenheit: FahrenheitT): CelsiusT {
+  return (fahrenheit - 32) / 1.8 as CelsiusT;
+}
+
+console.log(t.validate(payload, Payload2).map(x => convertFtoC(x.celsius))) // error: Type '"Celsius"' is not assignable to type '"Fahrenheit"'
+console.log(t.validate(payload, Payload2).map(x => convertFtoC(x.fahrenheit))) // ok
 ```
 
 # Known issues
