@@ -506,6 +506,10 @@ export function tuple<RTS extends Array<Any>>(types: RTS, name?: string): TupleT
   )
 }
 
+//
+// readonly
+//
+
 export class ReadonlyType<RT extends Any> extends Type<Readonly<TypeOf<RT>>> {
   constructor(name: string, validate: Validate<Readonly<TypeOf<RT>>>, public readonly type: RT) {
     super(name, validate)

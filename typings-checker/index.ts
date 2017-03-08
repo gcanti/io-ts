@@ -2,7 +2,7 @@ import * as t from '../src'
 import { TypeOf } from '../src'
 
 //
-// literal types
+// literal
 //
 
 const L1 = t.literal('a')
@@ -11,7 +11,7 @@ const x1: TypeOf<typeof L1> = 's'
 const x2: TypeOf<typeof L1> = 'a'
 
 //
-// keyof types
+// keyof
 //
 
 const K1 = t.keyof({ a: true, b: true })
@@ -37,7 +37,7 @@ const x5: TypeOf<typeof K1> = 'b'
 ;('s' as TypeOf<typeof t.string>)
 
 //
-// refinements
+// refinement
 //
 
 const R1 = t.refinement(t.number, n => n % 2 === 0)
@@ -46,7 +46,7 @@ const R1 = t.refinement(t.number, n => n % 2 === 0)
 ;(2 as TypeOf<typeof R1>)
 
 //
-// arrays
+// array
 //
 
 const A1 = t.array(t.number)
@@ -57,7 +57,7 @@ const A1 = t.array(t.number)
 ;([1] as TypeOf<typeof A1>)
 
 //
-// interfaces
+// interface
 //
 
 const I1 = t.interface({ name: t.string, age: t.number })
@@ -75,7 +75,7 @@ const x10: TypeOf<typeof I2> = { name: 'name', father: {} }
 const x11: TypeOf<typeof I2> = { name: 'name', father: { surname: 'surname' } }
 
 //
-// dictionaries
+// dictionary
 //
 
 const D1 = t.dictionary(t.string, t.number)
@@ -84,7 +84,7 @@ const x12: TypeOf<typeof D1> = { a: 's' }
 const x13: TypeOf<typeof D1> = { a: 1 }
 
 //
-// unions
+// union
 //
 
 const U1 = t.union([t.string, t.number])
@@ -94,7 +94,7 @@ const x15: TypeOf<typeof U1> = 's'
 const x16: TypeOf<typeof U1> = 1
 
 //
-// intersections
+// intersection
 //
 
 const IN1 = t.intersection([t.interface({ a: t.number }), t.interface({ b: t.string })])
@@ -103,10 +103,31 @@ const x17: TypeOf<typeof IN1> = { a: 1 }
 const x18: TypeOf<typeof IN1> = { a: 1, b: 's' }
 
 //
-// tuples
+// tuple
 //
 
 const T1 = t.tuple([t.string, t.number])
 // $ExpectError Type 'boolean' is not assignable to type 'number'
 const x19: TypeOf<typeof T1> = ['s', true]
 const x20: TypeOf<typeof T1> = ['s', 1]
+
+//
+// partial
+//
+
+const P1 = t.partial({ name: t.string })
+// $ExpectError Type 'number' is not assignable to type 'string | undefined'
+const x21: TypeOf<typeof P1> = { name: 1 }
+const x22: TypeOf<typeof P1> = {}
+const x23: TypeOf<typeof P1> = { name: 's' }
+
+//
+// readonly
+//
+
+const RO1 = t.readonly(t.interface({ name: t.string }))
+const x24: TypeOf<typeof RO1> = { name: 's' }
+// $ExpectError Cannot assign to 'name' because it is a constant or a read-only property
+x24.name = 's2'
+// $ExpectError Type 'number' is not assignable to type 'string'
+const x25: TypeOf<typeof RO1> = { name: 1 }
