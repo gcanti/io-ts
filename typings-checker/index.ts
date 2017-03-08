@@ -131,3 +131,16 @@ const x24: TypeOf<typeof RO1> = { name: 's' }
 x24.name = 's2'
 // $ExpectError Type 'number' is not assignable to type 'string'
 const x25: TypeOf<typeof RO1> = { name: 1 }
+
+//
+// readonlyArray
+//
+
+const ROA1 = t.readonlyArray(t.number)
+// $ExpectError Type 'string' is not assignable to type 'number'
+const x26: TypeOf<typeof ROA1> = ['s']
+const x27: TypeOf<typeof ROA1> = [1]
+// $ExpectError Index signature in type 'ReadonlyArray<number>' only permits reading
+x27[0] = 2
+// $ExpectError Property 'push' does not exist on type 'ReadonlyArray<number>'
+x27.push(2)

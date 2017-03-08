@@ -12,11 +12,12 @@
 **Note**: Gaps between patch versions are faulty/broken releases.
 **Note**: A feature tagged as Experimental is in a high state of flux, you're at risk of it changing without notice.
 
-# 0.2.0
+# 0.2.1
 
 - **New Feature**
-  - add `partial` combinator
-  - add `readonly` combinator
+  - add `partial` combinator (makes optional props possible)
+  - add `readonly` combinator (values are not frozen in production)
+  - add `readonlyArray` combinator (values are not frozen in production)
   - add `never` type
 - **Breaking Changes**
   - remove `maybe` combinator, can be defined in userland as
@@ -28,7 +29,7 @@
 - **Polish**
   - export `pathReporterFailure` function from default reporters
 - **Bug Fix**
-  - revert pruning excess properties
+  - revert pruning excess properties (see https://github.com/gcanti/io-ts/pull/27 for context)
   - revert `intersection` combinator accepting only `InterfaceType`s
 
 # 0.1.0
