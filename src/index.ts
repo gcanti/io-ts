@@ -506,6 +506,10 @@ export function tuple<RTS extends Array<Any>>(types: RTS, name?: string): TupleT
   )
 }
 
+//
+// readonly
+//
+
 export class ReadonlyType<RT extends Any> extends Type<Readonly<TypeOf<RT>>> {
   constructor(name: string, validate: Validate<Readonly<TypeOf<RT>>>, public readonly type: RT) {
     super(name, validate)
@@ -516,6 +520,30 @@ export function readonly<RT extends Any>(type: RT, name?: string): ReadonlyType<
   return new ReadonlyType(
     name || `Readonly<${getTypeName(type)}>`,
     (v, c) => type.validate(v, c).map(x => {
+      if (process.env.NODE_ENV !== 'production') {
+        return Object.freeze(x)
+      }
+      return x
+    }),
+    type
+  )
+}
+
+//
+// readonlyArray
+//
+
+export class ReadonlyArrayType<RT extends Any> extends Type<ReadonlyArray<TypeOf<RT>>> {
+  constructor(name: string, validate: Validate<ReadonlyArray<TypeOf<RT>>>, public readonly type: RT) {
+    super(name, validate)
+  }
+}
+
+export function readonlyArray<RT extends Any>(type: RT, name?: string): ReadonlyArrayType<RT> {
+  const arrayType = array(type)
+  return new ReadonlyArrayType(
+    name || `ReadonlyArray<${getTypeName(type)}>`,
+    (v, c) => arrayType.validate(v, c).map(x => {
       if (process.env.NODE_ENV !== 'production') {
         return Object.freeze(x)
       }
