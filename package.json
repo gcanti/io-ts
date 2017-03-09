@@ -29,12 +29,12 @@
     "fp-ts": "^0.0.2"
   },
   "devDependencies": {
-    "@types/mocha": "^2.2.38",
-    "@types/node": "^7.0.4",
-    "mocha": "^3.2.0",
-    "ts-node": "^2.0.0",
+    "@types/mocha": "2.2.38",
+    "@types/node": "7.0.4",
+    "mocha": "3.2.0",
+    "ts-node": "2.0.0",
     "typescript": "^2.2.0",
-    "typings-checker": "^1.1.2"
+    "typings-checker": "1.1.2"
   },
   "tags": [
     "typescript",

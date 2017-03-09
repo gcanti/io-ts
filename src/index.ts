@@ -337,9 +337,49 @@ export function dictionary<D extends Type<string>, C extends Any>(domain: D, cod
 // unions
 //
 
-export class UnionType<RTS, U> extends Type<U> {
+export type Match<RT extends Any, R> = (a: TypeOf<RT>) => R
+
+export class UnionType<RTS extends Array<Any>, U> extends Type<U> {
   constructor(name: string, validate: Validate<U>, public readonly types: RTS) {
     super(name, validate)
+  }
+  fold<R>(a: Match<RTS[0], R>, b: Match<RTS[1], R>, c: Match<RTS[2], R>, d: Match<RTS[3], R>, e: Match<RTS[4], R>, f: Match<RTS[5], R>, g: Match<RTS[6], R>, h: Match<RTS[7], R>, i: Match<RTS[8], R>, j: Match<RTS[9], R>, k: Match<RTS[10], R>, l: Match<RTS[11], R>, m: Match<RTS[12], R>, n: Match<RTS[13], R>, o: Match<RTS[14], R>, p: Match<RTS[15], R>, q: Match<RTS[16], R>, r: Match<RTS[17], R>, s: Match<RTS[18], R>, t: Match<RTS[19], R>, u: Match<RTS[20], R>, v: Match<RTS[21], R>, w: Match<RTS[22], R>, x: Match<RTS[23], R>, y: Match<RTS[24], R>, z: Match<RTS[25], R>): (value: U) => R
+  fold<R>(a: Match<RTS[0], R>, b: Match<RTS[1], R>, c: Match<RTS[2], R>, d: Match<RTS[3], R>, e: Match<RTS[4], R>, f: Match<RTS[5], R>, g: Match<RTS[6], R>, h: Match<RTS[7], R>, i: Match<RTS[8], R>, j: Match<RTS[9], R>, k: Match<RTS[10], R>, l: Match<RTS[11], R>, m: Match<RTS[12], R>, n: Match<RTS[13], R>, o: Match<RTS[14], R>, p: Match<RTS[15], R>, q: Match<RTS[16], R>, r: Match<RTS[17], R>, s: Match<RTS[18], R>, t: Match<RTS[19], R>, u: Match<RTS[20], R>, v: Match<RTS[21], R>, w: Match<RTS[22], R>, x: Match<RTS[23], R>, y: Match<RTS[24], R>): (value: U) => R
+  fold<R>(a: Match<RTS[0], R>, b: Match<RTS[1], R>, c: Match<RTS[2], R>, d: Match<RTS[3], R>, e: Match<RTS[4], R>, f: Match<RTS[5], R>, g: Match<RTS[6], R>, h: Match<RTS[7], R>, i: Match<RTS[8], R>, j: Match<RTS[9], R>, k: Match<RTS[10], R>, l: Match<RTS[11], R>, m: Match<RTS[12], R>, n: Match<RTS[13], R>, o: Match<RTS[14], R>, p: Match<RTS[15], R>, q: Match<RTS[16], R>, r: Match<RTS[17], R>, s: Match<RTS[18], R>, t: Match<RTS[19], R>, u: Match<RTS[20], R>, v: Match<RTS[21], R>, w: Match<RTS[22], R>, x: Match<RTS[23], R>): (value: U) => R
+  fold<R>(a: Match<RTS[0], R>, b: Match<RTS[1], R>, c: Match<RTS[2], R>, d: Match<RTS[3], R>, e: Match<RTS[4], R>, f: Match<RTS[5], R>, g: Match<RTS[6], R>, h: Match<RTS[7], R>, i: Match<RTS[8], R>, j: Match<RTS[9], R>, k: Match<RTS[10], R>, l: Match<RTS[11], R>, m: Match<RTS[12], R>, n: Match<RTS[13], R>, o: Match<RTS[14], R>, p: Match<RTS[15], R>, q: Match<RTS[16], R>, r: Match<RTS[17], R>, s: Match<RTS[18], R>, t: Match<RTS[19], R>, u: Match<RTS[20], R>, v: Match<RTS[21], R>, w: Match<RTS[22], R>): (value: U) => R
+  fold<R>(a: Match<RTS[0], R>, b: Match<RTS[1], R>, c: Match<RTS[2], R>, d: Match<RTS[3], R>, e: Match<RTS[4], R>, f: Match<RTS[5], R>, g: Match<RTS[6], R>, h: Match<RTS[7], R>, i: Match<RTS[8], R>, j: Match<RTS[9], R>, k: Match<RTS[10], R>, l: Match<RTS[11], R>, m: Match<RTS[12], R>, n: Match<RTS[13], R>, o: Match<RTS[14], R>, p: Match<RTS[15], R>, q: Match<RTS[16], R>, r: Match<RTS[17], R>, s: Match<RTS[18], R>, t: Match<RTS[19], R>, u: Match<RTS[20], R>, v: Match<RTS[21], R>): (value: U) => R
+  fold<R>(a: Match<RTS[0], R>, b: Match<RTS[1], R>, c: Match<RTS[2], R>, d: Match<RTS[3], R>, e: Match<RTS[4], R>, f: Match<RTS[5], R>, g: Match<RTS[6], R>, h: Match<RTS[7], R>, i: Match<RTS[8], R>, j: Match<RTS[9], R>, k: Match<RTS[10], R>, l: Match<RTS[11], R>, m: Match<RTS[12], R>, n: Match<RTS[13], R>, o: Match<RTS[14], R>, p: Match<RTS[15], R>, q: Match<RTS[16], R>, r: Match<RTS[17], R>, s: Match<RTS[18], R>, t: Match<RTS[19], R>, u: Match<RTS[20], R>): (value: U) => R
+  fold<R>(a: Match<RTS[0], R>, b: Match<RTS[1], R>, c: Match<RTS[2], R>, d: Match<RTS[3], R>, e: Match<RTS[4], R>, f: Match<RTS[5], R>, g: Match<RTS[6], R>, h: Match<RTS[7], R>, i: Match<RTS[8], R>, j: Match<RTS[9], R>, k: Match<RTS[10], R>, l: Match<RTS[11], R>, m: Match<RTS[12], R>, n: Match<RTS[13], R>, o: Match<RTS[14], R>, p: Match<RTS[15], R>, q: Match<RTS[16], R>, r: Match<RTS[17], R>, s: Match<RTS[18], R>, t: Match<RTS[19], R>): (value: U) => R
+  fold<R>(a: Match<RTS[0], R>, b: Match<RTS[1], R>, c: Match<RTS[2], R>, d: Match<RTS[3], R>, e: Match<RTS[4], R>, f: Match<RTS[5], R>, g: Match<RTS[6], R>, h: Match<RTS[7], R>, i: Match<RTS[8], R>, j: Match<RTS[9], R>, k: Match<RTS[10], R>, l: Match<RTS[11], R>, m: Match<RTS[12], R>, n: Match<RTS[13], R>, o: Match<RTS[14], R>, p: Match<RTS[15], R>, q: Match<RTS[16], R>, r: Match<RTS[17], R>, s: Match<RTS[18], R>): (value: U) => R
+  fold<R>(a: Match<RTS[0], R>, b: Match<RTS[1], R>, c: Match<RTS[2], R>, d: Match<RTS[3], R>, e: Match<RTS[4], R>, f: Match<RTS[5], R>, g: Match<RTS[6], R>, h: Match<RTS[7], R>, i: Match<RTS[8], R>, j: Match<RTS[9], R>, k: Match<RTS[10], R>, l: Match<RTS[11], R>, m: Match<RTS[12], R>, n: Match<RTS[13], R>, o: Match<RTS[14], R>, p: Match<RTS[15], R>, q: Match<RTS[16], R>, r: Match<RTS[17], R>): (value: U) => R
+  fold<R>(a: Match<RTS[0], R>, b: Match<RTS[1], R>, c: Match<RTS[2], R>, d: Match<RTS[3], R>, e: Match<RTS[4], R>, f: Match<RTS[5], R>, g: Match<RTS[6], R>, h: Match<RTS[7], R>, i: Match<RTS[8], R>, j: Match<RTS[9], R>, k: Match<RTS[10], R>, l: Match<RTS[11], R>, m: Match<RTS[12], R>, n: Match<RTS[13], R>, o: Match<RTS[14], R>, p: Match<RTS[15], R>, q: Match<RTS[16], R>): (value: U) => R
+  fold<R>(a: Match<RTS[0], R>, b: Match<RTS[1], R>, c: Match<RTS[2], R>, d: Match<RTS[3], R>, e: Match<RTS[4], R>, f: Match<RTS[5], R>, g: Match<RTS[6], R>, h: Match<RTS[7], R>, i: Match<RTS[8], R>, j: Match<RTS[9], R>, k: Match<RTS[10], R>, l: Match<RTS[11], R>, m: Match<RTS[12], R>, n: Match<RTS[13], R>, o: Match<RTS[14], R>, p: Match<RTS[15], R>): (value: U) => R
+  fold<R>(a: Match<RTS[0], R>, b: Match<RTS[1], R>, c: Match<RTS[2], R>, d: Match<RTS[3], R>, e: Match<RTS[4], R>, f: Match<RTS[5], R>, g: Match<RTS[6], R>, h: Match<RTS[7], R>, i: Match<RTS[8], R>, j: Match<RTS[9], R>, k: Match<RTS[10], R>, l: Match<RTS[11], R>, m: Match<RTS[12], R>, n: Match<RTS[13], R>, o: Match<RTS[14], R>): (value: U) => R
+  fold<R>(a: Match<RTS[0], R>, b: Match<RTS[1], R>, c: Match<RTS[2], R>, d: Match<RTS[3], R>, e: Match<RTS[4], R>, f: Match<RTS[5], R>, g: Match<RTS[6], R>, h: Match<RTS[7], R>, i: Match<RTS[8], R>, j: Match<RTS[9], R>, k: Match<RTS[10], R>, l: Match<RTS[11], R>, m: Match<RTS[12], R>, n: Match<RTS[13], R>): (value: U) => R
+  fold<R>(a: Match<RTS[0], R>, b: Match<RTS[1], R>, c: Match<RTS[2], R>, d: Match<RTS[3], R>, e: Match<RTS[4], R>, f: Match<RTS[5], R>, g: Match<RTS[6], R>, h: Match<RTS[7], R>, i: Match<RTS[8], R>, j: Match<RTS[9], R>, k: Match<RTS[10], R>, l: Match<RTS[11], R>, m: Match<RTS[12], R>): (value: U) => R
+  fold<R>(a: Match<RTS[0], R>, b: Match<RTS[1], R>, c: Match<RTS[2], R>, d: Match<RTS[3], R>, e: Match<RTS[4], R>, f: Match<RTS[5], R>, g: Match<RTS[6], R>, h: Match<RTS[7], R>, i: Match<RTS[8], R>, j: Match<RTS[9], R>, k: Match<RTS[10], R>, l: Match<RTS[11], R>): (value: U) => R
+  fold<R>(a: Match<RTS[0], R>, b: Match<RTS[1], R>, c: Match<RTS[2], R>, d: Match<RTS[3], R>, e: Match<RTS[4], R>, f: Match<RTS[5], R>, g: Match<RTS[6], R>, h: Match<RTS[7], R>, i: Match<RTS[8], R>, j: Match<RTS[9], R>, k: Match<RTS[10], R>): (value: U) => R
+  fold<R>(a: Match<RTS[0], R>, b: Match<RTS[1], R>, c: Match<RTS[2], R>, d: Match<RTS[3], R>, e: Match<RTS[4], R>, f: Match<RTS[5], R>, g: Match<RTS[6], R>, h: Match<RTS[7], R>, i: Match<RTS[8], R>, j: Match<RTS[9], R>): (value: U) => R
+  fold<R>(a: Match<RTS[0], R>, b: Match<RTS[1], R>, c: Match<RTS[2], R>, d: Match<RTS[3], R>, e: Match<RTS[4], R>, f: Match<RTS[5], R>, g: Match<RTS[6], R>, h: Match<RTS[7], R>, i: Match<RTS[8], R>): (value: U) => R
+  fold<R>(a: Match<RTS[0], R>, b: Match<RTS[1], R>, c: Match<RTS[2], R>, d: Match<RTS[3], R>, e: Match<RTS[4], R>, f: Match<RTS[5], R>, g: Match<RTS[6], R>, h: Match<RTS[7], R>): (value: U) => R
+  fold<R>(a: Match<RTS[0], R>, b: Match<RTS[1], R>, c: Match<RTS[2], R>, d: Match<RTS[3], R>, e: Match<RTS[4], R>, f: Match<RTS[5], R>, g: Match<RTS[6], R>): (value: U) => R
+  fold<R>(a: Match<RTS[0], R>, b: Match<RTS[1], R>, c: Match<RTS[2], R>, d: Match<RTS[3], R>, e: Match<RTS[4], R>, f: Match<RTS[5], R>): (value: U) => R
+  fold<R>(a: Match<RTS[0], R>, b: Match<RTS[1], R>, c: Match<RTS[2], R>, d: Match<RTS[3], R>, e: Match<RTS[4], R>): (value: U) => R
+  fold<R>(a: Match<RTS[0], R>, b: Match<RTS[1], R>, c: Match<RTS[2], R>, d: Match<RTS[3], R>): (value: U) => R
+  fold<R>(a: Match<RTS[0], R>, b: Match<RTS[1], R>, c: Match<RTS[2], R>): (value: U) => R
+  fold<R>(a: Match<RTS[0], R>, b: Match<RTS[1], R>): (value: U) => R
+  fold<R>(a: Match<RTS[0], R>): (value: U) => R
+  fold<R>(...matches: Array<Function>): (value: U) => R {
+    return value => {
+      for (let i = 0, len = matches.length; i < len; i++) {
+        const type = this.types[i]
+        const match = matches[i]
+        if (type.is(value)) {
+          return match(value)
+        }
+      }
+      throw new Error(`Invalid value ${JSON.stringify(value)} supplied to ${this.name}`)
+    }
   }
 }
 

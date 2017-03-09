@@ -144,3 +144,17 @@ const x27: TypeOf<typeof ROA1> = [1]
 x27[0] = 2
 // $ExpectError Property 'push' does not exist on type 'ReadonlyArray<number>'
 x27.push(2)
+
+//
+// fold on unions
+//
+
+const f1 = t.union([t.string, t.number])
+  .fold(
+    s => s.length,
+    n => n
+  )
+f1('a')
+f1(1)
+// $ExpectError Argument of type 'true' is not assignable to parameter of type 'string | number'
+f1(true)
