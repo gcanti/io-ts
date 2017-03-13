@@ -12,7 +12,7 @@
 **Note**: Gaps between patch versions are faulty/broken releases.
 **Note**: A feature tagged as Experimental is in a high state of flux, you're at risk of it changing without notice.
 
-# 0.2.1
+# 0.2.2
 
 - **New Feature**
   - add `partial` combinator (makes optional props possible)
@@ -31,6 +31,8 @@
 - **Bug Fix**
   - revert pruning excess properties (see https://github.com/gcanti/io-ts/pull/27 for context)
   - revert `intersection` combinator accepting only `InterfaceType`s
+- **Experimental**
+  - Pattern matching / catamorphism for unions
 
 # 0.1.0
 
