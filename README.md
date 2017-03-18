@@ -177,11 +177,10 @@ You can define your own types. Let's see an example
 
 ```ts
 import * as t from 'io-ts'
-import { pathReporterFailure } from 'io-ts/lib/reporters/default'
 
-// return a Date from an ISO string
-const ISODate = new t.Type<Date>(
-  'ISODate',
+// returns a Date from an ISO string
+const DateFromString = new t.Type<Date>(
+  'DateFromString',
   (v, c) => t.string.validate(v, c).chain(s => {
     const d = new Date(s)
     return isNaN(d.getTime()) ? t.failure<Date>(s, c) : t.success(d)
@@ -189,11 +188,15 @@ const ISODate = new t.Type<Date>(
 )
 
 const s = new Date(1973, 10, 30).toISOString()
-t.validate(s, ISODate).fold(pathReporterFailure, x => [String(x)])
-// => [ 'Fri Nov 30 1973 00:00:00 GMT+0100 (CET)' ]
-t.validate('foo', ISODate).fold(pathReporterFailure, x => [String(x)])
-// => [ 'Invalid value "foo" supplied to : ISODate' ]
+
+t.validate(s, DateFromString)
+// => Right(Date(..))
+
+t.validate('foo', DateFromString)
+// => Left( 'Invalid value "foo" supplied to : DateFromString' )
 ```
+
+Note that you can **deserializing** while validating.
 
 # Custom combinators
 
