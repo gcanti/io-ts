@@ -13,7 +13,8 @@
     "typings-checker": "typings-checker --allow-expect-error --project typings-checker/tsconfig.json typings-checker/index.ts",
     "mocha": "mocha -r ts-node/register test/*.ts",
     "test": "npm run typings-checker && npm run mocha",
-    "build": "rm -rf lib/* && rm -rf lib-jsnext/* && tsc && tsc -m es6 --outDir lib-jsnext"
+    "clean": "rm -rf lib/* && rm -rf lib-jsnext/*",
+    "build": "npm run clean && tsc && tsc -m es6 --outDir lib-jsnext"
   },
   "repository": {
     "type": "git",
