@@ -12,6 +12,13 @@
 **Note**: Gaps between patch versions are faulty/broken releases.
 **Note**: A feature tagged as Experimental is in a high state of flux, you're at risk of it changing without notice.
 
+# 0.3.0
+
+This is a breaking change *only* if you are using fp-ts APIs
+
+- **Breaking Change**
+  - upgrade to latest fp-ts v0.2 (@gcanti)
+
 # 0.2.3
 
 - **Internal**
