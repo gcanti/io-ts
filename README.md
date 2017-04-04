@@ -63,7 +63,7 @@ This package exports two default reporters
 Example
 
 ```js
-import { PathReporter, ThrowReporter } from 'io-ts/reporters/default'
+import { PathReporter, ThrowReporter } from 'io-ts/lib/reporters/default'
 
 const validation = t.validate({"name":"Giulio"}, Person)
 
