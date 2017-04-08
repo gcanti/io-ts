@@ -1,4 +1,5 @@
 import { Either, Left, Right, isRight } from 'fp-ts/lib/Either'
+import { Predicate } from 'fp-ts/lib/function'
 
 export interface ContextEntry {
   readonly key: string,
@@ -17,10 +18,13 @@ type Errors = Array<ValidationError>
 
 export type TypeOf<RT extends Any> = RT['t'];
 
-export class Type<T> {
-  readonly t: T
-  constructor(public readonly name: string, public readonly validate: Validate<T>) {}
-  is(x: any): x is T {
+export class Type<A> {
+  readonly t: A
+  constructor(
+    public readonly name: string,
+    public readonly validate: Validate<A>
+  ) {}
+  is(x: any): x is A {
     return isRight(validate(x, this))
   }
 }
@@ -59,6 +63,34 @@ function getDefaultContext<T>(type: Type<T>): Context {
 
 export function validate<T>(value: any, type: Type<T>): Validation<T> {
   return type.validate(value, getDefaultContext(type))
+}
+
+//
+// Functor
+//
+
+declare module 'fp-ts/lib/HKT' {
+  interface HKT<A> {
+    'io-ts/Type': Type<A>
+  }
+}
+
+export const URI = 'io-ts/Type'
+
+export type URI = typeof URI
+
+export class MapType<RT extends Any, B> extends Type<B> {
+  constructor(name: string, public readonly type: RT, public readonly f: (a: TypeOf<RT>) => B) {
+    super(name, (v, c) => type.validate(v, c).map(f))
+  }
+}
+
+export function map<RT extends Any, B>(f: (a: TypeOf<RT>) => B, type: RT): MapType<RT, B> {
+  return mapWithName(f, type, `(${type.name} => ?)`)
+}
+
+export function mapWithName<RT extends Any, B>(f: (a: TypeOf<RT>) => B, type: RT, name: string): MapType<RT, B> {
+  return new MapType(name, type, f)
 }
 
 //
@@ -119,10 +151,8 @@ const functionType = new Type<Function>(
 // refinements
 //
 
-export type Predicate<T> = (value: T) => boolean;
-
 export class RefinementType<RT extends Any> extends Type<TypeOf<RT>> {
-  constructor(name: string, validate: Validate<TypeOf<RT>>, public readonly type: Type<any>, public readonly predicate: Predicate<TypeOf<RT>>) {
+  constructor(name: string, validate: Validate<TypeOf<RT>>, public readonly type: RT, public readonly predicate: Predicate<TypeOf<RT>>) {
     super(name, validate)
   }
 }
@@ -161,7 +191,7 @@ export function literal<T extends string | number | boolean>(value: T): LiteralT
 //
 
 export class KeyofType<D extends { [key: string]: any }> extends Type<keyof D> {
-  constructor(name: string, validate: Validate<keyof D>, public readonly map: D) {
+  constructor(name: string, validate: Validate<keyof D>, public readonly keys: D) {
     super(name, validate)
   }
 }
