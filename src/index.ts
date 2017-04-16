@@ -1,4 +1,5 @@
 import { Either, Left, Right, isRight } from 'fp-ts/lib/Either'
+import { Option } from 'fp-ts/lib/Option'
 import { Predicate } from 'fp-ts/lib/function'
 
 export interface ContextEntry {
@@ -27,10 +28,6 @@ export class Type<A> {
   is(x: any): x is A {
     return isRight(validate(x, this))
   }
-}
-
-function getTypeName(type: Any): string {
-  return type.name
 }
 
 export function getFunctionName(f: any): string {
@@ -91,6 +88,30 @@ export function map<RT extends Any, B>(f: (a: TypeOf<RT>) => B, type: RT): MapTy
 
 export function mapWithName<RT extends Any, B>(f: (a: TypeOf<RT>) => B, type: RT, name: string): MapType<RT, B> {
   return new MapType(name, type, f)
+}
+
+//
+// getters
+//
+
+/** A Getter can be seen as a glorified get method between a type S and a type A */
+export type Getter<S, A> = (s: S) => Option<A>
+
+export class GetterType<RT extends Any, B> extends Type<B> {
+  constructor(name: string, public readonly type: RT, public readonly getter: Getter<TypeOf<RT>, B>) {
+    super(name, (v, c) => type.validate(v, c).chain(a => getter(a).fold(
+      () => failure<B>(a, c),
+      b => success(b)
+    )))
+  }
+}
+
+export function getter<RT extends Any, B>(type: RT, getter: Getter<TypeOf<RT>, B>, name?: string): GetterType<RT, B> {
+  return new GetterType(
+    name || `Getter<${type.name}, ?>`,
+    type,
+    getter
+  )
 }
 
 //
@@ -159,7 +180,7 @@ export class RefinementType<RT extends Any> extends Type<TypeOf<RT>> {
 
 export function refinement<RT extends Any>(type: RT, predicate: Predicate<TypeOf<RT>>, name?: string): RefinementType<RT> {
   return new RefinementType(
-    name || `(${getTypeName(type)} | ${getFunctionName(predicate)})`,
+    name || `(${type.name} | ${getFunctionName(predicate)})`,
     (v, c) => type.validate(v, c).chain(t => predicate(t) ? success(t) : failure(v, c)),
     type,
     predicate
@@ -230,7 +251,7 @@ export class ArrayType<RT extends Any> extends Type<Array<TypeOf<RT>>> {
 
 export function array<RT extends Any>(type: RT, name?: string): ArrayType<RT> {
   return new ArrayType(
-    name || `Array<${getTypeName(type)}>`,
+    name || `Array<${type.name}>`,
     (v, c) => arrayType.validate(v, c).chain(as => {
       const t: Array<TypeOf<RT>> = []
       const errors: Errors = []
@@ -332,7 +353,7 @@ export class DictionaryType<D extends Type<string>, C extends Any> extends Type<
 
 export function dictionary<D extends Type<string>, C extends Any>(domain: D, codomain: C, name?: string): DictionaryType<D, C> {
   return new DictionaryType(
-    name || `{ [key: ${getTypeName(domain)}]: ${getTypeName(codomain)} }`,
+    name || `{ [key: ${domain.name}]: ${codomain.name} }`,
     (v, c) => Dictionary.validate(v, c).chain(o => {
       const t: { [key: string]: any } = {}
       const errors: Errors = []
@@ -441,7 +462,7 @@ export function union<A extends Any, B extends Any>(types: [A, B], name?: string
 export function union<A extends Any>(types: [A], name?: string): UnionType<[A], TypeOf<A>>
 export function union<RTS extends Array<Any>>(types: RTS, name?: string): UnionType<RTS, any> {
   return new UnionType(
-    name || `(${types.map(getTypeName).join(' | ')})`,
+    name || `(${types.map(type => type.name).join(' | ')})`,
     (v, c) => {
       for (let i = 0, len = types.length; i < len; i++) {
         const validation = types[i].validate(v, c)
@@ -493,7 +514,7 @@ export function intersection<A extends Any, B extends Any>(types: [A, B], name?:
 export function intersection<A extends Any>(types: [A], name?: string): IntersectionType<[A], TypeOf<A>>
 export function intersection<RTS extends Array<Any>>(types: RTS, name?: string): IntersectionType<RTS, any> {
   return new IntersectionType(
-    name || `(${types.map(getTypeName).join(' & ')})`,
+    name || `(${types.map(type => type.name).join(' & ')})`,
     (v, c) => {
       let t = v
       let changed = false
@@ -553,7 +574,7 @@ export function tuple<A extends Any, B extends Any>(types: [A, B], name?: string
 export function tuple<A extends Any>(types: [A], name?: string): TupleType<[A], [TypeOf<A>]>
 export function tuple<RTS extends Array<Any>>(types: RTS, name?: string): TupleType<RTS, any> {
   return new TupleType(
-    name || `[${types.map(getTypeName).join(', ')}]`,
+    name || `[${types.map(type => type.name).join(', ')}]`,
     (v, c) => arrayType.validate(v, c).chain(as => {
       const t: Array<any> = []
       const errors: Errors = []
@@ -588,7 +609,7 @@ export class ReadonlyType<RT extends Any> extends Type<Readonly<TypeOf<RT>>> {
 
 export function readonly<RT extends Any>(type: RT, name?: string): ReadonlyType<RT> {
   return new ReadonlyType(
-    name || `Readonly<${getTypeName(type)}>`,
+    name || `Readonly<${type.name}>`,
     (v, c) => type.validate(v, c).map(x => {
       if (process.env.NODE_ENV !== 'production') {
         return Object.freeze(x)
@@ -612,7 +633,7 @@ export class ReadonlyArrayType<RT extends Any> extends Type<ReadonlyArray<TypeOf
 export function readonlyArray<RT extends Any>(type: RT, name?: string): ReadonlyArrayType<RT> {
   const arrayType = array(type)
   return new ReadonlyArrayType(
-    name || `ReadonlyArray<${getTypeName(type)}>`,
+    name || `ReadonlyArray<${type.name}>`,
     (v, c) => arrayType.validate(v, c).map(x => {
       if (process.env.NODE_ENV !== 'production') {
         return Object.freeze(x)

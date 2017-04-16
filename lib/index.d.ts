@@ -1,4 +1,5 @@
 import { Either } from 'fp-ts/lib/Either';
+import { Option } from 'fp-ts/lib/Option';
 import { Predicate } from 'fp-ts/lib/function';
 export interface ContextEntry {
     readonly key: string;
@@ -19,7 +20,6 @@ export declare class Type<A> {
     readonly t: A;
     constructor(name: string, validate: Validate<A>);
     is(x: any): x is A;
-    map<B>(f: (a: A) => B): Type<B>;
 }
 export declare function getFunctionName(f: any): string;
 export declare function failure<T>(value: any, context: Context): Validation<T>;
@@ -32,8 +32,21 @@ declare module 'fp-ts/lib/HKT' {
 }
 export declare const URI = "io-ts/Type";
 export declare type URI = typeof URI;
-export declare function map<A, B>(f: (a: A) => B, type: Type<A>): Type<B>;
-export declare function mapWithName<A, B>(f: (a: A) => B, type: Type<A>, name: string): Type<B>;
+export declare class MapType<RT extends Any, B> extends Type<B> {
+    readonly type: RT;
+    readonly f: (a: TypeOf<RT>) => B;
+    constructor(name: string, type: RT, f: (a: TypeOf<RT>) => B);
+}
+export declare function map<RT extends Any, B>(f: (a: TypeOf<RT>) => B, type: RT): MapType<RT, B>;
+export declare function mapWithName<RT extends Any, B>(f: (a: TypeOf<RT>) => B, type: RT, name: string): MapType<RT, B>;
+/** A Getter can be seen as a glorified get method between a type S and a type A */
+export declare type Getter<S, A> = (s: S) => Option<A>;
+export declare class GetterType<RT extends Any, B> extends Type<B> {
+    readonly type: RT;
+    readonly getter: Getter<TypeOf<RT>, B>;
+    constructor(name: string, type: RT, getter: Getter<TypeOf<RT>, B>);
+}
+export declare function getter<RT extends Any, B>(type: RT, getter: Getter<TypeOf<RT>, B>, name?: string): GetterType<RT, B>;
 declare const nullType: Type<null>;
 declare const undefinedType: Type<undefined>;
 export declare const any: Type<any>;
@@ -47,9 +60,9 @@ export declare const Dictionary: Type<{
 }>;
 declare const functionType: Type<Function>;
 export declare class RefinementType<RT extends Any> extends Type<TypeOf<RT>> {
-    readonly type: Type<any>;
+    readonly type: RT;
     readonly predicate: Predicate<TypeOf<RT>>;
-    constructor(name: string, validate: Validate<TypeOf<RT>>, type: Type<any>, predicate: Predicate<TypeOf<RT>>);
+    constructor(name: string, validate: Validate<TypeOf<RT>>, type: RT, predicate: Predicate<TypeOf<RT>>);
 }
 export declare function refinement<RT extends Any>(type: RT, predicate: Predicate<TypeOf<RT>>, name?: string): RefinementType<RT>;
 export declare const Integer: RefinementType<Type<number>>;
