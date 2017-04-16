@@ -12,6 +12,12 @@
 **Note**: Gaps between patch versions are faulty/broken releases.
 **Note**: A feature tagged as Experimental is in a high state of flux, you're at risk of it changing without notice.
 
+# 0.3.1
+
+- **New Feature**
+  - add mapWithName and Functor instance, fix #37 (@gcanti)
+  - add getter combinator, fix #41 (@gcanti)
+
 # 0.3.0
 
 This is a breaking change *only* if you are using fp-ts APIs
