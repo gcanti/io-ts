@@ -74,6 +74,10 @@ ThrowReporter.report(validation)
 // => throws 'Invalid value undefined supplied to : { name: string, age: number }/age: number'
 ```
 
+## Community error reporters
+
+- [io-ts-reporters](https://github.com/OliverJAsh/io-ts-reporters)
+
 # TypeScript integration
 
 Runtime types can be inspected
