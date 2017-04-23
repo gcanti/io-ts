@@ -265,6 +265,28 @@ console.log(t.validate(payload, Payload2).map(x => convertFtoC(x.celsius))) // e
 console.log(t.validate(payload, Payload2).map(x => convertFtoC(x.fahrenheit))) // ok
 ```
 
+# Recipes
+
+## Is there a way to turn the checks off in production code?
+
+No, however you can define your own logic for that (if you *really* trust the input)
+
+```ts
+import * as t from 'io-ts'
+import { pathReporterFailure } from 'io-ts/lib/reporters/default'
+
+function unsafeValidate<T>(value: any, type: t.Type<T>): T {
+  if (process.env.NODE_ENV !== 'production') {
+    return t.validate(value, type)
+      .fold(
+        errors => { throw new Error(pathReporterFailure(errors).join('\n')) },
+        x => x
+      )
+  }
+  return value as T
+}
+```
+
 # Known issues
 
 Due to an upstream [bug](https://github.com/Microsoft/TypeScript/issues/14041), VS Code might display weird types for nested interfaces
