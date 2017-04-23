@@ -39,14 +39,13 @@ export declare class MapType<RT extends Any, B> extends Type<B> {
 }
 export declare function map<RT extends Any, B>(f: (a: TypeOf<RT>) => B, type: RT): MapType<RT, B>;
 export declare function mapWithName<RT extends Any, B>(f: (a: TypeOf<RT>) => B, type: RT, name: string): MapType<RT, B>;
-/** A Getter can be seen as a glorified get method between a type S and a type A */
-export declare type Getter<S, A> = (s: S) => Option<A>;
-export declare class GetterType<RT extends Any, B> extends Type<B> {
+export declare type GetOption<S, A> = (s: S) => Option<A>;
+export declare class PrismType<RT extends Any, B> extends Type<B> {
     readonly type: RT;
-    readonly getter: Getter<TypeOf<RT>, B>;
-    constructor(name: string, type: RT, getter: Getter<TypeOf<RT>, B>);
+    readonly getOption: GetOption<TypeOf<RT>, B>;
+    constructor(name: string, type: RT, getOption: GetOption<TypeOf<RT>, B>);
 }
-export declare function getter<RT extends Any, B>(type: RT, getter: Getter<TypeOf<RT>, B>, name?: string): GetterType<RT, B>;
+export declare function prism<RT extends Any, B>(type: RT, getOption: GetOption<TypeOf<RT>, B>, name?: string): PrismType<RT, B>;
 declare const nullType: Type<null>;
 declare const undefinedType: Type<undefined>;
 export declare const any: Type<any>;

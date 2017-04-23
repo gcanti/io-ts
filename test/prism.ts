@@ -5,16 +5,16 @@ import {
 } from './helpers'
 import { Option, none, some } from 'fp-ts/lib/Option'
 
-describe('getter', () => {
+describe('prism', () => {
 
   it('should chain validations', () => {
     const parseNumber = (s: string): Option<number> => {
       const n = parseFloat(s)
       return isNaN(n) ? none : some(n)
     }
-    const NumberFromString = t.getter(t.string, parseNumber)
+    const NumberFromString = t.prism(t.string, parseNumber)
     assertStrictEqual(t.validate('2', NumberFromString), 2)
-    assert.strictEqual(NumberFromString.name, 'Getter<string, ?>')
+    assert.strictEqual(NumberFromString.name, 'Prism<string, ?>')
   })
 
 })

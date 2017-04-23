@@ -146,6 +146,8 @@ import * as t from 'io-ts'
 | intersection | `A & B` | `t.intersection([A, B])` |
 | keyof | `keyof M` | `t.keyof(M)` |
 | recursive types |  | `t.recursion(name, definition)` |
+| map | ✘ | `t.map(f, type)` |
+| prism | ✘ | `t.prism(type, getOption)` |
 
 # Mixing required and optional props
 

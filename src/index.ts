@@ -91,26 +91,25 @@ export function mapWithName<RT extends Any, B>(f: (a: TypeOf<RT>) => B, type: RT
 }
 
 //
-// getters
+// prisms
 //
 
-/** A Getter can be seen as a glorified get method between a type S and a type A */
-export type Getter<S, A> = (s: S) => Option<A>
+export type GetOption<S, A> = (s: S) => Option<A>
 
-export class GetterType<RT extends Any, B> extends Type<B> {
-  constructor(name: string, public readonly type: RT, public readonly getter: Getter<TypeOf<RT>, B>) {
-    super(name, (v, c) => type.validate(v, c).chain(a => getter(a).fold(
+export class PrismType<RT extends Any, B> extends Type<B> {
+  constructor(name: string, public readonly type: RT, public readonly getOption: GetOption<TypeOf<RT>, B>) {
+    super(name, (v, c) => type.validate(v, c).chain(a => getOption(a).fold(
       () => failure<B>(a, c),
       b => success(b)
     )))
   }
 }
 
-export function getter<RT extends Any, B>(type: RT, getter: Getter<TypeOf<RT>, B>, name?: string): GetterType<RT, B> {
-  return new GetterType(
-    name || `Getter<${type.name}, ?>`,
+export function prism<RT extends Any, B>(type: RT, getOption: GetOption<TypeOf<RT>, B>, name?: string): PrismType<RT, B> {
+  return new PrismType(
+    name || `Prism<${type.name}, ?>`,
     type,
-    getter
+    getOption
   )
 }
 

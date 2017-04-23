@@ -177,7 +177,7 @@ const parseNumber = (s: string): Option<number> => {
   const n = parseFloat(s)
   return isNaN(n) ? none : some(n)
 }
-const G1 = t.getter(t.string, parseNumber)
+const G1 = t.prism(t.string, parseNumber)
 // $ExpectError Type '"s"' is not assignable to type 'number'
 const x30: TypeOf<typeof M1> = 's'
 const x31: TypeOf<typeof M1> = 1
