@@ -16,7 +16,7 @@
 
 - **New Feature**
   - add mapWithName and Functor instance, fix #37 (@gcanti)
-  - add getter combinator, fix #41 (@gcanti)
+  - add prism combinator, fix #41 (@gcanti)
 
 # 0.3.0
 
