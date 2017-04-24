@@ -1,4 +1,6 @@
 import { Either, Left, Right, isRight } from 'fp-ts/lib/Either'
+import { Option } from 'fp-ts/lib/Option'
+import { Predicate } from 'fp-ts/lib/function'
 
 export interface ContextEntry {
   readonly key: string,
@@ -17,16 +19,15 @@ type Errors = Array<ValidationError>
 
 export type TypeOf<RT extends Any> = RT['t'];
 
-export class Type<T> {
-  readonly t: T
-  constructor(public readonly name: string, public readonly validate: Validate<T>) {}
-  is(x: any): x is T {
+export class Type<A> {
+  readonly t: A
+  constructor(
+    public readonly name: string,
+    public readonly validate: Validate<A>
+  ) {}
+  is(x: any): x is A {
     return isRight(validate(x, this))
   }
-}
-
-function getTypeName(type: Any): string {
-  return type.name
 }
 
 export function getFunctionName(f: any): string {
@@ -59,6 +60,57 @@ function getDefaultContext<T>(type: Type<T>): Context {
 
 export function validate<T>(value: any, type: Type<T>): Validation<T> {
   return type.validate(value, getDefaultContext(type))
+}
+
+//
+// Functor
+//
+
+declare module 'fp-ts/lib/HKT' {
+  interface HKT<A> {
+    'io-ts/Type': Type<A>
+  }
+}
+
+export const URI = 'io-ts/Type'
+
+export type URI = typeof URI
+
+export class MapType<RT extends Any, B> extends Type<B> {
+  constructor(name: string, public readonly type: RT, public readonly f: (a: TypeOf<RT>) => B) {
+    super(name, (v, c) => type.validate(v, c).map(f))
+  }
+}
+
+export function map<RT extends Any, B>(f: (a: TypeOf<RT>) => B, type: RT): MapType<RT, B> {
+  return mapWithName(f, type, `(${type.name} => ?)`)
+}
+
+export function mapWithName<RT extends Any, B>(f: (a: TypeOf<RT>) => B, type: RT, name: string): MapType<RT, B> {
+  return new MapType(name, type, f)
+}
+
+//
+// prisms
+//
+
+export type GetOption<S, A> = (s: S) => Option<A>
+
+export class PrismType<RT extends Any, B> extends Type<B> {
+  constructor(name: string, public readonly type: RT, public readonly getOption: GetOption<TypeOf<RT>, B>) {
+    super(name, (v, c) => type.validate(v, c).chain(a => getOption(a).fold(
+      () => failure<B>(a, c),
+      b => success(b)
+    )))
+  }
+}
+
+export function prism<RT extends Any, B>(type: RT, getOption: GetOption<TypeOf<RT>, B>, name?: string): PrismType<RT, B> {
+  return new PrismType(
+    name || `Prism<${type.name}, ?>`,
+    type,
+    getOption
+  )
 }
 
 //
@@ -119,17 +171,15 @@ const functionType = new Type<Function>(
 // refinements
 //
 
-export type Predicate<T> = (value: T) => boolean;
-
 export class RefinementType<RT extends Any> extends Type<TypeOf<RT>> {
-  constructor(name: string, validate: Validate<TypeOf<RT>>, public readonly type: Type<any>, public readonly predicate: Predicate<TypeOf<RT>>) {
+  constructor(name: string, validate: Validate<TypeOf<RT>>, public readonly type: RT, public readonly predicate: Predicate<TypeOf<RT>>) {
     super(name, validate)
   }
 }
 
 export function refinement<RT extends Any>(type: RT, predicate: Predicate<TypeOf<RT>>, name?: string): RefinementType<RT> {
   return new RefinementType(
-    name || `(${getTypeName(type)} | ${getFunctionName(predicate)})`,
+    name || `(${type.name} | ${getFunctionName(predicate)})`,
     (v, c) => type.validate(v, c).chain(t => predicate(t) ? success(t) : failure(v, c)),
     type,
     predicate
@@ -161,7 +211,7 @@ export function literal<T extends string | number | boolean>(value: T): LiteralT
 //
 
 export class KeyofType<D extends { [key: string]: any }> extends Type<keyof D> {
-  constructor(name: string, validate: Validate<keyof D>, public readonly map: D) {
+  constructor(name: string, validate: Validate<keyof D>, public readonly keys: D) {
     super(name, validate)
   }
 }
@@ -200,7 +250,7 @@ export class ArrayType<RT extends Any> extends Type<Array<TypeOf<RT>>> {
 
 export function array<RT extends Any>(type: RT, name?: string): ArrayType<RT> {
   return new ArrayType(
-    name || `Array<${getTypeName(type)}>`,
+    name || `Array<${type.name}>`,
     (v, c) => arrayType.validate(v, c).chain(as => {
       const t: Array<TypeOf<RT>> = []
       const errors: Errors = []
@@ -302,7 +352,7 @@ export class DictionaryType<D extends Type<string>, C extends Any> extends Type<
 
 export function dictionary<D extends Type<string>, C extends Any>(domain: D, codomain: C, name?: string): DictionaryType<D, C> {
   return new DictionaryType(
-    name || `{ [key: ${getTypeName(domain)}]: ${getTypeName(codomain)} }`,
+    name || `{ [key: ${domain.name}]: ${codomain.name} }`,
     (v, c) => Dictionary.validate(v, c).chain(o => {
       const t: { [key: string]: any } = {}
       const errors: Errors = []
@@ -411,7 +461,7 @@ export function union<A extends Any, B extends Any>(types: [A, B], name?: string
 export function union<A extends Any>(types: [A], name?: string): UnionType<[A], TypeOf<A>>
 export function union<RTS extends Array<Any>>(types: RTS, name?: string): UnionType<RTS, any> {
   return new UnionType(
-    name || `(${types.map(getTypeName).join(' | ')})`,
+    name || `(${types.map(type => type.name).join(' | ')})`,
     (v, c) => {
       for (let i = 0, len = types.length; i < len; i++) {
         const validation = types[i].validate(v, c)
@@ -463,7 +513,7 @@ export function intersection<A extends Any, B extends Any>(types: [A, B], name?:
 export function intersection<A extends Any>(types: [A], name?: string): IntersectionType<[A], TypeOf<A>>
 export function intersection<RTS extends Array<Any>>(types: RTS, name?: string): IntersectionType<RTS, any> {
   return new IntersectionType(
-    name || `(${types.map(getTypeName).join(' & ')})`,
+    name || `(${types.map(type => type.name).join(' & ')})`,
     (v, c) => {
       let t = v
       let changed = false
@@ -523,7 +573,7 @@ export function tuple<A extends Any, B extends Any>(types: [A, B], name?: string
 export function tuple<A extends Any>(types: [A], name?: string): TupleType<[A], [TypeOf<A>]>
 export function tuple<RTS extends Array<Any>>(types: RTS, name?: string): TupleType<RTS, any> {
   return new TupleType(
-    name || `[${types.map(getTypeName).join(', ')}]`,
+    name || `[${types.map(type => type.name).join(', ')}]`,
     (v, c) => arrayType.validate(v, c).chain(as => {
       const t: Array<any> = []
       const errors: Errors = []
@@ -558,7 +608,7 @@ export class ReadonlyType<RT extends Any> extends Type<Readonly<TypeOf<RT>>> {
 
 export function readonly<RT extends Any>(type: RT, name?: string): ReadonlyType<RT> {
   return new ReadonlyType(
-    name || `Readonly<${getTypeName(type)}>`,
+    name || `Readonly<${type.name}>`,
     (v, c) => type.validate(v, c).map(x => {
       if (process.env.NODE_ENV !== 'production') {
         return Object.freeze(x)
@@ -582,7 +632,7 @@ export class ReadonlyArrayType<RT extends Any> extends Type<ReadonlyArray<TypeOf
 export function readonlyArray<RT extends Any>(type: RT, name?: string): ReadonlyArrayType<RT> {
   const arrayType = array(type)
   return new ReadonlyArrayType(
-    name || `ReadonlyArray<${getTypeName(type)}>`,
+    name || `ReadonlyArray<${type.name}>`,
     (v, c) => arrayType.validate(v, c).map(x => {
       if (process.env.NODE_ENV !== 'production') {
         return Object.freeze(x)

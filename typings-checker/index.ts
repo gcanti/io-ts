@@ -158,3 +158,26 @@ f1('a')
 f1(1)
 // $ExpectError Argument of type 'true' is not assignable to parameter of type 'string | number'
 f1(true)
+
+//
+// map
+//
+
+const M1 = t.map(s => s.length, t.string)
+// $ExpectError Type '"s"' is not assignable to type 'number'
+const x28: TypeOf<typeof M1> = 's'
+const x29: TypeOf<typeof M1> = 1
+
+//
+// getter
+//
+
+import { Option, none, some } from 'fp-ts/lib/Option'
+const parseNumber = (s: string): Option<number> => {
+  const n = parseFloat(s)
+  return isNaN(n) ? none : some(n)
+}
+const G1 = t.prism(t.string, parseNumber)
+// $ExpectError Type '"s"' is not assignable to type 'number'
+const x30: TypeOf<typeof M1> = 's'
+const x31: TypeOf<typeof M1> = 1
