@@ -12,6 +12,11 @@
 **Note**: Gaps between patch versions are faulty/broken releases.
 **Note**: A feature tagged as Experimental is in a high state of flux, you're at risk of it changing without notice.
 
+# 0.3.2
+
+- **Bug Fix**
+  - remove excess overloadings, fix #43 (@gcanti)
+
 # 0.3.1
 
 - **New Feature**
