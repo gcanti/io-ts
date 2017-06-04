@@ -1,11 +1,8 @@
 import * as assert from 'assert'
 import * as t from '../src/index'
-import {
-  assertStrictEqual
-} from './helpers'
+import { assertStrictEqual } from './helpers'
 
 describe('map', () => {
-
   it('should map with name', () => {
     const T = t.mapWithName(s => s.length, t.string, 'LengthFromString')
     assertStrictEqual(t.validate('ss', T), 2)
@@ -20,5 +17,4 @@ describe('map', () => {
     assertStrictEqual(t.validate('aa', TT), 4)
     assert.strictEqual(TT.name, '((string => ?) => ?)')
   })
-
 })

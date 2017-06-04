@@ -25,16 +25,16 @@ const x5: TypeOf<typeof K1> = 'b'
 //
 
 // $ExpectError Type 'undefined' cannot be converted to type 'null'
-;(undefined as TypeOf<typeof t.null>)
-;(null as TypeOf<typeof t.null>)
+undefined as TypeOf<typeof t.null>
+null as TypeOf<typeof t.null>
 
 // $ExpectError Type 'null' cannot be converted to type 'undefined'
-;(null as TypeOf<typeof t.undefined>)
-;(undefined as TypeOf<typeof t.undefined>)
+null as TypeOf<typeof t.undefined>
+undefined as TypeOf<typeof t.undefined>
 
 // $ExpectError Type 'number' cannot be converted to type 'string'
-;(1 as TypeOf<typeof t.string>)
-;('s' as TypeOf<typeof t.string>)
+1 as TypeOf<typeof t.string>
+'s' as TypeOf<typeof t.string>
 
 //
 // refinement
@@ -42,8 +42,8 @@ const x5: TypeOf<typeof K1> = 'b'
 
 const R1 = t.refinement(t.number, n => n % 2 === 0)
 // $ExpectError Type 'string' cannot be converted to type 'number'
-;('s' as TypeOf<typeof R1>)
-;(2 as TypeOf<typeof R1>)
+'s' as TypeOf<typeof R1>
+2 as TypeOf<typeof R1>
 
 //
 // array
@@ -51,10 +51,10 @@ const R1 = t.refinement(t.number, n => n % 2 === 0)
 
 const A1 = t.array(t.number)
 // $ExpectError Type 'string' cannot be converted to type 'number[]'
-;('s' as TypeOf<typeof A1>)
+'s' as TypeOf<typeof A1>
 // $ExpectError Type 'string' is not comparable to type 'number'
-;(['s'] as TypeOf<typeof A1>)
-;([1] as TypeOf<typeof A1>)
+['s'] as TypeOf<typeof A1>
+[1] as TypeOf<typeof A1>
 
 //
 // interface
@@ -149,11 +149,7 @@ x27.push(2)
 // fold on unions
 //
 
-const f1 = t.union([t.string, t.number])
-  .fold(
-    s => s.length,
-    n => n
-  )
+const f1 = t.union([t.string, t.number]).fold(s => s.length, n => n)
 f1('a')
 f1(1)
 // $ExpectError Argument of type 'true' is not assignable to parameter of type 'string | number'

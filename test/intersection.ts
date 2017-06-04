@@ -1,16 +1,9 @@
 import { isRight } from 'fp-ts/lib/Either'
 import * as assert from 'assert'
 import * as t from '../src/index'
-import {
-  assertSuccess,
-  assertFailure,
-  assertStrictEqual,
-  assertDeepEqual,
-  number2
-} from './helpers'
+import { assertSuccess, assertFailure, assertStrictEqual, assertDeepEqual, number2 } from './helpers'
 
 describe('intersection', () => {
-
   it('should succeed validating a valid value', () => {
     const T = t.intersection([t.interface({ a: t.number }), t.interface({ b: t.number })])
     assertSuccess(t.validate({ a: 1, b: 2 }, T))
@@ -44,5 +37,4 @@ describe('intersection', () => {
       'Invalid value undefined supplied to : ({ a: number } & { b: number })/b: number'
     ])
   })
-
 })

@@ -25,7 +25,4 @@ export function assertDeepEqual<T>(validation: Validation<T>, value: any): void 
   assert.deepEqual(validation.fold<any>(identity, identity), value)
 }
 
-export const number2 = new Type<number>(
-  'number2',
-  (v, c) => t.number.validate(v, c).map(n => n * 2)
-)
+export const number2 = new Type<number>('number2', (v, c) => t.number.validate(v, c).map(n => n * 2))

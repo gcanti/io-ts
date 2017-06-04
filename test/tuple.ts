@@ -1,14 +1,7 @@
 import * as t from '../src/index'
-import {
-  assertSuccess,
-  assertFailure,
-  assertStrictEqual,
-  assertDeepEqual,
-  number2
-} from './helpers'
+import { assertSuccess, assertFailure, assertStrictEqual, assertDeepEqual, number2 } from './helpers'
 
 describe('tuple', () => {
-
   it('should succeed validating a valid value', () => {
     const T = t.tuple([t.number, t.string])
     assertSuccess(t.validate([1, 'a'], T))
@@ -33,12 +26,7 @@ describe('tuple', () => {
       'Invalid value undefined supplied to : [number, string]/0: number',
       'Invalid value undefined supplied to : [number, string]/1: string'
     ])
-    assertFailure(t.validate([1], T), [
-      'Invalid value undefined supplied to : [number, string]/1: string'
-    ])
-    assertFailure(t.validate([1, 1], T), [
-      'Invalid value 1 supplied to : [number, string]/1: string'
-    ])
+    assertFailure(t.validate([1], T), ['Invalid value undefined supplied to : [number, string]/1: string'])
+    assertFailure(t.validate([1, 1], T), ['Invalid value 1 supplied to : [number, string]/1: string'])
   })
-
 })

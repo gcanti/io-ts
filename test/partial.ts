@@ -1,14 +1,8 @@
 import * as assert from 'assert'
 import * as t from '../src/index'
-import {
-  assertSuccess,
-  assertFailure,
-  assertStrictEqual,
-  identity
-} from './helpers'
+import { assertSuccess, assertFailure, assertStrictEqual, identity } from './helpers'
 
 describe('partial', () => {
-
   it('should succeed validating a valid value', () => {
     const T = t.partial({ a: t.number })
     assertSuccess(t.validate({}, T))
@@ -30,8 +24,7 @@ describe('partial', () => {
   it('should fail validating an invalid value', () => {
     const T = t.partial({ a: t.number })
     assertFailure(t.validate({ a: 's' }, T), [
-      'Invalid value \"s\" supplied to : { a: (number | undefined) }/a: (number | undefined)'
+      'Invalid value "s" supplied to : { a: (number | undefined) }/a: (number | undefined)'
     ])
   })
-
 })
