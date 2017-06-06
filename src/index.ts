@@ -234,7 +234,7 @@ export function array<RT extends Any>(type: RT, name?: string): ArrayType<RT> {
         const t: Array<TypeOf<RT>> = []
         const errors: Errors = []
         let changed = false
-        for (let i = 0, len = as.length; i < len; i++) {
+        for (let i = 0; i < as.length; i++) {
           const a = as[i]
           const validation = type.validate(a, c.concat(getContextEntry(String(i), type)))
           validation.fold(
@@ -398,7 +398,7 @@ export class UnionType<RTS extends Array<Any>, U> extends Type<U> {
   fold<R>(a: Match<RTS[0], R>): (value: U) => R
   fold<R>(...matches: Array<Function>): (value: U) => R {
     return value => {
-      for (let i = 0, len = matches.length; i < len; i++) {
+      for (let i = 0; i < matches.length; i++) {
         const type = this.types[i]
         const match = matches[i]
         if (type.is(value)) {
@@ -431,7 +431,7 @@ export function union<RTS extends Array<Any>>(types: RTS, name?: string): UnionT
   return new UnionType(
     name || `(${types.map(type => type.name).join(' | ')})`,
     (v, c) => {
-      for (let i = 0, len = types.length; i < len; i++) {
+      for (let i = 0; i < types.length; i++) {
         const validation = types[i].validate(v, c)
         if (isRight(validation)) {
           return validation
@@ -477,7 +477,7 @@ export function intersection<RTS extends Array<Any>>(types: RTS, name?: string):
       let t = v
       let changed = false
       const errors: Errors = []
-      for (let i = 0, len = types.length; i < len; i++) {
+      for (let i = 0; i < types.length; i++) {
         const type = types[i]
         const validation = type.validate(t, c)
         validation.fold(
@@ -529,7 +529,7 @@ export function tuple<RTS extends Array<Any>>(types: RTS, name?: string): TupleT
         const t: Array<any> = []
         const errors: Errors = []
         let changed = false
-        for (let i = 0, len = types.length; i < len; i++) {
+        for (let i = 0; i < types.length; i++) {
           const a = as[i]
           const type = types[i]
           const validation = type.validate(a, c.concat(getContextEntry(String(i), type)))
