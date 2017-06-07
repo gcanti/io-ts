@@ -12,6 +12,14 @@
 **Note**: Gaps between patch versions are faulty/broken releases.
 **Note**: A feature tagged as Experimental is in a high state of flux, you're at risk of it changing without notice.
 
+# 0.5.0
+
+- **Breaking Change**
+  - `Type` is now an interface
+  - types no more own a `is` method, use `t.is` instead
+  - unions no more own a `fold` method
+  - `Reporter`, `PathReporter`, `ThrowReporter` are now top level modules
+
 # 0.4.0
 
 - **Breaking Change**
