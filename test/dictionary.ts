@@ -1,14 +1,7 @@
 import * as t from '../src/index'
-import {
-  assertSuccess,
-  assertFailure,
-  assertStrictEqual,
-  assertDeepEqual,
-  number2
-} from './helpers'
+import { assertSuccess, assertFailure, assertStrictEqual, assertDeepEqual, number2 } from './helpers'
 
 describe('dictionary', () => {
-
   it('should succeed validating a valid value', () => {
     const T = t.dictionary(t.refinement(t.string, s => s.length >= 2), t.number)
     assertSuccess(t.validate({}, T))
@@ -36,5 +29,4 @@ describe('dictionary', () => {
       'Invalid value "s" supplied to : { [key: (string | <function1>)]: number }/aa: number'
     ])
   })
-
 })

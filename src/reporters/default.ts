@@ -19,10 +19,7 @@ export function pathReporterFailure(es: Array<ValidationError>): Array<string> {
 }
 
 export const PathReporter: Reporter<Array<string>> = {
-  report: validation => validation.fold(
-    pathReporterFailure,
-    () => ['No errors!'],
-  )
+  report: validation => validation.fold(pathReporterFailure, () => ['No errors!'])
 }
 
 export const ThrowReporter: Reporter<void> = {

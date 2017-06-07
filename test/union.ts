@@ -1,13 +1,8 @@
 import * as assert from 'assert'
 import * as t from '../src/index'
-import {
-  assertSuccess,
-  assertFailure,
-  assertStrictEqual
-} from './helpers'
+import { assertSuccess, assertFailure, assertStrictEqual } from './helpers'
 
 describe('union', () => {
-
   it('should succeed validating a valid value', () => {
     const T = t.union([t.string, t.number])
     assertSuccess(t.validate('s', T))
@@ -22,18 +17,12 @@ describe('union', () => {
 
   it('should fail validating an invalid value', () => {
     const T = t.union([t.string, t.number])
-    assertFailure(t.validate(true, T), [
-      'Invalid value true supplied to : (string | number)'
-    ])
+    assertFailure(t.validate(true, T), ['Invalid value true supplied to : (string | number)'])
   })
 
   it('should have a fold method', () => {
     const T = t.union([t.string, t.number])
-    const f = T.fold(
-      s => s.length,
-      n => n
-    )
+    const f = T.fold(s => s.length, n => n)
     assert.strictEqual(f('hello'), 5)
   })
-
 })
