@@ -4,7 +4,7 @@ import * as t from '../src/index'
 describe('Type', () => {
   it('is', () => {
     const T = t.string
-    assert.strictEqual(T.is('s'), true)
-    assert.strictEqual(T.is(1), false)
+    assert.strictEqual(t.is('s', T), true)
+    assert.strictEqual(t.is(1, T), false)
   })
 })

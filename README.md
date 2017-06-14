@@ -3,9 +3,10 @@
 A value of type `Type<T>` (called "runtime type") is the runtime representation of the static type `T`:
 
 ```js
-class Type<T> {
-  constructor(public readonly name: string, public readonly validate: Validate<T>) {}
-  is(x: any): x is T
+export interface Type<A> {
+  readonly _A: A
+  readonly name: string
+  readonly validate: Validate<A>
 }
 ```
 
@@ -24,11 +25,14 @@ A runtime type representing `string` can be defined as
 ```js
 import * as t from 'io-ts'
 
-const string = new t.Type<string>(
-  'string',
-  (value, context) => typeof value === 'string' ? t.success(v) : t.failure<string>(v, c)
-)
+export const string: t.Type<string> = {
+  _A: t._A,
+  name: 'string',
+  validate: (value, context) => (typeof value === 'string' ? t.success(value) : t.failure<string>(value, context))
+}
 ```
+
+Note: The `_A` field contains a dummy value and is useful to extract a static type from the runtime type (see the section "TypeScript integration" below)
 
 A runtime type can be used to validate an object in memory (for example an API payload)
 
@@ -63,7 +67,8 @@ This package exports two default reporters
 Example
 
 ```js
-import { PathReporter, ThrowReporter } from 'io-ts/lib/reporters/default'
+import { PathReporter } from 'io-ts/lib/PathReporter'
+import { ThrowReporter } from 'io-ts/lib/ThrowReporter'
 
 const validation = t.validate({"name":"Giulio"}, Person)
 
@@ -111,10 +116,12 @@ type ICategory = {
   categories: Array<ICategory>
 }
 
-const Category = t.recursion<ICategory>('Category', self => t.object({
-  name: t.string,
-  categories: t.array(self)
-}))
+const Category = t.recursion<ICategory>('Category', self =>
+  t.interface({
+    name: t.string,
+    categories: t.array(self)
+  })
+)
 ```
 
 # Implemented types / combinators
@@ -185,13 +192,15 @@ You can define your own types. Let's see an example
 import * as t from 'io-ts'
 
 // returns a Date from an ISO string
-const DateFromString = new t.Type<Date>(
-  'DateFromString',
-  (v, c) => t.string.validate(v, c).chain(s => {
-    const d = new Date(s)
-    return isNaN(d.getTime()) ? t.failure<Date>(s, c) : t.success(d)
-  })
-)
+const DateFromString: t.Type<Date> = {
+  _A: t._A,
+  name: 'DateFromString',
+  validate: (v, c) =>
+    t.string.validate(v, c).chain(s => {
+      const d = new Date(s)
+      return isNaN(d.getTime()) ? t.failure<Date>(s, c) : t.success(d)
+    })
+}
 
 const s = new Date(1973, 10, 30).toISOString()
 
@@ -202,7 +211,7 @@ t.validate('foo', DateFromString)
 // => Left( 'Invalid value "foo" supplied to : DateFromString' )
 ```
 
-Note that you can **deserializing** while validating.
+Note that you can **deserialize** while validating.
 
 # Custom combinators
 
@@ -211,7 +220,10 @@ You can define your own combinators. Let's see some examples
 ## The `maybe` combinator
 
 ```ts
-export function maybe<RT extends t.Any>(type: RT, name?: string): t.UnionType<[RT, typeof t.null], t.TypeOf<RT> | null> {
+export function maybe<RT extends t.Any>(
+  type: RT,
+  name?: string
+): t.UnionType<[RT, typeof t.null], t.TypeOf<RT> | null> {
   return t.union([type, t.null], name)
 }
 ```
@@ -260,7 +272,7 @@ const Payload2 = t.interface({
 
 // narrowed types
 function convertFtoC(fahrenheit: FahrenheitT): CelsiusT {
-  return (fahrenheit - 32) / 1.8 as CelsiusT;
+  return ((fahrenheit - 32) / 1.8) as CelsiusT
 }
 
 console.log(t.validate(payload, Payload2).map(x => convertFtoC(x.celsius))) // error: Type '"Celsius"' is not assignable to type '"Fahrenheit"'
@@ -275,15 +287,13 @@ No, however you can define your own logic for that (if you *really* trust the in
 
 ```ts
 import * as t from 'io-ts'
-import { pathReporterFailure } from 'io-ts/lib/reporters/default'
+import { failure } from 'io-ts/lib/PathReporter'
 
 function unsafeValidate<T>(value: any, type: t.Type<T>): T {
   if (process.env.NODE_ENV !== 'production') {
-    return t.validate(value, type)
-      .fold(
-        errors => { throw new Error(pathReporterFailure(errors).join('\n')) },
-        x => x
-      )
+    return t.validate(value, type).fold(errors => {
+      throw new Error(failure(errors).join('\n'))
+    }, x => x)
   }
   return value as T
 }
@@ -306,7 +316,7 @@ Hover on NestedInterfaceType will display
 
 type NestedInterfaceType = {
   foo: t.InterfaceOf<{
-    bar: t.Type<string>;
+    bar: t.StringType;
   }>;
 }
 
