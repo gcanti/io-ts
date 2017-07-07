@@ -25,17 +25,17 @@
   },
   "homepage": "https://github.com/gcanti/io-ts",
   "dependencies": {
-    "fp-ts": "^0.3.0"
+    "fp-ts": "^0.4.0"
   },
   "devDependencies": {
     "@types/mocha": "2.2.38",
     "@types/node": "7.0.4",
     "mocha": "3.2.0",
     "prettier": "1.5.2",
-    "ts-node": "2.0.0",
+    "ts-node": "3.2.0",
     "tslint": "4.4.2",
     "tslint-config-standard": "4.0.0",
-    "typescript": "2.4.0",
+    "typescript": "2.4.1",
     "typings-checker": "1.1.2"
   },
   "tags": ["typescript", "validation", "inference", "types", "runtime"],

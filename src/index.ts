@@ -63,24 +63,11 @@ export function is<T>(value: any, type: Type<T>): value is T {
   return isRight(validate(value, type))
 }
 
-//
-// Functor
-//
-
-declare module 'fp-ts/lib/HKT' {
-  interface HKT<A> {
-    'io-ts/Type': Type<A>
-  }
-}
-
-export const URI = 'io-ts/Type'
-
-export type URI = typeof URI
-
-export interface MapType<RT extends Any, B> extends Type<B> {
+export interface MapType<RT extends Any, A> extends Type<A> {
   readonly _tag: 'MapType'
+  readonly _A: A
   readonly type: RT
-  readonly f: (a: TypeOf<RT>) => B
+  readonly f: (a: TypeOf<RT>) => A
 }
 
 export function map<RT extends Any, B>(f: (a: TypeOf<RT>) => B, type: RT): MapType<RT, B> {
