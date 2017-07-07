@@ -137,7 +137,7 @@ const x25: TypeOf<typeof RO1> = { name: 1 }
 //
 
 const ROA1 = t.readonlyArray(t.number)
-// $ExpectError Type 'string' is not assignable to type 'number'
+// $ExpectError Type 'number' is not assignable to type 'string'
 const x26: TypeOf<typeof ROA1> = ['s']
 const x27: TypeOf<typeof ROA1> = [1]
 // $ExpectError Index signature in type 'ReadonlyArray<number>' only permits reading
