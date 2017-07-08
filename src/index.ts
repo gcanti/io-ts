@@ -365,7 +365,7 @@ export interface InterfaceType<P extends Props> extends Type<InterfaceOf<P>> {
   readonly props: P
 }
 
-function interfaceType<P extends Props>(props: P, name?: string): InterfaceType<P> {
+export function _interface<P extends Props>(props: P, name?: string): InterfaceType<P> {
   return {
     _A,
     _tag: 'InterfaceType',
@@ -414,7 +414,7 @@ export function partial<P extends Props>(props: P, name?: string): PartialType<P
   for (let k in props) {
     partials[k] = union([props[k], undefinedType])
   }
-  const type = interfaceType(partials)
+  const type = _interface(partials)
   return {
     _A,
     _tag: 'PartialType',
@@ -680,5 +680,5 @@ export {
   undefinedType as undefined,
   arrayType as Array,
   functionType as Function,
-  interfaceType as interface
+  _interface as interface
 }
