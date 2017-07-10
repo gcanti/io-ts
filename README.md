@@ -107,6 +107,8 @@ type IPerson = {
 }
 ```
 
+## Recursive types
+
 Note that recursive types can't be inferred
 
 ```js
@@ -155,7 +157,7 @@ import * as t from 'io-ts'
 | union | `A \| B` | `t.union([ A, B ])` |
 | intersection | `A & B` | `t.intersection([ A, B ])` |
 | keyof | `keyof M` | `t.keyof(M)` |
-| recursive types | see [TypeScript integration](#typescript-integration) | `t.recursion(name, definition)` |
+| recursive types | see [Recursive types](#recursive-types) | `t.recursion(name, definition)` |
 | refinement | ✘ | `t.refinement(A, predicate)` |
 | map | ✘ | `t.map(f, type)` |
 | prism | ✘ | `t.prism(type, getOption)` |
