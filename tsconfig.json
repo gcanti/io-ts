@@ -17,7 +17,5 @@
     "moduleResolution": "node",
     "forceConsistentCasingInFileNames": true
   },
-  "include": [
-    "./src/**/*"
-  ]
+  "include": ["./src/**/*"]
 }
