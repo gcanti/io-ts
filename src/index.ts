@@ -465,29 +465,12 @@ export function dictionary<D extends Type<string>, C extends Any>(
 // unions
 //
 
-export interface UnionType<RTS extends Array<Any>, U> extends Type<U> {
+export interface UnionType<RTS extends [Any], U = TypeOf<RTS['_A']>> extends Type<U> {
   readonly _tag: 'UnionType'
   readonly types: RTS
 }
 
-export function union<A extends Any, B extends Any, C extends Any, D extends Any, E extends Any>(
-  types: [A, B, C, D, E],
-  name?: string
-): UnionType<[A, B, C, D, E], TypeOf<A> | TypeOf<B> | TypeOf<C> | TypeOf<D> | TypeOf<E>>
-export function union<A extends Any, B extends Any, C extends Any, D extends Any>(
-  types: [A, B, C, D],
-  name?: string
-): UnionType<[A, B, C, D], TypeOf<A> | TypeOf<B> | TypeOf<C> | TypeOf<D>>
-export function union<A extends Any, B extends Any, C extends Any>(
-  types: [A, B, C],
-  name?: string
-): UnionType<[A, B, C], TypeOf<A> | TypeOf<B> | TypeOf<C>>
-export function union<A extends Any, B extends Any>(
-  types: [A, B],
-  name?: string
-): UnionType<[A, B], TypeOf<A> | TypeOf<B>>
-export function union<A extends Any>(types: [A], name?: string): UnionType<[A], TypeOf<A>>
-export function union<RTS extends Array<Any>>(types: RTS, name?: string): UnionType<RTS, any> {
+export function union<RTS extends [Any]>(types: RTS, name?: string): UnionType<RTS> {
   return {
     _A,
     _tag: 'UnionType',
