@@ -32,7 +32,7 @@ export const string: t.Type<string> = {
 }
 ```
 
-Note: The `_A` field contains a dummy value and is useful to extract a static type from the runtime type (see the section "TypeScript integration" below)
+Note: The `_A` field contains a dummy value and is useful to extract a static type from the runtime type (see the ["TypeScript integration"](#typescript-integration) section below)
 
 A runtime type can be used to validate an object in memory (for example an API payload)
 
@@ -140,23 +140,23 @@ import * as t from 'io-ts'
 | any | `any` | `t.any` |
 | never | `never` | `t.never` |
 | integer | ✘ | `t.Integer` |
-| generic array | `Array<any>` | `t.Array` |
-| generic dictionary | `{ [key: string]: any }` | `t.Dictionary` |
+| array of any | `Array<any>` | `t.Array` |
+| array of type | `Array<A>` | `t.array(A)` |
+| dictionary of any | `{ [key: string]: any }` | `t.Dictionary` |
+| dictionary of type | `{ [key: A]: B }` | `t.dictionary(A, B)` |
 | function | `Function` | `t.Function` |
-| arrays | `Array<A>` | `t.array(A)` |
 | literal | `'s'` | `t.literal('s')` |
-| maybe | `A | null` | `t.maybe(A)` |
 | partial | `Partial<{ name: string }>` | `t.partial({ name: t.string })` |
 | readonly | `Readonly<{ name: string }>` | `t.readonly({ name: t.string })` |
 | readonly array | `ReadonlyArray<number>` | `t.readonlyArray(t.number)` |
-| dictionaries | `{ [key: A]: B }` | `t.dictionary(A, B)` |
-| refinement | ✘ | `t.refinement(A, predicate)` |
-| interface | `{ name: string }` | `t.interface({ name: t.string })` |
-| tuple | `[A, B]` | `t.tuple([A, B])` |
-| union | `A \| B` | `t.union([A, B])` |
-| intersection | `A & B` | `t.intersection([A, B])` |
+| interface | `interface A { name: string }` | `t.interface({ name: t.string })` |
+| interface inheritance | `interface B extends A {}` | `t.intersection([ A, t.interface({}) ])` |
+| tuple | `[ A, B ]` | `t.tuple([ A, B ])` |
+| union | `A \| B` | `t.union([ A, B ])` |
+| intersection | `A & B` | `t.intersection([ A, B ])` |
 | keyof | `keyof M` | `t.keyof(M)` |
-| recursive types |  | `t.recursion(name, definition)` |
+| recursive types | see [TypeScript integration](#typescript-integration) | `t.recursion(name, definition)` |
+| refinement | ✘ | `t.refinement(A, predicate)` |
 | map | ✘ | `t.map(f, type)` |
 | prism | ✘ | `t.prism(type, getOption)` |
 
@@ -218,6 +218,8 @@ Note that you can **deserialize** while validating.
 You can define your own combinators. Let's see some examples
 
 ## The `maybe` combinator
+
+An equivalent to `T | null`
 
 ```ts
 export function maybe<RT extends t.Any>(
