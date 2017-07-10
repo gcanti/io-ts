@@ -1,6 +1,6 @@
 {
   "name": "io-ts",
-  "version": "0.5.1",
+  "version": "0.6.0",
   "description": "TypeScript compatible runtime type system for IO validation",
   "files": ["lib"],
   "main": "lib/index.js",
