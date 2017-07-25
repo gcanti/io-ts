@@ -12,10 +12,15 @@
 **Note**: Gaps between patch versions are faulty/broken releases.
 **Note**: A feature tagged as Experimental is in a high state of flux, you're at risk of it changing without notice.
 
+# 0.6.1
+
+- **Internal**
+  - handle latest fp-ts (0.4.3) (@gcanti)
+
 # 0.6.0
 
 - **Breaking Change**
-  - upgrade to latest fp-ts (@gcanti)
+  - upgrade to latest fp-ts (0.4.0) (@gcanti)
 - **Internal**
   - allow for infinite unions (@gcanti)
 

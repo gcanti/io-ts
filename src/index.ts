@@ -2,6 +2,12 @@ import { Either, Left, Right, isRight } from 'fp-ts/lib/Either'
 import { Option } from 'fp-ts/lib/Option'
 import { Predicate } from 'fp-ts/lib/function'
 
+declare global {
+  interface Array<T> {
+    _A: T
+  }
+}
+
 export interface ContextEntry {
   readonly key: string
   readonly type: Any
