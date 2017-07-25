@@ -37,4 +37,9 @@ describe('interface', () => {
     assertFailure(t.validate({}, T), ['Invalid value undefined supplied to : { a: string }/a: string'])
     assertFailure(t.validate({ a: 1 }, T), ['Invalid value 1 supplied to : { a: string }/a: string'])
   })
+
+  it('should support the alias `type`', () => {
+    const T = t.type({ a: t.string })
+    assertSuccess(t.validate({ a: 's' }, T))
+  })
 })

@@ -99,7 +99,8 @@ export interface NullType extends Type<null> {
   readonly _tag: 'NullType'
 }
 
-const nullType: NullType = {
+/** An alias of `null` */
+export const nullType: NullType = {
   _A,
   _tag: 'NullType',
   name: 'null',
@@ -358,7 +359,8 @@ export interface InterfaceType<P extends Props> extends Type<InterfaceOf<P>> {
   readonly props: P
 }
 
-export function _interface<P extends Props>(props: P, name?: string): InterfaceType<P> {
+/** An alias of `interface` */
+export function type<P extends Props>(props: P, name?: string): InterfaceType<P> {
   return {
     _A,
     _tag: 'InterfaceType',
@@ -407,12 +409,12 @@ export function partial<P extends Props>(props: P, name?: string): PartialType<P
   for (let k in props) {
     partials[k] = union([props[k], undefinedType])
   }
-  const type = _interface(partials)
+  const partial = type(partials)
   return {
     _A,
     _tag: 'PartialType',
-    name: name || type.name,
-    validate: (v, c) => type.validate(v, c) as any,
+    name: name || partial.name,
+    validate: (v, c) => partial.validate(v, c) as any,
     props: (partials as any) as PartialPropsOf<P>
   }
 }
@@ -651,10 +653,4 @@ export function readonlyArray<RT extends Any>(type: RT, name?: string): Readonly
   }
 }
 
-export {
-  nullType as null,
-  undefinedType as undefined,
-  arrayType as Array,
-  functionType as Function,
-  _interface as interface
-}
+export { nullType as null, undefinedType as undefined, arrayType as Array, functionType as Function, type as interface }

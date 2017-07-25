@@ -134,7 +134,7 @@ import * as t from 'io-ts'
 
 | Type | TypeScript annotation syntax | Runtime type / combinator |
 |------|-------|-------------|
-| null | `null` | `t.null` |
+| null | `null` | `t.null` or `t.nullType` |
 | undefined | `undefined` | `t.undefined` |
 | string | `string` | `t.string` |
 | number | `number` | `t.number` |
@@ -151,7 +151,7 @@ import * as t from 'io-ts'
 | partial | `Partial<{ name: string }>` | `t.partial({ name: t.string })` |
 | readonly | `Readonly<{ name: string }>` | `t.readonly({ name: t.string })` |
 | readonly array | `ReadonlyArray<number>` | `t.readonlyArray(t.number)` |
-| interface | `interface A { name: string }` | `t.interface({ name: t.string })` |
+| interface | `interface A { name: string }` | `t.interface({ name: t.string })` or `t.type({ name: t.string })` |
 | interface inheritance | `interface B extends A {}` | `t.intersection([ A, t.interface({}) ])` |
 | tuple | `[ A, B ]` | `t.tuple([ A, B ])` |
 | union | `A \| B` | `t.union([ A, B ])` |
