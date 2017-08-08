@@ -348,17 +348,17 @@ export function array<RT extends Any>(type: RT, name?: string): ArrayType<RT> {
 // interfaces
 //
 
-export type Props = { [key: string]: Any }
+export type Props<K extends string> = { [P in K]: Any }
 
 // TODO remove this once https://github.com/Microsoft/TypeScript/issues/14041 is fixed
-export type InterfaceOf<P extends Props> = { [K in keyof P]: TypeOf<P[K]> }
+export type InterfaceOf<P extends Props<any>> = { [K in keyof P]: TypeOf<P[K]> }
 
-export interface InterfaceType<P extends Props> extends Type<InterfaceOf<P>> {
+export interface InterfaceType<P extends Props<any>> extends Type<InterfaceOf<P>> {
   readonly _tag: 'InterfaceType'
   readonly props: P
 }
 
-export function _interface<P extends Props>(props: P, name?: string): InterfaceType<P> {
+export function _interface<P extends Props<string>>(props: P, name?: string): InterfaceType<P> {
   return {
     _A,
     _tag: 'InterfaceType',
@@ -391,19 +391,19 @@ export function _interface<P extends Props>(props: P, name?: string): InterfaceT
 //
 
 // TODO remove this once https://github.com/Microsoft/TypeScript/issues/14041 is fixed
-export type PartialOf<P extends Props> = { [K in keyof P]?: TypeOf<P[K]> }
+export type PartialOf<P extends Props<any>> = { [K in keyof P]?: TypeOf<P[K]> }
 // TODO remove this once https://github.com/Microsoft/TypeScript/issues/14041 is fixed
-export type PartialPropsOf<P extends Props> = {
+export type PartialPropsOf<P extends Props<any>> = {
   [K in keyof P]: UnionType<[P[K], Type<undefined>], [TypeOf<P[K]>, undefined]>
 }
 
-export interface PartialType<P extends Props> extends Type<PartialOf<P>> {
+export interface PartialType<P extends Props<any>> extends Type<PartialOf<P>> {
   readonly _tag: 'PartialType'
   readonly props: PartialPropsOf<P>
 }
 
-export function partial<P extends Props>(props: P, name?: string): PartialType<P> {
-  const partials: Props = {}
+export function partial<P extends Props<string>>(props: P, name?: string): PartialType<P> {
+  const partials: Props<string> = {}
   for (let k in props) {
     partials[k] = union([props[k], undefinedType])
   }
