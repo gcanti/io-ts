@@ -31,3 +31,10 @@ describe('Integer', () => {
     assertFailure(t.validate('foo', t.Integer), ['Invalid value "foo" supplied to : Integer'])
   })
 })
+
+describe('null', () => {
+  it('should support the alias `nullType`', () => {
+    assertSuccess(t.validate(null, t.null))
+    assertFailure(t.validate(1, t.null), ['Invalid value 1 supplied to : null'])
+  })
+})
