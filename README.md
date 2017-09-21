@@ -79,9 +79,10 @@ ThrowReporter.report(validation)
 // => throws 'Invalid value undefined supplied to : { name: string, age: number }/age: number'
 ```
 
-## Community error reporters
+# Community
 
-- [io-ts-reporters](https://github.com/OliverJAsh/io-ts-reporters)
+- [io-ts-reporters](https://github.com/OliverJAsh/io-ts-reporters) - Error reporters for io-ts
+- [geojson-iots](https://github.com/pierremarc/geojson-iots) - Runtime types for GeoJSON as defined in rfc7946 made with io-ts
 
 # TypeScript integration
 
