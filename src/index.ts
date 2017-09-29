@@ -363,10 +363,10 @@ export const partial = <P extends Props>(props: P, name?: string): PartialType<P
 // dictionaries
 //
 
-export class DictionaryType<D extends Type<string>, C extends Any> implements Type<{ [key: string]: TypeOf<C> }> {
+export class DictionaryType<D extends Type<string>, C extends Any> implements Type<{ [K in TypeOf<D>]: TypeOf<C> }> {
   readonly _tag: 'DictionaryType' = 'DictionaryType'
-  readonly _A: { [key: string]: TypeOf<C> }
-  readonly validate: Validate<{ [key: string]: TypeOf<C> }>
+  readonly _A: { [K in TypeOf<D>]: TypeOf<C> }
+  readonly validate: Validate<{ [K in TypeOf<D>]: TypeOf<C> }>
   constructor(
     readonly domain: D,
     readonly codomain: C,

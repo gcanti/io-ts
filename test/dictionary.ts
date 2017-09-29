@@ -29,4 +29,12 @@ describe('dictionary', () => {
       'Invalid value "s" supplied to : { [key: (string | <function1>)]: number }/aa: number'
     ])
   })
+
+  it('should support literals as domain type', () => {
+    const D = t.dictionary(t.literal('foo'), t.string)
+    assertSuccess(t.validate({ foo: 'bar' }, D))
+    assertFailure(t.validate({ foo: 'bar', baz: 'bob' }, D), [
+      'Invalid value "baz" supplied to : { [key: "foo"]: string }/baz: "foo"'
+    ])
+  })
 })
