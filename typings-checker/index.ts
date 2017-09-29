@@ -83,6 +83,25 @@ const D1 = t.dictionary(t.string, t.number)
 const x12: TypeOf<typeof D1> = { a: 's' }
 const x13: TypeOf<typeof D1> = { a: 1 }
 
+const D2 = t.dictionary(t.literal('foo'), t.string)
+const d1: t.TypeOf<typeof D2> = {
+  foo: 'bar'
+}
+const d2: t.TypeOf<typeof D2> = {
+  foo: 'bar',
+  // $ExpectError Object literal may only specify known properties, and 'baz' does not exist in type '{ foo: string; }'
+  baz: 'bob'
+}
+const D3 = t.dictionary(t.union([t.literal('foo'), t.literal('baz')]), t.string)
+// $ExpectError Property 'baz' is missing in type '{ foo: string; }'
+const d3: t.TypeOf<typeof D3> = {
+  foo: 'bar'
+}
+const d4: t.TypeOf<typeof D3> = {
+  foo: 'bar',
+  baz: 'bob'
+}
+
 //
 // union
 //
