@@ -163,6 +163,16 @@ import * as t from 'io-ts'
 | map | ✘ | `t.map(f, type)` |
 | prism | ✘ | `t.prism(type, getOption)` |
 
+# Refinements
+
+You can refine a type (_any_ type) using the `refinement` combinator
+
+```ts
+const Positive = t.refinement(t.number, n => n >= 0, 'Positive')
+
+const Adult = t.refinement(Person, person => person.age >= 18, 'Adult')
+```
+
 # Mixing required and optional props
 
 Note. You can mix required and optional props using an intersection
