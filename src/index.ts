@@ -249,11 +249,18 @@ export const keyof = <D extends { [key: string]: any }>(keys: D, name?: string):
 // recursive types
 //
 
-export const recursion = <T>(name: string, definition: (self: Any) => Any): Type<T> => {
-  const Self = { name, validate: (v, c) => Result.validate(v, c) } as Type<any>
-  const Result: any = definition(Self)
-  Result.name = name
-  return Result
+export class RecursiveType<T> implements Type<T> {
+  readonly _tag: 'RecursiveType' = 'RecursiveType'
+  readonly _A: T
+  readonly type: Any
+  constructor(readonly name: string, readonly validate: Validate<T>) {}
+}
+
+export const recursion = <T>(name: string, definition: (self: Any) => Any): RecursiveType<T> => {
+  const Self = new RecursiveType<T>(name, (v, c) => type.validate(v, c))
+  const type = definition(Self)
+  ;(Self as any).type = type
+  return Self
 }
 
 //
