@@ -35,14 +35,16 @@ export const _A = (undefined as any) as never
 
 export const getFunctionName = (f: any): string => f.displayName || f.name || `<function${f.length}>`
 
-const getContextEntry = (key: string, type: Any): ContextEntry => ({ key, type })
+export const getContextEntry = (key: string, type: Any): ContextEntry => ({ key, type })
 
-const getValidationError = (value: any, context: Context): ValidationError => ({ value, context })
+export const getValidationError = (value: any, context: Context): ValidationError => ({ value, context })
 
 const pushAll = <A>(xs: Array<A>, ys: Array<A>): void => Array.prototype.push.apply(xs, ys)
 
+export const failures = <T>(errors: Errors): Validation<T> => new Left(errors)
+
 export const failure = <T>(value: any, context: Context): Validation<T> =>
-  new Left<Errors, T>([getValidationError(value, context)])
+  failures([getValidationError(value, context)])
 
 export const success = <T>(value: T): Validation<T> => new Right<Errors, T>(value)
 
@@ -103,7 +105,7 @@ export class NeverType implements Type<never> {
   readonly _tag: 'NeverType' = 'NeverType'
   readonly _A: never
   readonly name: 'never' = 'never'
-  readonly validate: Validate<never> = (v, c) => failure<never>(v, c)
+  readonly validate: Validate<never> = (v, c) => failure(v, c)
 }
 
 export const never: NeverType = new NeverType()
@@ -112,7 +114,7 @@ export class StringType implements Type<string> {
   readonly _tag: 'StringType' = 'StringType'
   readonly _A: string
   readonly name: 'string' = 'string'
-  readonly validate: Validate<string> = (v, c) => (typeof v === 'string' ? success(v) : failure<string>(v, c))
+  readonly validate: Validate<string> = (v, c) => (typeof v === 'string' ? success(v) : failure(v, c))
 }
 
 export const string: StringType = new StringType()
@@ -121,7 +123,7 @@ export class NumberType implements Type<number> {
   readonly _tag: 'NumberType' = 'NumberType'
   readonly _A: number
   readonly name: 'number' = 'number'
-  readonly validate: Validate<number> = (v, c) => (typeof v === 'number' ? success(v) : failure<number>(v, c))
+  readonly validate: Validate<number> = (v, c) => (typeof v === 'number' ? success(v) : failure(v, c))
 }
 
 export const number: NumberType = new NumberType()
@@ -130,7 +132,7 @@ export class BooleanType implements Type<boolean> {
   readonly _tag: 'BooleanType' = 'BooleanType'
   readonly _A: boolean
   readonly name: 'boolean' = 'boolean'
-  readonly validate: Validate<boolean> = (v, c) => (typeof v === 'boolean' ? success(v) : failure<boolean>(v, c))
+  readonly validate: Validate<boolean> = (v, c) => (typeof v === 'boolean' ? success(v) : failure(v, c))
 }
 
 export const boolean: BooleanType = new BooleanType()
@@ -139,7 +141,7 @@ export class AnyArrayType implements Type<Array<any>> {
   readonly _tag: 'AnyArrayType' = 'AnyArrayType'
   readonly _A: Array<any>
   readonly name: 'Array' = 'Array'
-  readonly validate: Validate<Array<any>> = (v, c) => (Array.isArray(v) ? success(v) : failure<Array<any>>(v, c))
+  readonly validate: Validate<Array<any>> = (v, c) => (Array.isArray(v) ? success(v) : failure(v, c))
 }
 
 const arrayType: AnyArrayType = new AnyArrayType()
@@ -158,7 +160,7 @@ export class FunctionType implements Type<Function> {
   readonly _tag: 'FunctionType' = 'FunctionType'
   readonly _A: Function
   readonly name: 'Function' = 'Function'
-  readonly validate: Validate<Function> = (v, c) => (typeof v === 'function' ? success(v) : failure<Function>(v, c))
+  readonly validate: Validate<Function> = (v, c) => (typeof v === 'function' ? success(v) : failure(v, c))
 }
 
 const functionType: FunctionType = new FunctionType()
@@ -203,7 +205,7 @@ export class PrismType<RT extends Any, A> implements Type<A> {
     readonly getOption: GetOption<TypeOf<RT>, A>,
     readonly name: string = `Prism<${type.name}, ?>`
   ) {
-    this.validate = (v, c) => type.validate(v, c).chain(a => getOption(a).fold(() => failure<A>(a, c), b => success(b)))
+    this.validate = (v, c) => type.validate(v, c).chain(a => getOption(a).fold(() => failure(a, c), b => success(b)))
   }
 }
 
@@ -222,7 +224,7 @@ export class LiteralType<V extends string | number | boolean> implements Type<V>
   readonly _A: V
   readonly validate: Validate<V>
   constructor(readonly value: V, readonly name: string = JSON.stringify(value)) {
-    this.validate = (v, c) => (v === value ? success(value) : failure<V>(v, c))
+    this.validate = (v, c) => (v === value ? success(value) : failure(v, c))
   }
 }
 
@@ -288,7 +290,7 @@ export class ArrayType<RT extends Any> implements Type<Array<TypeOf<RT>>> {
             }
           )
         }
-        return errors.length ? new Left<Errors, Array<TypeOf<RT>>>(errors) : success(changed ? t : as)
+        return errors.length ? failures(errors) : success(changed ? t : as)
       })
   }
 }
@@ -329,7 +331,7 @@ export class InterfaceType<P extends Props> implements Type<InterfaceOf<P>> {
             }
           )
         }
-        return errors.length ? new Left(errors) : success((changed ? t : o) as any)
+        return errors.length ? failures(errors) : success((changed ? t : o) as any)
       })
   }
 }
@@ -403,7 +405,7 @@ export class DictionaryType<D extends Type<string>, C extends Any> implements Ty
             }
           )
         }
-        return errors.length ? new Left(errors) : success((changed ? t : o) as any)
+        return errors.length ? failures(errors) : success((changed ? t : o) as any)
       })
   }
 }
@@ -461,7 +463,7 @@ export class IntersectionType<RTS extends Array<Any>, I> implements Type<I> {
           }
         )
       }
-      return errors.length ? new Left(errors) : success(changed ? t : v)
+      return errors.length ? failures(errors) : success(changed ? t : v)
     }
   }
 }
@@ -513,7 +515,7 @@ export class TupleType<RTS extends Array<Any>, I> implements Type<I> {
             }
           )
         }
-        return errors.length ? new Left(errors) : success((changed ? t : as) as any)
+        return errors.length ? failures(errors) : success((changed ? t : as) as any)
       })
   }
 }
