@@ -585,4 +585,35 @@ export class ReadonlyArrayType<RT extends Any> implements Type<ReadonlyArray<Typ
 export const readonlyArray = <RT extends Any>(type: RT, name?: string): ReadonlyArrayType<RT> =>
   new ReadonlyArrayType(type, name)
 
+export class StrictType<RT extends InterfaceType<any>> implements Type<TypeOf<RT>> {
+  readonly _tag: 'StrictType' = 'StrictType'
+  readonly _A: TypeOf<RT>
+  readonly validate: Validate<TypeOf<RT>>
+  constructor(readonly type: RT, readonly name: string = `StrictType<${type.name}>`) {
+    const len = Object.keys(type.props).length
+    this.validate = (v, c) =>
+      type.validate(v, c).chain(o => {
+        const keys = Object.keys(v)
+        if (keys.length !== len) {
+          const errors: Errors = []
+          for (let i = 0; i < keys.length; i++) {
+            const key = keys[i]
+            if (!type.props.hasOwnProperty(key)) {
+              errors.push(getValidationError(o[key], c.concat(getContextEntry(key, never))))
+            }
+          }
+          if (errors.length) {
+            return failures(errors)
+          }
+        }
+        return success(o)
+      })
+  }
+}
+
+/** Specifies that only the given interface properties are allowed */
+export function strict<RT extends InterfaceType<any>>(type: RT, name?: string): StrictType<RT> {
+  return new StrictType(type, name)
+}
+
 export { nullType as null, undefinedType as undefined, arrayType as Array, functionType as Function, type as interface }

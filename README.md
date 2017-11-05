@@ -162,6 +162,7 @@ import * as t from 'io-ts'
 | refinement | ✘ | `t.refinement(A, predicate)` |
 | map | ✘ | `t.map(f, type)` |
 | prism | ✘ | `t.prism(type, getOption)` |
+| strict | ✘ | `t.strict(type)` |
 
 # Refinements
 
