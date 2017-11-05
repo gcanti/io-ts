@@ -191,10 +191,10 @@ const x31: TypeOf<typeof M1> = 1
 // strict
 //
 
-const S1 = t.strict(t.interface({ name: t.string }))
+const S1 = t.strict({ name: t.string })
 type TS1 = TypeOf<typeof S1>
 const x32: TS1 = { name: 'Giulio' }
 const x33input = { name: 'foo', foo: 'foo' }
 const x33: TS1 = x33input
-// $ExpectError Argument of type 'StringType' is not assignable to parameter of type 'InterfaceType<any>'.
+// $ExpectError Argument of type 'StringType' is not assignable to parameter of type 'Props'
 const S2 = t.strict(t.string)
