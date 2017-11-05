@@ -150,7 +150,7 @@ import * as t from 'io-ts'
 | function | `Function` | `t.Function` |
 | literal | `'s'` | `t.literal('s')` |
 | partial | `Partial<{ name: string }>` | `t.partial({ name: t.string })` |
-| readonly | `Readonly<{ name: string }>` | `t.readonly({ name: t.string })` |
+| readonly | `Readonly<T>` | `t.readonly(T)` |
 | readonly array | `ReadonlyArray<number>` | `t.readonlyArray(t.number)` |
 | interface | `interface A { name: string }` | `t.interface({ name: t.string })` or `t.type({ name: t.string })` |
 | interface inheritance | `interface B extends A {}` | `t.intersection([ A, t.interface({}) ])` |
@@ -162,7 +162,7 @@ import * as t from 'io-ts'
 | refinement | ✘ | `t.refinement(A, predicate)` |
 | map | ✘ | `t.map(f, type)` |
 | prism | ✘ | `t.prism(type, getOption)` |
-| strict | ✘ | `t.strict(type)` |
+| strict | ✘ | `t.strict({ name: t.string })` |
 
 # Refinements
 
@@ -172,6 +172,22 @@ You can refine a type (_any_ type) using the `refinement` combinator
 const Positive = t.refinement(t.number, n => n >= 0, 'Positive')
 
 const Adult = t.refinement(Person, person => person.age >= 18, 'Adult')
+```
+
+# Strict interfaces
+
+You can make an interface strict (which means that only the given properties are allowed) using the `strict` combinator
+
+```ts
+const Person = t.interface({
+  name: t.string,
+  age: t.number
+})
+
+const StrictPerson = t.strict(Person.props)
+
+t.validate({ name: 'Giulio', age: 43, surname: 'Canti' }, Person) // ok
+t.validate({ name: 'Giulio', age: 43, surname: 'Canti' }, StrictPerson) // fails
 ```
 
 # Mixing required and optional props
