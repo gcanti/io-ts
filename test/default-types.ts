@@ -38,3 +38,26 @@ describe('null', () => {
     assertFailure(t.validate(1, t.null), ['Invalid value 1 supplied to : null'])
   })
 })
+
+describe('object', () => {
+  it('should accept arrays', () => {
+    assertSuccess(t.validate([], t.object))
+  })
+
+  it('should accept objects', () => {
+    assertSuccess(t.validate({}, t.object))
+  })
+
+  it('should fail with primitives', () => {
+    const T = t.object
+    assertFailure(t.validate('s', T), ['Invalid value "s" supplied to : object'])
+    assertFailure(t.validate(1, T), ['Invalid value 1 supplied to : object'])
+    assertFailure(t.validate(true, T), ['Invalid value true supplied to : object'])
+  })
+
+  it('should fail with null and undefined', () => {
+    const T = t.object
+    assertFailure(t.validate(null, T), ['Invalid value null supplied to : object'])
+    assertFailure(t.validate(undefined, T), ['Invalid value undefined supplied to : object'])
+  })
+})

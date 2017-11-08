@@ -12,6 +12,11 @@
 **Note**: Gaps between patch versions are faulty/broken releases.
 **Note**: A feature tagged as Experimental is in a high state of flux, you're at risk of it changing without notice.
 
+# 0.8.2
+
+- **New Feature**
+  - add `object` type, closes #86 (@gcanti)
+
 # 0.8.1
 
 - **New Feature**
