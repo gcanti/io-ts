@@ -198,3 +198,12 @@ const x33input = { name: 'foo', foo: 'foo' }
 const x33: TS1 = x33input
 // $ExpectError Argument of type 'StringType' is not assignable to parameter of type 'Props'
 const S2 = t.strict(t.string)
+
+//
+// object
+//
+const O1 = t.object
+type TO1 = TypeOf<typeof O1>
+const x34: TO1 = { name: 'Giulio' }
+// $ExpectError Type '"foo"' is not assignable to type 'object'
+const x35: TO1 = 'foo'

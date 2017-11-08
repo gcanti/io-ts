@@ -142,6 +142,7 @@ import * as t from 'io-ts'
 | boolean | `boolean` | `t.boolean` |
 | any | `any` | `t.any` |
 | never | `never` | `t.never` |
+| object | `object` | `t.object` |
 | integer | ✘ | `t.Integer` |
 | array of any | `Array<any>` | `t.Array` |
 | array of type | `Array<A>` | `t.array(A)` |

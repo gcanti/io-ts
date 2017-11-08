@@ -156,6 +156,15 @@ export class AnyDictionaryType implements Type<{ [key: string]: any }> {
 
 export const Dictionary: AnyDictionaryType = new AnyDictionaryType()
 
+export class ObjectType implements Type<object> {
+  readonly _tag: 'ObjectType' = 'ObjectType'
+  readonly _A: object
+  readonly name: 'object' = 'object'
+  readonly validate: Validate<object> = Dictionary.validate
+}
+
+export const object: ObjectType = new ObjectType()
+
 export class FunctionType implements Type<Function> {
   readonly _tag: 'FunctionType' = 'FunctionType'
   readonly _A: Function
