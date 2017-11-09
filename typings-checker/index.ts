@@ -78,29 +78,10 @@ const x11: TypeOf<typeof I2> = { name: 'name', father: { surname: 'surname' } }
 // dictionary
 //
 
-const D1 = t.dictionary(t.string, t.number)
+const D1 = t.dictionary(t.number)
 // $ExpectError Type 'string' is not assignable to type 'number'
 const x12: TypeOf<typeof D1> = { a: 's' }
 const x13: TypeOf<typeof D1> = { a: 1 }
-
-const D2 = t.dictionary(t.literal('foo'), t.string)
-const d1: t.TypeOf<typeof D2> = {
-  foo: 'bar'
-}
-const d2: t.TypeOf<typeof D2> = {
-  foo: 'bar',
-  // $ExpectError Object literal may only specify known properties, and 'baz' does not exist in type '{ foo: string; }'
-  baz: 'bob'
-}
-const D3 = t.dictionary(t.union([t.literal('foo'), t.literal('baz')]), t.string)
-// $ExpectError Property 'baz' is missing in type '{ foo: string; }'
-const d3: t.TypeOf<typeof D3> = {
-  foo: 'bar'
-}
-const d4: t.TypeOf<typeof D3> = {
-  foo: 'bar',
-  baz: 'bob'
-}
 
 //
 // union
@@ -163,29 +144,6 @@ const x27: TypeOf<typeof ROA1> = [1]
 x27[0] = 2
 // $ExpectError Property 'push' does not exist on type 'ReadonlyArray<number>'
 x27.push(2)
-
-//
-// map
-//
-
-const M1 = t.map(s => s.length, t.string)
-// $ExpectError Type '"s"' is not assignable to type 'number'
-const x28: TypeOf<typeof M1> = 's'
-const x29: TypeOf<typeof M1> = 1
-
-//
-// getter
-//
-
-import { Option, none, some } from 'fp-ts/lib/Option'
-const parseNumber = (s: string): Option<number> => {
-  const n = parseFloat(s)
-  return isNaN(n) ? none : some(n)
-}
-const G1 = t.prism(t.string, parseNumber)
-// $ExpectError Type '"s"' is not assignable to type 'number'
-const x30: TypeOf<typeof M1> = 's'
-const x31: TypeOf<typeof M1> = 1
 
 //
 // strict
