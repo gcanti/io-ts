@@ -1,7 +1,7 @@
 import { isRight } from 'fp-ts/lib/Either'
 import * as assert from 'assert'
 import * as t from '../src/index'
-import { assertSuccess, assertFailure, assertStrictEqual, assertDeepEqual, number2 } from './helpers'
+import { assertSuccess, assertFailure, assertStrictEqual, assertDeepEqual, number2, DateFromNumber } from './helpers'
 
 describe('interface', () => {
   it('should succeed validating a valid value', () => {
@@ -41,5 +41,22 @@ describe('interface', () => {
   it('should support the alias `type`', () => {
     const T = t.type({ a: t.string })
     assertSuccess(t.validate({ a: 's' }, T))
+  })
+
+  it('should serialize a deserialized', () => {
+    const T = t.type({ a: DateFromNumber })
+    assert.deepEqual(T.serialize({ a: new Date(0) }), { a: 0 })
+  })
+
+  it('should return the same reference when serializing', () => {
+    const T = t.type({ a: t.number })
+    assert.strictEqual(T.serialize, t.identity)
+  })
+
+  it('should type guard', () => {
+    const T = t.type({ a: DateFromNumber })
+    assert.strictEqual(T.is({ a: new Date(0) }), true)
+    assert.strictEqual(T.is({ a: 0 }), false)
+    assert.strictEqual(T.is(undefined), false)
   })
 })

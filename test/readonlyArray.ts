@@ -1,6 +1,6 @@
 import * as assert from 'assert'
 import * as t from '../src/index'
-import { assertSuccess, assertFailure } from './helpers'
+import { assertSuccess, assertFailure, DateFromNumber } from './helpers'
 
 describe('readonlyArray', () => {
   it('should succeed validating a valid value', () => {
@@ -16,5 +16,15 @@ describe('readonlyArray', () => {
   it('should freeze the value', () => {
     const T = t.readonlyArray(t.number)
     t.validate([1], T).map(x => assert.ok(Object.isFrozen(x)))
+  })
+
+  it('should serialize a deserialized', () => {
+    const T = t.readonlyArray(DateFromNumber)
+    assert.deepEqual(T.serialize([new Date(0), new Date(1)]), [0, 1])
+  })
+
+  it('should return the same reference when serializing', () => {
+    const T = t.readonlyArray(t.number)
+    assert.strictEqual(T.serialize, t.identity)
   })
 })

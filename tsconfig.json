@@ -6,7 +6,7 @@
     "module": "commonjs",
     "noImplicitReturns": false,
     "noUnusedLocals": true,
-    "noUnusedParameters": false,
+    "noUnusedParameters": true,
     "noFallthroughCasesInSwitch": true,
     "noEmitOnError": false,
     "allowJs": false,
