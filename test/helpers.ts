@@ -20,14 +20,14 @@ export function assertDeepEqual<T>(validation: t.Validation<T>, value: any): voi
   assert.deepEqual(validation.fold<any>(t.identity, t.identity), value)
 }
 
-export const number2 = new t.Type<number>(
+export const number2 = new t.Type<any, number>(
   'number2',
   t.number.is,
   (v, c) => t.number.validate(v, c).map(n => n * 2),
   t.identity
 )
 
-export const DateFromNumber = new t.Type<Date>(
+export const DateFromNumber = new t.Type<any, Date>(
   'DateFromNumber',
   (v): v is Date => v instanceof Date,
   (v, c) =>
