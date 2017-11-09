@@ -1,5 +1,5 @@
 import * as t from '../src/index'
-import { assertSuccess, assertFailure, assertStrictEqual } from './helpers'
+import { assertSuccess, assertFailure, assertStrictEqual, DateFromNumber } from './helpers'
 import * as assert from 'assert'
 
 describe('strict', () => {
@@ -27,5 +27,15 @@ describe('strict', () => {
     assert.strictEqual(T1.name, 'Foo')
     const T2 = t.strict({ foo: t.string })
     assert.strictEqual(T2.name, 'StrictType<{ foo: string }>')
+  })
+
+  it('should serialize a deserialized', () => {
+    const T = t.strict({ a: DateFromNumber })
+    assert.deepEqual(T.serialize({ a: new Date(0) }), { a: 0 })
+  })
+
+  it('should return the same reference when serializing', () => {
+    const T = t.strict({ a: t.number })
+    assert.strictEqual(T.serialize, t.identity)
   })
 })

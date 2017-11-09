@@ -12,6 +12,19 @@
 **Note**: Gaps between patch versions are faulty/broken releases.
 **Note**: A feature tagged as Experimental is in a high state of flux, you're at risk of it changing without notice.
 
+# 0.9.0
+
+- **Breaking Change**
+  - remove `t.map` and `t.mapWithName` (in general doesn't look serializable, needs more investigation)
+  - remove `t.prism` (in general doesn't look serializable, needs more investigation)
+  - remove `domain` type from `t.dictionary` (doesn't play nicely with strictFunctionType)
+  - change `Type` from interface to class (since TypeScript is structural shouldn't be a breaking change though)
+    - remove `t._A`
+  - add `Type#serialize`
+  - add `Type#is` (in order to serialize unions and while we're at it, looks useful anyway)
+  - remove `t.is` (now that there's `Type#is` is misleading)
+
+
 # 0.8.2
 
 - **New Feature**

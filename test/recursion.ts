@@ -1,5 +1,6 @@
+import * as assert from 'assert'
 import * as t from '../src/index'
-import { assertSuccess, assertFailure, assertStrictEqual } from './helpers'
+import { assertSuccess, assertFailure, assertStrictEqual, DateFromNumber } from './helpers'
 
 describe('recursion', () => {
   it('should succeed validating a valid value', () => {
@@ -34,5 +35,48 @@ describe('recursion', () => {
     assertFailure(t.validate(1, T), ['Invalid value 1 supplied to : T'])
     assertFailure(t.validate({}, T), ['Invalid value undefined supplied to : T/a: number'])
     assertFailure(t.validate({ a: 1, b: {} }, T), ['Invalid value {} supplied to : T/b: (T | undefined | null)'])
+  })
+
+  it('should serialize a deserialized', () => {
+    type T = {
+      a: Date
+      b: T | null
+    }
+    const T = t.recursion<T>('T', self =>
+      t.interface({
+        a: DateFromNumber,
+        b: t.union([self, t.null])
+      })
+    )
+    assert.deepEqual(T.serialize({ a: new Date(0), b: null }), { a: 0, b: null })
+  })
+
+  it('should return the same reference when serializing', () => {
+    type T = {
+      a: number
+      b: T | null
+    }
+    const T = t.recursion<T>('T', self =>
+      t.interface({
+        a: t.number,
+        b: t.union([self, t.null])
+      })
+    )
+    assert.strictEqual(T.serialize, t.identity)
+  })
+
+  it('should type guard', () => {
+    type T = {
+      a: Date
+      b: T | null
+    }
+    const T = t.recursion<T>('T', self =>
+      t.interface({
+        a: DateFromNumber,
+        b: t.union([self, t.null])
+      })
+    )
+    assert.strictEqual(T.is({ a: new Date(0), b: null }), true)
+    assert.strictEqual(T.is({ a: 0 }), false)
   })
 })

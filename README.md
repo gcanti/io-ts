@@ -3,17 +3,24 @@
 A value of type `Type<T>` (called "runtime type") is the runtime representation of the static type `T`:
 
 ```js
-export interface Type<A> {
+export class Type<A> {
   readonly _A: A
-  readonly name: string
-  readonly validate: Validate<A>
+  constructor(
+    readonly name: string,
+    readonly is: Is<A>,
+    readonly validate: Validate<A>,
+    readonly serialize: Serialize<A>
+  ) {}
 }
 ```
 
-where `Validate<T>` is a specific validation function for `T`
+where `Validate<A>` is a specific validation function for the type `A`
 
 ```js
-type Validate<T> = (value: any, context: Context) => Either<Array<ValidationError>, T>;
+export type Is<A> = (value: any) => value is A
+export type Validation<A> = Either<Array<ValidationError>, A>
+export type Validate<A> = (value: any, context: Context) => Validation<A>
+export type Serialize<A> = (value: A) => any
 ```
 
 Note. The `Either` type is defined in [fp-ts](https://github.com/gcanti/fp-ts), a library containing implementations of common algebraic types in TypeScript.
@@ -25,14 +32,17 @@ A runtime type representing `string` can be defined as
 ```js
 import * as t from 'io-ts'
 
-export const string: t.Type<string> = {
-  _A: t._A,
-  name: 'string',
-  validate: (value, context) => (typeof value === 'string' ? t.success(value) : t.failure<string>(value, context))
+export class StringType extends Type<string> {
+  constructor() {
+    super(
+      'string',
+      (v): v is string => typeof v === 'string',
+      (v, c) => (this.is(v) ? success(v) : failure(v, c)),
+      v => v
+    )
+  }
 }
 ```
-
-Note: The `_A` field contains a dummy value and is useful to extract a static type from the runtime type (see the ["TypeScript integration"](#typescript-integration) section below)
 
 A runtime type can be used to validate an object in memory (for example an API payload)
 
@@ -161,8 +171,6 @@ import * as t from 'io-ts'
 | keyof | `keyof M` | `t.keyof(M)` |
 | recursive types | see [Recursive types](#recursive-types) | `t.recursion(name, definition)` |
 | refinement | ✘ | `t.refinement(A, predicate)` |
-| map | ✘ | `t.map(f, type)` |
-| prism | ✘ | `t.prism(type, getOption)` |
 | strict | ✘ | `t.strict({ name: t.string })` |
 
 # Refinements

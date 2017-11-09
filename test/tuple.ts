@@ -1,5 +1,6 @@
+import * as assert from 'assert'
 import * as t from '../src/index'
-import { assertSuccess, assertFailure, assertStrictEqual, assertDeepEqual, number2 } from './helpers'
+import { assertSuccess, assertFailure, assertStrictEqual, assertDeepEqual, number2, DateFromNumber } from './helpers'
 
 describe('tuple', () => {
   it('should succeed validating a valid value', () => {
@@ -28,5 +29,15 @@ describe('tuple', () => {
     ])
     assertFailure(t.validate([1], T), ['Invalid value undefined supplied to : [number, string]/1: string'])
     assertFailure(t.validate([1, 1], T), ['Invalid value 1 supplied to : [number, string]/1: string'])
+  })
+
+  it('should serialize a deserialized', () => {
+    const T = t.tuple([DateFromNumber, t.string])
+    assert.deepEqual(T.serialize([new Date(0), 'foo']), [0, 'foo'])
+  })
+
+  it('should return the same reference when serializing', () => {
+    const T = t.tuple([t.number, t.string])
+    assert.strictEqual(T.serialize, t.identity)
   })
 })
