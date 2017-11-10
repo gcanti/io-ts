@@ -503,13 +503,17 @@ export class UnionType<RTS extends Array<Any>> extends Type<any, TypeOf<RTS['_A'
       name,
       (v): v is TypeOf<RTS['_A']> => types.some(type => type.is(v)),
       (v, c) => {
+        const errors: Errors = []
         for (let i = 0; i < types.length; i++) {
-          const validation = types[i].validate(v, c)
+          const type = types[i]
+          const validation = type.validate(v, c.concat(getContextEntry(String(i), type)))
           if (isRight(validation)) {
             return validation
+          } else {
+            pushAll(errors, validation.value)
           }
         }
-        return failure(v, c)
+        return failures(errors)
       },
       types.every(type => type.serialize === identity)
         ? identity

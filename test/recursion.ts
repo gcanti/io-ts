@@ -34,7 +34,11 @@ describe('recursion', () => {
     )
     assertFailure(t.validate(1, T), ['Invalid value 1 supplied to : T'])
     assertFailure(t.validate({}, T), ['Invalid value undefined supplied to : T/a: number'])
-    assertFailure(t.validate({ a: 1, b: {} }, T), ['Invalid value {} supplied to : T/b: (T | undefined | null)'])
+    assertFailure(t.validate({ a: 1, b: {} }, T), [
+      'Invalid value undefined supplied to : T/b: (T | undefined | null)/0: T/a: number',
+      'Invalid value {} supplied to : T/b: (T | undefined | null)/1: undefined',
+      'Invalid value {} supplied to : T/b: (T | undefined | null)/2: null'
+    ])
   })
 
   it('should serialize a deserialized', () => {
