@@ -1,5 +1,5 @@
 import { Either, Left, Right, isRight } from 'fp-ts/lib/Either'
-import { Predicate, identity } from 'fp-ts/lib/function'
+import { Predicate } from 'fp-ts/lib/function'
 
 declare global {
   interface Array<T> {
@@ -27,6 +27,11 @@ export type Any = Type<any, any>
 export type TypeOf<RT extends Any> = RT['_A']
 export type InputOf<RT extends Any> = RT['_S']
 
+/**
+ * Laws:
+ * 1. validate(x).fold(() => x, serialize) = x
+ * 2. validate(serialize(x)) = Right(x)
+ */
 export class Type<S, A> {
   readonly _A: A
   readonly _S: S
@@ -46,13 +51,15 @@ export class Type<S, A> {
   }
 }
 
+export const identity = <A>(a: A): A => a
+
 export const getFunctionName = (f: any): string => f.displayName || f.name || `<function${f.length}>`
 
 export const getContextEntry = (key: string, type: Any | NeverType): ContextEntry => ({ key, type })
 
 export const getValidationError = (value: any, context: Context): ValidationError => ({ value, context })
 
-const pushAll = <A>(xs: Array<A>, ys: Array<A>): void => Array.prototype.push.apply(xs, ys)
+export const getDefaultContext = (type: Any): Context => [{ key: '', type }]
 
 export const failures = <T>(errors: Errors): Validation<T> => new Left(errors)
 
@@ -61,10 +68,10 @@ export const failure = <T>(value: any, context: Context): Validation<T> =>
 
 export const success = <T>(value: T): Validation<T> => new Right<Errors, T>(value)
 
-const getDefaultContext = (type: Any): Context => [{ key: '', type }]
-
 export const validate = <S, A>(value: S, type: Type<S, A>): Validation<A> =>
   type.validate(value, getDefaultContext(type))
+
+const pushAll = <A>(xs: Array<A>, ys: Array<A>): void => Array.prototype.push.apply(xs, ys)
 
 //
 // basic types
@@ -77,7 +84,7 @@ export class NullType extends Type<any, null> {
   }
 }
 
-/** An alias of `null` */
+/** @alias `null` */
 export const nullType: NullType = new NullType()
 
 export class UndefinedType extends Type<any, undefined> {
@@ -339,7 +346,6 @@ export const array = <RT extends Any>(type: RT, name?: string): ArrayType<RT> =>
 
 export type Props = { [key: string]: Any }
 
-// TODO remove this once https://github.com/Microsoft/TypeScript/issues/14041 is fixed
 export type InterfaceOf<P extends Props> = { [K in keyof P]: TypeOf<P[K]> }
 
 const getNameFromProps = (props: Props): string =>
@@ -402,16 +408,14 @@ export class InterfaceType<P extends Props> extends Type<any, InterfaceOf<P>> {
   }
 }
 
-/** An alias of `interface` */
+/** @alias `interface` */
 export const type = <P extends Props>(props: P, name?: string): InterfaceType<P> => new InterfaceType(props, name)
 
 //
 // partials
 //
 
-// TODO remove this once https://github.com/Microsoft/TypeScript/issues/14041 is fixed
 export type PartialOf<P extends Props> = { [K in keyof P]?: TypeOf<P[K]> }
-// TODO remove this once https://github.com/Microsoft/TypeScript/issues/14041 is fixed
 export type PartialPropsOf<P extends Props> = { [K in keyof P]: UnionType<[P[K], UndefinedType]> }
 
 export class PartialType<P extends Props> extends Type<any, PartialOf<P>> {
@@ -731,11 +735,4 @@ export function strict<P extends Props>(props: P, name?: string): StrictType<P> 
   return new StrictType(props, name)
 }
 
-export {
-  identity,
-  nullType as null,
-  undefinedType as undefined,
-  arrayType as Array,
-  functionType as Function,
-  type as interface
-}
+export { nullType as null, undefinedType as undefined, arrayType as Array, functionType as Function, type as interface }
