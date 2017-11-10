@@ -496,7 +496,7 @@ export const dictionary = <C extends Any>(codomain: C, name?: string): Dictionar
 // unions
 //
 
-export class UnionType<RTS extends [Any]> extends Type<any, TypeOf<RTS['_A']>> {
+export class UnionType<RTS extends Array<Any>> extends Type<any, TypeOf<RTS['_A']>> {
   readonly _tag: 'UnionType' = 'UnionType'
   constructor(readonly types: RTS, readonly name: string = `(${types.map(type => type.name).join(' | ')})`) {
     super(
@@ -526,18 +526,18 @@ export class UnionType<RTS extends [Any]> extends Type<any, TypeOf<RTS['_A']>> {
   }
 }
 
-export const union = <RTS extends [Any]>(types: RTS, name?: string): UnionType<RTS> => new UnionType(types, name)
+export const union = <RTS extends Array<Any>>(types: RTS, name?: string): UnionType<RTS> => new UnionType(types, name)
 
 //
 // intersections
 //
 
-export class IntersectionType<RTS extends Array<Any>, I> extends Type<any, I> {
+export class IntersectionType<RTS extends Array<Any>, A> extends Type<any, A> {
   readonly _tag: 'IntersectionType' = 'IntersectionType'
   constructor(readonly types: RTS, readonly name: string = `(${types.map(type => type.name).join(' & ')})`) {
     super(
       name,
-      (v): v is I => types.every(type => type.is(v)),
+      (v): v is A => types.every(type => type.is(v)),
       (v, c) => {
         let deserialized = v
         let changed = false
@@ -594,12 +594,12 @@ export function intersection<RTS extends Array<Any>>(types: RTS, name?: string):
 // tuples
 //
 
-export class TupleType<RTS extends Array<Any>, I> extends Type<any, I> {
+export class TupleType<RTS extends Array<Any>, A> extends Type<any, A> {
   readonly _tag: 'TupleType' = 'TupleType'
   constructor(readonly types: RTS, readonly name: string = `[${types.map(type => type.name).join(', ')}]`) {
     super(
       name,
-      (v): v is I => types.every((type, i) => type.is(v[i])),
+      (v): v is A => types.every((type, i) => type.is(v[i])),
       (v, c) =>
         arrayType.validate(v, c).chain(as => {
           const t: Array<any> = []
