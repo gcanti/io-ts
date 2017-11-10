@@ -520,7 +520,7 @@ export class UnionType<RTS extends Array<Any>> extends Type<any, TypeOf<RTS['_A'
                 return type.serialize(v)
               }
             }
-            throw new Error(`cannot serialize ${name}`)
+            return v
           }
     )
   }
