@@ -17,7 +17,10 @@ describe('union', () => {
 
   it('should fail validating an invalid value', () => {
     const T = t.union([t.string, t.number])
-    assertFailure(t.validate(true, T), ['Invalid value true supplied to : (string | number)'])
+    assertFailure(t.validate(true, T), [
+      'Invalid value true supplied to : (string | number)/0: string',
+      'Invalid value true supplied to : (string | number)/1: number'
+    ])
   })
 
   it('should serialize a deserialized', () => {
