@@ -37,3 +37,15 @@ export const DateFromNumber = new t.Type<any, Date>(
     }),
   v => v.getTime()
 )
+
+export const NumberFromString = new t.Type<string, number>(
+  'NumberFromString',
+  t.number.is,
+  (s, c) => {
+    const n = parseFloat(s)
+    return isNaN(n) ? t.failure(s, c) : t.success(n)
+  },
+  String
+)
+
+export const IntegerFromString = t.refinement(NumberFromString, t.Integer.is, 'IntegerFromString')
