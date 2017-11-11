@@ -230,8 +230,8 @@ export class RefinementType<RT extends Any> extends Type<InputOf<RT>, TypeOf<RT>
   ) {
     super(
       name,
-      type.is,
-      (s, c) => type.validate(s, c).chain(a => (predicate(a) ? success(a) : failure(s, c))),
+      (v): v is TypeOf<RT> => type.is(v) && predicate(v),
+      (s, c) => type.validate(s, c).chain(a => (predicate(a) ? success(a) : failure(a, c))),
       type.serialize
     )
   }
