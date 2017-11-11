@@ -39,9 +39,9 @@ export class Type<S, A> {
     readonly validate: Validate<S, A>,
     readonly serialize: Serialize<S, A>
   ) {}
-  compose<B>(ab: Type<A, B>, name?: string): Type<S, B> {
+  pipe<B>(ab: Type<A, B>, name?: string): Type<S, B> {
     return new Type(
-      name || `compose(${this.name}, ${ab.name})`,
+      name || `pipe(${this.name}, ${ab.name})`,
       (v): v is B => this.is(v) && ab.is(v),
       (s, c) => this.validate(s, c).chain(a => ab.validate(a, c)),
       this.serialize === identity && ab.serialize === identity ? identity as any : b => this.serialize(ab.serialize(b))
