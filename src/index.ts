@@ -16,14 +16,12 @@ export interface ValidationError {
   readonly value: any
   readonly context: Context
 }
-
 export type Errors = Array<ValidationError>
 export type Validation<A> = Either<Errors, A>
-export type Is<A> = (value: any) => value is A
-export type Validate<S, A> = (value: S, context: Context) => Validation<A>
-export type Serialize<S, A> = (value: A) => S
+export type Is<A> = (v: any) => v is A
+export type Validate<S, A> = (s: S, context: Context) => Validation<A>
+export type Serialize<S, A> = (a: A) => S
 export type Any = Type<any, any>
-
 export type TypeOf<RT extends Any> = RT['_A']
 export type InputOf<RT extends Any> = RT['_S']
 
@@ -46,7 +44,7 @@ export class Type<S, A> {
       name || `compose(${this.name}, ${ab.name})`,
       (v): v is B => this.is(v) && ab.is(v),
       (s, c) => this.validate(s, c).chain(a => ab.validate(a, c)),
-      b => this.serialize(ab.serialize(b))
+      this.serialize === identity && ab.serialize === identity ? identity as any : b => this.serialize(ab.serialize(b))
     )
   }
 }
@@ -80,7 +78,7 @@ const pushAll = <A>(xs: Array<A>, ys: Array<A>): void => Array.prototype.push.ap
 export class NullType extends Type<any, null> {
   readonly _tag: 'NullType' = 'NullType'
   constructor() {
-    super('null', (v): v is null => v === null, (v, c) => (this.is(v) ? success(v) : failure(v, c)), identity)
+    super('null', (v): v is null => v === null, (s, c) => (this.is(s) ? success(s) : failure(s, c)), identity)
   }
 }
 
@@ -93,7 +91,7 @@ export class UndefinedType extends Type<any, undefined> {
     super(
       'undefined',
       (v): v is undefined => v === void 0,
-      (v, c) => (this.is(v) ? success(v) : failure(v, c)),
+      (s, c) => (this.is(s) ? success(s) : failure(s, c)),
       identity
     )
   }
@@ -116,7 +114,7 @@ export class NeverType extends Type<any, never> {
     super(
       'never',
       (_): _ is never => false,
-      (v, c) => failure(v, c),
+      (s, c) => failure(s, c),
       () => {
         throw new Error('cannot serialize never')
       }
@@ -132,7 +130,7 @@ export class StringType extends Type<any, string> {
     super(
       'string',
       (v): v is string => typeof v === 'string',
-      (v, c) => (this.is(v) ? success(v) : failure(v, c)),
+      (s, c) => (this.is(s) ? success(s) : failure(s, c)),
       identity
     )
   }
@@ -146,7 +144,7 @@ export class NumberType extends Type<any, number> {
     super(
       'number',
       (v): v is number => typeof v === 'number',
-      (v, c) => (this.is(v) ? success(v) : failure(v, c)),
+      (s, c) => (this.is(s) ? success(s) : failure(s, c)),
       identity
     )
   }
@@ -160,7 +158,7 @@ export class BooleanType extends Type<any, boolean> {
     super(
       'boolean',
       (v): v is boolean => typeof v === 'boolean',
-      (v, c) => (this.is(v) ? success(v) : failure(v, c)),
+      (s, c) => (this.is(s) ? success(s) : failure(s, c)),
       identity
     )
   }
@@ -174,7 +172,7 @@ export class AnyArrayType extends Type<any, Array<any>> {
     super(
       'Array',
       (v): v is Array<any> => Array.isArray(v),
-      (v, c) => (this.is(v) ? success(v) : failure(v, c)),
+      (s, c) => (this.is(s) ? success(s) : failure(s, c)),
       identity
     )
   }
@@ -188,7 +186,7 @@ export class AnyDictionaryType extends Type<any, { [key: string]: any }> {
     super(
       'Dictionary',
       (v): v is { [key: string]: any } => v !== null && typeof v === 'object',
-      (v, c) => (this.is(v) ? success(v) : failure(v, c)),
+      (s, c) => (this.is(s) ? success(s) : failure(s, c)),
       identity
     )
   }
@@ -211,7 +209,7 @@ export class FunctionType extends Type<any, Function> {
     super(
       'Function',
       (v): v is Function => typeof v === 'function',
-      (v, c) => (this.is(v) ? success(v) : failure(v, c)),
+      (s, c) => (this.is(s) ? success(s) : failure(s, c)),
       identity
     )
   }
@@ -233,7 +231,7 @@ export class RefinementType<RT extends Any> extends Type<InputOf<RT>, TypeOf<RT>
     super(
       name,
       type.is,
-      (v, c) => type.validate(v, c).chain(t => (predicate(t) ? success(t) : failure(v, c))),
+      (s, c) => type.validate(s, c).chain(a => (predicate(a) ? success(a) : failure(s, c))),
       type.serialize
     )
   }
@@ -248,13 +246,13 @@ export const refinement = <RT extends Any>(
 export const Integer = refinement(number, n => n % 1 === 0, 'Integer')
 
 //
-// literal types
+// literals
 //
 
 export class LiteralType<V extends string | number | boolean> extends Type<any, V> {
   readonly _tag: 'LiteralType' = 'LiteralType'
   constructor(readonly value: V, readonly name: string = JSON.stringify(value)) {
-    super(name, (v): v is V => v === value, (v, c) => (this.is(v) ? success(value) : failure(v, c)), identity)
+    super(name, (v): v is V => v === value, (s, c) => (this.is(s) ? success(value) : failure(s, c)), identity)
   }
 }
 
@@ -262,7 +260,7 @@ export const literal = <V extends string | number | boolean>(value: V, name?: st
   new LiteralType(value, name)
 
 //
-// keyof types
+// keyof
 //
 
 export class KeyofType<D extends { [key: string]: any }> extends Type<any, keyof D> {
@@ -271,7 +269,7 @@ export class KeyofType<D extends { [key: string]: any }> extends Type<any, keyof
     super(
       name,
       (v): v is keyof D => keys.hasOwnProperty(v),
-      (v, c) => (this.is(v) ? success(v) : failure(v, c)),
+      (s, c) => (this.is(s) ? success(s) : failure(s, c)),
       identity
     )
   }
@@ -298,7 +296,7 @@ export class RecursiveType<T> extends Type<any, T> {
 }
 
 export const recursion = <T>(name: string, definition: (self: Any) => Any): RecursiveType<T> => {
-  const Self: any = new RecursiveType<T>(name, (v): v is T => type.is(v), (v, c) => type.validate(v, c), identity)
+  const Self: any = new RecursiveType<T>(name, (v): v is T => type.is(v), (s, c) => type.validate(s, c), identity)
   const type = definition(Self)
   Self.type = type
   Self.serialize = type.serialize
@@ -315,23 +313,23 @@ export class ArrayType<RT extends Any> extends Type<any, Array<TypeOf<RT>>> {
     super(
       name,
       (v): v is Array<TypeOf<RT>> => arrayType.is(v) && v.every(type.is),
-      (v, c) =>
-        arrayType.validate(v, c).chain(as => {
-          const deserialized: Array<TypeOf<RT>> = []
+      (s, c) =>
+        arrayType.validate(s, c).chain(xs => {
+          const a: Array<TypeOf<RT>> = []
           const errors: Errors = []
           let changed = false
-          for (let i = 0; i < as.length; i++) {
-            const a = as[i]
-            const validation = type.validate(a, c.concat(getContextEntry(String(i), type)))
+          for (let i = 0; i < xs.length; i++) {
+            const x = xs[i]
+            const validation = type.validate(x, c.concat(getContextEntry(String(i), type)))
             validation.fold(
-              error => pushAll(errors, error),
-              va => {
-                changed = changed || va !== a
-                deserialized.push(va)
+              e => pushAll(errors, e),
+              vx => {
+                changed = changed || vx !== x
+                a.push(vx)
               }
             )
           }
-          return errors.length ? failures(errors) : success(changed ? deserialized : as)
+          return errors.length ? failures(errors) : success(changed ? a : xs)
         }),
       type.serialize === identity ? identity : v => v.map(type.serialize)
     )
@@ -376,9 +374,9 @@ export class InterfaceType<P extends Props> extends Type<any, InterfaceOf<P>> {
         }
         return true
       },
-      (v, c) =>
-        Dictionary.validate(v, c).chain(o => {
-          const deserialized = { ...o }
+      (s, c) =>
+        Dictionary.validate(s, c).chain(o => {
+          const a = { ...o }
           const errors: Errors = []
           let changed = false
           for (let k in props) {
@@ -386,23 +384,23 @@ export class InterfaceType<P extends Props> extends Type<any, InterfaceOf<P>> {
             const type = props[k]
             const validation = type.validate(ok, c.concat(getContextEntry(k, type)))
             validation.fold(
-              error => pushAll(errors, error),
+              e => pushAll(errors, e),
               vok => {
                 changed = changed || vok !== ok
-                deserialized[k] = vok
+                a[k] = vok
               }
             )
           }
-          return errors.length ? failures(errors) : success((changed ? deserialized : o) as any)
+          return errors.length ? failures(errors) : success((changed ? a : o) as any)
         }),
       useIdentity(props)
         ? identity
         : v => {
-            const serialized: { [x: string]: any } = { ...v as any }
+            const s: { [x: string]: any } = { ...v as any }
             for (let k in props) {
-              serialized[k] = props[k].serialize(v[k])
+              s[k] = props[k].serialize(v[k])
             }
-            return serialized
+            return s
           }
     )
   }
@@ -424,18 +422,18 @@ export class PartialType<P extends Props> extends Type<any, PartialOf<P>> {
     super(
       name || `PartialType<${getNameFromProps(props)}>`,
       (_): _ is PartialOf<P> => partial.is as any,
-      (v, c) => partial.validate(v, c) as any,
+      (s, c) => partial.validate(s, c) as any,
       useIdentity(props)
         ? identity
         : v => {
-            const serialized: { [key: string]: any } = {}
+            const s: { [key: string]: any } = {}
             for (let k in props) {
               const vk = v[k]
               if (vk !== undefined) {
-                serialized[k] = props[k].serialize(vk)
+                s[k] = props[k].serialize(vk)
               }
             }
-            return serialized
+            return s
           }
     )
     const partials: Props = {}
@@ -458,32 +456,32 @@ export class DictionaryType<C extends Any> extends Type<any, { [key: string]: Ty
     super(
       name,
       (v): v is { [key: string]: TypeOf<C> } => Dictionary.is(v) && Object.keys(v).every(k => type.is(v[k])),
-      (v, c) =>
-        Dictionary.validate(v, c).chain(o => {
-          const deserialized: { [key: string]: any } = {}
+      (s, c) =>
+        Dictionary.validate(s, c).chain(o => {
+          const a: { [key: string]: any } = {}
           const errors: Errors = []
           let changed = false
           for (let k in o) {
             const ok = o[k]
             const validation = type.validate(ok, c.concat(getContextEntry(k, type)))
             validation.fold(
-              error => pushAll(errors, error),
+              e => pushAll(errors, e),
               vok => {
                 changed = changed || vok !== ok
-                deserialized[k] = vok
+                a[k] = vok
               }
             )
           }
-          return errors.length ? failures(errors) : success((changed ? deserialized : o) as any)
+          return errors.length ? failures(errors) : success((changed ? a : o) as any)
         }),
       type.serialize === identity
         ? identity
         : v => {
-            const serialized: { [key: string]: any } = {}
+            const s: { [key: string]: any } = {}
             for (let k in v) {
-              serialized[k] = type.serialize(v[k])
+              s[k] = type.serialize(v[k])
             }
-            return serialized
+            return s
           }
     )
   }
@@ -502,11 +500,11 @@ export class UnionType<RTS extends Array<Any>> extends Type<any, TypeOf<RTS['_A'
     super(
       name,
       (v): v is TypeOf<RTS['_A']> => types.some(type => type.is(v)),
-      (v, c) => {
+      (s, c) => {
         const errors: Errors = []
         for (let i = 0; i < types.length; i++) {
           const type = types[i]
-          const validation = type.validate(v, c.concat(getContextEntry(String(i), type)))
+          const validation = type.validate(s, c.concat(getContextEntry(String(i), type)))
           if (isRight(validation)) {
             return validation
           } else {
@@ -542,32 +540,32 @@ export class IntersectionType<RTS extends Array<Any>, A> extends Type<any, A> {
     super(
       name,
       (v): v is A => types.every(type => type.is(v)),
-      (v, c) => {
-        let deserialized = v
+      (s, c) => {
+        let a = s
         let changed = false
         const errors: Errors = []
         for (let i = 0; i < types.length; i++) {
           const type = types[i]
-          const validation = type.validate(deserialized, c)
+          const validation = type.validate(a, c)
           validation.fold(
-            error => pushAll(errors, error),
-            vv => {
-              changed = changed || vv !== deserialized
-              deserialized = vv
+            e => pushAll(errors, e),
+            va => {
+              changed = changed || va !== a
+              a = va
             }
           )
         }
-        return errors.length ? failures(errors) : success(changed ? deserialized : v)
+        return errors.length ? failures(errors) : success(changed ? a : s)
       },
       types.every(type => type.serialize === identity)
         ? identity
         : v => {
-            let serialized = v
+            let s = v
             for (let i = 0; i < types.length; i++) {
               const type = types[i]
-              serialized = type.serialize(serialized)
+              s = type.serialize(s)
             }
-            return serialized
+            return s
           }
     )
   }
@@ -604,8 +602,8 @@ export class TupleType<RTS extends Array<Any>, A> extends Type<any, A> {
     super(
       name,
       (v): v is A => types.every((type, i) => type.is(v[i])),
-      (v, c) =>
-        arrayType.validate(v, c).chain(as => {
+      (s, c) =>
+        arrayType.validate(s, c).chain(as => {
           const t: Array<any> = []
           const errors: Errors = []
           let changed = false
@@ -614,7 +612,7 @@ export class TupleType<RTS extends Array<Any>, A> extends Type<any, A> {
             const type = types[i]
             const validation = type.validate(a, c.concat(getContextEntry(String(i), type)))
             validation.fold(
-              error => pushAll(errors, error),
+              e => pushAll(errors, e),
               va => {
                 changed = changed || va !== a
                 t.push(va)
@@ -661,8 +659,8 @@ export class ReadonlyType<RT extends Any> extends Type<any, Readonly<TypeOf<RT>>
     super(
       name,
       type.is,
-      (v, c) =>
-        type.validate(v, c).map(x => {
+      (s, c) =>
+        type.validate(s, c).map(x => {
           if (process.env.NODE_ENV !== 'production') {
             return Object.freeze(x)
           }
@@ -685,8 +683,8 @@ export class ReadonlyArrayType<RT extends Any> extends Type<any, ReadonlyArray<T
     super(
       name,
       (v): v is ReadonlyArray<TypeOf<RT>> => arrayType.is(v),
-      (v, c) =>
-        arrayType.validate(v, c).map(x => {
+      (s, c) =>
+        arrayType.validate(s, c).map(x => {
           if (process.env.NODE_ENV !== 'production') {
             return Object.freeze(x)
           } else {
@@ -711,8 +709,8 @@ export class StrictType<P extends Props> extends Type<any, InterfaceOf<P>> {
     super(
       name || `StrictType<${getNameFromProps(props)}>`,
       (v): v is InterfaceOf<P> => loose.is(v) && Object.getOwnPropertyNames(v).every(k => props.hasOwnProperty(k)),
-      (v, c) =>
-        loose.validate(v, c).chain(o => {
+      (s, c) =>
+        loose.validate(s, c).chain(o => {
           const keys = Object.getOwnPropertyNames(o)
           if (keys.length !== len) {
             const errors: Errors = []
