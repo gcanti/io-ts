@@ -223,11 +223,7 @@ const functionType: FunctionType = new FunctionType()
 
 export class RefinementType<RT extends Any> extends Type<InputOf<RT>, TypeOf<RT>> {
   readonly _tag: 'RefinementType' = 'RefinementType'
-  constructor(
-    readonly type: RT,
-    readonly predicate: Predicate<TypeOf<RT>>,
-    readonly name: string = `(${type.name} | ${getFunctionName(predicate)})`
-  ) {
+  constructor(name: string, readonly type: RT, readonly predicate: Predicate<TypeOf<RT>>) {
     super(
       name,
       (v): v is TypeOf<RT> => type.is(v) && predicate(v),
@@ -240,8 +236,8 @@ export class RefinementType<RT extends Any> extends Type<InputOf<RT>, TypeOf<RT>
 export const refinement = <RT extends Any>(
   type: RT,
   predicate: Predicate<TypeOf<RT>>,
-  name?: string
-): RefinementType<RT> => new RefinementType(type, predicate, name)
+  name: string = `(${type.name} | ${getFunctionName(predicate)})`
+): RefinementType<RT> => new RefinementType(name, type, predicate)
 
 export const Integer = refinement(number, n => n % 1 === 0, 'Integer')
 
@@ -251,13 +247,15 @@ export const Integer = refinement(number, n => n % 1 === 0, 'Integer')
 
 export class LiteralType<V extends string | number | boolean> extends Type<any, V> {
   readonly _tag: 'LiteralType' = 'LiteralType'
-  constructor(readonly value: V, readonly name: string = JSON.stringify(value)) {
+  constructor(name: string, readonly value: V) {
     super(name, (v): v is V => v === value, (s, c) => (this.is(s) ? success(value) : failure(s, c)), identity)
   }
 }
 
-export const literal = <V extends string | number | boolean>(value: V, name?: string): LiteralType<V> =>
-  new LiteralType(value, name)
+export const literal = <V extends string | number | boolean>(
+  value: V,
+  name: string = JSON.stringify(value)
+): LiteralType<V> => new LiteralType(name, value)
 
 //
 // keyof
@@ -265,18 +263,20 @@ export const literal = <V extends string | number | boolean>(value: V, name?: st
 
 export class KeyofType<D extends { [key: string]: any }> extends Type<any, keyof D> {
   readonly _tag: 'KeyofType' = 'KeyofType'
-  constructor(readonly keys: D, readonly name: string = `(keyof ${JSON.stringify(Object.keys(keys))})`) {
+  constructor(name: string, readonly keys: D) {
     super(
       name,
-      (v): v is keyof D => keys.hasOwnProperty(v),
+      (v): v is keyof D => string.is(v) && keys.hasOwnProperty(v),
       (s, c) => (this.is(s) ? success(s) : failure(s, c)),
       identity
     )
   }
 }
 
-export const keyof = <D extends { [key: string]: any }>(keys: D, name?: string): KeyofType<D> =>
-  new KeyofType(keys, name)
+export const keyof = <D extends { [key: string]: any }>(
+  keys: D,
+  name: string = `(keyof ${JSON.stringify(Object.keys(keys))})`
+): KeyofType<D> => new KeyofType(name, keys)
 
 //
 // recursive types
@@ -285,12 +285,7 @@ export const keyof = <D extends { [key: string]: any }>(keys: D, name?: string):
 export class RecursiveType<T> extends Type<any, T> {
   readonly _tag: 'RecursiveType' = 'RecursiveType'
   readonly type: Any
-  constructor(
-    readonly name: string,
-    is: Is<T>,
-    readonly validate: Validate<any, T>,
-    readonly serialize: Serialize<any, T>
-  ) {
+  constructor(name: string, is: Is<T>, validate: Validate<any, T>, serialize: Serialize<any, T>) {
     super(name, is, validate, serialize)
   }
 }
@@ -309,34 +304,42 @@ export const recursion = <T>(name: string, definition: (self: Any) => Any): Recu
 
 export class ArrayType<RT extends Any> extends Type<any, Array<TypeOf<RT>>> {
   readonly _tag: 'ArrayType' = 'ArrayType'
-  constructor(readonly type: RT, readonly name: string = `Array<${type.name}>`) {
-    super(
-      name,
-      (v): v is Array<TypeOf<RT>> => arrayType.is(v) && v.every(type.is),
-      (s, c) =>
-        arrayType.validate(s, c).chain(xs => {
-          const a: Array<TypeOf<RT>> = []
-          const errors: Errors = []
-          let changed = false
-          for (let i = 0; i < xs.length; i++) {
-            const x = xs[i]
-            const validation = type.validate(x, c.concat(getContextEntry(String(i), type)))
-            validation.fold(
-              e => pushAll(errors, e),
-              vx => {
-                changed = changed || vx !== x
-                a.push(vx)
-              }
-            )
-          }
-          return errors.length ? failures(errors) : success(changed ? a : xs)
-        }),
-      type.serialize === identity ? identity : v => v.map(type.serialize)
-    )
+  constructor(
+    name: string,
+    is: ArrayType<RT>['is'],
+    validate: ArrayType<RT>['validate'],
+    serialize: ArrayType<RT>['serialize'],
+    readonly type: RT
+  ) {
+    super(name, is, validate, serialize)
   }
 }
 
-export const array = <RT extends Any>(type: RT, name?: string): ArrayType<RT> => new ArrayType(type, name)
+export const array = <RT extends Any>(type: RT, name: string = `Array<${type.name}>`): ArrayType<RT> =>
+  new ArrayType(
+    name,
+    (v): v is Array<TypeOf<RT>> => arrayType.is(v) && v.every(type.is),
+    (s, c) =>
+      arrayType.validate(s, c).chain(xs => {
+        const a: Array<TypeOf<RT>> = []
+        const errors: Errors = []
+        let changed = false
+        for (let i = 0; i < xs.length; i++) {
+          const x = xs[i]
+          const validation = type.validate(x, c.concat(getContextEntry(String(i), type)))
+          validation.fold(
+            e => pushAll(errors, e),
+            vx => {
+              changed = changed || vx !== x
+              a.push(vx)
+            }
+          )
+        }
+        return errors.length ? failures(errors) : success(changed ? a : xs)
+      }),
+    type.serialize === identity ? identity : a => a.map(type.serialize),
+    type
+  )
 
 //
 // interfaces
@@ -345,6 +348,19 @@ export const array = <RT extends Any>(type: RT, name?: string): ArrayType<RT> =>
 export type Props = { [key: string]: Any }
 
 export type InterfaceOf<P extends Props> = { [K in keyof P]: TypeOf<P[K]> }
+
+export class InterfaceType<P extends Props> extends Type<any, InterfaceOf<P>> {
+  readonly _tag: 'InterfaceType' = 'InterfaceType'
+  constructor(
+    name: string,
+    is: InterfaceType<P>['is'],
+    validate: InterfaceType<P>['validate'],
+    serialize: InterfaceType<P>['serialize'],
+    readonly props: P
+  ) {
+    super(name, is, validate, serialize)
+  }
+}
 
 const getNameFromProps = (props: Props): string =>
   `{ ${Object.keys(props).map(k => `${k}: ${props[k].name}`).join(', ')} }`
@@ -358,56 +374,51 @@ const useIdentity = (props: Props): boolean => {
   return true
 }
 
-export class InterfaceType<P extends Props> extends Type<any, InterfaceOf<P>> {
-  readonly _tag: 'InterfaceType' = 'InterfaceType'
-  constructor(readonly props: P, readonly name: string = getNameFromProps(props)) {
-    super(
-      name,
-      (v): v is InterfaceOf<P> => {
-        if (!Dictionary.is(v)) {
+/** @alias `interface` */
+export const type = <P extends Props>(props: P, name: string = getNameFromProps(props)): InterfaceType<P> =>
+  new InterfaceType(
+    name,
+    (v): v is InterfaceOf<P> => {
+      if (!Dictionary.is(v)) {
+        return false
+      }
+      for (let k in props) {
+        if (!props[k].is(v[k])) {
           return false
         }
+      }
+      return true
+    },
+    (s, c) =>
+      Dictionary.validate(s, c).chain(o => {
+        const a = { ...o }
+        const errors: Errors = []
+        let changed = false
         for (let k in props) {
-          if (!props[k].is(v[k])) {
-            return false
-          }
-        }
-        return true
-      },
-      (s, c) =>
-        Dictionary.validate(s, c).chain(o => {
-          const a = { ...o }
-          const errors: Errors = []
-          let changed = false
-          for (let k in props) {
-            const ok = o[k]
-            const type = props[k]
-            const validation = type.validate(ok, c.concat(getContextEntry(k, type)))
-            validation.fold(
-              e => pushAll(errors, e),
-              vok => {
-                changed = changed || vok !== ok
-                a[k] = vok
-              }
-            )
-          }
-          return errors.length ? failures(errors) : success((changed ? a : o) as any)
-        }),
-      useIdentity(props)
-        ? identity
-        : v => {
-            const s: { [x: string]: any } = { ...v as any }
-            for (let k in props) {
-              s[k] = props[k].serialize(v[k])
+          const ok = o[k]
+          const type = props[k]
+          const validation = type.validate(ok, c.concat(getContextEntry(k, type)))
+          validation.fold(
+            e => pushAll(errors, e),
+            vok => {
+              changed = changed || vok !== ok
+              a[k] = vok
             }
-            return s
+          )
+        }
+        return errors.length ? failures(errors) : success((changed ? a : o) as any)
+      }),
+    useIdentity(props)
+      ? identity
+      : a => {
+          const s: { [x: string]: any } = { ...a as any }
+          for (let k in props) {
+            s[k] = props[k].serialize(a[k])
           }
-    )
-  }
-}
-
-/** @alias `interface` */
-export const type = <P extends Props>(props: P, name?: string): InterfaceType<P> => new InterfaceType(props, name)
+          return s
+        },
+    props
+  )
 
 //
 // partials
@@ -418,33 +429,45 @@ export type PartialPropsOf<P extends Props> = { [K in keyof P]: UnionType<[P[K],
 
 export class PartialType<P extends Props> extends Type<any, PartialOf<P>> {
   readonly _tag: 'PartialType' = 'PartialType'
-  constructor(readonly props: P, name?: string) {
-    super(
-      name || `PartialType<${getNameFromProps(props)}>`,
-      (_): _ is PartialOf<P> => partial.is as any,
-      (s, c) => partial.validate(s, c) as any,
-      useIdentity(props)
-        ? identity
-        : v => {
-            const s: { [key: string]: any } = {}
-            for (let k in props) {
-              const vk = v[k]
-              if (vk !== undefined) {
-                s[k] = props[k].serialize(vk)
-              }
-            }
-            return s
-          }
-    )
-    const partials: Props = {}
-    for (let k in props) {
-      partials[k] = union([props[k], undefinedType])
-    }
-    const partial = type(partials)
+  constructor(
+    name: string,
+    is: PartialType<P>['is'],
+    validate: PartialType<P>['validate'],
+    serialize: PartialType<P>['serialize'],
+    readonly props: P
+  ) {
+    super(name, is, validate, serialize)
   }
 }
 
-export const partial = <P extends Props>(props: P, name?: string): PartialType<P> => new PartialType(props, name)
+export const partial = <P extends Props>(
+  props: P,
+  name: string = `PartialType<${getNameFromProps(props)}>`
+): PartialType<P> => {
+  const partials: Props = {}
+  for (let k in props) {
+    partials[k] = union([props[k], undefinedType])
+  }
+  const partial = type(partials)
+  return new PartialType(
+    name,
+    (_): _ is PartialOf<P> => partial.is as any,
+    (s, c) => partial.validate(s, c) as any,
+    useIdentity(props)
+      ? identity
+      : a => {
+          const s: { [key: string]: any } = {}
+          for (let k in props) {
+            const ak = a[k]
+            if (ak !== undefined) {
+              s[k] = props[k].serialize(ak)
+            }
+          }
+          return s
+        },
+    props
+  )
+}
 
 //
 // dictionaries
@@ -452,43 +475,53 @@ export const partial = <P extends Props>(props: P, name?: string): PartialType<P
 
 export class DictionaryType<C extends Any> extends Type<any, { [key: string]: TypeOf<C> }> {
   readonly _tag: 'DictionaryType' = 'DictionaryType'
-  constructor(readonly type: C, readonly name: string = `{ [key: string]: ${type.name} }`) {
-    super(
-      name,
-      (v): v is { [key: string]: TypeOf<C> } => Dictionary.is(v) && Object.keys(v).every(k => type.is(v[k])),
-      (s, c) =>
-        Dictionary.validate(s, c).chain(o => {
-          const a: { [key: string]: any } = {}
-          const errors: Errors = []
-          let changed = false
-          for (let k in o) {
-            const ok = o[k]
-            const validation = type.validate(ok, c.concat(getContextEntry(k, type)))
-            validation.fold(
-              e => pushAll(errors, e),
-              vok => {
-                changed = changed || vok !== ok
-                a[k] = vok
-              }
-            )
-          }
-          return errors.length ? failures(errors) : success((changed ? a : o) as any)
-        }),
-      type.serialize === identity
-        ? identity
-        : v => {
-            const s: { [key: string]: any } = {}
-            for (let k in v) {
-              s[k] = type.serialize(v[k])
-            }
-            return s
-          }
-    )
+  constructor(
+    name: string,
+    is: DictionaryType<C>['is'],
+    validate: DictionaryType<C>['validate'],
+    serialize: DictionaryType<C>['serialize'],
+    readonly codomain: C
+  ) {
+    super(name, is, validate, serialize)
   }
 }
 
-export const dictionary = <C extends Any>(codomain: C, name?: string): DictionaryType<C> =>
-  new DictionaryType(codomain, name)
+export const dictionary = <C extends Any>(
+  codomain: C,
+  name: string = `{ [key: string]: ${codomain.name} }`
+): DictionaryType<C> =>
+  new DictionaryType(
+    name,
+    (v): v is { [key: string]: TypeOf<C> } => Dictionary.is(v) && Object.keys(v).every(k => codomain.is(v[k])),
+    (s, c) =>
+      Dictionary.validate(s, c).chain(o => {
+        const a: { [key: string]: any } = {}
+        const errors: Errors = []
+        let changed = false
+        for (let k in o) {
+          const ok = o[k]
+          const validation = codomain.validate(ok, c.concat(getContextEntry(k, codomain)))
+          validation.fold(
+            e => pushAll(errors, e),
+            vok => {
+              changed = changed || vok !== ok
+              a[k] = vok
+            }
+          )
+        }
+        return errors.length ? failures(errors) : success((changed ? a : o) as any)
+      }),
+    codomain.serialize === identity
+      ? identity
+      : a => {
+          const s: { [key: string]: any } = {}
+          for (let k in a) {
+            s[k] = codomain.serialize(a[k])
+          }
+          return s
+        },
+    codomain
+  )
 
 //
 // unions
@@ -496,39 +529,50 @@ export const dictionary = <C extends Any>(codomain: C, name?: string): Dictionar
 
 export class UnionType<RTS extends Array<Any>> extends Type<any, TypeOf<RTS['_A']>> {
   readonly _tag: 'UnionType' = 'UnionType'
-  constructor(readonly types: RTS, readonly name: string = `(${types.map(type => type.name).join(' | ')})`) {
-    super(
-      name,
-      (v): v is TypeOf<RTS['_A']> => types.some(type => type.is(v)),
-      (s, c) => {
-        const errors: Errors = []
-        for (let i = 0; i < types.length; i++) {
-          const type = types[i]
-          const validation = type.validate(s, c.concat(getContextEntry(String(i), type)))
-          if (isRight(validation)) {
-            return validation
-          } else {
-            pushAll(errors, validation.value)
-          }
-        }
-        return failures(errors)
-      },
-      types.every(type => type.serialize === identity)
-        ? identity
-        : v => {
-            for (let i = 0; i < types.length; i++) {
-              const type = types[i]
-              if (type.is(v)) {
-                return type.serialize(v)
-              }
-            }
-            return v
-          }
-    )
+  constructor(
+    name: string,
+    is: UnionType<RTS>['is'],
+    validate: UnionType<RTS>['validate'],
+    serialize: UnionType<RTS>['serialize'],
+    readonly types: RTS
+  ) {
+    super(name, is, validate, serialize)
   }
 }
 
-export const union = <RTS extends Array<Any>>(types: RTS, name?: string): UnionType<RTS> => new UnionType(types, name)
+export const union = <RTS extends Array<Any>>(
+  types: RTS,
+  name: string = `(${types.map(type => type.name).join(' | ')})`
+): UnionType<RTS> =>
+  new UnionType(
+    name,
+    (v): v is TypeOf<RTS['_A']> => types.some(type => type.is(v)),
+    (s, c) => {
+      const errors: Errors = []
+      for (let i = 0; i < types.length; i++) {
+        const type = types[i]
+        const validation = type.validate(s, c.concat(getContextEntry(String(i), type)))
+        if (isRight(validation)) {
+          return validation
+        } else {
+          pushAll(errors, validation.value)
+        }
+      }
+      return failures(errors)
+    },
+    types.every(type => type.serialize === identity)
+      ? identity
+      : a => {
+          for (let i = 0; i < types.length; i++) {
+            const type = types[i]
+            if (type.is(a)) {
+              return type.serialize(a)
+            }
+          }
+          return a
+        },
+    types
+  )
 
 //
 // intersections
@@ -536,38 +580,8 @@ export const union = <RTS extends Array<Any>>(types: RTS, name?: string): UnionT
 
 export class IntersectionType<RTS extends Array<Any>, A> extends Type<any, A> {
   readonly _tag: 'IntersectionType' = 'IntersectionType'
-  constructor(readonly types: RTS, readonly name: string = `(${types.map(type => type.name).join(' & ')})`) {
-    super(
-      name,
-      (v): v is A => types.every(type => type.is(v)),
-      (s, c) => {
-        let a = s
-        let changed = false
-        const errors: Errors = []
-        for (let i = 0; i < types.length; i++) {
-          const type = types[i]
-          const validation = type.validate(a, c)
-          validation.fold(
-            e => pushAll(errors, e),
-            va => {
-              changed = changed || va !== a
-              a = va
-            }
-          )
-        }
-        return errors.length ? failures(errors) : success(changed ? a : s)
-      },
-      types.every(type => type.serialize === identity)
-        ? identity
-        : v => {
-            let s = v
-            for (let i = 0; i < types.length; i++) {
-              const type = types[i]
-              s = type.serialize(s)
-            }
-            return s
-          }
-    )
+  constructor(name: string, is: Is<A>, validate: Validate<any, A>, serialize: Serialize<any, A>, readonly types: RTS) {
+    super(name, is, validate, serialize)
   }
 }
 
@@ -588,8 +602,42 @@ export function intersection<A extends Any, B extends Any>(
   name?: string
 ): IntersectionType<[A, B], TypeOf<A> & TypeOf<B>>
 export function intersection<A extends Any>(types: [A], name?: string): IntersectionType<[A], TypeOf<A>>
-export function intersection<RTS extends Array<Any>>(types: RTS, name?: string): IntersectionType<RTS, any> {
-  return new IntersectionType(types, name)
+export function intersection<RTS extends Array<Any>>(
+  types: RTS,
+  name: string = `(${types.map(type => type.name).join(' & ')})`
+): IntersectionType<RTS, any> {
+  return new IntersectionType(
+    name,
+    (v): v is any => types.every(type => type.is(v)),
+    (s, c) => {
+      let a = s
+      let changed = false
+      const errors: Errors = []
+      for (let i = 0; i < types.length; i++) {
+        const type = types[i]
+        const validation = type.validate(a, c)
+        validation.fold(
+          e => pushAll(errors, e),
+          va => {
+            changed = changed || va !== a
+            a = va
+          }
+        )
+      }
+      return errors.length ? failures(errors) : success(changed ? a : s)
+    },
+    types.every(type => type.serialize === identity)
+      ? identity
+      : a => {
+          let s = a
+          for (let i = 0; i < types.length; i++) {
+            const type = types[i]
+            s = type.serialize(s)
+          }
+          return s
+        },
+    types
+  )
 }
 
 //
@@ -598,33 +646,8 @@ export function intersection<RTS extends Array<Any>>(types: RTS, name?: string):
 
 export class TupleType<RTS extends Array<Any>, A> extends Type<any, A> {
   readonly _tag: 'TupleType' = 'TupleType'
-  constructor(readonly types: RTS, readonly name: string = `[${types.map(type => type.name).join(', ')}]`) {
-    super(
-      name,
-      (v): v is A => types.every((type, i) => type.is(v[i])),
-      (s, c) =>
-        arrayType.validate(s, c).chain(as => {
-          const t: Array<any> = []
-          const errors: Errors = []
-          let changed = false
-          for (let i = 0; i < types.length; i++) {
-            const a = as[i]
-            const type = types[i]
-            const validation = type.validate(a, c.concat(getContextEntry(String(i), type)))
-            validation.fold(
-              e => pushAll(errors, e),
-              va => {
-                changed = changed || va !== a
-                t.push(va)
-              }
-            )
-          }
-          return errors.length ? failures(errors) : success((changed ? t : as) as any)
-        }),
-      types.every(type => type.serialize === identity)
-        ? identity
-        : (v: any) => types.map((type, i) => type.serialize(v[i]))
-    )
+  constructor(name: string, is: Is<A>, validate: Validate<any, A>, serialize: Serialize<any, A>, readonly types: RTS) {
+    super(name, is, validate, serialize)
   }
 }
 
@@ -645,8 +668,37 @@ export function tuple<A extends Any, B extends Any>(
   name?: string
 ): TupleType<[A, B], [TypeOf<A>, TypeOf<B>]>
 export function tuple<A extends Any>(types: [A], name?: string): TupleType<[A], [TypeOf<A>]>
-export function tuple<RTS extends Array<Any>>(types: RTS, name?: string): TupleType<RTS, any> {
-  return new TupleType(types, name)
+export function tuple<RTS extends Array<Any>>(
+  types: RTS,
+  name: string = `[${types.map(type => type.name).join(', ')}]`
+): TupleType<RTS, any> {
+  return new TupleType(
+    name,
+    (v): v is any => types.every((type, i) => type.is(v[i])),
+    (s, c) =>
+      arrayType.validate(s, c).chain(as => {
+        const t: Array<any> = []
+        const errors: Errors = []
+        let changed = false
+        for (let i = 0; i < types.length; i++) {
+          const a = as[i]
+          const type = types[i]
+          const validation = type.validate(a, c.concat(getContextEntry(String(i), type)))
+          validation.fold(
+            e => pushAll(errors, e),
+            va => {
+              changed = changed || va !== a
+              t.push(va)
+            }
+          )
+        }
+        return errors.length ? failures(errors) : success((changed ? t : as) as any)
+      }),
+    types.every(type => type.serialize === identity)
+      ? identity
+      : (a: Array<any>) => types.map((type, i) => type.serialize(a[i])),
+    types
+  )
 }
 
 //
@@ -655,23 +707,31 @@ export function tuple<RTS extends Array<Any>>(types: RTS, name?: string): TupleT
 
 export class ReadonlyType<RT extends Any> extends Type<any, Readonly<TypeOf<RT>>> {
   readonly _tag: 'ReadonlyType' = 'ReadonlyType'
-  constructor(readonly type: RT, readonly name: string = `Readonly<${type.name}>`) {
-    super(
-      name,
-      type.is,
-      (s, c) =>
-        type.validate(s, c).map(x => {
-          if (process.env.NODE_ENV !== 'production') {
-            return Object.freeze(x)
-          }
-          return x
-        }),
-      type.serialize === identity ? identity : type.serialize
-    )
+  constructor(
+    name: string,
+    is: ReadonlyType<RT>['is'],
+    validate: ReadonlyType<RT>['validate'],
+    serialize: ReadonlyType<RT>['serialize'],
+    readonly type: RT
+  ) {
+    super(name, is, validate, serialize)
   }
 }
 
-export const readonly = <RT extends Any>(type: RT, name?: string): ReadonlyType<RT> => new ReadonlyType(type, name)
+export const readonly = <RT extends Any>(type: RT, name: string = `Readonly<${type.name}>`): ReadonlyType<RT> =>
+  new ReadonlyType(
+    name,
+    type.is,
+    (s, c) =>
+      type.validate(s, c).map(x => {
+        if (process.env.NODE_ENV !== 'production') {
+          return Object.freeze(x)
+        }
+        return x
+      }),
+    type.serialize === identity ? identity : type.serialize,
+    type
+  )
 
 //
 // readonlyArray
@@ -679,62 +739,80 @@ export const readonly = <RT extends Any>(type: RT, name?: string): ReadonlyType<
 
 export class ReadonlyArrayType<RT extends Any> extends Type<any, ReadonlyArray<TypeOf<RT>>> {
   readonly _tag: 'ReadonlyArrayType' = 'ReadonlyArrayType'
-  constructor(readonly type: RT, readonly name: string = `ReadonlyArray<${type.name}>`) {
-    super(
-      name,
-      (v): v is ReadonlyArray<TypeOf<RT>> => arrayType.is(v),
-      (s, c) =>
-        arrayType.validate(s, c).map(x => {
-          if (process.env.NODE_ENV !== 'production') {
-            return Object.freeze(x)
-          } else {
-            return x
-          }
-        }),
-      (() => {
-        arrayType = array(type)
-        return arrayType.serialize as any
-      })()
-    )
-    let arrayType: ArrayType<RT>
+  constructor(
+    name: string,
+    is: ReadonlyArrayType<RT>['is'],
+    validate: ReadonlyArrayType<RT>['validate'],
+    serialize: ReadonlyArrayType<RT>['serialize'],
+    readonly type: RT
+  ) {
+    super(name, is, validate, serialize)
   }
 }
 
-export const readonlyArray = <RT extends Any>(type: RT, name?: string): ReadonlyArrayType<RT> =>
-  new ReadonlyArrayType(type, name)
+export const readonlyArray = <RT extends Any>(
+  type: RT,
+  name: string = `ReadonlyArray<${type.name}>`
+): ReadonlyArrayType<RT> => {
+  const arrayType = array(type)
+  return new ReadonlyArrayType(
+    name,
+    (v): v is ReadonlyArray<TypeOf<RT>> => arrayType.is(v),
+    (s, c) =>
+      arrayType.validate(s, c).map(x => {
+        if (process.env.NODE_ENV !== 'production') {
+          return Object.freeze(x)
+        } else {
+          return x
+        }
+      }),
+    arrayType.serialize as any,
+    type
+  )
+}
 
 export class StrictType<P extends Props> extends Type<any, InterfaceOf<P>> {
   readonly _tag: 'StrictType' = 'StrictType'
-  constructor(readonly props: P, name?: string) {
-    super(
-      name || `StrictType<${getNameFromProps(props)}>`,
-      (v): v is InterfaceOf<P> => loose.is(v) && Object.getOwnPropertyNames(v).every(k => props.hasOwnProperty(k)),
-      (s, c) =>
-        loose.validate(s, c).chain(o => {
-          const keys = Object.getOwnPropertyNames(o)
-          if (keys.length !== len) {
-            const errors: Errors = []
-            for (let i = 0; i < keys.length; i++) {
-              const key = keys[i]
-              if (!props.hasOwnProperty(key)) {
-                errors.push(getValidationError(o[key], c.concat(getContextEntry(key, never))))
-              }
-            }
-            return errors.length ? failures(errors) : failure(o, c)
-          } else {
-            return success(o)
-          }
-        }),
-      type(props).serialize
-    )
-    const loose = type(props)
-    const len = Object.keys(props).length
+  constructor(
+    name: string,
+    is: StrictType<P>['is'],
+    validate: StrictType<P>['validate'],
+    serialize: StrictType<P>['serialize'],
+    readonly props: P
+  ) {
+    super(name, is, validate, serialize)
   }
 }
 
 /** Specifies that only the given interface properties are allowed */
-export function strict<P extends Props>(props: P, name?: string): StrictType<P> {
-  return new StrictType(props, name)
+export function strict<P extends Props>(
+  props: P,
+  name: string = `StrictType<${getNameFromProps(props)}>`
+): StrictType<P> {
+  const loose = type(props)
+  const len = Object.keys(props).length
+  return new StrictType(
+    name,
+    (v): v is InterfaceOf<P> => loose.is(v) && Object.getOwnPropertyNames(v).every(k => props.hasOwnProperty(k)),
+    (s, c) =>
+      loose.validate(s, c).chain(o => {
+        const keys = Object.getOwnPropertyNames(o)
+        if (keys.length !== len) {
+          const errors: Errors = []
+          for (let i = 0; i < keys.length; i++) {
+            const key = keys[i]
+            if (!props.hasOwnProperty(key)) {
+              errors.push(getValidationError(o[key], c.concat(getContextEntry(key, never))))
+            }
+          }
+          return errors.length ? failures(errors) : failure(o, c)
+        } else {
+          return success(o)
+        }
+      }),
+    loose.serialize,
+    props
+  )
 }
 
 export { nullType as null, undefinedType as undefined, arrayType as Array, functionType as Function, type as interface }
