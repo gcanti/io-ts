@@ -27,4 +27,17 @@ describe('readonlyArray', () => {
     const T = t.readonlyArray(t.number)
     assert.strictEqual(T.serialize, t.identity)
   })
+
+  it('should type guard', () => {
+    const T1 = t.readonlyArray(t.number)
+    assert.strictEqual(T1.is([]), true)
+    assert.strictEqual(T1.is([0]), true)
+    assert.strictEqual(T1.is([0, 'foo']), false)
+    assert.strictEqual(T1.is(undefined), false)
+    const T2 = t.readonlyArray(DateFromNumber)
+    assert.strictEqual(T2.is([]), true)
+    assert.strictEqual(T2.is([new Date(0)]), true)
+    assert.strictEqual(T2.is([new Date(0), 'foo']), false)
+    assert.strictEqual(T2.is(undefined), false)
+  })
 })

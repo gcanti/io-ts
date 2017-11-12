@@ -36,4 +36,15 @@ describe('array', () => {
     const T = t.array(t.number)
     assert.strictEqual(T.serialize, t.identity)
   })
+
+  it('should type guard', () => {
+    const T1 = t.array(t.number)
+    assert.strictEqual(T1.is([]), true)
+    assert.strictEqual(T1.is([0]), true)
+    assert.strictEqual(T1.is([0, 'foo']), false)
+    const T2 = t.array(DateFromNumber)
+    assert.strictEqual(T2.is([]), true)
+    assert.strictEqual(T2.is([new Date(0)]), true)
+    assert.strictEqual(T2.is([new Date(0), 0]), false)
+  })
 })

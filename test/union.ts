@@ -33,4 +33,15 @@ describe('union', () => {
     const T = t.union([t.type({ a: t.number }), t.string])
     assert.strictEqual(T.serialize, t.identity)
   })
+
+  it('should type guard', () => {
+    const T1 = t.union([t.string, t.number])
+    assert.strictEqual(T1.is(0), true)
+    assert.strictEqual(T1.is('foo'), true)
+    assert.strictEqual(T1.is(true), false)
+    const T2 = t.union([t.string, DateFromNumber])
+    assert.strictEqual(T2.is(new Date(0)), true)
+    assert.strictEqual(T2.is('foo'), true)
+    assert.strictEqual(T2.is(true), false)
+  })
 })

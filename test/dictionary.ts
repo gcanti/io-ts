@@ -35,4 +35,15 @@ describe('dictionary', () => {
     const T = t.dictionary(t.number)
     assert.strictEqual(T.serialize, t.identity)
   })
+
+  it('should type guard', () => {
+    const T1 = t.dictionary(t.number)
+    assert.strictEqual(T1.is({}), true)
+    assert.strictEqual(T1.is({ a: 1 }), true)
+    assert.strictEqual(T1.is({ a: 'foo' }), false)
+    const T2 = t.dictionary(DateFromNumber)
+    assert.strictEqual(T2.is({}), true)
+    assert.strictEqual(T2.is({ a: new Date(0) }), true)
+    assert.strictEqual(T2.is({ a: 0 }), false)
+  })
 })
