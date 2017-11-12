@@ -17,4 +17,11 @@ describe('literal', () => {
     const T = t.literal('a')
     assert.strictEqual(T.serialize, t.identity)
   })
+
+  it('should type guard', () => {
+    const T = t.literal('a')
+    assert.strictEqual(T.is('a'), true)
+    assert.strictEqual(T.is('b'), false)
+    assert.strictEqual(T.is(undefined), false)
+  })
 })

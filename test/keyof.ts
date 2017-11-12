@@ -18,4 +18,11 @@ describe('keyof', () => {
     const T = t.keyof({ a: 1, b: 2 })
     assert.strictEqual(T.serialize, t.identity)
   })
+
+  it('should type guard', () => {
+    const T = t.keyof({ a: 1, b: 2 })
+    assert.strictEqual(T.is('a'), true)
+    assert.strictEqual(T.is('c'), false)
+    assert.strictEqual(T.is(undefined), false)
+  })
 })

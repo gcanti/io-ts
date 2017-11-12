@@ -27,4 +27,15 @@ describe('readonly', () => {
     const T = t.readonly(t.type({ a: t.number }))
     assert.strictEqual(T.serialize, t.identity)
   })
+
+  it('should type guard', () => {
+    const T1 = t.readonly(t.type({ a: t.number }))
+    assert.strictEqual(T1.is({ a: 1 }), true)
+    assert.strictEqual(T1.is({ a: 'foo' }), false)
+    assert.strictEqual(T1.is(undefined), false)
+    const T2 = t.readonly(t.type({ a: DateFromNumber }))
+    assert.strictEqual(T2.is({ a: new Date(0) }), true)
+    assert.strictEqual(T2.is({ a: 0 }), false)
+    assert.strictEqual(T2.is(undefined), false)
+  })
 })

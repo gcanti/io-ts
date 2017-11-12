@@ -451,7 +451,7 @@ export const partial = <P extends Props>(
   const partial = type(partials)
   return new PartialType(
     name,
-    (_): _ is PartialOf<P> => partial.is as any,
+    (v): v is PartialOf<P> => partial.is(v),
     (s, c) => partial.validate(s, c) as any,
     useIdentity(props)
       ? identity
@@ -672,15 +672,16 @@ export function tuple<RTS extends Array<Any>>(
   types: RTS,
   name: string = `[${types.map(type => type.name).join(', ')}]`
 ): TupleType<RTS, any> {
+  const len = types.length
   return new TupleType(
     name,
-    (v): v is any => types.every((type, i) => type.is(v[i])),
+    (v): v is any => arrayType.is(v) && v.length === len && types.every((type, i) => type.is(v[i])),
     (s, c) =>
       arrayType.validate(s, c).chain(as => {
         const t: Array<any> = []
         const errors: Errors = []
         let changed = false
-        for (let i = 0; i < types.length; i++) {
+        for (let i = 0; i < len; i++) {
           const a = as[i]
           const type = types[i]
           const validation = type.validate(a, c.concat(getContextEntry(String(i), type)))
@@ -691,6 +692,9 @@ export function tuple<RTS extends Array<Any>>(
               t.push(va)
             }
           )
+        }
+        if (as.length > len) {
+          errors.push(getValidationError(as[len], c.concat(getContextEntry(String(len), never))))
         }
         return errors.length ? failures(errors) : success((changed ? t : as) as any)
       }),
