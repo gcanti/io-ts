@@ -1,6 +1,6 @@
 import * as assert from 'assert'
 import * as t from '../src/index'
-import { assertSuccess, assertFailure, assertStrictEqual, assertDeepEqual, number2, DateFromNumber } from './helpers'
+import { assertSuccess, assertFailure, assertStrictEqual, assertDeepEqual, DateFromNumber } from './helpers'
 
 describe('tuple', () => {
   it('should succeed validating a valid value', () => {
@@ -15,9 +15,8 @@ describe('tuple', () => {
   })
 
   it('should return the a new reference if validation succeeded and something changed', () => {
-    const T = t.tuple([number2, t.string])
-    const value = [1, 'a']
-    assertDeepEqual(t.validate(value, T), [2, 'a'])
+    const T = t.tuple([DateFromNumber, t.string])
+    assertDeepEqual(t.validate([1, 'a'], T), [new Date(1), 'a'])
   })
 
   it('should fail validating an invalid value', () => {

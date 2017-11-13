@@ -1,7 +1,7 @@
 import { isRight } from 'fp-ts/lib/Either'
 import * as assert from 'assert'
 import * as t from '../src/index'
-import { assertSuccess, assertFailure, assertStrictEqual, assertDeepEqual, number2, DateFromNumber } from './helpers'
+import { assertSuccess, assertFailure, assertStrictEqual, assertDeepEqual, DateFromNumber } from './helpers'
 
 describe('interface', () => {
   it('should succeed validating a valid value', () => {
@@ -26,9 +26,8 @@ describe('interface', () => {
   })
 
   it('should return the a new reference if validation succeeded and something changed', () => {
-    const T = t.interface({ a: number2, b: t.number })
-    const value = { a: 1, b: 2 }
-    assertDeepEqual(t.validate(value, T), { a: 2, b: 2 })
+    const T = t.interface({ a: DateFromNumber, b: t.number })
+    assertDeepEqual(t.validate({ a: 1, b: 2 }, T), { a: new Date(1), b: 2 })
   })
 
   it('should fail validating an invalid value', () => {
