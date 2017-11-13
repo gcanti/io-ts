@@ -1,15 +1,16 @@
 # The idea
 
-A value of type `Type<T>` (called "runtime type") is the runtime representation of the static type `T`:
+A value of type `Type<S, A>` (called "runtime type") is the runtime representation of the static type `A`:
 
 ```js
-export class Type<A> {
+class Type<S, A> {
   readonly _A: A
+  readonly _S: S
   constructor(
     readonly name: string,
     readonly is: Is<A>,
-    readonly validate: Validate<A>,
-    readonly serialize: Serialize<A>
+    readonly validate: Validate<S, A>,
+    readonly serialize: Serialize<S, A>
   ) {}
 }
 ```
@@ -17,10 +18,20 @@ export class Type<A> {
 where `Validate<A>` is a specific validation function for the type `A`
 
 ```js
-export type Is<A> = (value: any) => value is A
-export type Validation<A> = Either<Array<ValidationError>, A>
-export type Validate<A> = (value: any, context: Context) => Validation<A>
-export type Serialize<A> = (value: A) => any
+export interface ContextEntry {
+  readonly key: string
+  readonly type: Any | NeverType
+}
+export type Context = Array<ContextEntry>
+export interface ValidationError {
+  readonly value: any
+  readonly context: Context
+}
+export type Errors = Array<ValidationError>
+export type Validation<A> = Either<Errors, A>
+export type Is<A> = (v: any) => v is A
+export type Validate<S, A> = (s: S, context: Context) => Validation<A>
+export type Serialize<S, A> = (a: A) => S
 ```
 
 Note. The `Either` type is defined in [fp-ts](https://github.com/gcanti/fp-ts), a library containing implementations of common algebraic types in TypeScript.
@@ -32,13 +43,13 @@ A runtime type representing `string` can be defined as
 ```js
 import * as t from 'io-ts'
 
-export class StringType extends Type<string> {
+export class StringType extends Type<any, string> {
   constructor() {
     super(
       'string',
       (v): v is string => typeof v === 'string',
-      (v, c) => (this.is(v) ? success(v) : failure(v, c)),
-      v => v
+      (s, c) => (this.is(s) ? success(s) : failure(s, c)),
+      a => a
     )
   }
 }
@@ -120,7 +131,7 @@ type IPerson = {
 
 ## Recursive types
 
-Note that recursive types can't be inferred
+Recursive types can't be inferred by TypeScript so you must provide the static type as a hint
 
 ```js
 // helper type
@@ -157,7 +168,7 @@ import * as t from 'io-ts'
 | array of any | `Array<any>` | `t.Array` |
 | array of type | `Array<A>` | `t.array(A)` |
 | dictionary of any | `{ [key: string]: any }` | `t.Dictionary` |
-| dictionary of type | `{ [key: A]: B }` | `t.dictionary(A, B)` |
+| dictionary of type | `{ [K in A]: B }` | `t.dictionary(A, B)` |
 | function | `Function` | `t.Function` |
 | literal | `'s'` | `t.literal('s')` |
 | partial | `Partial<{ name: string }>` | `t.partial({ name: t.string })` |
@@ -232,24 +243,25 @@ You can define your own types. Let's see an example
 ```ts
 import * as t from 'io-ts'
 
-// returns a Date from an ISO string
-const DateFromString: t.Type<Date> = {
-  _A: t._A,
-  name: 'DateFromString',
-  validate: (v, c) =>
+// represents a Date from an ISO string
+const DateFromString = new t.Type<any, Date>(
+  'DateFromString',
+  (v): v is Date => v instanceof Date,
+  (v, c) =>
     t.string.validate(v, c).chain(s => {
       const d = new Date(s)
-      return isNaN(d.getTime()) ? t.failure<Date>(s, c) : t.success(d)
-    })
-}
+      return isNaN(d.getTime()) ? t.failure(s, c) : t.success(d)
+    }),
+  a => a.toISOString()
+)
 
 const s = new Date(1973, 10, 30).toISOString()
 
 t.validate(s, DateFromString)
-// => Right(Date(..))
+// right(new Date('1973-11-29T23:00:00.000Z'))
 
 t.validate('foo', DateFromString)
-// => Left( 'Invalid value "foo" supplied to : DateFromString' )
+// left(errors...)
 ```
 
 Note that you can **deserialize** while validating.
@@ -263,11 +275,8 @@ You can define your own combinators. Let's see some examples
 An equivalent to `T | null`
 
 ```ts
-export function maybe<RT extends t.Any>(
-  type: RT,
-  name?: string
-): t.UnionType<[RT, typeof t.null], t.TypeOf<RT> | null> {
-  return t.union([type, t.null], name)
+export function maybe<RT extends t.Any>(type: RT, name?: string): t.UnionType<[RT, t.NullType]> {
+  return t.union<[RT, t.NullType]>([type, t.null], name)
 }
 ```
 
@@ -298,7 +307,7 @@ console.log(t.validate(payload, Payload).map(x => naiveConvertFtoC(x.celsius))) 
 Solution (branded types)
 
 ```ts
-export function brand<T, B extends string>(type: t.Type<T>, brand: B): t.Type<T & { readonly __brand: B }> {
+export function brand<S, A, B extends string>(type: t.Type<S, A>, _: B): t.Type<S, A & { readonly __brand: B }> {
   return type as any
 }
 
@@ -332,13 +341,14 @@ No, however you can define your own logic for that (if you *really* trust the in
 import * as t from 'io-ts'
 import { failure } from 'io-ts/lib/PathReporter'
 
-function unsafeValidate<T>(value: any, type: t.Type<T>): T {
+export function unsafeValidate<S, A>(value: any, type: t.Type<S, A>): A {
   if (process.env.NODE_ENV !== 'production') {
     return t.validate(value, type).fold(errors => {
       throw new Error(failure(errors).join('\n'))
-    }, x => x)
+    }, t.identity)
   }
-  return value as T
+  // unsafe cast
+  return value as A
 }
 ```
 

@@ -78,9 +78,11 @@ const x11: TypeOf<typeof I2> = { name: 'name', father: { surname: 'surname' } }
 // dictionary
 //
 
-const D1 = t.dictionary(t.number)
+const D1 = t.dictionary(t.keyof({ a: true }), t.number)
 // $ExpectError Type 'string' is not assignable to type 'number'
 const x12: TypeOf<typeof D1> = { a: 's' }
+// $ExpectError Object literal may only specify known properties, and 'c' does not exist in type '{ a: number; }'
+const x12_2: TypeOf<typeof D1> = { c: 1 }
 const x13: TypeOf<typeof D1> = { a: 1 }
 
 //

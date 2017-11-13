@@ -1,6 +1,6 @@
 import * as assert from 'assert'
 import * as t from '../src/index'
-import { assertSuccess, assertFailure, assertStrictEqual, assertDeepEqual, number2, DateFromNumber } from './helpers'
+import { assertSuccess, assertFailure, assertStrictEqual, assertDeepEqual, DateFromNumber } from './helpers'
 
 describe('array', () => {
   it('should succeed validating a valid value', () => {
@@ -16,9 +16,8 @@ describe('array', () => {
   })
 
   it('should return a new reference if validation succeeded and something changed', () => {
-    const T = t.array(number2)
-    const value = [1, 2, 3]
-    assertDeepEqual(t.validate(value, T), [2, 4, 6])
+    const T = t.array(DateFromNumber)
+    assertDeepEqual(t.validate([1, 2, 3], T), [new Date(1), new Date(2), new Date(3)])
   })
 
   it('should fail validating an invalid value', () => {
