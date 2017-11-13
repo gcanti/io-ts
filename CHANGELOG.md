@@ -17,7 +17,6 @@
 - **Breaking Change**
   - remove `t.map` and `t.mapWithName` (in general doesn't look serializable, needs more investigation)
   - remove `t.prism` (in general doesn't look serializable, needs more investigation)
-  - remove `domain` type from `t.dictionary` (doesn't play nicely with strictFunctionType)
   - change `Type` from interface to class (since TypeScript is structural shouldn't be a breaking change though)
     - remove `t._A`
   - add `Type#serialize`

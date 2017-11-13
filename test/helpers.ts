@@ -20,22 +20,29 @@ export function assertDeepEqual<T>(validation: t.Validation<T>, value: any): voi
   assert.deepEqual(validation.fold<any>(t.identity, t.identity), value)
 }
 
-export const number2 = new t.Type<any, number>(
-  'number2',
-  t.number.is,
-  (v, c) => t.number.validate(v, c).map(n => n * 2),
-  t.identity
+export const string2 = new t.Type<any, string>(
+  'string2',
+  (v): v is string => t.string.is(v) && v[1] === '-',
+  (s, c) =>
+    t.string.validate(s, c).chain(s => {
+      if (s.length === 2) {
+        return t.success(s[0] + '-' + s[1])
+      } else {
+        return t.failure(s, c)
+      }
+    }),
+  a => a[0] + a[2]
 )
 
 export const DateFromNumber = new t.Type<any, Date>(
   'DateFromNumber',
   (v): v is Date => v instanceof Date,
-  (v, c) =>
-    t.number.validate(v, c).chain(n => {
+  (s, c) =>
+    t.number.validate(s, c).chain(n => {
       const d = new Date(n)
       return isNaN(d.getTime()) ? t.failure(n, c) : t.success(d)
     }),
-  v => v.getTime()
+  a => a.getTime()
 )
 
 export const NumberFromString = new t.Type<string, number>(

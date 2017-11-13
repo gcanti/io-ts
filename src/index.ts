@@ -473,26 +473,28 @@ export const partial = <P extends Props>(
 // dictionaries
 //
 
-export class DictionaryType<C extends Any> extends Type<any, { [key: string]: TypeOf<C> }> {
+export class DictionaryType<D extends Any, C extends Any> extends Type<any, { [K in TypeOf<D>]: TypeOf<C> }> {
   readonly _tag: 'DictionaryType' = 'DictionaryType'
   constructor(
     name: string,
-    is: DictionaryType<C>['is'],
-    validate: DictionaryType<C>['validate'],
-    serialize: DictionaryType<C>['serialize'],
+    is: DictionaryType<D, C>['is'],
+    validate: DictionaryType<D, C>['validate'],
+    serialize: DictionaryType<D, C>['serialize'],
     readonly codomain: C
   ) {
     super(name, is, validate, serialize)
   }
 }
 
-export const dictionary = <C extends Any>(
+export const dictionary = <D extends Any, C extends Any>(
+  domain: D,
   codomain: C,
-  name: string = `{ [key: string]: ${codomain.name} }`
-): DictionaryType<C> =>
+  name: string = `{ [K in ${domain.name}]: ${codomain.name} }`
+): DictionaryType<D, C> =>
   new DictionaryType(
     name,
-    (v): v is { [key: string]: TypeOf<C> } => Dictionary.is(v) && Object.keys(v).every(k => codomain.is(v[k])),
+    (v): v is { [K in TypeOf<D>]: TypeOf<C> } =>
+      Dictionary.is(v) && Object.keys(v).every(k => domain.is(k) && codomain.is(v[k])),
     (s, c) =>
       Dictionary.validate(s, c).chain(o => {
         const a: { [key: string]: any } = {}
@@ -500,8 +502,16 @@ export const dictionary = <C extends Any>(
         let changed = false
         for (let k in o) {
           const ok = o[k]
-          const validation = codomain.validate(ok, c.concat(getContextEntry(k, codomain)))
-          validation.fold(
+          const domainValidation = domain.validate(k, c.concat(getContextEntry(k, domain)))
+          const codomainValidation = codomain.validate(ok, c.concat(getContextEntry(k, codomain)))
+          domainValidation.fold(
+            e => pushAll(errors, e),
+            vk => {
+              changed = changed || vk !== k
+              k = vk
+            }
+          )
+          codomainValidation.fold(
             e => pushAll(errors, e),
             vok => {
               changed = changed || vok !== ok
@@ -511,12 +521,12 @@ export const dictionary = <C extends Any>(
         }
         return errors.length ? failures(errors) : success((changed ? a : o) as any)
       }),
-    codomain.serialize === identity
+    domain.serialize === identity && codomain.serialize === identity
       ? identity
       : a => {
           const s: { [key: string]: any } = {}
           for (let k in a) {
-            s[k] = codomain.serialize(a[k])
+            s[domain.serialize(k)] = codomain.serialize((a as any)[k])
           }
           return s
         },
