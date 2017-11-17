@@ -61,3 +61,9 @@ describe('object', () => {
     assertFailure(t.validate(undefined, T), ['Invalid value undefined supplied to : object'])
   })
 })
+
+describe('Function', () => {
+  it('should accept functions', () => {
+    assertSuccess(t.validate(t.identity, t.Function))
+  })
+})

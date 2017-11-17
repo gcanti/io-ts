@@ -1,6 +1,6 @@
 {
   "name": "io-ts",
-  "version": "0.8.2",
+  "version": "0.9.0-dev.20171117",
   "description": "TypeScript compatible runtime type system for IO validation",
   "files": ["lib"],
   "main": "lib/index.js",
@@ -10,9 +10,11 @@
     "typings-checker": "typings-checker --allow-expect-error --project typings-checker/tsconfig.json typings-checker/index.ts",
     "mocha": "mocha -r ts-node/register test/*.ts",
     "prettier": "prettier --no-semi --single-quote --print-width 120 --parser typescript --list-different \"{src,test}/**/*.ts\"",
+    "flow-copy-definition-files": "cp src/*.js.flow lib",
+    "flow-test": "flow status",
     "test": "npm run prettier && npm run lint && npm run typings-checker && npm run mocha",
     "clean": "rm -rf lib/*",
-    "build": "npm run clean && tsc"
+    "build": "npm run clean && tsc && npm run flow-copy-definition-files"
   },
   "repository": {
     "type": "git",
