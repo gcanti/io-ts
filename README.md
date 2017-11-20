@@ -161,9 +161,9 @@ import * as t from 'io-ts'
 | keyof | `keyof M` | `t.keyof(M)` |
 | recursive types | see [Recursive types](#recursive-types) | `t.recursion(name, definition)` |
 | refinement | ✘ | `t.refinement(A, predicate)` |
-| map | ✘ | `t.map(f, type)` |
-| prism | ✘ | `t.prism(type, getOption)` |
 | strict | ✘ | `t.strict({ name: t.string })` |
+| map (deprecated) | ✘ | `t.map(f, type)` |
+| prism (deprecated) | ✘ | `t.prism(type, getOption)` |
 
 # Refinements
 
