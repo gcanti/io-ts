@@ -154,35 +154,35 @@ const Category = t.recursion<ICategory>('Category', self =>
 import * as t from 'io-ts'
 ```
 
-| Type | TypeScript annotation syntax | Runtime type / combinator |
-|------|-------|-------------|
-| null | `null` | `t.null` or `t.nullType` |
-| undefined | `undefined` | `t.undefined` |
-| string | `string` | `t.string` |
-| number | `number` | `t.number` |
-| boolean | `boolean` | `t.boolean` |
-| any | `any` | `t.any` |
-| never | `never` | `t.never` |
-| object | `object` | `t.object` |
-| integer | ✘ | `t.Integer` |
-| array of any | `Array<any>` | `t.Array` |
-| array of type | `Array<A>` | `t.array(A)` |
-| dictionary of any | `{ [key: string]: any }` | `t.Dictionary` |
-| dictionary of type | `{ [K in A]: B }` | `t.dictionary(A, B)` |
-| function | `Function` | `t.Function` |
-| literal | `'s'` | `t.literal('s')` |
-| partial | `Partial<{ name: string }>` | `t.partial({ name: t.string })` |
-| readonly | `Readonly<T>` | `t.readonly(T)` |
-| readonly array | `ReadonlyArray<number>` | `t.readonlyArray(t.number)` |
-| interface | `interface A { name: string }` | `t.interface({ name: t.string })` or `t.type({ name: t.string })` |
-| interface inheritance | `interface B extends A {}` | `t.intersection([ A, t.interface({}) ])` |
-| tuple | `[ A, B ]` | `t.tuple([ A, B ])` |
-| union | `A \| B` | `t.union([ A, B ])` |
-| intersection | `A & B` | `t.intersection([ A, B ])` |
-| keyof | `keyof M` | `t.keyof(M)` |
-| recursive types | see [Recursive types](#recursive-types) | `t.recursion(name, definition)` |
-| refinement | ✘ | `t.refinement(A, predicate)` |
-| strict | ✘ | `t.strict({ name: t.string })` |
+| Type | TypeScript | Flow | Runtime type / combinator |
+|------|------------|------|---------------------------|
+| null | `null` | `null` | `t.null` or `t.nullType` |
+| undefined | `undefined` | `void` | `t.undefined` |
+| string | `string` | `string` | `t.string` |
+| number | `number` | `number` | `t.number` |
+| boolean | `boolean` | `boolean` | `t.boolean` |
+| any | `any` | `any` | `t.any` |
+| never | `never` | `empty` | `t.never` |
+| object | `object` | ✘ | `t.object` |
+| integer | ✘ | ✘ | `t.Integer` |
+| array of any | `Array<any>` | `Array<any>` | `t.Array` |
+| array of type | `Array<A>` | `Array<A>` | `t.array(A)` |
+| dictionary of any | `{ [key: string]: any }` | `{ [key: string]: any }` | `t.Dictionary` |
+| dictionary of type | `{ [K in A]: B }` | `{ [key: A]: B }` | `t.dictionary(A, B)` |
+| function | `Function` | `Function` | `t.Function` |
+| literal | `'s'` | `'s'` | `t.literal('s')` |
+| partial | `Partial<{ name: string }>` | `$Shape<{ name: string }>` | `t.partial({ name: t.string })` |
+| readonly | `Readonly<T>` | `ReadOnly<T>` | `t.readonly(T)` |
+| readonly array | `ReadonlyArray<number>` | `ReadOnlyArray<number>` | `t.readonlyArray(t.number)` |
+| interface | `interface A { name: string }` | `interface A { name: string }` | `t.interface({ name: t.string })` or `t.type({ name: t.string })` |
+| interface inheritance | `interface B extends A {}` | `interface B extends A {}` | `t.intersection([ A, t.interface({}) ])` |
+| tuple | `[ A, B ]` | `[ A, B ]` | `t.tuple([ A, B ])` |
+| union | `A \| B` | `A \| B` | `t.union([ A, B ])` |
+| intersection | `A & B` | `A & B` | `t.intersection([ A, B ])` |
+| keyof | `keyof M` | `$Keys<M>` | `t.keyof(M)` |
+| recursive types | see [Recursive types](#recursive-types) | see [Recursive types](#recursive-types) | `t.recursion(name, definition)` |
+| refinement | ✘ | ✘ | `t.refinement(A, predicate)` |
+| strict/exact types | ✘ | `$Exact<{{ name: t.string }}>` | `t.strict({ name: t.string })` |
 
 # Refinements
 
@@ -194,7 +194,7 @@ const Positive = t.refinement(t.number, n => n >= 0, 'Positive')
 const Adult = t.refinement(Person, person => person.age >= 18, 'Adult')
 ```
 
-# Strict interfaces
+# Strict/Exact interfaces
 
 You can make an interface strict (which means that only the given properties are allowed) using the `strict` combinator
 
