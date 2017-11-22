@@ -46,7 +46,9 @@ export class Type<S, A> {
       name || `pipe(${this.name}, ${ab.name})`,
       (v): v is B => this.is(v) && ab.is(v),
       (s, c) => this.validate(s, c).chain(a => ab.validate(a, c)),
-      this.serialize === identity && ab.serialize === identity ? identity as any : b => this.serialize(ab.serialize(b))
+      this.serialize === identity && ab.serialize === identity
+        ? (identity as any)
+        : b => this.serialize(ab.serialize(b))
     )
   }
 }
@@ -365,7 +367,9 @@ export class InterfaceType<P extends Props> extends Type<any, InterfaceOf<P>> {
 }
 
 const getNameFromProps = (props: Props): string =>
-  `{ ${Object.keys(props).map(k => `${k}: ${props[k].name}`).join(', ')} }`
+  `{ ${Object.keys(props)
+    .map(k => `${k}: ${props[k].name}`)
+    .join(', ')} }`
 
 const useIdentity = (props: Props): boolean => {
   for (let k in props) {
@@ -413,7 +417,7 @@ export const type = <P extends Props>(props: P, name: string = getNameFromProps(
     useIdentity(props)
       ? identity
       : a => {
-          const s: { [x: string]: any } = { ...a as any }
+          const s: { [x: string]: any } = { ...(a as any) }
           for (let k in props) {
             s[k] = props[k].serialize(a[k])
           }

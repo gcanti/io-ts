@@ -11,8 +11,20 @@ describe('partial', () => {
 
   it('should not add optional keys', () => {
     const T = t.partial({ a: t.number })
-    assert.strictEqual(t.validate({}, T).fold<any>(t.identity, t.identity).hasOwnProperty('a'), false)
-    assert.strictEqual(t.validate({ b: 1 }, T).fold<any>(t.identity, t.identity).hasOwnProperty('a'), false)
+    assert.strictEqual(
+      t
+        .validate({}, T)
+        .fold<any>(t.identity, t.identity)
+        .hasOwnProperty('a'),
+      false
+    )
+    assert.strictEqual(
+      t
+        .validate({ b: 1 }, T)
+        .fold<any>(t.identity, t.identity)
+        .hasOwnProperty('a'),
+      false
+    )
   })
 
   it('should return the same reference if validation succeeded', () => {
