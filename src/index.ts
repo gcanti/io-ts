@@ -288,7 +288,8 @@ export const keyof = <D extends { [key: string]: any }>(
 
 export class RecursiveType<A> extends Type<any, A> {
   readonly _tag: 'RecursiveType' = 'RecursiveType'
-  readonly type: Any
+  // prettier-ignore
+  readonly 'type': Any
   constructor(name: string, is: Is<A>, validate: Validate<any, A>, serialize: Serialize<any, A>) {
     super(name, is, validate, serialize)
   }
@@ -544,13 +545,13 @@ export const dictionary = <D extends Any, C extends Any>(
 // unions
 //
 
-export class UnionType<RTS extends Array<Any>> extends Type<any, TypeOf<RTS['_A']>> {
+export class UnionType<RTS, A> extends Type<any, A> {
   readonly _tag: 'UnionType' = 'UnionType'
   constructor(
     name: string,
-    is: UnionType<RTS>['is'],
-    validate: UnionType<RTS>['validate'],
-    serialize: UnionType<RTS>['serialize'],
+    is: UnionType<RTS, A>['is'],
+    validate: UnionType<RTS, A>['validate'],
+    serialize: UnionType<RTS, A>['serialize'],
     readonly types: RTS
   ) {
     super(name, is, validate, serialize)
@@ -560,7 +561,7 @@ export class UnionType<RTS extends Array<Any>> extends Type<any, TypeOf<RTS['_A'
 export const union = <RTS extends Array<Any>>(
   types: RTS,
   name: string = `(${types.map(type => type.name).join(' | ')})`
-): UnionType<RTS> =>
+): UnionType<RTS, TypeOf<RTS['_A']>> =>
   new UnionType(
     name,
     (v): v is TypeOf<RTS['_A']> => types.some(type => type.is(v)),
@@ -595,7 +596,7 @@ export const union = <RTS extends Array<Any>>(
 // intersections
 //
 
-export class IntersectionType<RTS extends Array<Any>, A> extends Type<any, A> {
+export class IntersectionType<RTS, A> extends Type<any, A> {
   readonly _tag: 'IntersectionType' = 'IntersectionType'
   constructor(name: string, is: Is<A>, validate: Validate<any, A>, serialize: Serialize<any, A>, readonly types: RTS) {
     super(name, is, validate, serialize)
@@ -661,7 +662,7 @@ export function intersection<RTS extends Array<Any>>(
 // tuples
 //
 
-export class TupleType<RTS extends Array<Any>, A> extends Type<any, A> {
+export class TupleType<RTS, A> extends Type<any, A> {
   readonly _tag: 'TupleType' = 'TupleType'
   constructor(name: string, is: Is<A>, validate: Validate<any, A>, serialize: Serialize<any, A>, readonly types: RTS) {
     super(name, is, validate, serialize)

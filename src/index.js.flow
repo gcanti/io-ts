@@ -254,6 +254,68 @@ declare export class UnionType<RTS: Array<Any>, A> extends Type<any, A> {
 
 type AnyS<A> = Type<any, A>
 
+declare export function union<
+  A,
+  B,
+  C,
+  D,
+  E,
+  F,
+  G,
+  H,
+  I,
+  J,
+  RTS: [AnyS<A>, AnyS<B>, AnyS<C>, AnyS<D>, AnyS<E>, AnyS<F>, AnyS<G>, AnyS<H>, AnyS<I>, AnyS<J>]
+>(
+  types: RTS,
+  name?: string
+): UnionType<RTS, A | B | C | D | E | F | G | H | I | J>
+declare export function union<
+  A,
+  B,
+  C,
+  D,
+  E,
+  F,
+  G,
+  H,
+  I,
+  RTS: [AnyS<A>, AnyS<B>, AnyS<C>, AnyS<D>, AnyS<E>, AnyS<F>, AnyS<G>, AnyS<H>, AnyS<I>]
+>(
+  types: RTS,
+  name?: string
+): UnionType<RTS, A | B | C | D | E | F | G | H | I>
+declare export function union<
+  A,
+  B,
+  C,
+  D,
+  E,
+  F,
+  G,
+  H,
+  RTS: [AnyS<A>, AnyS<B>, AnyS<C>, AnyS<D>, AnyS<E>, AnyS<F>, AnyS<G>, AnyS<H>]
+>(
+  types: RTS,
+  name?: string
+): UnionType<RTS, A | B | C | D | E | F | G | H>
+declare export function union<
+  A,
+  B,
+  C,
+  D,
+  E,
+  F,
+  G,
+  RTS: [AnyS<A>, AnyS<B>, AnyS<C>, AnyS<D>, AnyS<E>, AnyS<F>, AnyS<G>]
+>(
+  types: RTS,
+  name?: string
+): UnionType<RTS, A | B | C | D | E | F | G>
+declare export function union<A, B, C, D, E, F, RTS: [AnyS<A>, AnyS<B>, AnyS<C>, AnyS<D>, AnyS<E>, AnyS<F>]>(
+  types: RTS,
+  name?: string
+): UnionType<RTS, A | B | C | D | E | F>
 declare export function union<A, B, C, D, E, RTS: [AnyS<A>, AnyS<B>, AnyS<C>, AnyS<D>, AnyS<E>]>(
   types: RTS,
   name?: string
@@ -268,7 +330,6 @@ declare export function union<A, B, C, RTS: [AnyS<A>, AnyS<B>, AnyS<C>]>(
 ): UnionType<RTS, A | B | C>
 declare export function union<A, B, RTS: [AnyS<A>, AnyS<B>]>(types: RTS, name?: string): UnionType<RTS, A | B>
 declare export function union<A, RTS: [AnyS<A>]>(types: RTS, name?: string): UnionType<RTS, A>
-declare export function union<RTS: []>(types: RTS, name?: string): UnionType<RTS, empty>
 
 //
 // intersections
