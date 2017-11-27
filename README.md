@@ -279,60 +279,9 @@ You can define your own combinators. Let's see some examples
 An equivalent to `T | null`
 
 ```ts
-export function maybe<RT extends t.Any>(type: RT, name?: string): t.UnionType<[RT, t.NullType]> {
+export function maybe<RT extends t.Any>(type: RT, name?: string): t.UnionType<[RT, t.NullType], t.TypeOf<RT> | null> {
   return t.union<[RT, t.NullType]>([type, t.null], name)
 }
-```
-
-## The `brand` combinator
-
-The problem
-
-```ts
-const payload = {
-  celsius: 100,
-  fahrenheit: 100
-}
-
-const Payload = t.interface({
-  celsius: t.number,
-  fahrenheit: t.number
-})
-
-// x can be anything
-function naiveConvertFtoC(x: number): number {
-  return (x - 32) / 1.8
-}
-
-// typo: celsius instead of fahrenheit
-console.log(t.validate(payload, Payload).map(x => naiveConvertFtoC(x.celsius))) // NO error :(
-```
-
-Solution (branded types)
-
-```ts
-export function brand<S, A, B extends string>(type: t.Type<S, A>, _: B): t.Type<S, A & { readonly __brand: B }> {
-  return type as any
-}
-
-const Fahrenheit = brand(t.number, 'Fahrenheit')
-const Celsius = brand(t.number, 'Celsius')
-
-type CelsiusT = t.TypeOf<typeof Celsius>
-type FahrenheitT = t.TypeOf<typeof Fahrenheit>
-
-const Payload2 = t.interface({
-  celsius: Celsius,
-  fahrenheit: Fahrenheit
-})
-
-// narrowed types
-function convertFtoC(fahrenheit: FahrenheitT): CelsiusT {
-  return ((fahrenheit - 32) / 1.8) as CelsiusT
-}
-
-console.log(t.validate(payload, Payload2).map(x => convertFtoC(x.celsius))) // error: Type '"Celsius"' is not assignable to type '"Fahrenheit"'
-console.log(t.validate(payload, Payload2).map(x => convertFtoC(x.fahrenheit))) // ok
 ```
 
 # Recipes
