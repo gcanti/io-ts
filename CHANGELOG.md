@@ -1,162 +1,167 @@
 # Changelog
 
 > **Tags:**
-> - [New Feature]
-> - [Bug Fix]
-> - [Breaking Change]
-> - [Documentation]
-> - [Internal]
-> - [Polish]
-> - [Experimental]
+>
+> * [New Feature]
+> * [Bug Fix]
+> * [Breaking Change]
+> * [Documentation]
+> * [Internal]
+> * [Polish]
+> * [Experimental]
 
-**Note**: Gaps between patch versions are faulty/broken releases.
-**Note**: A feature tagged as Experimental is in a high state of flux, you're at risk of it changing without notice.
+**Note**: Gaps between patch versions are faulty/broken releases. **Note**: A feature tagged as Experimental is in a
+high state of flux, you're at risk of it changing without notice.
 
 # 0.9.0
 
-- **Breaking Change**
-  - remove `t.map` and `t.mapWithName` (in general doesn't look serializable, needs more investigation)
-  - remove `t.prism` (in general doesn't look serializable, needs more investigation)
-  - change `Type` from interface to class (since TypeScript is structural shouldn't be a breaking change though)
-    - remove `t._A`
-  - add `Type#serialize`
-  - add `Type#is` (in order to serialize unions and while we're at it, looks useful anyway)
-  - remove `t.is` (now that there's `Type#is` is misleading)
-
+* **Breaking Change**
+  * remove `t.map` and `t.mapWithName` (in general doesn't look serializable, needs more investigation)
+  * remove `t.prism` (in general doesn't look serializable, needs more investigation)
+  * change `Type` from interface to class and add `S` type parameter
+    * remove `t._A`
+  * add `Type#serialize`
+  * add `Type#is` (in order to serialize unions and while we're at it, looks useful anyway)
+  * remove `t.is` (now that there's `Type#is` is misleading)
+* **Experimental**
+  * add Flowtype support (@gcanti)
 
 # 0.8.2
 
-- **New Feature**
-  - add `object` type, closes #86 (@gcanti)
+* **New Feature**
+  * add `object` type, closes #86 (@gcanti)
 
 # 0.8.1
 
-- **New Feature**
-  - add `strict` combinator, closes #84 (@phiresky, @gcanti)
+* **New Feature**
+  * add `strict` combinator, closes #84 (@phiresky, @gcanti)
 
 # 0.8.0
 
-- **Breaking Change**
-  - upgrade `fp-ts` dependency (@gcanti)
+* **Breaking Change**
+  * upgrade `fp-ts` dependency (@gcanti)
 
 # 0.7.2
 
-- **Bug Fix**
-  - tag recursive types, fix #80 (@gcanti)
+* **Bug Fix**
+  * tag recursive types, fix #80 (@gcanti)
 
 # 0.7.1
 
-- **Bug Fix**
-  - incorrect compile time type for dictionary, fix #75 (@gcanti)
+* **Bug Fix**
+  * incorrect compile time type for dictionary, fix #75 (@gcanti)
 
 # 0.7.0
 
-- **Breaking Change**
-  - upgrade to latest fp-ts (0.5.1) (@gcanti)
+* **Breaking Change**
+  * upgrade to latest fp-ts (0.5.1) (@gcanti)
 
 # 0.6.2
 
-- **New Feature**
-  - add aliases for `null` and `interface`, closes #63 (@gcanti)
+* **New Feature**
+  * add aliases for `null` and `interface`, closes #63 (@gcanti)
 
 # 0.6.1
 
-- **Internal**
-  - handle latest fp-ts (0.4.3) (@gcanti)
+* **Internal**
+  * handle latest fp-ts (0.4.3) (@gcanti)
 
 # 0.6.0
 
-- **Breaking Change**
-  - upgrade to latest fp-ts (0.4.0) (@gcanti)
-- **Internal**
-  - allow for infinite unions (@gcanti)
+* **Breaking Change**
+  * upgrade to latest fp-ts (0.4.0) (@gcanti)
+* **Internal**
+  * allow for infinite unions (@gcanti)
 
 # 0.5.1
 
-- **Bug Fix**
-  - export and rename `interfaceType` to `_interface`, fix #57 (@gcanti)
+* **Bug Fix**
+  * export and rename `interfaceType` to `_interface`, fix #57 (@gcanti)
 
 # 0.5.0
 
-- **Breaking Change**
-  - `Type` is now an interface
-  - types no more own a `is` method, use `t.is` instead
-  - unions no more own a `fold` method
-  - `Reporter`, `PathReporter`, `ThrowReporter` are now top level modules
+* **Breaking Change**
+  * `Type` is now an interface
+  * types no more own a `is` method, use `t.is` instead
+  * unions no more own a `fold` method
+  * `Reporter`, `PathReporter`, `ThrowReporter` are now top level modules
 
 # 0.4.0
 
-- **Breaking Change**
-  - upgrade to latest `fp-ts` (`io-ts` APIs are not changed though) (@gcanti)
-  - drop `lib-jsnext` folder
+* **Breaking Change**
+  * upgrade to latest `fp-ts` (`io-ts` APIs are not changed though) (@gcanti)
+  * drop `lib-jsnext` folder
 
 # 0.3.2
 
-- **Bug Fix**
-  - remove excess overloadings, fix #43 (@gcanti)
+* **Bug Fix**
+  * remove excess overloadings, fix #43 (@gcanti)
 
 # 0.3.1
 
-- **New Feature**
-  - add mapWithName and Functor instance, fix #37 (@gcanti)
-  - add prism combinator, fix #41 (@gcanti)
+* **New Feature**
+  * add mapWithName and Functor instance, fix #37 (@gcanti)
+  * add prism combinator, fix #41 (@gcanti)
 
 # 0.3.0
 
-This is a breaking change *only* if you are using fp-ts APIs
+This is a breaking change _only_ if you are using fp-ts APIs
 
-- **Breaking Change**
-  - upgrade to latest fp-ts v0.2 (@gcanti)
+* **Breaking Change**
+  * upgrade to latest fp-ts v0.2 (@gcanti)
 
 # 0.2.3
 
-- **Internal**
-  - upgrade to fp-ts v0.1 (@gcanti)
+* **Internal**
+  * upgrade to fp-ts v0.1 (@gcanti)
 
 # 0.2.2
 
-- **New Feature**
-  - add `partial` combinator (makes optional props possible)
-  - add `readonly` combinator (values are not frozen in production)
-  - add `readonlyArray` combinator (values are not frozen in production)
-  - add `never` type
-- **Breaking Changes**
-  - remove `maybe` combinator, can be defined in userland as
+* **New Feature**
+  * add `partial` combinator (makes optional props possible)
+  * add `readonly` combinator (values are not frozen in production)
+  * add `readonlyArray` combinator (values are not frozen in production)
+  * add `never` type
+* **Breaking Changes**
+  * remove `maybe` combinator, can be defined in userland as
     ```ts
-    export function maybe<RT extends t.Any>(type: RT, name?: string): t.UnionType<[RT, typeof t.null], t.TypeOf<RT> | null> {
+    export function maybe<RT extends t.Any>(
+      type: RT,
+      name?: string
+    ): t.UnionType<[RT, typeof t.null], t.TypeOf<RT> | null> {
       return t.union([type, t.null], name)
     }
     ```
-- **Polish**
-  - export `pathReporterFailure` function from default reporters
-- **Bug Fix**
-  - revert pruning excess properties (see https://github.com/gcanti/io-ts/pull/27 for context)
-  - revert `intersection` combinator accepting only `InterfaceType`s
-- **Experimental**
-  - Pattern matching / catamorphism for unions
+* **Polish**
+  * export `pathReporterFailure` function from default reporters
+* **Bug Fix**
+  * revert pruning excess properties (see https://github.com/gcanti/io-ts/pull/27 for context)
+  * revert `intersection` combinator accepting only `InterfaceType`s
+* **Experimental**
+  * Pattern matching / catamorphism for unions
 
 # 0.1.0
 
-- **New Feature**
-  - add support for jsnext
-  - add `Integer` type
+* **New Feature**
 
-- **Breaking Changes**
-  - `t.Object` type. Renamed to `t.Dictionary`, now accepts arrays so is fully equivalent to `{ [key: string]: any }`.
-  - `t.instanceOf` combinator. Removed.
-  - `t.object` combinator. Renamed to `t.interface`. `ObjectType` to `InterfaceType`. Excess properties are now pruned.
-  - `mapping` combinator. Renamed to `dictionary`. `MappingType` to `DictionaryType`.
-  - `intersection` combinator. Due to the new excess property pruning in `t.interface` now only accept `InterfaceType`s.
-  - API `isSuccess` removed, use `either.isRight` instead
-  - API `isFailure` removed, use `either.isLeft` instead
-  - API `fromValidation` removed
+  * add support for jsnext
+  * add `Integer` type
+
+* **Breaking Changes**
+  * `t.Object` type. Renamed to `t.Dictionary`, now accepts arrays so is fully equivalent to `{ [key: string]: any }`.
+  * `t.instanceOf` combinator. Removed.
+  * `t.object` combinator. Renamed to `t.interface`. `ObjectType` to `InterfaceType`. Excess properties are now pruned.
+  * `mapping` combinator. Renamed to `dictionary`. `MappingType` to `DictionaryType`.
+  * `intersection` combinator. Due to the new excess property pruning in `t.interface` now only accept `InterfaceType`s.
+  * API `isSuccess` removed, use `either.isRight` instead
+  * API `isFailure` removed, use `either.isLeft` instead
+  * API `fromValidation` removed
 
 # 0.0.2
 
-- **Bug Fix**
-  - reverse overloading definitions for unions, intersections and tuples, fix inference bug
+* **Bug Fix**
+  * reverse overloading definitions for unions, intersections and tuples, fix inference bug
 
 # 0.0.1
 
 Initial release
-
