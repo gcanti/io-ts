@@ -1,18 +1,26 @@
 {
   "name": "io-ts",
-  "version": "0.8.2",
+  "version": "0.9.0-dev.20171123",
   "description": "TypeScript compatible runtime type system for IO validation",
   "files": ["lib"],
   "main": "lib/index.js",
   "typings": "lib/index.d.ts",
   "scripts": {
     "lint": "tslint src/**/*.ts test/**/*.ts",
-    "typings-checker": "typings-checker --allow-expect-error --project typings-checker/tsconfig.json typings-checker/index.ts",
+    "typings-checker":
+      "typings-checker --allow-expect-error --project typings-checker/tsconfig.json typings-checker/index.ts",
     "mocha": "mocha -r ts-node/register test/*.ts",
-    "prettier": "prettier --no-semi --single-quote --print-width 120 --parser typescript --list-different \"{src,test}/**/*.ts\"",
+    "prettier":
+      "prettier --no-semi --single-quote --print-width 120 --parser typescript --list-different \"{src,test}/**/*.ts\"",
+    "fix-prettier":
+      "prettier --no-semi --single-quote --print-width 120 --parser typescript --write \"{src,test,examples,exercises}/**/*.ts\"",
+    "flow-copy-definition-files": "cp src/*.js.flow lib",
+    "flow-test": "flow status",
+    "flow-fix-prettier":
+      "prettier --no-semi --single-quote --print-width 120 --parser flow --write \"{src,test,examples,exercises}/**/*.js.flow\"",
     "test": "npm run prettier && npm run lint && npm run typings-checker && npm run mocha",
     "clean": "rm -rf lib/*",
-    "build": "npm run clean && tsc"
+    "build": "npm run clean && tsc && npm run flow-copy-definition-files"
   },
   "repository": {
     "type": "git",
@@ -25,13 +33,13 @@
   },
   "homepage": "https://github.com/gcanti/io-ts",
   "dependencies": {
-    "fp-ts": "^0.6.0"
+    "fp-ts": "^0.6.4"
   },
   "devDependencies": {
     "@types/mocha": "2.2.38",
     "@types/node": "7.0.4",
     "mocha": "3.2.0",
-    "prettier": "1.5.2",
+    "prettier": "1.8.2",
     "ts-node": "3.2.0",
     "tslint": "4.4.2",
     "tslint-config-standard": "4.0.0",

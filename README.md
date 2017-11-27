@@ -34,7 +34,8 @@ export type Validate<S, A> = (s: S, context: Context) => Validation<A>
 export type Serialize<S, A> = (a: A) => S
 ```
 
-Note. The `Either` type is defined in [fp-ts](https://github.com/gcanti/fp-ts), a library containing implementations of common algebraic types in TypeScript.
+Note. The `Either` type is defined in [fp-ts](https://github.com/gcanti/fp-ts), a library containing implementations of
+common algebraic types in TypeScript.
 
 **Example**
 
@@ -82,8 +83,8 @@ interface Reporter<A> {
 
 This package exports two default reporters
 
-- `PathReporter: Reporter<Array<string>>`
-- `ThrowReporter: Reporter<void>`
+* `PathReporter: Reporter<Array<string>>`
+* `ThrowReporter: Reporter<void>`
 
 Example
 
@@ -91,7 +92,7 @@ Example
 import { PathReporter } from 'io-ts/lib/PathReporter'
 import { ThrowReporter } from 'io-ts/lib/ThrowReporter'
 
-const validation = t.validate({"name":"Giulio"}, Person)
+const validation = t.validate({ name: 'Giulio' }, Person)
 
 console.log(PathReporter.report(validation))
 // => ['Invalid value undefined supplied to : { name: string, age: number }/age: number']
@@ -102,8 +103,9 @@ ThrowReporter.report(validation)
 
 # Community
 
-- [io-ts-reporters](https://github.com/OliverJAsh/io-ts-reporters) - Error reporters for io-ts
-- [geojson-iots](https://github.com/pierremarc/geojson-iots) - Runtime types for GeoJSON as defined in rfc7946 made with io-ts
+* [io-ts-reporters](https://github.com/OliverJAsh/io-ts-reporters) - Error reporters for io-ts
+* [geojson-iots](https://github.com/pierremarc/geojson-iots) - Runtime types for GeoJSON as defined in rfc7946 made with
+  io-ts
 
 # TypeScript integration
 
@@ -111,7 +113,8 @@ Runtime types can be inspected
 
 ![instrospection](docs/images/introspection.png)
 
-This library uses TypeScript extensively. Its API is defined in a way which automatically infers types for produced values
+This library uses TypeScript extensively. Its API is defined in a way which automatically infers types for produced
+values
 
 ![inference](docs/images/inference.png)
 
@@ -140,12 +143,15 @@ type ICategory = {
   categories: Array<ICategory>
 }
 
-const Category = t.recursion<ICategory>('Category', self =>
-  t.interface({
-    name: t.string,
-    categories: t.array(self)
-  })
-)
+const Category =
+  t.recursion <
+  ICategory >
+  ('Category',
+  self =>
+    t.interface({
+      name: t.string,
+      categories: t.array(self)
+    }))
 ```
 
 # Implemented types / combinators
@@ -154,37 +160,35 @@ const Category = t.recursion<ICategory>('Category', self =>
 import * as t from 'io-ts'
 ```
 
-| Type | TypeScript annotation syntax | Runtime type / combinator |
-|------|-------|-------------|
-| null | `null` | `t.null` or `t.nullType` |
-| undefined | `undefined` | `t.undefined` |
-| string | `string` | `t.string` |
-| number | `number` | `t.number` |
-| boolean | `boolean` | `t.boolean` |
-| any | `any` | `t.any` |
-| never | `never` | `t.never` |
-| object | `object` | `t.object` |
-| integer | ✘ | `t.Integer` |
-| array of any | `Array<any>` | `t.Array` |
-| array of type | `Array<A>` | `t.array(A)` |
-| dictionary of any | `{ [key: string]: any }` | `t.Dictionary` |
-| dictionary of type | `{ [K in A]: B }` | `t.dictionary(A, B)` |
-| function | `Function` | `t.Function` |
-| literal | `'s'` | `t.literal('s')` |
-| partial | `Partial<{ name: string }>` | `t.partial({ name: t.string })` |
-| readonly | `Readonly<T>` | `t.readonly(T)` |
-| readonly array | `ReadonlyArray<number>` | `t.readonlyArray(t.number)` |
-| interface | `interface A { name: string }` | `t.interface({ name: t.string })` or `t.type({ name: t.string })` |
-| interface inheritance | `interface B extends A {}` | `t.intersection([ A, t.interface({}) ])` |
-| tuple | `[ A, B ]` | `t.tuple([ A, B ])` |
-| union | `A \| B` | `t.union([ A, B ])` |
-| intersection | `A & B` | `t.intersection([ A, B ])` |
-| keyof | `keyof M` | `t.keyof(M)` |
-| recursive types | see [Recursive types](#recursive-types) | `t.recursion(name, definition)` |
-| refinement | ✘ | `t.refinement(A, predicate)` |
-| strict | ✘ | `t.strict({ name: t.string })` |
-| map (deprecated) | ✘ | `t.map(f, type)` |
-| prism (deprecated) | ✘ | `t.prism(type, getOption)` |
+| Type                  | TypeScript                              | Flow                                    | Runtime type / combinator                                         |
+| --------------------- | --------------------------------------- | --------------------------------------- | ----------------------------------------------------------------- |
+| null                  | `null`                                  | `null`                                  | `t.null` or `t.nullType`                                          |
+| undefined             | `undefined`                             | `void`                                  | `t.undefined`                                                     |
+| string                | `string`                                | `string`                                | `t.string`                                                        |
+| number                | `number`                                | `number`                                | `t.number`                                                        |
+| boolean               | `boolean`                               | `boolean`                               | `t.boolean`                                                       |
+| any                   | `any`                                   | `any`                                   | `t.any`                                                           |
+| never                 | `never`                                 | `empty`                                 | `t.never`                                                         |
+| object                | `object`                                | ✘                                       | `t.object`                                                        |
+| integer               | ✘                                       | ✘                                       | `t.Integer`                                                       |
+| array of any          | `Array<any>`                            | `Array<any>`                            | `t.Array`                                                         |
+| array of type         | `Array<A>`                              | `Array<A>`                              | `t.array(A)`                                                      |
+| dictionary of any     | `{ [key: string]: any }`                | `{ [key: string]: any }`                | `t.Dictionary`                                                    |
+| dictionary of type    | `{ [K in A]: B }`                       | `{ [key: A]: B }`                       | `t.dictionary(A, B)`                                              |
+| function              | `Function`                              | `Function`                              | `t.Function`                                                      |
+| literal               | `'s'`                                   | `'s'`                                   | `t.literal('s')`                                                  |
+| partial               | `Partial<{ name: string }>`             | `$Shape<{ name: string }>`              | `t.partial({ name: t.string })`                                   |
+| readonly              | `Readonly<T>`                           | `ReadOnly<T>`                           | `t.readonly(T)`                                                   |
+| readonly array        | `ReadonlyArray<number>`                 | `ReadOnlyArray<number>`                 | `t.readonlyArray(t.number)`                                       |
+| interface             | `interface A { name: string }`          | `interface A { name: string }`          | `t.interface({ name: t.string })` or `t.type({ name: t.string })` |
+| interface inheritance | `interface B extends A {}`              | `interface B extends A {}`              | `t.intersection([ A, t.interface({}) ])`                          |
+| tuple                 | `[ A, B ]`                              | `[ A, B ]`                              | `t.tuple([ A, B ])`                                               |
+| union                 | `A \| B`                                | `A \| B`                                | `t.union([ A, B ])`                                               |
+| intersection          | `A & B`                                 | `A & B`                                 | `t.intersection([ A, B ])`                                        |
+| keyof                 | `keyof M`                               | `$Keys<M>`                              | `t.keyof(M)`                                                      |
+| recursive types       | see [Recursive types](#recursive-types) | see [Recursive types](#recursive-types) | `t.recursion(name, definition)`                                   |
+| refinement            | ✘                                       | ✘                                       | `t.refinement(A, predicate)`                                      |
+| strict/exact types    | ✘                                       | `$Exact<{{ name: t.string }}>`          | `t.strict({ name: t.string })`                                    |
 
 # Refinements
 
@@ -196,7 +200,7 @@ const Positive = t.refinement(t.number, n => n >= 0, 'Positive')
 const Adult = t.refinement(Person, person => person.age >= 18, 'Adult')
 ```
 
-# Strict interfaces
+# Strict/Exact interfaces
 
 You can make an interface strict (which means that only the given properties are allowed) using the `strict` combinator
 
@@ -231,7 +235,7 @@ type CT = t.TypeOf<typeof C>
 
 // same as
 type CT = {
-  foo: string,
+  foo: string
   bar?: number
 }
 ```
@@ -297,7 +301,7 @@ const Payload = t.interface({
 
 // x can be anything
 function naiveConvertFtoC(x: number): number {
-  return (x - 32) / 1.8;
+  return (x - 32) / 1.8
 }
 
 // typo: celsius instead of fahrenheit
@@ -335,7 +339,7 @@ console.log(t.validate(payload, Payload2).map(x => convertFtoC(x.fahrenheit))) /
 
 ## Is there a way to turn the checks off in production code?
 
-No, however you can define your own logic for that (if you *really* trust the input)
+No, however you can define your own logic for that (if you _really_ trust the input)
 
 ```ts
 import * as t from 'io-ts'
@@ -354,16 +358,17 @@ export function unsafeValidate<S, A>(value: any, type: t.Type<S, A>): A {
 
 # Known issues
 
-Due to an upstream [bug](https://github.com/Microsoft/TypeScript/issues/14041), VS Code might display weird types for nested interfaces
+Due to an upstream [bug](https://github.com/Microsoft/TypeScript/issues/14041), VS Code might display weird types for
+nested interfaces
 
 ```ts
 const NestedInterface = t.interface({
   foo: t.interface({
     bar: t.string
   })
-});
+})
 
-type NestedInterfaceType = t.TypeOf<typeof NestedInterface>;
+type NestedInterfaceType = t.TypeOf<typeof NestedInterface>
 /*
 Hover on NestedInterfaceType will display
 
