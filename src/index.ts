@@ -31,8 +31,10 @@ export type InputOf<RT extends Any> = RT['_S']
  * 2. validate(serialize(x)) = Right(x)
  */
 export class Type<S, A> {
-  readonly _A: A
-  readonly _S: S
+  // prettier-ignore
+  readonly '_A': A
+  // prettier-ignore
+  readonly '_S': S
   constructor(
     readonly name: string,
     readonly is: Is<A>,
@@ -44,7 +46,9 @@ export class Type<S, A> {
       name || `pipe(${this.name}, ${ab.name})`,
       (v): v is B => this.is(v) && ab.is(v),
       (s, c) => this.validate(s, c).chain(a => ab.validate(a, c)),
-      this.serialize === identity && ab.serialize === identity ? identity as any : b => this.serialize(ab.serialize(b))
+      this.serialize === identity && ab.serialize === identity
+        ? (identity as any)
+        : b => this.serialize(ab.serialize(b))
     )
   }
 }
@@ -215,7 +219,7 @@ export class FunctionType extends Type<any, Function> {
   }
 }
 
-const functionType: FunctionType = new FunctionType()
+export const Function: FunctionType = new FunctionType()
 
 //
 // refinements
@@ -282,16 +286,17 @@ export const keyof = <D extends { [key: string]: any }>(
 // recursive types
 //
 
-export class RecursiveType<T> extends Type<any, T> {
+export class RecursiveType<A> extends Type<any, A> {
   readonly _tag: 'RecursiveType' = 'RecursiveType'
-  readonly type: Any
-  constructor(name: string, is: Is<T>, validate: Validate<any, T>, serialize: Serialize<any, T>) {
+  // prettier-ignore
+  readonly 'type': Any
+  constructor(name: string, is: Is<A>, validate: Validate<any, A>, serialize: Serialize<any, A>) {
     super(name, is, validate, serialize)
   }
 }
 
-export const recursion = <T>(name: string, definition: (self: Any) => Any): RecursiveType<T> => {
-  const Self: any = new RecursiveType<T>(name, (v): v is T => type.is(v), (s, c) => type.validate(s, c), identity)
+export const recursion = <A>(name: string, definition: (self: Any) => Any): RecursiveType<A> => {
+  const Self: any = new RecursiveType<A>(name, (v): v is A => type.is(v), (s, c) => type.validate(s, c), identity)
   const type = definition(Self)
   Self.type = type
   Self.serialize = type.serialize
@@ -363,7 +368,9 @@ export class InterfaceType<P extends Props> extends Type<any, InterfaceOf<P>> {
 }
 
 const getNameFromProps = (props: Props): string =>
-  `{ ${Object.keys(props).map(k => `${k}: ${props[k].name}`).join(', ')} }`
+  `{ ${Object.keys(props)
+    .map(k => `${k}: ${props[k].name}`)
+    .join(', ')} }`
 
 const useIdentity = (props: Props): boolean => {
   for (let k in props) {
@@ -411,7 +418,7 @@ export const type = <P extends Props>(props: P, name: string = getNameFromProps(
     useIdentity(props)
       ? identity
       : a => {
-          const s: { [x: string]: any } = { ...a as any }
+          const s: { [x: string]: any } = { ...(a as any) }
           for (let k in props) {
             s[k] = props[k].serialize(a[k])
           }
@@ -425,7 +432,6 @@ export const type = <P extends Props>(props: P, name: string = getNameFromProps(
 //
 
 export type PartialOf<P extends Props> = { [K in keyof P]?: TypeOf<P[K]> }
-export type PartialPropsOf<P extends Props> = { [K in keyof P]: UnionType<[P[K], UndefinedType]> }
 
 export class PartialType<P extends Props> extends Type<any, PartialOf<P>> {
   readonly _tag: 'PartialType' = 'PartialType'
@@ -480,6 +486,7 @@ export class DictionaryType<D extends Any, C extends Any> extends Type<any, { [K
     is: DictionaryType<D, C>['is'],
     validate: DictionaryType<D, C>['validate'],
     serialize: DictionaryType<D, C>['serialize'],
+    readonly domain: D,
     readonly codomain: C
   ) {
     super(name, is, validate, serialize)
@@ -530,6 +537,7 @@ export const dictionary = <D extends Any, C extends Any>(
           }
           return s
         },
+    domain,
     codomain
   )
 
@@ -537,13 +545,13 @@ export const dictionary = <D extends Any, C extends Any>(
 // unions
 //
 
-export class UnionType<RTS extends Array<Any>> extends Type<any, TypeOf<RTS['_A']>> {
+export class UnionType<RTS, A> extends Type<any, A> {
   readonly _tag: 'UnionType' = 'UnionType'
   constructor(
     name: string,
-    is: UnionType<RTS>['is'],
-    validate: UnionType<RTS>['validate'],
-    serialize: UnionType<RTS>['serialize'],
+    is: UnionType<RTS, A>['is'],
+    validate: UnionType<RTS, A>['validate'],
+    serialize: UnionType<RTS, A>['serialize'],
     readonly types: RTS
   ) {
     super(name, is, validate, serialize)
@@ -553,7 +561,7 @@ export class UnionType<RTS extends Array<Any>> extends Type<any, TypeOf<RTS['_A'
 export const union = <RTS extends Array<Any>>(
   types: RTS,
   name: string = `(${types.map(type => type.name).join(' | ')})`
-): UnionType<RTS> =>
+): UnionType<RTS, TypeOf<RTS['_A']>> =>
   new UnionType(
     name,
     (v): v is TypeOf<RTS['_A']> => types.some(type => type.is(v)),
@@ -588,7 +596,7 @@ export const union = <RTS extends Array<Any>>(
 // intersections
 //
 
-export class IntersectionType<RTS extends Array<Any>, A> extends Type<any, A> {
+export class IntersectionType<RTS, A> extends Type<any, A> {
   readonly _tag: 'IntersectionType' = 'IntersectionType'
   constructor(name: string, is: Is<A>, validate: Validate<any, A>, serialize: Serialize<any, A>, readonly types: RTS) {
     super(name, is, validate, serialize)
@@ -654,7 +662,7 @@ export function intersection<RTS extends Array<Any>>(
 // tuples
 //
 
-export class TupleType<RTS extends Array<Any>, A> extends Type<any, A> {
+export class TupleType<RTS, A> extends Type<any, A> {
   readonly _tag: 'TupleType' = 'TupleType'
   constructor(name: string, is: Is<A>, validate: Validate<any, A>, serialize: Serialize<any, A>, readonly types: RTS) {
     super(name, is, validate, serialize)
@@ -716,7 +724,7 @@ export function tuple<RTS extends Array<Any>>(
 }
 
 //
-// readonly
+// readonly objects
 //
 
 export class ReadonlyType<RT extends Any> extends Type<any, Readonly<TypeOf<RT>>> {
@@ -748,7 +756,7 @@ export const readonly = <RT extends Any>(type: RT, name: string = `Readonly<${ty
   )
 
 //
-// readonlyArray
+// readonly arrays
 //
 
 export class ReadonlyArrayType<RT extends Any> extends Type<any, ReadonlyArray<TypeOf<RT>>> {
@@ -785,6 +793,10 @@ export const readonlyArray = <RT extends Any>(
   )
 }
 
+//
+// strict interfaces
+//
+
 export class StrictType<P extends Props> extends Type<any, InterfaceOf<P>> {
   readonly _tag: 'StrictType' = 'StrictType'
   constructor(
@@ -799,10 +811,10 @@ export class StrictType<P extends Props> extends Type<any, InterfaceOf<P>> {
 }
 
 /** Specifies that only the given interface properties are allowed */
-export function strict<P extends Props>(
+export const strict = <P extends Props>(
   props: P,
   name: string = `StrictType<${getNameFromProps(props)}>`
-): StrictType<P> {
+): StrictType<P> => {
   const loose = type(props)
   const len = Object.keys(props).length
   return new StrictType(
@@ -829,4 +841,4 @@ export function strict<P extends Props>(
   )
 }
 
-export { nullType as null, undefinedType as undefined, arrayType as Array, functionType as Function, type as interface }
+export { nullType as null, undefinedType as undefined, arrayType as Array, type as interface }

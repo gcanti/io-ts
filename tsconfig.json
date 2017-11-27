@@ -9,7 +9,6 @@
     "noUnusedParameters": true,
     "noFallthroughCasesInSwitch": true,
     "noEmitOnError": false,
-    "allowJs": false,
     "strict": true,
     "target": "es5",
     "moduleResolution": "node",
