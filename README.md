@@ -294,8 +294,10 @@ No, however you can define your own logic for that (if you _really_ trust the in
 import * as t from 'io-ts'
 import { failure } from 'io-ts/lib/PathReporter'
 
+const { NODE_ENV } = process.env
+
 export function unsafeValidate<S, A>(value: any, type: t.Type<S, A>): A {
-  if (process.env.NODE_ENV !== 'production') {
+  if (NODE_ENV !== 'production') {
     return t.validate(value, type).fold(errors => {
       throw new Error(failure(errors).join('\n'))
     }, t.identity)
