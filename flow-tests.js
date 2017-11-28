@@ -29,6 +29,34 @@ const l1: L1T = 'foo'
 // $FlowFixMe
 const l2: L1T = 'bar'
 
+function testLiteralAsTagInUnion() {
+  // Note that `t.literal(('foo': 'foo'))` does not work for this use case
+  const Foo = t.type({
+    type: (t.literal('foo'): t.Type<*, 'foo'>),
+    foo: t.string
+  })
+  const Bar = t.type({
+    type: (t.literal('bar'): t.Type<*, 'bar'>),
+    bar: t.number
+  })
+  const FooOrBar = t.union([Foo, Bar])
+  type FooOrBarT = t.TypeOf<typeof FooOrBar>
+
+  // only passes type-checking if tag-based refinement works
+  function getFoo(x: FooOrBarT): ?string {
+    if (x.type === 'foo') {
+      return x.foo
+    }
+  }
+}
+
+function testLiteralMismatch() {
+  const LiteralMismatch = t.type({
+    // $FlowFixMe
+    type: (t.literal('sometag'): t.Type<*, 'differenttag'>)
+  })
+}
+
 //
 // keyof
 //
