@@ -309,17 +309,25 @@ export const keyof = <D extends { [key: string]: any }>(
 // recursive types
 //
 
-export class RecursiveType<A> extends Type<any, A> {
+export class RecursiveType<RT extends Any, A> extends Type<any, A> {
   readonly _tag: 'RecursiveType' = 'RecursiveType'
   // prettier-ignore
-  readonly 'type': Any
-  constructor(name: string, is: Is<A>, validate: Validate<any, A>, serialize: Serialize<any, A>) {
+  readonly 'type': RT
+  constructor(
+    name: string,
+    is: RecursiveType<RT, A>['is'],
+    validate: RecursiveType<RT, A>['validate'],
+    serialize: RecursiveType<RT, A>['serialize']
+  ) {
     super(name, is, validate, serialize)
   }
 }
 
-export const recursion = <A>(name: string, definition: (self: Any) => Any): RecursiveType<A> => {
-  const Self: any = new RecursiveType<A>(name, (v): v is A => type.is(v), (s, c) => type.validate(s, c), identity)
+export const recursion = <A, RT extends Any = Any>(
+  name: string,
+  definition: (self: RT) => RT
+): RecursiveType<RT, A> => {
+  const Self: any = new RecursiveType<RT, A>(name, (v): v is A => type.is(v), (s, c) => type.validate(s, c), identity)
   const type = definition(Self)
   Self.type = type
   Self.serialize = type.serialize
