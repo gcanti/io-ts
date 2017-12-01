@@ -194,3 +194,123 @@ const validation = t.validate(1, t.number)
 const result: string = validation.fold(() => 'error', () => 'ok')
 const report = PathReporter.report(validation)
 ;(report: Array<string>)
+
+function optional<A, RT: t.Type<any, A>>(type: RT, name?: string): t.UnionType<[RT, t.UndefinedType], A | void> {
+  return t.union([type, t.undefined], name)
+}
+
+type GenerableProps = { +[key: string]: Generable }
+type GenerableInterface = t.InterfaceType<GenerableProps, any>
+type GenerableStrict = t.StrictType<GenerableProps, any>
+type GenerablePartials = t.PartialType<GenerableProps, any>
+type GenerableDictionary = t.DictionaryType<Generable, Generable, any>
+type GenerableRefinement = t.RefinementType<Generable, any, any>
+type GenerableArray = t.ArrayType<Generable, any>
+type GenerableUnion = t.UnionType<Array<Generable>, any>
+type GenerableIntersection = t.IntersectionType<Array<Generable>, any>
+type GenerableTuple = t.TupleType<Array<Generable>, any>
+type GenerableReadonly = t.ReadonlyType<Generable, any>
+type GenerableReadonlyArray = t.ReadonlyArrayType<Generable, any>
+type GenerableRecursive = t.RecursiveType<Generable, any>
+type Generable =
+  | t.StringType
+  | t.NumberType
+  | t.BooleanType
+  | GenerableInterface
+  | GenerableRefinement
+  | GenerableArray
+  | GenerableStrict
+  | GenerablePartials
+  | GenerableDictionary
+  | GenerableUnion
+  | GenerableIntersection
+  | GenerableTuple
+  | GenerableReadonly
+  | GenerableReadonlyArray
+  | t.LiteralType<any>
+  | t.KeyofType<any>
+  | GenerableRecursive
+  | t.UndefinedType
+
+function f(generable: Generable): string {
+  if (generable._tag === 'InterfaceType') {
+    ;(generable: t.InterfaceType<any, any>)
+  }
+  switch (generable._tag) {
+    case 'InterfaceType':
+      const props = generable.props
+      return Object.keys(props)
+        .map(k => f(props[k]))
+        .join('/')
+    case 'StringType':
+      return 'StringType'
+    case 'NumberType':
+      return 'StringType'
+    case 'BooleanType':
+      return 'BooleanType'
+    case 'RefinementType':
+      return f(generable.type)
+    case 'ArrayType':
+      return 'ArrayType'
+    case 'StrictType':
+      return 'StrictType'
+    case 'PartialType':
+      return 'PartialType'
+    case 'DictionaryType':
+      return 'DictionaryType'
+    case 'UnionType':
+      return 'UnionType'
+    case 'IntersectionType':
+      return 'IntersectionType'
+    case 'TupleType':
+      return generable.types.map(type => f(type)).join('/')
+    case 'ReadonlyType':
+      return 'ReadonlyType'
+    case 'ReadonlyArrayType':
+      return 'ReadonlyArrayType'
+    case 'LiteralType':
+      return 'LiteralType'
+    case 'KeyofType':
+      return 'KeyofType'
+    case 'RecursiveType':
+      return f(generable.type)
+    case 'UndefinedType':
+      return 'UndefinedType'
+  }
+  throw new Error('Impossible')
+}
+
+const schema = t.type({
+  a: t.string,
+  b: t.union([
+    t.partial({
+      c: t.string,
+      d: t.literal('eee')
+    }),
+    t.boolean
+  ]),
+  e: t.intersection([
+    t.type({
+      f: t.array(t.string)
+    }),
+    t.type({
+      g: t.union([t.literal('toto'), t.literal('tata')])
+    })
+  ])
+})
+
+f(schema) // OK!
+
+type RecT = {
+  a: number,
+  b: RecT | void
+}
+
+const Rec = t.recursion('T', self =>
+  t.type({
+    a: t.number,
+    b: t.union([self, t.undefined])
+  })
+)
+
+f(Rec) // OK!

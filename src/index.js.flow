@@ -105,20 +105,27 @@ declare export var Dictionary: AnyDictionaryType
 // refinements
 //
 
-declare export class RefinementType<RT: Any> extends Type<InputOf<RT>, TypeOf<RT>> {
+declare export class RefinementType<+RT: Any, S, A> extends Type<S, A> {
   +_tag: 'RefinementType';
   +type: RT;
-  +predicate: Predicate<TypeOf<RT>>;
-  constructor(name: string, type: RT, predicate: Predicate<TypeOf<RT>>): RefinementType<RT>;
+  +predicate: Predicate<A>;
+  constructor(
+    name: string,
+    is: Is<A>,
+    validate: Validate<any, A>,
+    serialize: Serialize<any, A>,
+    type: RT,
+    predicate: Predicate<A>
+  ): RefinementType<RT, S, A>;
 }
 
 declare export var refinement: <RT: Any>(
   type: RT,
   predicate: Predicate<TypeOf<RT>>,
   name?: string
-) => RefinementType<RT>
+) => RefinementType<RT, InputOf<RT>, TypeOf<RT>>
 
-declare export var Integer: RefinementType<NumberType>
+declare export var Integer: RefinementType<NumberType, any, number>
 
 //
 // literals
@@ -127,7 +134,13 @@ declare export var Integer: RefinementType<NumberType>
 declare export class LiteralType<V> extends Type<any, V> {
   +_tag: 'LiteralType';
   +value: V;
-  constructor(name: string, value: V): LiteralType<V>;
+  constructor(
+    name: string,
+    is: Is<V>,
+    validate: Validate<any, V>,
+    serialize: Serialize<any, V>,
+    value: V
+  ): LiteralType<V>;
 }
 
 declare export var literal: <V: string | number | boolean>(value: V, name?: string) => LiteralType<V>
@@ -139,7 +152,13 @@ declare export var literal: <V: string | number | boolean>(value: V, name?: stri
 declare export class KeyofType<D: { [key: string]: any }> extends Type<any, $Keys<D>> {
   +_tag: 'KeyofType';
   +keys: D;
-  constructor(name: string, keys: D): KeyofType<D>;
+  constructor(
+    name: string,
+    is: Is<$Keys<D>>,
+    validate: Validate<any, $Keys<D>>,
+    serialize: Serialize<any, $Keys<D>>,
+    keys: D
+  ): KeyofType<D>;
 }
 
 declare export var keyof: <D: { [key: string]: any }>(keys: D, name?: string) => KeyofType<D>
@@ -148,53 +167,53 @@ declare export var keyof: <D: { [key: string]: any }>(keys: D, name?: string) =>
 // recursive types
 //
 
-declare export class RecursiveType<A> extends Type<any, A> {
+declare export class RecursiveType<+RT: Any, A> extends Type<any, A> {
   +_tag: 'RecursiveType';
-  +type: Any;
-  constructor(name: string, is: Is<A>, validate: Validate<any, A>, serialize: Serialize<any, A>): RecursiveType<A>;
+  +type: RT;
+  constructor(name: string, is: Is<A>, validate: Validate<any, A>, serialize: Serialize<any, A>): RecursiveType<RT, A>;
 }
 
-declare export var recursion: <T>(name: string, definition: (self: Any) => Any) => RecursiveType<T>
+declare export var recursion: <T, RT: Any>(name: string, definition: (self: RT) => RT) => RecursiveType<RT, T>
 
 //
 // arrays
 //
 
-declare export class ArrayType<RT: Any> extends Type<any, Array<TypeOf<RT>>> {
+declare export class ArrayType<+RT: Any, A> extends Type<any, A> {
   +_tag: 'ArrayType';
   +type: RT;
   constructor(
     name: string,
-    is: Is<Array<TypeOf<RT>>>,
-    validate: Validate<any, Array<TypeOf<RT>>>,
-    serialize: Serialize<any, Array<TypeOf<RT>>>,
+    is: Is<A>,
+    validate: Validate<any, A>,
+    serialize: Serialize<any, A>,
     type: RT
   ): ArrayType<RT>;
 }
 
-declare export var array: <RT: Any>(type: RT, name?: string) => ArrayType<RT>
+declare export var array: <RT: Any>(type: RT, name?: string) => ArrayType<RT, Array<TypeOf<RT>>>
 
 //
 // interfaces
 //
 
-export type Props = { [key: string]: Any }
+export type Props = { +[key: string]: Any }
 
 export type InterfaceOf<P: Props> = $ObjMap<P, <T>(v: Type<any, T>) => T>
 
-declare export class InterfaceType<P: Props> extends Type<any, InterfaceOf<P>> {
+declare export class InterfaceType<P: Props, A> extends Type<any, A> {
   +_tag: 'InterfaceType';
   +props: P;
   constructor(
     name: string,
-    is: Is<InterfaceOf<P>>,
-    validate: Validate<any, InterfaceOf<P>>,
-    serialize: Serialize<any, InterfaceOf<P>>,
+    is: Is<A>,
+    validate: Validate<any, A>,
+    serialize: Serialize<any, A>,
     props: P
-  ): InterfaceType<P>;
+  ): InterfaceType<P, A>;
 }
 
-declare export var type: <P: Props>(props: P, name?: string) => InterfaceType<P>
+declare export var type: <P: Props>(props: P, name?: string) => InterfaceType<P, InterfaceOf<P>>
 
 //
 // partials
@@ -202,45 +221,49 @@ declare export var type: <P: Props>(props: P, name?: string) => InterfaceType<P>
 
 export type PartialOf<P: Props> = $Shape<InterfaceOf<P>>
 
-declare export class PartialType<P: Props> extends Type<any, PartialOf<P>> {
+declare export class PartialType<P: Props, A> extends Type<any, A> {
   +_tag: 'PartialType';
   +props: P;
   constructor(
     name: string,
-    is: Is<PartialOf<P>>,
-    validate: Validate<any, PartialOf<P>>,
-    serialize: Serialize<any, PartialOf<P>>,
+    is: Is<A>,
+    validate: Validate<any, A>,
+    serialize: Serialize<any, A>,
     props: P
-  ): PartialType<P>;
+  ): PartialType<P, A>;
 }
 
-declare export var partial: <P: Props>(props: P, name?: string) => PartialType<P>
+declare export var partial: <P: Props>(props: P, name?: string) => PartialType<P, PartialOf<P>>
 
 //
 // dictionaries
 //
 
-declare export class DictionaryType<D: Any, C: Any> extends Type<any, { [key: TypeOf<D>]: TypeOf<C> }> {
+declare export class DictionaryType<+D: Any, +C: Any, A> extends Type<any, A> {
   +_tag: 'DictionaryType';
   +domain: D;
   +codomain: C;
   constructor(
     name: string,
-    is: Is<{ [key: TypeOf<D>]: TypeOf<C> }>,
-    validate: Validate<any, { [key: TypeOf<D>]: TypeOf<C> }>,
-    serialize: Serialize<any, { [key: TypeOf<D>]: TypeOf<C> }>,
+    is: Is<A>,
+    validate: Validate<any, A>,
+    serialize: Serialize<any, A>,
     domain: D,
     codomain: C
   ): DictionaryType<D, C>;
 }
 
-declare export var dictionary: <D: Any, C: Any>(domain: D, codomain: C, name?: string) => DictionaryType<D, C>
+declare export var dictionary: <D: Any, C: Any>(
+  domain: D,
+  codomain: C,
+  name?: string
+) => DictionaryType<D, C, { [key: TypeOf<D>]: TypeOf<C> }>
 
 //
 // unions
 //
 
-declare export class UnionType<RTS: Array<Any>, A> extends Type<any, A> {
+declare export class UnionType<+RTS, A> extends Type<any, A> {
   +_tag: 'UnionType';
   +types: RTS;
   constructor(
@@ -335,7 +358,7 @@ declare export function union<A, RTS: [AnyS<A>]>(types: RTS, name?: string): Uni
 // intersections
 //
 
-declare export class IntersectionType<RTS: Array<Any>, A> extends Type<any, A> {
+declare export class IntersectionType<+RTS, A> extends Type<any, A> {
   +_tag: 'IntersectionType';
   +types: RTS;
   constructor(
@@ -361,14 +384,14 @@ declare export function intersection<A, B, C, RTS: [AnyS<A>, AnyS<B>, AnyS<C>]>(
 ): UnionType<RTS, A & B & C>
 declare export function intersection<A, B, RTS: [AnyS<A>, AnyS<B>]>(types: RTS, name?: string): UnionType<RTS, A & B>
 declare export function intersection<A, RTS: [AnyS<A>]>(types: RTS, name?: string): UnionType<RTS, A>
-declare export function intersection<RTS: []>(types: RTS, name?: string): UnionType<RTS, empty>
 
 //
 // tuples
 //
 
-declare export class TupleType<RTS, A> extends Type<any, A> {
+declare export class TupleType<+RTS, A> extends Type<any, A> {
   +_tag: 'TupleType';
+  +types: RTS;
   constructor(
     name: string,
     is: Is<A>,
@@ -392,61 +415,63 @@ declare export function tuple<A, B, C, RTS: [AnyS<A>, AnyS<B>, AnyS<C>]>(
 ): UnionType<RTS, [A, B, C]>
 declare export function tuple<A, B, RTS: [AnyS<A>, AnyS<B>]>(types: RTS, name?: string): UnionType<RTS, [A, B]>
 declare export function tuple<A, RTS: [AnyS<A>]>(types: RTS, name?: string): UnionType<RTS, [A]>
-declare export function tuple<RTS: []>(types: RTS, name?: string): UnionType<RTS, empty>
 
 //
 // readonly objects
 //
 
-declare export class ReadonlyType<RT: Any> extends Type<any, $ReadOnly<TypeOf<RT>>> {
+declare export class ReadonlyType<+RT: Any, A> extends Type<any, A> {
   +_tag: 'ReadonlyType';
   +type: RT;
   constructor(
     name: string,
-    is: Is<$ReadOnly<TypeOf<RT>>>,
-    validate: Validate<any, $ReadOnly<TypeOf<RT>>>,
-    serialize: Serialize<any, $ReadOnly<TypeOf<RT>>>,
+    is: Is<A>,
+    validate: Validate<any, A>,
+    serialize: Serialize<any, A>,
     type: RT
-  ): ReadonlyType<RT>;
+  ): ReadonlyType<RT, A>;
 }
+
+declare export var readonly: <RT: Any>(type: RT, name?: string) => ReadonlyType<RT, $ReadOnly<TypeOf<RT>>>
 
 //
 // readonly arrays
 //
 
-declare export class ReadonlyArrayType<RT: Any> extends Type<any, $ReadOnlyArray<TypeOf<RT>>> {
+declare export class ReadonlyArrayType<+RT: Any, A> extends Type<any, A> {
   +_tag: 'ReadonlyArrayType';
   +type: RT;
   constructor(
     name: string,
-    is: Is<$ReadOnlyArray<TypeOf<RT>>>,
-    validate: Validate<any, $ReadOnlyArray<TypeOf<RT>>>,
-    serialize: Serialize<any, $ReadOnlyArray<TypeOf<RT>>>,
+    is: Is<A>,
+    validate: Validate<any, A>,
+    serialize: Serialize<any, A>,
     type: RT
   ): ReadonlyArrayType<RT>;
 }
+
+declare export var readonlyArray: <RT: Any>(
+  type: RT,
+  name?: string
+) => ReadonlyArrayType<RT, $ReadOnlyArray<TypeOf<RT>>>
 
 //
 // strict interfaces
 //
 
-declare export class StrictType<P: Props> extends Type<any, $Exact<InterfaceOf<P>>> {
+declare export class StrictType<P: Props, A> extends Type<any, A> {
   +_tag: 'StrictType';
   +props: P;
   constructor(
     name: string,
-    is: Is<$Exact<InterfaceOf<P>>>,
-    validate: Validate<any, $Exact<InterfaceOf<P>>>,
-    serialize: Serialize<any, $Exact<InterfaceOf<P>>>,
+    is: Is<A>,
+    validate: Validate<any, A>,
+    serialize: Serialize<any, A>,
     props: P
   ): StrictType<P>;
 }
 
-declare export var strict: <P: Props>(props: P, name?: string) => StrictType<P>
-
-declare export var readonlyArray: <RT: Any>(type: RT, name?: string) => ReadonlyArrayType<RT>
-
-declare export var readonly: <RT: Any>(type: RT, name?: string) => ReadonlyType<RT>
+declare export var strict: <P: Props>(props: P, name?: string) => StrictType<P, $Exact<InterfaceOf<P>>>
 
 declare export var identity: <A>(a: A) => A
 
