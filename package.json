@@ -20,7 +20,8 @@
       "prettier --no-semi --single-quote --print-width 120 --parser flow --write \"{src,test,examples,exercises}/**/*.js.flow\"",
     "test": "npm run prettier && npm run lint && npm run typings-checker && npm run mocha",
     "clean": "rm -rf lib/*",
-    "build": "npm run clean && tsc && npm run flow-copy-definition-files"
+    "build": "npm run clean && tsc && npm run flow-copy-definition-files",
+    "perf": "node perf/index"
   },
   "repository": {
     "type": "git",
@@ -38,6 +39,7 @@
   "devDependencies": {
     "@types/mocha": "2.2.38",
     "@types/node": "7.0.4",
+    "benchmark": "2.1.4",
     "mocha": "3.2.0",
     "prettier": "1.8.2",
     "ts-node": "3.2.0",
