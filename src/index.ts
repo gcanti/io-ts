@@ -365,7 +365,7 @@ export const array = <RT extends Any>(
         let changed = false
         for (let i = 0; i < xs.length; i++) {
           const x = xs[i]
-          const validation = type.validate(x, c.concat(getContextEntry(String(i), type)))
+          const validation = type.validate(x, c.concat([getContextEntry(String(i), type)]))
           validation.fold(
             e => pushAll(errors, e),
             vx => {
@@ -441,7 +441,7 @@ export const type = <P extends Props>(
         for (let k in props) {
           const ok = o[k]
           const type = props[k]
-          const validation = type.validate(ok, c.concat(getContextEntry(k, type)))
+          const validation = type.validate(ok, c.concat([getContextEntry(k, type)]))
           validation.fold(
             e => pushAll(errors, e),
             vok => {
@@ -546,8 +546,8 @@ export const dictionary = <D extends Any, C extends Any>(
         let changed = false
         for (let k in o) {
           const ok = o[k]
-          const domainValidation = domain.validate(k, c.concat(getContextEntry(k, domain)))
-          const codomainValidation = codomain.validate(ok, c.concat(getContextEntry(k, codomain)))
+          const domainValidation = domain.validate(k, c.concat([getContextEntry(k, domain)]))
+          const codomainValidation = codomain.validate(ok, c.concat([getContextEntry(k, codomain)]))
           domainValidation.fold(
             e => pushAll(errors, e),
             vk => {
@@ -607,7 +607,7 @@ export const union = <RTS extends Array<Any>>(
       const errors: Errors = []
       for (let i = 0; i < len; i++) {
         const type = types[i]
-        const validation = type.validate(s, c.concat(getContextEntry(String(i), type)))
+        const validation = type.validate(s, c.concat([getContextEntry(String(i), type)]))
         if (isRight(validation)) {
           return validation
         } else {
@@ -743,7 +743,7 @@ export function tuple<RTS extends Array<Any>>(
         for (let i = 0; i < len; i++) {
           const a = as[i]
           const type = types[i]
-          const validation = type.validate(a, c.concat(getContextEntry(String(i), type)))
+          const validation = type.validate(a, c.concat([getContextEntry(String(i), type)]))
           validation.fold(
             e => pushAll(errors, e),
             va => {
@@ -753,7 +753,7 @@ export function tuple<RTS extends Array<Any>>(
           )
         }
         if (as.length > len) {
-          errors.push(getValidationError(as[len], c.concat(getContextEntry(String(len), never))))
+          errors.push(getValidationError(as[len], c.concat([getContextEntry(String(len), never)])))
         }
         return errors.length ? failures(errors) : success((changed ? t : as) as any)
       }),
@@ -872,7 +872,7 @@ export const strict = <P extends Props>(
           for (let i = 0; i < keys.length; i++) {
             const key = keys[i]
             if (!props.hasOwnProperty(key)) {
-              errors.push(getValidationError(o[key], c.concat(getContextEntry(key, never))))
+              errors.push(getValidationError(o[key], c.concat([getContextEntry(key, never)])))
             }
           }
           return errors.length ? failures(errors) : failure(o, c)
