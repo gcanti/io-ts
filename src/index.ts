@@ -598,13 +598,14 @@ export class UnionType<RTS extends Array<Any>, A> extends Type<any, A> {
 export const union = <RTS extends Array<Any>>(
   types: RTS,
   name: string = `(${types.map(type => type.name).join(' | ')})`
-): UnionType<RTS, TypeOf<RTS['_A']>> =>
-  new UnionType(
+): UnionType<RTS, TypeOf<RTS['_A']>> => {
+  const len = types.length
+  return new UnionType(
     name,
     (v): v is TypeOf<RTS['_A']> => types.some(type => type.is(v)),
     (s, c) => {
       const errors: Errors = []
-      for (let i = 0; i < types.length; i++) {
+      for (let i = 0; i < len; i++) {
         const type = types[i]
         const validation = type.validate(s, c.concat(getContextEntry(String(i), type)))
         if (isRight(validation)) {
@@ -618,7 +619,7 @@ export const union = <RTS extends Array<Any>>(
     types.every(type => type.serialize === identity)
       ? identity
       : a => {
-          for (let i = 0; i < types.length; i++) {
+          for (let i = 0; i < len; i++) {
             const type = types[i]
             if (type.is(a)) {
               return type.serialize(a)
@@ -628,6 +629,7 @@ export const union = <RTS extends Array<Any>>(
         },
     types
   )
+}
 
 //
 // intersections
@@ -661,6 +663,7 @@ export function intersection<RTS extends Array<Any>>(
   types: RTS,
   name: string = `(${types.map(type => type.name).join(' & ')})`
 ): IntersectionType<RTS, any> {
+  const len = types.length
   return new IntersectionType(
     name,
     (v): v is any => types.every(type => type.is(v)),
@@ -668,7 +671,7 @@ export function intersection<RTS extends Array<Any>>(
       let a = s
       let changed = false
       const errors: Errors = []
-      for (let i = 0; i < types.length; i++) {
+      for (let i = 0; i < len; i++) {
         const type = types[i]
         const validation = type.validate(a, c)
         validation.fold(
@@ -685,7 +688,7 @@ export function intersection<RTS extends Array<Any>>(
       ? identity
       : a => {
           let s = a
-          for (let i = 0; i < types.length; i++) {
+          for (let i = 0; i < len; i++) {
             const type = types[i]
             s = type.serialize(s)
           }
