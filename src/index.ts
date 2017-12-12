@@ -489,7 +489,7 @@ export const partial = <P extends Props>(
 ): PartialType<P, PartialOf<P>> => {
   const partials: Props = {}
   for (let k in props) {
-    partials[k] = union([props[k], undefinedType])
+    partials[k] = union([undefinedType, props[k]])
   }
   const partial = type(partials)
   return new PartialType(
