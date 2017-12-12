@@ -44,7 +44,7 @@ export class Type<S, A> {
   pipe<B>(ab: Type<A, B>, name?: string): Type<S, B> {
     return new Type(
       name || `pipe(${this.name}, ${ab.name})`,
-      (v): v is B => this.is(v) && ab.is(v),
+      ab.is,
       (s, c) => this.validate(s, c).chain(a => ab.validate(a, c)),
       this.serialize === identity && ab.serialize === identity
         ? (identity as any)
