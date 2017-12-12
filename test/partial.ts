@@ -36,8 +36,8 @@ describe('partial', () => {
   it('should fail validating an invalid value', () => {
     const T = t.partial({ a: t.number })
     assertFailure(t.validate({ a: 's' }, T), [
-      'Invalid value "s" supplied to : PartialType<{ a: number }>/a: (number | undefined)/0: number',
-      'Invalid value "s" supplied to : PartialType<{ a: number }>/a: (number | undefined)/1: undefined'
+      'Invalid value "s" supplied to : PartialType<{ a: number }>/a: (undefined | number)/0: undefined',
+      'Invalid value "s" supplied to : PartialType<{ a: number }>/a: (undefined | number)/1: number'
     ])
   })
 
