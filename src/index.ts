@@ -1,4 +1,5 @@
 import { Either, Left, Right, isRight } from 'fp-ts/lib/Either'
+
 import { Predicate } from 'fp-ts/lib/function'
 
 declare global {
@@ -360,17 +361,18 @@ export const array = <RT extends Any>(
     (v): v is Array<TypeOf<RT>> => arrayType.is(v) && v.every(type.is),
     (s, c) =>
       arrayType.validate(s, c).chain(xs => {
-        const a: Array<TypeOf<RT>> = []
+        const len = xs.length
+        const a: Array<TypeOf<RT>> = Array(len)
         const errors: Errors = []
         let changed = false
-        for (let i = 0; i < xs.length; i++) {
+        for (let i = 0; i < len; i++) {
           const x = xs[i]
           const validation = type.validate(x, c.concat([getContextEntry(String(i), type)]))
           validation.fold(
             e => pushAll(errors, e),
             vx => {
               changed = changed || vx !== x
-              a.push(vx)
+              a[i] = vx
             }
           )
         }
@@ -737,7 +739,7 @@ export function tuple<RTS extends Array<Any>>(
     (v): v is any => arrayType.is(v) && v.length === len && types.every((type, i) => type.is(v[i])),
     (s, c) =>
       arrayType.validate(s, c).chain(as => {
-        const t: Array<any> = []
+        const t: Array<any> = Array(len)
         const errors: Errors = []
         let changed = false
         for (let i = 0; i < len; i++) {
@@ -748,7 +750,7 @@ export function tuple<RTS extends Array<Any>>(
             e => pushAll(errors, e),
             va => {
               changed = changed || va !== a
-              t.push(va)
+              t[i] = va
             }
           )
         }
