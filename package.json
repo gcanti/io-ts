@@ -37,6 +37,7 @@
     "fp-ts": "^0.6.4"
   },
   "devDependencies": {
+    "@types/benchmark": "1.0.31",
     "@types/mocha": "2.2.38",
     "@types/node": "7.0.4",
     "benchmark": "2.1.4",
