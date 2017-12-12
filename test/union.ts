@@ -24,9 +24,11 @@ describe('union', () => {
   })
 
   it('should serialize a deserialized', () => {
-    const T = t.union([t.interface({ a: DateFromNumber }), t.number])
-    assert.deepEqual(T.serialize({ a: new Date(0) }), { a: 0 })
-    assert.deepEqual(T.serialize(1), 1)
+    const T1 = t.union([t.interface({ a: DateFromNumber }), t.number])
+    assert.deepEqual(T1.serialize({ a: new Date(0) }), { a: 0 })
+    assert.deepEqual(T1.serialize(1), 1)
+    const T2 = t.union([t.number, DateFromNumber])
+    assert.deepEqual(T2.serialize(new Date(0)), 0)
   })
 
   it('should return the same reference when serializing', () => {

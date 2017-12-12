@@ -619,13 +619,14 @@ export const union = <RTS extends Array<Any>>(
     types.every(type => type.serialize === identity)
       ? identity
       : a => {
-          for (let i = 0; i < len; i++) {
+          let i = 0
+          for (; i < len - 1; i++) {
             const type = types[i]
             if (type.is(a)) {
               return type.serialize(a)
             }
           }
-          return a
+          return types[i].serialize(a)
         },
     types
   )
