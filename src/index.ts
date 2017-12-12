@@ -10,7 +10,7 @@ declare global {
 
 export interface ContextEntry {
   readonly key: string
-  readonly type: Any | NeverType
+  readonly type: Decoder<any, any>
 }
 export type Context = Array<ContextEntry>
 export interface ValidationError {
@@ -26,12 +26,21 @@ export type Any = Type<any, any>
 export type TypeOf<RT extends Any> = RT['_A']
 export type InputOf<RT extends Any> = RT['_S']
 
+export interface Decoder<S, A> {
+  readonly name: string
+  readonly validate: Validate<S, A>
+}
+
+export interface Encoder<S, A> {
+  readonly serialize: Serialize<S, A>
+}
+
 /**
  * Laws:
  * 1. validate(x).fold(() => x, serialize) = x
  * 2. validate(serialize(x)) = Right(x)
  */
-export class Type<S, A> {
+export class Type<S, A> implements Decoder<S, A>, Encoder<S, A> {
   // prettier-ignore
   readonly '_A': A
   // prettier-ignore
@@ -52,19 +61,25 @@ export class Type<S, A> {
         : b => this.serialize(ab.serialize(b))
     )
   }
+  asDecoder(): Decoder<S, A> {
+    return this
+  }
+  asEncoder(): Encoder<S, A> {
+    return this
+  }
 }
 
 export const identity = <A>(a: A): A => a
 
 export const getFunctionName = (f: any): string => f.displayName || f.name || `<function${f.length}>`
 
-export const getContextEntry = (key: string, type: Any | NeverType): ContextEntry => ({ key, type })
+export const getContextEntry = (key: string, type: Decoder<any, any>): ContextEntry => ({ key, type })
 
 export const getValidationError = (value: any, context: Context): ValidationError => ({ value, context })
 
-export const getDefaultContext = (type: Any): Context => [{ key: '', type }]
+export const getDefaultContext = (type: Decoder<any, any>): Context => [{ key: '', type }]
 
-export const appendContext = (c: Context, key: string, type: Any | NeverType): Context => {
+export const appendContext = (c: Context, key: string, type: Decoder<any, any>): Context => {
   const len = c.length
   const r = Array(len + 1)
   for (let i = 0; i < len; i++) {
@@ -81,7 +96,7 @@ export const failure = <T>(value: any, context: Context): Validation<T> =>
 
 export const success = <T>(value: T): Validation<T> => new Right<Errors, T>(value)
 
-export const validate = <S, A>(value: S, type: Type<S, A>): Validation<A> =>
+export const validate = <S, A>(value: S, type: Decoder<S, A>): Validation<A> =>
   type.validate(value, getDefaultContext(type))
 
 const pushAll = <A>(xs: Array<A>, ys: Array<A>): void => Array.prototype.push.apply(xs, ys)
