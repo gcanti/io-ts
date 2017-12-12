@@ -503,7 +503,7 @@ export const partial = <P extends Props>(
   return new PartialType(
     name,
     partial.is as ((v: any) => v is PartialOf<P>),
-    (s, c) => partial.validate(s, c) as any,
+    partial.validate as any,
     useIdentity(props)
       ? identity
       : a => {
