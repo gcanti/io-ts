@@ -176,7 +176,7 @@ export class AnyArrayType extends Type<any, Array<any>> {
   constructor() {
     super(
       'Array',
-      (v): v is Array<any> => Array.isArray(v),
+      Array.isArray as ((v: any) => v is Array<any>),
       (s, c) => (this.is(s) ? success(s) : failure(s, c)),
       identity
     )
@@ -496,7 +496,7 @@ export const partial = <P extends Props>(
   const partial = type(partials)
   return new PartialType(
     name,
-    (v): v is PartialOf<P> => partial.is(v),
+    partial.is as ((v: any) => v is PartialOf<P>),
     (s, c) => partial.validate(s, c) as any,
     useIdentity(props)
       ? identity
@@ -825,7 +825,7 @@ export const readonlyArray = <RT extends Any>(
   const arrayType = array(type)
   return new ReadonlyArrayType(
     name,
-    (v): v is ReadonlyArray<TypeOf<RT>> => arrayType.is(v),
+    arrayType.is as ((v: any) => v is ReadonlyArray<TypeOf<RT>>),
     (s, c) =>
       arrayType.validate(s, c).map(x => {
         if (process.env.NODE_ENV !== 'production') {
