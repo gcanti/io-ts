@@ -362,21 +362,24 @@ export const array = <RT extends Any>(
     (s, c) =>
       arrayType.validate(s, c).chain(xs => {
         const len = xs.length
-        const a: Array<TypeOf<RT>> = Array(len)
+        let a: Array<TypeOf<RT>> = xs
         const errors: Errors = []
-        let changed = false
         for (let i = 0; i < len; i++) {
           const x = xs[i]
           const validation = type.validate(x, c.concat([getContextEntry(String(i), type)]))
           validation.fold(
             e => pushAll(errors, e),
             vx => {
-              changed = changed || vx !== x
-              a[i] = vx
+              if (vx !== x) {
+                if (a === xs) {
+                  a = xs.slice()
+                }
+                a[i] = vx
+              }
             }
           )
         }
-        return errors.length ? failures(errors) : success(changed ? a : xs)
+        return errors.length ? failures(errors) : success(a)
       }),
     type.serialize === identity ? identity : a => a.map(type.serialize),
     type
@@ -437,9 +440,8 @@ export const type = <P extends Props>(
     },
     (s, c) =>
       Dictionary.validate(s, c).chain(o => {
-        const a = { ...o }
+        let a = o
         const errors: Errors = []
-        let changed = false
         for (let k in props) {
           const ok = o[k]
           const type = props[k]
@@ -447,12 +449,16 @@ export const type = <P extends Props>(
           validation.fold(
             e => pushAll(errors, e),
             vok => {
-              changed = changed || vok !== ok
-              a[k] = vok
+              if (vok !== ok) {
+                if (a === o) {
+                  a = { ...o }
+                }
+                a[k] = vok
+              }
             }
           )
         }
-        return errors.length ? failures(errors) : success((changed ? a : o) as any)
+        return errors.length ? failures(errors) : success(a as any)
       }),
     useIdentity(props)
       ? identity
@@ -672,20 +678,13 @@ export function intersection<RTS extends Array<Any>>(
     (v): v is any => types.every(type => type.is(v)),
     (s, c) => {
       let a = s
-      let changed = false
       const errors: Errors = []
       for (let i = 0; i < len; i++) {
         const type = types[i]
         const validation = type.validate(a, c)
-        validation.fold(
-          e => pushAll(errors, e),
-          va => {
-            changed = changed || va !== a
-            a = va
-          }
-        )
+        validation.fold(e => pushAll(errors, e), va => (a = va))
       }
-      return errors.length ? failures(errors) : success(changed ? a : s)
+      return errors.length ? failures(errors) : success(a)
     },
     types.every(type => type.serialize === identity)
       ? identity
@@ -739,9 +738,8 @@ export function tuple<RTS extends Array<Any>>(
     (v): v is any => arrayType.is(v) && v.length === len && types.every((type, i) => type.is(v[i])),
     (s, c) =>
       arrayType.validate(s, c).chain(as => {
-        const t: Array<any> = Array(len)
+        let t: Array<any> = as
         const errors: Errors = []
-        let changed = false
         for (let i = 0; i < len; i++) {
           const a = as[i]
           const type = types[i]
@@ -749,15 +747,19 @@ export function tuple<RTS extends Array<Any>>(
           validation.fold(
             e => pushAll(errors, e),
             va => {
-              changed = changed || va !== a
-              t[i] = va
+              if (va !== a) {
+                if (t === as) {
+                  t = as.slice()
+                }
+                t[i] = va
+              }
             }
           )
         }
         if (as.length > len) {
           errors.push(getValidationError(as[len], c.concat([getContextEntry(String(len), never)])))
         }
-        return errors.length ? failures(errors) : success((changed ? t : as) as any)
+        return errors.length ? failures(errors) : success(t as any)
       }),
     types.every(type => type.serialize === identity)
       ? identity
