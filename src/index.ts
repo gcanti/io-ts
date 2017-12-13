@@ -1,7 +1,6 @@
 import { Either, Left, Right, isRight } from 'fp-ts/lib/Either'
 
 import { Predicate } from 'fp-ts/lib/function'
-import { snoc } from 'fp-ts/lib/Array'
 
 declare global {
   interface Array<T> {
@@ -64,6 +63,16 @@ export const getContextEntry = (key: string, type: Any | NeverType): ContextEntr
 export const getValidationError = (value: any, context: Context): ValidationError => ({ value, context })
 
 export const getDefaultContext = (type: Any): Context => [{ key: '', type }]
+
+export const appendContext = (c: Context, key: string, type: Any | NeverType): Context => {
+  const len = c.length
+  const r = Array(len + 1)
+  for (let i = 0; i < len; i++) {
+    r[i] = c[i]
+  }
+  r[len] = { key, type }
+  return r
+}
 
 export const failures = <T>(errors: Errors): Validation<T> => new Left(errors)
 
@@ -367,7 +376,7 @@ export const array = <RT extends Any>(
         const errors: Errors = []
         for (let i = 0; i < len; i++) {
           const x = xs[i]
-          const validation = type.validate(x, snoc(c)(getContextEntry(String(i), type)))
+          const validation = type.validate(x, appendContext(c, String(i), type))
           validation.fold(
             e => pushAll(errors, e),
             vx => {
@@ -446,7 +455,7 @@ export const type = <P extends Props>(
         for (let k in props) {
           const ok = o[k]
           const type = props[k]
-          const validation = type.validate(ok, snoc(c)(getContextEntry(k, type)))
+          const validation = type.validate(ok, appendContext(c, k, type))
           validation.fold(
             e => pushAll(errors, e),
             vok => {
@@ -555,8 +564,8 @@ export const dictionary = <D extends Any, C extends Any>(
         let changed = false
         for (let k in o) {
           const ok = o[k]
-          const domainValidation = domain.validate(k, snoc(c)(getContextEntry(k, domain)))
-          const codomainValidation = codomain.validate(ok, snoc(c)(getContextEntry(k, codomain)))
+          const domainValidation = domain.validate(k, appendContext(c, k, domain))
+          const codomainValidation = codomain.validate(ok, appendContext(c, k, codomain))
           domainValidation.fold(
             e => pushAll(errors, e),
             vk => {
@@ -616,7 +625,7 @@ export const union = <RTS extends Array<Any>>(
       const errors: Errors = []
       for (let i = 0; i < len; i++) {
         const type = types[i]
-        const validation = type.validate(s, snoc(c)(getContextEntry(String(i), type)))
+        const validation = type.validate(s, appendContext(c, String(i), type))
         if (isRight(validation)) {
           return validation
         } else {
@@ -744,7 +753,7 @@ export function tuple<RTS extends Array<Any>>(
         for (let i = 0; i < len; i++) {
           const a = as[i]
           const type = types[i]
-          const validation = type.validate(a, snoc(c)(getContextEntry(String(i), type)))
+          const validation = type.validate(a, appendContext(c, String(i), type))
           validation.fold(
             e => pushAll(errors, e),
             va => {
@@ -758,7 +767,7 @@ export function tuple<RTS extends Array<Any>>(
           )
         }
         if (as.length > len) {
-          errors.push(getValidationError(as[len], snoc(c)(getContextEntry(String(len), never))))
+          errors.push(getValidationError(as[len], appendContext(c, String(len), never)))
         }
         return errors.length ? failures(errors) : success(t as any)
       }),
@@ -877,7 +886,7 @@ export const strict = <P extends Props>(
           for (let i = 0; i < keys.length; i++) {
             const key = keys[i]
             if (!props.hasOwnProperty(key)) {
-              errors.push(getValidationError(o[key], snoc(c)(getContextEntry(key, never))))
+              errors.push(getValidationError(o[key], appendContext(c, key, never)))
             }
           }
           return errors.length ? failures(errors) : failure(o, c)
