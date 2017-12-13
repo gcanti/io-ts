@@ -1,7 +1,14 @@
+/*
 import * as Benchmark from 'benchmark'
 import * as assert from 'assert'
 
-import { Context, getContextEntry, getDefaultContext, number, string } from '../src/index'
+import {
+  Context,
+  getContextEntry,
+  getDefaultContext,
+  number,
+  string
+} from '../src/index'
 
 const suite = new Benchmark.Suite()
 const c: Context = getDefaultContext(string)
@@ -26,7 +33,7 @@ describe('perf', () => {
         c.concat([getContextEntry('key', number)])
       })
       .add('manual appendNext function', function() {
-        appendNext(c, getContextEntry('key', number))
+        snoc(c, getContextEntry('key', number))
       })
       .on('cycle', function(event: any) {
         console.log(String(event.target))
@@ -38,3 +45,4 @@ describe('perf', () => {
       .run({ async: true })
   }) as any).timeout(20000)
 })
+*/
