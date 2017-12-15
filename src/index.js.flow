@@ -4,7 +4,7 @@ import type { Predicate } from 'fp-ts/lib/function'
 
 export interface ContextEntry {
   +key: string;
-  +type: Any | NeverType;
+  +type: Decoder<any, any>;
 }
 export type Context = Array<ContextEntry>
 export interface ValidationError {
@@ -22,6 +22,15 @@ export type TypeOf<RT: Type<any, any>> = ExtractType<*, *, RT>
 type ExtractInput<S, A, RT: Type<S, A>> = S
 export type InputOf<RT: Type<any, any>> = ExtractInput<*, *, RT>
 
+export interface Decoder<S, A> {
+  +name: string;
+  +validate: Validate<S, A>;
+}
+
+export interface Encoder<S, A> {
+  +serialize: Serialize<S, A>;
+}
+
 /**
  * Laws:
  * 1. validate(x).fold(() => x, serialize) = x
@@ -34,6 +43,8 @@ declare export class Type<S, A> {
   +serialize: Serialize<S, A>;
   constructor(name: string, is: Is<A>, validate: Validate<S, A>, serialize: Serialize<S, A>): Type<S, A>;
   pipe<B>(ab: Type<A, B>, name?: string): Type<S, B>;
+  asDecoder(): Decoder<S, A>;
+  asEncoder(): Encoder<S, A>;
 }
 
 //
@@ -477,11 +488,13 @@ declare export var identity: <A>(a: A) => A
 
 declare export var getFunctionName: (f: any) => string
 
-declare export var getContextEntry: (key: string, type: Any | NeverType) => ContextEntry
+declare export var getContextEntry: (key: string, type: Decoder<any, any>) => ContextEntry
 
 declare export var getValidationError: (value: any, context: Context) => ValidationError
 
-declare export var getDefaultContext: (type: Any) => Context
+declare export var getDefaultContext: (type: Decoder<any, any>) => Context
+
+declare export var appendContext: (c: Context, key: string, type: Decoder<any, any>) => Context
 
 declare export var failures: <T>(errors: Errors) => Validation<T>
 
@@ -489,4 +502,4 @@ declare export var failure: <T>(value: any, context: Context) => Validation<T>
 
 declare export var success: <T>(value: T) => Validation<T>
 
-declare export var validate: <S, A>(value: S, type: Type<S, A>) => Validation<A>
+declare export var validate: <S, A>(value: S, type: Decoder<S, A>) => Validation<A>
