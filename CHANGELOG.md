@@ -13,6 +13,11 @@
 **Note**: Gaps between patch versions are faulty/broken releases. **Note**: A feature tagged as Experimental is in a
 high state of flux, you're at risk of it changing without notice.
 
+# 0.9.3
+
+* **Bug Fix**
+  * revert 37c74a5e2038de063a950f9ba8d18b1f132ef450, closes #8 (@gcanti)
+
 # 0.9.2
 
 * **New Feature**

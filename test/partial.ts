@@ -1,6 +1,13 @@
 import * as assert from 'assert'
 import * as t from '../src/index'
-import { assertSuccess, assertFailure, assertStrictEqual, DateFromNumber } from './helpers'
+import {
+  assertSuccess,
+  assertFailure,
+  assertStrictEqual,
+  DateFromNumber,
+  assertDeepEqual,
+  withDefault
+} from './helpers'
 
 describe('partial', () => {
   it('should succeed validating a valid value', () => {
@@ -36,8 +43,8 @@ describe('partial', () => {
   it('should fail validating an invalid value', () => {
     const T = t.partial({ a: t.number })
     assertFailure(t.validate({ a: 's' }, T), [
-      'Invalid value "s" supplied to : PartialType<{ a: number }>/a: (undefined | number)/0: undefined',
-      'Invalid value "s" supplied to : PartialType<{ a: number }>/a: (undefined | number)/1: number'
+      'Invalid value "s" supplied to : PartialType<{ a: number }>/a: (number | undefined)/0: number',
+      'Invalid value "s" supplied to : PartialType<{ a: number }>/a: (number | undefined)/1: undefined'
     ])
   })
 
@@ -63,5 +70,12 @@ describe('partial', () => {
     assert.strictEqual(T2.is({ a: new Date(0) }), true)
     assert.strictEqual(T2.is({ a: 0 }), false)
     assert.strictEqual(T2.is(undefined), false)
+  })
+
+  it('should support default values', () => {
+    const T = t.partial({
+      name: withDefault(t.string, 'foo')
+    })
+    assertDeepEqual(t.validate({}, T), { name: 'foo' })
   })
 })
