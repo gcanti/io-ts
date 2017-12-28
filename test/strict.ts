@@ -8,6 +8,11 @@ describe('strict', () => {
     assertSuccess(t.validate({ foo: 'foo' }, T))
   })
 
+  it('should succeed validating an undefined field', () => {
+    const T = t.strict({ foo: t.string, bar: t.union([t.string, t.undefined]) })
+    assertSuccess(t.validate({ foo: 'foo' }, T))
+  })
+
   it('should return the same reference if validation succeeded', () => {
     const T = t.strict({ foo: t.string })
     const value = { foo: 'foo' }
