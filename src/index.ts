@@ -889,25 +889,21 @@ export const strict = <P extends Props>(
   name: string = `StrictType<${getNameFromProps(props)}>`
 ): StrictType<P, InterfaceOf<P>> => {
   const loose = type(props)
-  const len = Object.keys(props).length
   return new StrictType(
     name,
     (v): v is InterfaceOf<P> => loose.is(v) && Object.getOwnPropertyNames(v).every(k => props.hasOwnProperty(k)),
     (s, c) =>
       loose.validate(s, c).chain(o => {
         const keys = Object.getOwnPropertyNames(o)
-        if (keys.length !== len) {
-          const errors: Errors = []
-          for (let i = 0; i < keys.length; i++) {
-            const key = keys[i]
-            if (!props.hasOwnProperty(key)) {
-              errors.push(getValidationError(o[key], appendContext(c, key, never)))
-            }
+        const len = keys.length
+        const errors: Errors = []
+        for (let i = 0; i < len; i++) {
+          const key = keys[i]
+          if (!props.hasOwnProperty(key)) {
+            errors.push(getValidationError(o[key], appendContext(c, key, never)))
           }
-          return errors.length ? failures(errors) : failure(o, c)
-        } else {
-          return success(o)
         }
+        return errors.length ? failures(errors) : success(o)
       }),
     loose.serialize,
     props
