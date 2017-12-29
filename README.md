@@ -103,6 +103,8 @@ ThrowReporter.report(validation)
 
 # Community
 
+* [io-ts-types](https://github.com/gcanti/io-ts-types) - A collection of runtime types and combinators for use with
+  io-ts
 * [io-ts-reporters](https://github.com/OliverJAsh/io-ts-reporters) - Error reporters for io-ts
 * [geojson-iots](https://github.com/pierremarc/geojson-iots) - Runtime types for GeoJSON as defined in rfc7946 made with
   io-ts
@@ -240,6 +242,23 @@ type CT = {
 }
 ```
 
+You can define a custom combinator to avoid the boilerplate
+
+```ts
+export function interfaceWithOptionals<R extends t.Props, O extends t.Props>(
+  required: R,
+  optional: O,
+  name?: string
+): t.IntersectionType<
+  [t.InterfaceType<R, t.InterfaceOf<R>>, t.PartialType<O, t.PartialOf<O>>],
+  t.InterfaceOf<R> & t.PartialOf<O>
+> {
+  return t.intersection([t.interface(required), t.partial(optional)], name)
+}
+
+const C = interfaceWithOptionals({ foo: t.string }, { bar: t.number })
+```
+
 # Custom types
 
 You can define your own types. Let's see an example
@@ -284,6 +303,37 @@ export function maybe<RT extends t.Any>(type: RT, name?: string): t.UnionType<[R
 }
 ```
 
+## The `pluck` combinator
+
+Extracting the runtime type of a field contained in each member of a union
+
+```ts
+const pluck = <F extends string, U extends t.UnionType<Array<t.InterfaceType<{ [K in F]: t.Any }, any>>, any>>(
+  union: U,
+  field: F
+): t.Type<any, t.TypeOf<U>[F]> => {
+  return t.union(union.types.map(type => type.props[field]))
+}
+
+export const Action = t.union([
+  t.interface({
+    type: t.literal('Action1'),
+    payload: t.interface({
+      foo: t.string
+    })
+  }),
+  t.interface({
+    type: t.literal('Action2'),
+    payload: t.interface({
+      bar: t.string
+    })
+  })
+])
+
+// ActionType: t.Type<any, "Action1" | "Action2">
+const ActionType = pluck(Action, 'type')
+```
+
 # Recipes
 
 ## Is there a way to turn the checks off in production code?
@@ -298,9 +348,9 @@ const { NODE_ENV } = process.env
 
 export function unsafeValidate<S, A>(value: any, type: t.Type<S, A>): A {
   if (NODE_ENV !== 'production') {
-    return t.validate(value, type).fold(errors => {
+    return t.validate(value, type).getOrElse(errors => {
       throw new Error(failure(errors).join('\n'))
-    }, t.identity)
+    })
   }
   // unsafe cast
   return value as A
