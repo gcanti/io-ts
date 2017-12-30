@@ -8,15 +8,15 @@ export interface ContextEntry {
 }
 export type Context = Array<ContextEntry>
 export interface ValidationError {
-  +value: any;
+  +value: mixed;
   +context: Context;
 }
 export type Errors = Array<ValidationError>
 export type Validation<A> = Either<Errors, A>
-export type Is<A> = (v: any) => boolean
+export type Is<A> = (v: mixed) => boolean
 export type Validate<S, A> = (s: S, context: Context) => Validation<A>
 export type Serialize<S, A> = (a: A) => S
-export type Any = Type<any, any>
+export type Any = Type<mixed, any>
 type ExtractType<S, A, RT: Type<S, A>> = A
 export type TypeOf<RT: Type<any, any>> = ExtractType<*, *, RT>
 type ExtractInput<S, A, RT: Type<S, A>> = S
@@ -51,105 +51,105 @@ declare export class Type<S, A> {
 // basic types
 //
 
-declare export class NullType extends Type<any, null> {
+declare export class NullType extends Type<mixed, null> {
   +_tag: 'NullType';
 }
 
 // TODO alias
 declare export var nullType: NullType
 
-declare export class UndefinedType extends Type<any, void> {
+declare export class UndefinedType extends Type<mixed, void> {
   +_tag: 'UndefinedType';
 }
 
 declare export var undefined: UndefinedType
 
-declare export class AnyType extends Type<any, any> {
+declare export class AnyType extends Type<mixed, any> {
   +_tag: 'AnyType';
 }
 
 declare export var any: AnyType
 
-declare export class NeverType extends Type<any, empty> {
+declare export class NeverType extends Type<mixed, empty> {
   +_tag: 'NeverType';
 }
 
 declare export var never: NeverType
 
-declare export class StringType extends Type<any, string> {
+declare export class StringType extends Type<mixed, string> {
   +_tag: 'StringType';
 }
 
 declare export var string: StringType
 
-declare export class NumberType extends Type<any, number> {
+declare export class NumberType extends Type<mixed, number> {
   +_tag: 'NumberType';
 }
 
 declare export var number: NumberType
 
-declare export class BooleanType extends Type<any, boolean> {
+declare export class BooleanType extends Type<mixed, boolean> {
   +_tag: 'BooleanType';
 }
 
 declare export var boolean: BooleanType
 
-declare export class AnyArrayType extends Type<any, Array<any>> {
+declare export class AnyArrayType extends Type<mixed, Array<mixed>> {
   +_tag: 'AnyArrayType';
 }
 
 declare export var Array: AnyArrayType
 
-declare export class AnyDictionaryType extends Type<any, { [key: string]: any }> {
+declare export class AnyDictionaryType extends Type<mixed, { [key: string]: mixed }> {
   +_tag: 'AnyDictionaryType';
 }
 
-declare export class FunctionType extends Type<any, Function> {
+declare export var Dictionary: AnyDictionaryType
+
+declare export class FunctionType extends Type<mixed, Function> {
   +_tag: 'FunctionType';
 }
 
 declare export var Function: FunctionType
 
-declare export var Dictionary: AnyDictionaryType
-
 //
 // refinements
 //
 
-declare export class RefinementType<+RT: Any, S, A> extends Type<S, A> {
+declare export class RefinementType<+RT: Type<any, any>, S, A> extends Type<S, A> {
   +_tag: 'RefinementType';
   +type: RT;
   +predicate: Predicate<A>;
   constructor(
     name: string,
     is: Is<A>,
-    validate: Validate<any, A>,
-    serialize: Serialize<any, A>,
+    validate: Validate<S, A>,
+    serialize: Serialize<S, A>,
     type: RT,
     predicate: Predicate<A>
   ): RefinementType<RT, S, A>;
 }
 
-declare export var refinement: <RT: Any>(
+declare export var refinement: <RT: Type<any, any>>(
   type: RT,
   predicate: Predicate<TypeOf<RT>>,
   name?: string
 ) => RefinementType<RT, InputOf<RT>, TypeOf<RT>>
 
-declare export var Integer: RefinementType<NumberType, any, number>
+declare export var Integer: RefinementType<NumberType, mixed, number>
 
 //
 // literals
 //
 
-declare export class LiteralType<V> extends Type<any, V> {
+declare export class LiteralType<V> extends Type<mixed, V> {
   +_tag: 'LiteralType';
   +value: V;
   constructor(
     name: string,
     is: Is<V>,
-    validate: Validate<any, V>,
-    serialize: Serialize<any, V>,
+    validate: Validate<mixed, V>,
+    serialize: Serialize<mixed, V>,
     value: V
   ): LiteralType<V>;
 }
@@ -160,14 +160,14 @@ declare export var literal: <V: string | number | boolean>(value: V, name?: stri
 // keyof
 //
 
-declare export class KeyofType<D: { [key: string]: any }> extends Type<any, $Keys<D>> {
+declare export class KeyofType<D: { [key: string]: any }> extends Type<mixed, $Keys<D>> {
   +_tag: 'KeyofType';
   +keys: D;
   constructor(
     name: string,
     is: Is<$Keys<D>>,
-    validate: Validate<any, $Keys<D>>,
-    serialize: Serialize<any, $Keys<D>>,
+    validate: Validate<mixed, $Keys<D>>,
+    serialize: Serialize<mixed, $Keys<D>>,
     keys: D
   ): KeyofType<D>;
 }
@@ -178,10 +178,15 @@ declare export var keyof: <D: { [key: string]: any }>(keys: D, name?: string) =>
 // recursive types
 //
 
-declare export class RecursiveType<+RT: Any, A> extends Type<any, A> {
+declare export class RecursiveType<+RT: Any, A> extends Type<mixed, A> {
   +_tag: 'RecursiveType';
   +type: RT;
-  constructor(name: string, is: Is<A>, validate: Validate<any, A>, serialize: Serialize<any, A>): RecursiveType<RT, A>;
+  constructor(
+    name: string,
+    is: Is<A>,
+    validate: Validate<mixed, A>,
+    serialize: Serialize<mixed, A>
+  ): RecursiveType<RT, A>;
 }
 
 declare export var recursion: <T, RT: Any>(name: string, definition: (self: RT) => RT) => RecursiveType<RT, T>
@@ -190,14 +195,14 @@ declare export var recursion: <T, RT: Any>(name: string, definition: (self: RT) 
 // arrays
 //
 
-declare export class ArrayType<+RT: Any, A> extends Type<any, A> {
+declare export class ArrayType<+RT: Any, A> extends Type<mixed, A> {
   +_tag: 'ArrayType';
   +type: RT;
   constructor(
     name: string,
     is: Is<A>,
-    validate: Validate<any, A>,
-    serialize: Serialize<any, A>,
+    validate: Validate<mixed, A>,
+    serialize: Serialize<mixed, A>,
     type: RT
   ): ArrayType<RT>;
 }
@@ -210,16 +215,16 @@ declare export var array: <RT: Any>(type: RT, name?: string) => ArrayType<RT, Ar
 
 export type Props = { +[key: string]: Any }
 
-export type InterfaceOf<P: Props> = $ObjMap<P, <T>(v: Type<any, T>) => T>
+export type InterfaceOf<P: Props> = $ObjMap<P, <T>(v: Type<mixed, T>) => T>
 
-declare export class InterfaceType<P: Props, A> extends Type<any, A> {
+declare export class InterfaceType<P: Props, A> extends Type<mixed, A> {
   +_tag: 'InterfaceType';
   +props: P;
   constructor(
     name: string,
     is: Is<A>,
-    validate: Validate<any, A>,
-    serialize: Serialize<any, A>,
+    validate: Validate<mixed, A>,
+    serialize: Serialize<mixed, A>,
     props: P
   ): InterfaceType<P, A>;
 }
@@ -232,14 +237,14 @@ declare export var type: <P: Props>(props: P, name?: string) => InterfaceType<P,
 
 export type PartialOf<P: Props> = $Shape<InterfaceOf<P>>
 
-declare export class PartialType<P: Props, A> extends Type<any, A> {
+declare export class PartialType<P: Props, A> extends Type<mixed, A> {
   +_tag: 'PartialType';
   +props: P;
   constructor(
     name: string,
     is: Is<A>,
-    validate: Validate<any, A>,
-    serialize: Serialize<any, A>,
+    validate: Validate<mixed, A>,
+    serialize: Serialize<mixed, A>,
     props: P
   ): PartialType<P, A>;
 }
@@ -250,15 +255,15 @@ declare export var partial: <P: Props>(props: P, name?: string) => PartialType<P
 // dictionaries
 //
 
-declare export class DictionaryType<+D: Any, +C: Any, A> extends Type<any, A> {
+declare export class DictionaryType<+D: Any, +C: Any, A> extends Type<mixed, A> {
   +_tag: 'DictionaryType';
   +domain: D;
   +codomain: C;
   constructor(
     name: string,
     is: Is<A>,
-    validate: Validate<any, A>,
-    serialize: Serialize<any, A>,
+    validate: Validate<mixed, A>,
+    serialize: Serialize<mixed, A>,
     domain: D,
     codomain: C
   ): DictionaryType<D, C>;
@@ -274,19 +279,19 @@ declare export var dictionary: <D: Any, C: Any>(
 // unions
 //
 
-declare export class UnionType<+RTS, A> extends Type<any, A> {
+declare export class UnionType<+RTS, A> extends Type<mixed, A> {
   +_tag: 'UnionType';
   +types: RTS;
   constructor(
     name: string,
     is: Is<A>,
-    validate: Validate<any, A>,
-    serialize: Serialize<any, A>,
+    validate: Validate<mixed, A>,
+    serialize: Serialize<mixed, A>,
     types: RTS
   ): UnionType<RTS, A>;
 }
 
-type AnyS<A> = Type<any, A>
+type Std<A> = Type<mixed, A>
 
 declare export function union<
   A,
@@ -299,7 +304,7 @@ declare export function union<
   H,
   I,
   J,
-  RTS: [AnyS<A>, AnyS<B>, AnyS<C>, AnyS<D>, AnyS<E>, AnyS<F>, AnyS<G>, AnyS<H>, AnyS<I>, AnyS<J>]
+  RTS: [Std<A>, Std<B>, Std<C>, Std<D>, Std<E>, Std<F>, Std<G>, Std<H>, Std<I>, Std<J>]
 >(
   types: RTS,
   name?: string
@@ -314,7 +319,7 @@ declare export function union<
   G,
   H,
   I,
-  RTS: [AnyS<A>, AnyS<B>, AnyS<C>, AnyS<D>, AnyS<E>, AnyS<F>, AnyS<G>, AnyS<H>, AnyS<I>]
+  RTS: [Std<A>, Std<B>, Std<C>, Std<D>, Std<E>, Std<F>, Std<G>, Std<H>, Std<I>]
 >(
   types: RTS,
   name?: string
@@ -328,117 +333,108 @@ declare export function union<
   F,
   G,
   H,
-  RTS: [AnyS<A>, AnyS<B>, AnyS<C>, AnyS<D>, AnyS<E>, AnyS<F>, AnyS<G>, AnyS<H>]
+  RTS: [Std<A>, Std<B>, Std<C>, Std<D>, Std<E>, Std<F>, Std<G>, Std<H>]
 >(
   types: RTS,
   name?: string
 ): UnionType<RTS, A | B | C | D | E | F | G | H>
-declare export function union<
-  A,
-  B,
-  C,
-  D,
-  E,
-  F,
-  G,
-  RTS: [AnyS<A>, AnyS<B>, AnyS<C>, AnyS<D>, AnyS<E>, AnyS<F>, AnyS<G>]
->(
+declare export function union<A, B, C, D, E, F, G, RTS: [Std<A>, Std<B>, Std<C>, Std<D>, Std<E>, Std<F>, Std<G>]>(
   types: RTS,
   name?: string
 ): UnionType<RTS, A | B | C | D | E | F | G>
-declare export function union<A, B, C, D, E, F, RTS: [AnyS<A>, AnyS<B>, AnyS<C>, AnyS<D>, AnyS<E>, AnyS<F>]>(
+declare export function union<A, B, C, D, E, F, RTS: [Std<A>, Std<B>, Std<C>, Std<D>, Std<E>, Std<F>]>(
   types: RTS,
   name?: string
 ): UnionType<RTS, A | B | C | D | E | F>
-declare export function union<A, B, C, D, E, RTS: [AnyS<A>, AnyS<B>, AnyS<C>, AnyS<D>, AnyS<E>]>(
+declare export function union<A, B, C, D, E, RTS: [Std<A>, Std<B>, Std<C>, Std<D>, Std<E>]>(
   types: RTS,
   name?: string
 ): UnionType<RTS, A | B | C | D | E>
-declare export function union<A, B, C, D, RTS: [AnyS<A>, AnyS<B>, AnyS<C>, AnyS<D>]>(
+declare export function union<A, B, C, D, RTS: [Std<A>, Std<B>, Std<C>, Std<D>]>(
   types: RTS,
   name?: string
 ): UnionType<RTS, A | B | C | D>
-declare export function union<A, B, C, RTS: [AnyS<A>, AnyS<B>, AnyS<C>]>(
+declare export function union<A, B, C, RTS: [Std<A>, Std<B>, Std<C>]>(
   types: RTS,
   name?: string
 ): UnionType<RTS, A | B | C>
-declare export function union<A, B, RTS: [AnyS<A>, AnyS<B>]>(types: RTS, name?: string): UnionType<RTS, A | B>
-declare export function union<A, RTS: [AnyS<A>]>(types: RTS, name?: string): UnionType<RTS, A>
+declare export function union<A, B, RTS: [Std<A>, Std<B>]>(types: RTS, name?: string): UnionType<RTS, A | B>
+declare export function union<A, RTS: [Std<A>]>(types: RTS, name?: string): UnionType<RTS, A>
 
 //
 // intersections
 //
 
-declare export class IntersectionType<+RTS, A> extends Type<any, A> {
+declare export class IntersectionType<+RTS, A> extends Type<mixed, A> {
   +_tag: 'IntersectionType';
   +types: RTS;
   constructor(
     name: string,
     is: Is<A>,
-    validate: Validate<any, A>,
-    serialize: Serialize<any, A>,
+    validate: Validate<mixed, A>,
+    serialize: Serialize<mixed, A>,
     types: RTS
   ): IntersectionType<RTS, A>;
 }
 
-declare export function intersection<A, B, C, D, E, RTS: [AnyS<A>, AnyS<B>, AnyS<C>, AnyS<D>, AnyS<E>]>(
+declare export function intersection<A, B, C, D, E, RTS: [Std<A>, Std<B>, Std<C>, Std<D>, Std<E>]>(
   types: RTS,
   name?: string
 ): UnionType<RTS, A & B & C & D & E>
-declare export function intersection<A, B, C, D, RTS: [AnyS<A>, AnyS<B>, AnyS<C>, AnyS<D>]>(
+declare export function intersection<A, B, C, D, RTS: [Std<A>, Std<B>, Std<C>, Std<D>]>(
   types: RTS,
   name?: string
 ): UnionType<RTS, A & B & C & D>
-declare export function intersection<A, B, C, RTS: [AnyS<A>, AnyS<B>, AnyS<C>]>(
+declare export function intersection<A, B, C, RTS: [Std<A>, Std<B>, Std<C>]>(
   types: RTS,
   name?: string
 ): UnionType<RTS, A & B & C>
-declare export function intersection<A, B, RTS: [AnyS<A>, AnyS<B>]>(types: RTS, name?: string): UnionType<RTS, A & B>
-declare export function intersection<A, RTS: [AnyS<A>]>(types: RTS, name?: string): UnionType<RTS, A>
+declare export function intersection<A, B, RTS: [Std<A>, Std<B>]>(types: RTS, name?: string): UnionType<RTS, A & B>
+declare export function intersection<A, RTS: [Std<A>]>(types: RTS, name?: string): UnionType<RTS, A>
 
 //
 // tuples
 //
 
-declare export class TupleType<+RTS, A> extends Type<any, A> {
+declare export class TupleType<+RTS, A> extends Type<mixed, A> {
   +_tag: 'TupleType';
   +types: RTS;
   constructor(
     name: string,
     is: Is<A>,
-    validate: Validate<any, A>,
-    serialize: Serialize<any, A>,
+    validate: Validate<mixed, A>,
+    serialize: Serialize<mixed, A>,
     types: RTS
   ): TupleType<RTS, A>;
 }
 
-declare export function tuple<A, B, C, D, E, RTS: [AnyS<A>, AnyS<B>, AnyS<C>, AnyS<D>, AnyS<E>]>(
+declare export function tuple<A, B, C, D, E, RTS: [Std<A>, Std<B>, Std<C>, Std<D>, Std<E>]>(
   types: RTS,
   name?: string
 ): UnionType<RTS, [A, B, C, D, E]>
-declare export function tuple<A, B, C, D, RTS: [AnyS<A>, AnyS<B>, AnyS<C>, AnyS<D>]>(
+declare export function tuple<A, B, C, D, RTS: [Std<A>, Std<B>, Std<C>, Std<D>]>(
   types: RTS,
   name?: string
 ): UnionType<RTS, [A, B, C, D]>
-declare export function tuple<A, B, C, RTS: [AnyS<A>, AnyS<B>, AnyS<C>]>(
+declare export function tuple<A, B, C, RTS: [Std<A>, Std<B>, Std<C>]>(
   types: RTS,
   name?: string
 ): UnionType<RTS, [A, B, C]>
-declare export function tuple<A, B, RTS: [AnyS<A>, AnyS<B>]>(types: RTS, name?: string): UnionType<RTS, [A, B]>
-declare export function tuple<A, RTS: [AnyS<A>]>(types: RTS, name?: string): UnionType<RTS, [A]>
+declare export function tuple<A, B, RTS: [Std<A>, Std<B>]>(types: RTS, name?: string): UnionType<RTS, [A, B]>
+declare export function tuple<A, RTS: [Std<A>]>(types: RTS, name?: string): UnionType<RTS, [A]>
 
 //
 // readonly objects
 //
 
-declare export class ReadonlyType<+RT: Any, A> extends Type<any, A> {
+declare export class ReadonlyType<+RT: Any, A> extends Type<mixed, A> {
   +_tag: 'ReadonlyType';
   +type: RT;
   constructor(
     name: string,
     is: Is<A>,
-    validate: Validate<any, A>,
-    serialize: Serialize<any, A>,
+    validate: Validate<mixed, A>,
+    serialize: Serialize<mixed, A>,
     type: RT
   ): ReadonlyType<RT, A>;
 }
@@ -449,14 +445,14 @@ declare export var readonly: <RT: Any>(type: RT, name?: string) => ReadonlyType<
 // readonly arrays
 //
 
-declare export class ReadonlyArrayType<+RT: Any, A> extends Type<any, A> {
+declare export class ReadonlyArrayType<+RT: Any, A> extends Type<mixed, A> {
   +_tag: 'ReadonlyArrayType';
   +type: RT;
   constructor(
     name: string,
     is: Is<A>,
-    validate: Validate<any, A>,
-    serialize: Serialize<any, A>,
+    validate: Validate<mixed, A>,
+    serialize: Serialize<mixed, A>,
     type: RT
   ): ReadonlyArrayType<RT>;
 }
@@ -470,14 +466,14 @@ declare export var readonlyArray: <RT: Any>(
 // strict interfaces
 //
 
-declare export class StrictType<P: Props, A> extends Type<any, A> {
+declare export class StrictType<P: Props, A> extends Type<mixed, A> {
   +_tag: 'StrictType';
   +props: P;
   constructor(
     name: string,
     is: Is<A>,
-    validate: Validate<any, A>,
-    serialize: Serialize<any, A>,
+    validate: Validate<mixed, A>,
+    serialize: Serialize<mixed, A>,
     props: P
   ): StrictType<P>;
 }
@@ -486,11 +482,11 @@ declare export var strict: <P: Props>(props: P, name?: string) => StrictType<P, 
 
 declare export var identity: <A>(a: A) => A
 
-declare export var getFunctionName: (f: any) => string
+declare export var getFunctionName: (f: Function) => string
 
 declare export var getContextEntry: (key: string, type: Decoder<any, any>) => ContextEntry
 
-declare export var getValidationError: (value: any, context: Context) => ValidationError
+declare export var getValidationError: (value: mixed, context: Context) => ValidationError
 
 declare export var getDefaultContext: (type: Decoder<any, any>) => Context
 
@@ -498,7 +494,7 @@ declare export var appendContext: (c: Context, key: string, type: Decoder<any, a
 
 declare export var failures: <T>(errors: Errors) => Validation<T>
 
-declare export var failure: <T>(value: any, context: Context) => Validation<T>
+declare export var failure: <T>(value: mixed, context: Context) => Validation<T>
 
 declare export var success: <T>(value: T) => Validation<T>
 

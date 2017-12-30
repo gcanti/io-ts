@@ -9,6 +9,8 @@ Also a runtime type can
 * be used as a custom type guard (through `is`)
 
 ```ts
+export type mixed = object | number | string | boolean | symbol | undefined | null
+
 class Type<S, A> {
   readonly _A: A
   readonly _S: S
@@ -16,7 +18,7 @@ class Type<S, A> {
     /** a unique name for this runtime type */
     readonly name: string,
     /** a custom type guard */
-    readonly is: (v: any) => v is A,
+    readonly is: (v: mixed) => v is A,
     /** succeeds if a value of type S can be decoded to a value of type A */
     readonly validate: (input: S, context: Context) => Either<Errors, A>,
     /** converts a value of type A to a value of type S */
@@ -35,7 +37,7 @@ A runtime type representing `string` can be defined as
 ```js
 import * as t from 'io-ts'
 
-export class StringType extends Type<any, string> {
+export class StringType extends Type<mixed, string> {
   constructor() {
     super(
       'string',
@@ -164,9 +166,9 @@ import * as t from 'io-ts'
 | never                 | `never`                                 | `empty`                                 | `t.never`                                                         |
 | object                | `object`                                | ✘                                       | `t.object`                                                        |
 | integer               | ✘                                       | ✘                                       | `t.Integer`                                                       |
-| array of any          | `Array<any>`                            | `Array<any>`                            | `t.Array`                                                         |
+| array of any          | `Array<mixed>`                          | `Array<mixed>`                          | `t.Array`                                                         |
 | array of type         | `Array<A>`                              | `Array<A>`                              | `t.array(A)`                                                      |
-| dictionary of any     | `{ [key: string]: any }`                | `{ [key: string]: any }`                | `t.Dictionary`                                                    |
+| dictionary of any     | `{ [key: string]: mixed }`              | `{ [key: string]: mixed }`              | `t.Dictionary`                                                    |
 | dictionary of type    | `{ [K in A]: B }`                       | `{ [key: A]: B }`                       | `t.dictionary(A, B)`                                              |
 | function              | `Function`                              | `Function`                              | `t.Function`                                                      |
 | literal               | `'s'`                                   | `'s'`                                   | `t.literal('s')`                                                  |
@@ -258,7 +260,7 @@ You can define your own types. Let's see an example
 import * as t from 'io-ts'
 
 // represents a Date from an ISO string
-const DateFromString = new t.Type<any, Date>(
+const DateFromString = new t.Type<t.mixed, Date>(
   'DateFromString',
   (v): v is Date => v instanceof Date,
   (v, c) =>
@@ -302,7 +304,7 @@ Extracting the runtime type of a field contained in each member of a union
 const pluck = <F extends string, U extends t.UnionType<Array<t.InterfaceType<{ [K in F]: t.Any }, any>>, any>>(
   union: U,
   field: F
-): t.Type<any, t.TypeOf<U>[F]> => {
+): t.Type<t.mixed, t.TypeOf<U>[F]> => {
   return t.union(union.types.map(type => type.props[field]))
 }
 
@@ -321,7 +323,7 @@ export const Action = t.union([
   })
 ])
 
-// ActionType: t.Type<any, "Action1" | "Action2">
+// ActionType: t.Type<t.mixed, "Action1" | "Action2">
 const ActionType = pluck(Action, 'type')
 ```
 
