@@ -46,9 +46,13 @@ export class Type<S, A> implements Decoder<S, A>, Encoder<S, A> {
   // prettier-ignore
   readonly '_S': S
   constructor(
+    /** a unique name for this runtime type */
     readonly name: string,
+    /** a custom type guard */
     readonly is: Is<A>,
+    /** succeeds if a value of type S can be decoded to a value of type A */
     readonly validate: Validate<S, A>,
+    /** converts a value of type A to a value of type S */
     readonly serialize: Serialize<S, A>
   ) {}
   pipe<B>(ab: Type<A, B>, name?: string): Type<S, B> {

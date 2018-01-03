@@ -1,37 +1,28 @@
 # The idea
 
-A value of type `Type<S, A>` (called "runtime type") is the runtime representation of the static type `A`:
+A value of type `Type<S, A>` (called "runtime type") is the runtime representation of the static type `A`.
 
-```js
+Also a runtime type can
+
+* decode inputs (through `validate`)
+* encode outputs (through `serialize`)
+* be used as a custom type guard (through `is`)
+
+```ts
 class Type<S, A> {
   readonly _A: A
   readonly _S: S
   constructor(
+    /** a unique name for this runtime type */
     readonly name: string,
-    readonly is: Is<A>,
-    readonly validate: Validate<S, A>,
-    readonly serialize: Serialize<S, A>
+    /** a custom type guard */
+    readonly is: (v: any) => v is A,
+    /** succeeds if a value of type S can be decoded to a value of type A */
+    readonly validate: (input: S, context: Context) => Either<Errors, A>,
+    /** converts a value of type A to a value of type S */
+    readonly serialize: (output: A) => S
   ) {}
 }
-```
-
-where `Validate<A>` is a specific validation function for the type `A`
-
-```js
-export interface ContextEntry {
-  readonly key: string
-  readonly type: Any | NeverType
-}
-export type Context = Array<ContextEntry>
-export interface ValidationError {
-  readonly value: any
-  readonly context: Context
-}
-export type Errors = Array<ValidationError>
-export type Validation<A> = Either<Errors, A>
-export type Is<A> = (v: any) => v is A
-export type Validate<S, A> = (s: S, context: Context) => Validation<A>
-export type Serialize<S, A> = (a: A) => S
 ```
 
 Note. The `Either` type is defined in [fp-ts](https://github.com/gcanti/fp-ts), a library containing implementations of
