@@ -329,7 +329,8 @@ const ActionType = pluck(Action, 'type')
 
 ## Is there a way to turn the checks off in production code?
 
-No, however you can define your own logic for that (if you _really_ trust the input)
+No, however you can define your own logic for that (if you _really_ trust the input and the involved types don't perform
+deserializations)
 
 ```ts
 import * as t from 'io-ts'
