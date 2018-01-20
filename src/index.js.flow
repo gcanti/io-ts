@@ -291,8 +291,6 @@ declare export class UnionType<+RTS, A> extends Type<mixed, A> {
   ): UnionType<RTS, A>;
 }
 
-type Std<A> = Type<mixed, A>
-
 declare export function union<
   A,
   B,
@@ -304,7 +302,18 @@ declare export function union<
   H,
   I,
   J,
-  RTS: [Std<A>, Std<B>, Std<C>, Std<D>, Std<E>, Std<F>, Std<G>, Std<H>, Std<I>, Std<J>]
+  RTS: [
+    Type<mixed, A>,
+    Type<mixed, B>,
+    Type<mixed, C>,
+    Type<mixed, D>,
+    Type<mixed, E>,
+    Type<mixed, F>,
+    Type<mixed, G>,
+    Type<mixed, H>,
+    Type<mixed, I>,
+    Type<mixed, J>
+  ]
 >(
   types: RTS,
   name?: string
@@ -319,7 +328,17 @@ declare export function union<
   G,
   H,
   I,
-  RTS: [Std<A>, Std<B>, Std<C>, Std<D>, Std<E>, Std<F>, Std<G>, Std<H>, Std<I>]
+  RTS: [
+    Type<mixed, A>,
+    Type<mixed, B>,
+    Type<mixed, C>,
+    Type<mixed, D>,
+    Type<mixed, E>,
+    Type<mixed, F>,
+    Type<mixed, G>,
+    Type<mixed, H>,
+    Type<mixed, I>
+  ]
 >(
   types: RTS,
   name?: string
@@ -333,33 +352,69 @@ declare export function union<
   F,
   G,
   H,
-  RTS: [Std<A>, Std<B>, Std<C>, Std<D>, Std<E>, Std<F>, Std<G>, Std<H>]
+  RTS: [
+    Type<mixed, A>,
+    Type<mixed, B>,
+    Type<mixed, C>,
+    Type<mixed, D>,
+    Type<mixed, E>,
+    Type<mixed, F>,
+    Type<mixed, G>,
+    Type<mixed, H>
+  ]
 >(
   types: RTS,
   name?: string
 ): UnionType<RTS, A | B | C | D | E | F | G | H>
-declare export function union<A, B, C, D, E, F, G, RTS: [Std<A>, Std<B>, Std<C>, Std<D>, Std<E>, Std<F>, Std<G>]>(
+declare export function union<
+  A,
+  B,
+  C,
+  D,
+  E,
+  F,
+  G,
+  RTS: [Type<mixed, A>, Type<mixed, B>, Type<mixed, C>, Type<mixed, D>, Type<mixed, E>, Type<mixed, F>, Type<mixed, G>]
+>(
   types: RTS,
   name?: string
 ): UnionType<RTS, A | B | C | D | E | F | G>
-declare export function union<A, B, C, D, E, F, RTS: [Std<A>, Std<B>, Std<C>, Std<D>, Std<E>, Std<F>]>(
+declare export function union<
+  A,
+  B,
+  C,
+  D,
+  E,
+  F,
+  RTS: [Type<mixed, A>, Type<mixed, B>, Type<mixed, C>, Type<mixed, D>, Type<mixed, E>, Type<mixed, F>]
+>(
   types: RTS,
   name?: string
 ): UnionType<RTS, A | B | C | D | E | F>
-declare export function union<A, B, C, D, E, RTS: [Std<A>, Std<B>, Std<C>, Std<D>, Std<E>]>(
+declare export function union<
+  A,
+  B,
+  C,
+  D,
+  E,
+  RTS: [Type<mixed, A>, Type<mixed, B>, Type<mixed, C>, Type<mixed, D>, Type<mixed, E>]
+>(
   types: RTS,
   name?: string
 ): UnionType<RTS, A | B | C | D | E>
-declare export function union<A, B, C, D, RTS: [Std<A>, Std<B>, Std<C>, Std<D>]>(
+declare export function union<A, B, C, D, RTS: [Type<mixed, A>, Type<mixed, B>, Type<mixed, C>, Type<mixed, D>]>(
   types: RTS,
   name?: string
 ): UnionType<RTS, A | B | C | D>
-declare export function union<A, B, C, RTS: [Std<A>, Std<B>, Std<C>]>(
+declare export function union<A, B, C, RTS: [Type<mixed, A>, Type<mixed, B>, Type<mixed, C>]>(
   types: RTS,
   name?: string
 ): UnionType<RTS, A | B | C>
-declare export function union<A, B, RTS: [Std<A>, Std<B>]>(types: RTS, name?: string): UnionType<RTS, A | B>
-declare export function union<A, RTS: [Std<A>]>(types: RTS, name?: string): UnionType<RTS, A>
+declare export function union<A, B, RTS: [Type<mixed, A>, Type<mixed, B>]>(
+  types: RTS,
+  name?: string
+): UnionType<RTS, A | B>
+declare export function union<A, RTS: [Type<mixed, A>]>(types: RTS, name?: string): UnionType<RTS, A>
 
 //
 // intersections
@@ -377,20 +432,30 @@ declare export class IntersectionType<+RTS, A> extends Type<mixed, A> {
   ): IntersectionType<RTS, A>;
 }
 
-declare export function intersection<A, B, C, D, E, RTS: [Std<A>, Std<B>, Std<C>, Std<D>, Std<E>]>(
+declare export function intersection<
+  A,
+  B,
+  C,
+  D,
+  E,
+  RTS: [Type<mixed, A>, Type<mixed, B>, Type<mixed, C>, Type<mixed, D>, Type<mixed, E>]
+>(
   types: RTS,
   name?: string
 ): UnionType<RTS, A & B & C & D & E>
-declare export function intersection<A, B, C, D, RTS: [Std<A>, Std<B>, Std<C>, Std<D>]>(
+declare export function intersection<A, B, C, D, RTS: [Type<mixed, A>, Type<mixed, B>, Type<mixed, C>, Type<mixed, D>]>(
   types: RTS,
   name?: string
 ): UnionType<RTS, A & B & C & D>
-declare export function intersection<A, B, C, RTS: [Std<A>, Std<B>, Std<C>]>(
+declare export function intersection<A, B, C, RTS: [Type<mixed, A>, Type<mixed, B>, Type<mixed, C>]>(
   types: RTS,
   name?: string
 ): UnionType<RTS, A & B & C>
-declare export function intersection<A, B, RTS: [Std<A>, Std<B>]>(types: RTS, name?: string): UnionType<RTS, A & B>
-declare export function intersection<A, RTS: [Std<A>]>(types: RTS, name?: string): UnionType<RTS, A>
+declare export function intersection<A, B, RTS: [Type<mixed, A>, Type<mixed, B>]>(
+  types: RTS,
+  name?: string
+): UnionType<RTS, A & B>
+declare export function intersection<A, RTS: [Type<mixed, A>]>(types: RTS, name?: string): UnionType<RTS, A>
 
 //
 // tuples
@@ -408,20 +473,30 @@ declare export class TupleType<+RTS, A> extends Type<mixed, A> {
   ): TupleType<RTS, A>;
 }
 
-declare export function tuple<A, B, C, D, E, RTS: [Std<A>, Std<B>, Std<C>, Std<D>, Std<E>]>(
+declare export function tuple<
+  A,
+  B,
+  C,
+  D,
+  E,
+  RTS: [Type<mixed, A>, Type<mixed, B>, Type<mixed, C>, Type<mixed, D>, Type<mixed, E>]
+>(
   types: RTS,
   name?: string
 ): UnionType<RTS, [A, B, C, D, E]>
-declare export function tuple<A, B, C, D, RTS: [Std<A>, Std<B>, Std<C>, Std<D>]>(
+declare export function tuple<A, B, C, D, RTS: [Type<mixed, A>, Type<mixed, B>, Type<mixed, C>, Type<mixed, D>]>(
   types: RTS,
   name?: string
 ): UnionType<RTS, [A, B, C, D]>
-declare export function tuple<A, B, C, RTS: [Std<A>, Std<B>, Std<C>]>(
+declare export function tuple<A, B, C, RTS: [Type<mixed, A>, Type<mixed, B>, Type<mixed, C>]>(
   types: RTS,
   name?: string
 ): UnionType<RTS, [A, B, C]>
-declare export function tuple<A, B, RTS: [Std<A>, Std<B>]>(types: RTS, name?: string): UnionType<RTS, [A, B]>
-declare export function tuple<A, RTS: [Std<A>]>(types: RTS, name?: string): UnionType<RTS, [A]>
+declare export function tuple<A, B, RTS: [Type<mixed, A>, Type<mixed, B>]>(
+  types: RTS,
+  name?: string
+): UnionType<RTS, [A, B]>
+declare export function tuple<A, RTS: [Type<mixed, A>]>(types: RTS, name?: string): UnionType<RTS, [A]>
 
 //
 // readonly objects
