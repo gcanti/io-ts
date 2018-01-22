@@ -64,7 +64,7 @@ declare export class UndefinedType extends Type<mixed, void> {
 
 declare export var undefined: UndefinedType
 
-declare export class AnyType extends Type<mixed, any> {
+declare export class AnyType extends Type<any, any> {
   +_tag: 'AnyType';
 }
 
