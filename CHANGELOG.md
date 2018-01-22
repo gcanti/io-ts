@@ -13,6 +13,17 @@
 **Note**: Gaps between patch versions are faulty/broken releases. **Note**: A feature tagged as Experimental is in a
 high state of flux, you're at risk of it changing without notice.
 
+# 0.9.5
+
+* **New Feature**
+  * add `mixed` type (@gcanti)
+  * replace `any` with `mixed` in all input type parameters (@gcanti)
+    ```diff
+    -export class StringType extends Type<any, string> {
+    +export class StringType extends Type<mixed, string> {
+    }
+    ```
+
 # 0.9.4
 
 * **Bug Fix**
