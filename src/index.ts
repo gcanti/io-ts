@@ -136,7 +136,7 @@ export class UndefinedType extends Type<mixed, undefined> {
 
 const undefinedType: UndefinedType = new UndefinedType()
 
-export class AnyType extends Type<mixed, any> {
+export class AnyType extends Type<any, any> {
   readonly _tag: 'AnyType' = 'AnyType'
   constructor() {
     super('any', (_): _ is any => true, success, identity)
