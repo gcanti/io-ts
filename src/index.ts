@@ -675,9 +675,9 @@ export class IntersectionType<RTS extends Array<Any>, A> extends Type<mixed, A> 
   readonly _tag: 'IntersectionType' = 'IntersectionType'
   constructor(
     name: string,
-    is: Is<A>,
-    validate: Validate<mixed, A>,
-    serialize: Serialize<mixed, A>,
+    is: IntersectionType<RTS, A>['is'],
+    validate: IntersectionType<RTS, A>['validate'],
+    serialize: IntersectionType<RTS, A>['serialize'],
     readonly types: RTS
   ) {
     super(name, is, validate, serialize)
@@ -741,9 +741,9 @@ export class TupleType<RTS extends Array<Any>, A> extends Type<mixed, A> {
   readonly _tag: 'TupleType' = 'TupleType'
   constructor(
     name: string,
-    is: Is<A>,
-    validate: Validate<mixed, A>,
-    serialize: Serialize<mixed, A>,
+    is: TupleType<RTS, A>['is'],
+    validate: TupleType<RTS, A>['validate'],
+    serialize: TupleType<RTS, A>['serialize'],
     readonly types: RTS
   ) {
     super(name, is, validate, serialize)
