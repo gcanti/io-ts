@@ -1,4 +1,0 @@
-// @flow
-import type { Reporter } from './Reporter'
-
-declare export var ThrowReporter: Reporter<void>

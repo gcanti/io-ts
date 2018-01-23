@@ -14,13 +14,9 @@
       "prettier --no-semi --single-quote --print-width 120 --parser typescript --list-different \"{src,test}/**/*.ts\"",
     "fix-prettier":
       "prettier --no-semi --single-quote --print-width 120 --parser typescript --write \"{src,test,examples,exercises}/**/*.ts\"",
-    "flow-copy-definition-files": "cp src/*.js.flow lib",
-    "flow-test": "flow status",
-    "flow-fix-prettier":
-      "prettier --no-semi --single-quote --print-width 120 --parser flow --write \"{src,test,examples,exercises}/**/*.js.flow\"",
     "test": "npm run prettier && npm run lint && npm run typings-checker && npm run mocha",
     "clean": "rm -rf lib/*",
-    "build": "npm run clean && tsc && npm run flow-copy-definition-files",
+    "build": "npm run clean && tsc",
     "perf": "node perf/index"
   },
   "repository": {

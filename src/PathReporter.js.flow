@@ -1,9 +1,0 @@
-// @flow
-import type { Reporter } from './Reporter'
-import type { ValidationError } from './index'
-
-declare export function failure(es: Array<ValidationError>): Array<string>
-
-declare export function success(): Array<string>
-
-declare export var PathReporter: Reporter<Array<string>>

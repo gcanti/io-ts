@@ -21,21 +21,23 @@ export interface ValidationError {
 }
 export type Errors = Array<ValidationError>
 export type Validation<A> = Either<Errors, A>
-export type Is<A> = (v: mixed) => v is A
-export type Validate<S, A> = (s: S, context: Context) => Validation<A>
-export type Serialize<S, A> = (a: A) => S
-export type Any = Type<mixed, any>
-export type TypeOf<RT extends Type<any, any>> = RT['_A']
-export type InputOf<RT extends Type<any, any>> = RT['_S']
+export type Is<A> = (m: mixed) => m is A
+export type Validate<I, A> = (i: I, context: Context) => Validation<A>
+export type Serialize<A, O> = (a: A) => O
+export type Any = Type<any, any, any>
+export type Mixed = Type<any, any, mixed>
+export type TypeOf<RT extends Any> = RT['_A']
+export type InputOf<RT extends Any> = RT['_I']
+export type OutputOf<RT extends Any> = RT['_O']
 
-export interface Decoder<S, A> {
+export interface Decoder<I, A> {
   readonly name: string
-  readonly validate: Validate<S, A>
-  readonly decode: (s: S) => Validation<A>
+  readonly validate: Validate<I, A>
+  readonly decode: (i: I) => Validation<A>
 }
 
-export interface Encoder<S, A> {
-  readonly serialize: Serialize<S, A>
+export interface Encoder<A, O> {
+  readonly serialize: Serialize<A, O>
 }
 
 /**
@@ -45,40 +47,42 @@ export interface Encoder<S, A> {
  *
  * where `T` is a runtime type
  */
-export class Type<S, A> implements Decoder<S, A>, Encoder<S, A> {
+export class Type<A, O = A, I = mixed> implements Decoder<I, A>, Encoder<A, O> {
   // prettier-ignore
   readonly '_A': A
   // prettier-ignore
-  readonly '_S': S
+  readonly '_O': O
+  // prettier-ignore
+  readonly '_I': I
   constructor(
     /** a unique name for this runtime type */
     readonly name: string,
     /** a custom type guard */
     readonly is: Is<A>,
-    /** succeeds if a value of type S can be decoded to a value of type A */
-    readonly validate: Validate<S, A>,
-    /** converts a value of type A to a value of type S */
-    readonly serialize: Serialize<S, A>
+    /** succeeds if a value of type I can be decoded to a value of type A */
+    readonly validate: Validate<I, A>,
+    /** converts a value of type A to a value of type O */
+    readonly serialize: Serialize<A, O>
   ) {}
-  pipe<B>(ab: Type<A, B>, name?: string): Type<S, B> {
+  pipe<B>(ab: Type<B, A, A>, name?: string): Type<B, O, I> {
     return new Type(
       name || `pipe(${this.name}, ${ab.name})`,
       ab.is,
-      (s, c) => this.validate(s, c).chain(a => ab.validate(a, c)),
+      (i, c) => this.validate(i, c).chain(a => ab.validate(a, c)),
       this.serialize === identity && ab.serialize === identity
         ? (identity as any)
         : b => this.serialize(ab.serialize(b))
     )
   }
-  asDecoder(): Decoder<S, A> {
+  asDecoder(): Decoder<I, A> {
     return this
   }
-  asEncoder(): Encoder<S, A> {
+  asEncoder(): Encoder<A, O> {
     return this
   }
   /** a version of `validate` with a default context */
-  decode(s: S): Validation<A> {
-    return this.validate(s, getDefaultContext(this))
+  decode(i: I): Validation<A> {
+    return this.validate(i, getDefaultContext(this))
   }
 }
 
@@ -110,33 +114,29 @@ export const failure = <T>(value: mixed, context: Context): Validation<T> =>
 
 export const success = <T>(value: T): Validation<T> => new Right<Errors, T>(value)
 
-/** @deprecated use `type.decode(value)` instead */
-export const validate = <S, A>(value: S, type: Decoder<S, A>): Validation<A> =>
-  type.validate(value, getDefaultContext(type))
-
 const pushAll = <A>(xs: Array<A>, ys: Array<A>): void => Array.prototype.push.apply(xs, ys)
 
 //
 // basic types
 //
 
-export class NullType extends Type<mixed, null> {
+export class NullType extends Type<null> {
   readonly _tag: 'NullType' = 'NullType'
   constructor() {
-    super('null', (v): v is null => v === null, (s, c) => (this.is(s) ? success(s) : failure(s, c)), identity)
+    super('null', (m): m is null => m === null, (m, c) => (this.is(m) ? success(m) : failure(m, c)), identity)
   }
 }
 
 /** @alias `null` */
 export const nullType: NullType = new NullType()
 
-export class UndefinedType extends Type<mixed, undefined> {
+export class UndefinedType extends Type<undefined> {
   readonly _tag: 'UndefinedType' = 'UndefinedType'
   constructor() {
     super(
       'undefined',
-      (v): v is undefined => v === void 0,
-      (s, c) => (this.is(s) ? success(s) : failure(s, c)),
+      (m): m is undefined => m === void 0,
+      (m, c) => (this.is(m) ? success(m) : failure(m, c)),
       identity
     )
   }
@@ -144,7 +144,7 @@ export class UndefinedType extends Type<mixed, undefined> {
 
 const undefinedType: UndefinedType = new UndefinedType()
 
-export class AnyType extends Type<any, any> {
+export class AnyType extends Type<any, any, any> {
   readonly _tag: 'AnyType' = 'AnyType'
   constructor() {
     super('any', (_): _ is any => true, success, identity)
@@ -153,13 +153,13 @@ export class AnyType extends Type<any, any> {
 
 export const any: AnyType = new AnyType()
 
-export class NeverType extends Type<mixed, never> {
+export class NeverType extends Type<never> {
   readonly _tag: 'NeverType' = 'NeverType'
   constructor() {
     super(
       'never',
       (_): _ is never => false,
-      (s, c) => failure(s, c),
+      (m, c) => failure(m, c),
       () => {
         throw new Error('cannot serialize never')
       }
@@ -169,13 +169,13 @@ export class NeverType extends Type<mixed, never> {
 
 export const never: NeverType = new NeverType()
 
-export class StringType extends Type<mixed, string> {
+export class StringType extends Type<string> {
   readonly _tag: 'StringType' = 'StringType'
   constructor() {
     super(
       'string',
-      (v): v is string => typeof v === 'string',
-      (s, c) => (this.is(s) ? success(s) : failure(s, c)),
+      (m): m is string => typeof m === 'string',
+      (m, c) => (this.is(m) ? success(m) : failure(m, c)),
       identity
     )
   }
@@ -183,13 +183,13 @@ export class StringType extends Type<mixed, string> {
 
 export const string: StringType = new StringType()
 
-export class NumberType extends Type<mixed, number> {
+export class NumberType extends Type<number> {
   readonly _tag: 'NumberType' = 'NumberType'
   constructor() {
     super(
       'number',
-      (v): v is number => typeof v === 'number',
-      (s, c) => (this.is(s) ? success(s) : failure(s, c)),
+      (m): m is number => typeof m === 'number',
+      (m, c) => (this.is(m) ? success(m) : failure(m, c)),
       identity
     )
   }
@@ -197,13 +197,13 @@ export class NumberType extends Type<mixed, number> {
 
 export const number: NumberType = new NumberType()
 
-export class BooleanType extends Type<mixed, boolean> {
+export class BooleanType extends Type<boolean> {
   readonly _tag: 'BooleanType' = 'BooleanType'
   constructor() {
     super(
       'boolean',
-      (v): v is boolean => typeof v === 'boolean',
-      (s, c) => (this.is(s) ? success(s) : failure(s, c)),
+      (m): m is boolean => typeof m === 'boolean',
+      (m, c) => (this.is(m) ? success(m) : failure(m, c)),
       identity
     )
   }
@@ -211,22 +211,22 @@ export class BooleanType extends Type<mixed, boolean> {
 
 export const boolean: BooleanType = new BooleanType()
 
-export class AnyArrayType extends Type<mixed, Array<mixed>> {
+export class AnyArrayType extends Type<Array<mixed>> {
   readonly _tag: 'AnyArrayType' = 'AnyArrayType'
   constructor() {
-    super('Array', Array.isArray, (s, c) => (this.is(s) ? success(s) : failure(s, c)), identity)
+    super('Array', Array.isArray, (m, c) => (this.is(m) ? success(m) : failure(m, c)), identity)
   }
 }
 
 const arrayType: AnyArrayType = new AnyArrayType()
 
-export class AnyDictionaryType extends Type<mixed, { [key: string]: mixed }> {
+export class AnyDictionaryType extends Type<{ [key: string]: mixed }> {
   readonly _tag: 'AnyDictionaryType' = 'AnyDictionaryType'
   constructor() {
     super(
       'Dictionary',
-      (v): v is { [key: string]: mixed } => v !== null && typeof v === 'object',
-      (s, c) => (this.is(s) ? success(s) : failure(s, c)),
+      (m): m is { [key: string]: mixed } => m !== null && typeof m === 'object',
+      (m, c) => (this.is(m) ? success(m) : failure(m, c)),
       identity
     )
   }
@@ -234,7 +234,7 @@ export class AnyDictionaryType extends Type<mixed, { [key: string]: mixed }> {
 
 export const Dictionary: AnyDictionaryType = new AnyDictionaryType()
 
-export class ObjectType extends Type<mixed, object> {
+export class ObjectType extends Type<object> {
   readonly _tag: 'ObjectType' = 'ObjectType'
   constructor() {
     super('object', Dictionary.is, Dictionary.validate, identity)
@@ -243,13 +243,13 @@ export class ObjectType extends Type<mixed, object> {
 
 export const object: ObjectType = new ObjectType()
 
-export class FunctionType extends Type<mixed, Function> {
+export class FunctionType extends Type<Function> {
   readonly _tag: 'FunctionType' = 'FunctionType'
   constructor() {
     super(
       'Function',
-      (v): v is Function => typeof v === 'function',
-      (s, c) => (this.is(s) ? success(s) : failure(s, c)),
+      (m): m is Function => typeof m === 'function',
+      (m, c) => (this.is(m) ? success(m) : failure(m, c)),
       identity
     )
   }
@@ -261,13 +261,13 @@ export const Function: FunctionType = new FunctionType()
 // refinements
 //
 
-export class RefinementType<RT extends Type<any, any>, S, A> extends Type<S, A> {
+export class RefinementType<RT extends Any, A = any, O = A, I = mixed> extends Type<A, O, I> {
   readonly _tag: 'RefinementType' = 'RefinementType'
   constructor(
     name: string,
-    is: RefinementType<RT, S, A>['is'],
-    validate: RefinementType<RT, S, A>['validate'],
-    serialize: RefinementType<RT, S, A>['serialize'],
+    is: RefinementType<RT, A, O, I>['is'],
+    validate: RefinementType<RT, A, O, I>['validate'],
+    serialize: RefinementType<RT, A, O, I>['serialize'],
     readonly type: RT,
     readonly predicate: Predicate<A>
   ) {
@@ -275,15 +275,15 @@ export class RefinementType<RT extends Type<any, any>, S, A> extends Type<S, A> 
   }
 }
 
-export const refinement = <RT extends Type<any, any>>(
+export const refinement = <RT extends Any>(
   type: RT,
   predicate: Predicate<TypeOf<RT>>,
   name: string = `(${type.name} | ${getFunctionName(predicate)})`
-): RefinementType<RT, InputOf<RT>, TypeOf<RT>> =>
+): RefinementType<RT, TypeOf<RT>, OutputOf<RT>, InputOf<RT>> =>
   new RefinementType(
     name,
-    (v): v is TypeOf<RT> => type.is(v) && predicate(v),
-    (s, c) => type.validate(s, c).chain(a => (predicate(a) ? success(a) : failure(a, c))),
+    (m): m is TypeOf<RT> => type.is(m) && predicate(m),
+    (i, c) => type.validate(i, c).chain(a => (predicate(a) ? success(a) : failure(a, c))),
     type.serialize,
     type,
     predicate
@@ -295,7 +295,7 @@ export const Integer = refinement(number, n => n % 1 === 0, 'Integer')
 // literals
 //
 
-export class LiteralType<V extends string | number | boolean> extends Type<mixed, V> {
+export class LiteralType<V extends string | number | boolean> extends Type<V> {
   readonly _tag: 'LiteralType' = 'LiteralType'
   constructor(
     name: string,
@@ -312,15 +312,15 @@ export const literal = <V extends string | number | boolean>(
   value: V,
   name: string = JSON.stringify(value)
 ): LiteralType<V> => {
-  const is = (v: mixed): v is V => v === value
-  return new LiteralType(name, is, (s, c) => (is(s) ? success(value) : failure(s, c)), identity, value)
+  const is = (m: mixed): m is V => m === value
+  return new LiteralType(name, is, (m, c) => (is(m) ? success(value) : failure(m, c)), identity, value)
 }
 
 //
 // keyof
 //
 
-export class KeyofType<D extends { [key: string]: any }> extends Type<mixed, keyof D> {
+export class KeyofType<D extends { [key: string]: mixed }> extends Type<keyof D> {
   readonly _tag: 'KeyofType' = 'KeyofType'
   constructor(
     name: string,
@@ -333,25 +333,25 @@ export class KeyofType<D extends { [key: string]: any }> extends Type<mixed, key
   }
 }
 
-export const keyof = <D extends { [key: string]: any }>(
+export const keyof = <D extends { [key: string]: mixed }>(
   keys: D,
   name: string = `(keyof ${JSON.stringify(Object.keys(keys))})`
 ): KeyofType<D> => {
-  const is = (v: mixed): v is keyof D => string.is(v) && keys.hasOwnProperty(v)
-  return new KeyofType(name, is, (s, c) => (is(s) ? success(s) : failure(s, c)), identity, keys)
+  const is = (m: mixed): m is keyof D => string.is(m) && keys.hasOwnProperty(m)
+  return new KeyofType(name, is, (m, c) => (is(m) ? success(m) : failure(m, c)), identity, keys)
 }
 
 //
 // recursive types
 //
 
-export class RecursiveType<RT extends Any, A> extends Type<mixed, A> {
+export class RecursiveType<RT extends Any, A = any, O = A, I = mixed> extends Type<A, O, I> {
   readonly _tag: 'RecursiveType' = 'RecursiveType'
   constructor(
     name: string,
-    is: RecursiveType<RT, A>['is'],
-    validate: RecursiveType<RT, A>['validate'],
-    serialize: RecursiveType<RT, A>['serialize'],
+    is: RecursiveType<RT, A, O, I>['is'],
+    validate: RecursiveType<RT, A, O, I>['validate'],
+    serialize: RecursiveType<RT, A, O, I>['serialize'],
     private runDefinition: () => RT
   ) {
     super(name, is, validate, serialize)
@@ -361,10 +361,10 @@ export class RecursiveType<RT extends Any, A> extends Type<mixed, A> {
   }
 }
 
-export const recursion = <A, RT extends Type<mixed, A> = Type<mixed, A>>(
+export const recursion = <A, O = A, I = mixed, RT extends Type<A, O, I> = Type<A, O, I>>(
   name: string,
   definition: (self: RT) => RT
-): RecursiveType<RT, A> => {
+): RecursiveType<RT, A, O, I> => {
   let cache: RT
   const runDefinition = (): RT => {
     if (!cache) {
@@ -372,7 +372,7 @@ export const recursion = <A, RT extends Type<mixed, A> = Type<mixed, A>>(
     }
     return cache
   }
-  const Self: any = new RecursiveType<RT, A>(
+  const Self: any = new RecursiveType<RT, A, O, I>(
     name,
     (m): m is A => runDefinition().is(m),
     (m, c) => runDefinition().validate(m, c),
@@ -386,28 +386,28 @@ export const recursion = <A, RT extends Type<mixed, A> = Type<mixed, A>>(
 // arrays
 //
 
-export class ArrayType<RT extends Any, A> extends Type<mixed, A> {
+export class ArrayType<RT extends Any, A = any, O = A, I = mixed> extends Type<A, O, I> {
   readonly _tag: 'ArrayType' = 'ArrayType'
   constructor(
     name: string,
-    is: ArrayType<RT, A>['is'],
-    validate: ArrayType<RT, A>['validate'],
-    serialize: ArrayType<RT, A>['serialize'],
+    is: ArrayType<RT, A, O, I>['is'],
+    validate: ArrayType<RT, A, O, I>['validate'],
+    serialize: ArrayType<RT, A, O, I>['serialize'],
     readonly type: RT
   ) {
     super(name, is, validate, serialize)
   }
 }
 
-export const array = <RT extends Any>(
+export const array = <RT extends Mixed>(
   type: RT,
   name: string = `Array<${type.name}>`
-): ArrayType<RT, Array<TypeOf<RT>>> =>
+): ArrayType<RT, Array<TypeOf<RT>>, Array<OutputOf<RT>>, mixed> =>
   new ArrayType(
     name,
-    (v): v is Array<TypeOf<RT>> => arrayType.is(v) && v.every(type.is),
-    (s, c) =>
-      arrayType.validate(s, c).chain(xs => {
+    (m): m is Array<TypeOf<RT>> => arrayType.is(m) && m.every(type.is),
+    (m, c) =>
+      arrayType.validate(m, c).chain(xs => {
         const len = xs.length
         let a: Array<TypeOf<RT>> = xs
         const errors: Errors = []
@@ -436,21 +436,21 @@ export const array = <RT extends Any>(
 // interfaces
 //
 
-export type Props = { [key: string]: Any }
-
-export type InterfaceOf<P extends Props> = { [K in keyof P]: TypeOf<P[K]> }
-
-export class InterfaceType<P extends Props, A> extends Type<mixed, A> {
+export class InterfaceType<P extends AnyProps, A = any, O = A, I = mixed> extends Type<A, O, I> {
   readonly _tag: 'InterfaceType' = 'InterfaceType'
   constructor(
     name: string,
-    is: InterfaceType<P, A>['is'],
-    validate: InterfaceType<P, A>['validate'],
-    serialize: InterfaceType<P, A>['serialize'],
+    is: InterfaceType<P, A, O, I>['is'],
+    validate: InterfaceType<P, A, O, I>['validate'],
+    serialize: InterfaceType<P, A, O, I>['serialize'],
     readonly props: P
   ) {
     super(name, is, validate, serialize)
   }
+}
+
+export interface AnyProps {
+  [key: string]: Any
 }
 
 const getNameFromProps = (props: Props): string =>
@@ -467,26 +467,34 @@ const useIdentity = (props: Props): boolean => {
   return true
 }
 
+export type TypeOfProps<P extends AnyProps> = { [K in keyof P]: TypeOf<P[K]> }
+
+export type OutputOfProps<P extends AnyProps> = { [K in keyof P]: OutputOf<P[K]> }
+
+export interface Props {
+  [key: string]: Mixed
+}
+
 /** @alias `interface` */
 export const type = <P extends Props>(
   props: P,
   name: string = getNameFromProps(props)
-): InterfaceType<P, InterfaceOf<P>> =>
+): InterfaceType<P, TypeOfProps<P>, OutputOfProps<P>, mixed> =>
   new InterfaceType(
     name,
-    (v): v is InterfaceOf<P> => {
-      if (!Dictionary.is(v)) {
+    (m): m is TypeOfProps<P> => {
+      if (!Dictionary.is(m)) {
         return false
       }
       for (let k in props) {
-        if (!props[k].is(v[k])) {
+        if (!props[k].is(m[k])) {
           return false
         }
       }
       return true
     },
-    (s, c) =>
-      Dictionary.validate(s, c).chain(o => {
+    (m, c) =>
+      Dictionary.validate(m, c).chain(o => {
         let a = o
         const errors: Errors = []
         for (let k in props) {
@@ -514,7 +522,7 @@ export const type = <P extends Props>(
           for (let k in props) {
             s[k] = props[k].serialize(a[k])
           }
-          return s
+          return s as any
         },
     props
   )
@@ -523,25 +531,27 @@ export const type = <P extends Props>(
 // partials
 //
 
-export type PartialOf<P extends Props> = { [K in keyof P]?: TypeOf<P[K]> }
-
-export class PartialType<P extends Props, A> extends Type<mixed, A> {
+export class PartialType<P extends AnyProps, A = any, O = A, I = mixed> extends Type<A, O, I> {
   readonly _tag: 'PartialType' = 'PartialType'
   constructor(
     name: string,
-    is: PartialType<P, A>['is'],
-    validate: PartialType<P, A>['validate'],
-    serialize: PartialType<P, A>['serialize'],
+    is: PartialType<P, A, O, I>['is'],
+    validate: PartialType<P, A, O, I>['validate'],
+    serialize: PartialType<P, A, O, I>['serialize'],
     readonly props: P
   ) {
     super(name, is, validate, serialize)
   }
 }
 
+export type TypeOfPartialProps<P extends AnyProps> = { [K in keyof P]?: TypeOf<P[K]> }
+
+export type InputOfPartialProps<P extends AnyProps> = { [K in keyof P]?: OutputOf<P[K]> }
+
 export const partial = <P extends Props>(
   props: P,
   name: string = `PartialType<${getNameFromProps(props)}>`
-): PartialType<P, PartialOf<P>> => {
+): PartialType<P, TypeOfPartialProps<P>, InputOfPartialProps<P>, mixed> => {
   const partials: Props = {}
   for (let k in props) {
     partials[k] = union([props[k], undefinedType])
@@ -561,7 +571,7 @@ export const partial = <P extends Props>(
               s[k] = props[k].serialize(ak)
             }
           }
-          return s
+          return s as any
         },
     props
   )
@@ -571,13 +581,13 @@ export const partial = <P extends Props>(
 // dictionaries
 //
 
-export class DictionaryType<D extends Any, C extends Any, A> extends Type<mixed, A> {
+export class DictionaryType<D extends Any, C extends Any, A = any, O = A, I = mixed> extends Type<A, O, I> {
   readonly _tag: 'DictionaryType' = 'DictionaryType'
   constructor(
     name: string,
-    is: DictionaryType<D, C, A>['is'],
-    validate: DictionaryType<D, C, A>['validate'],
-    serialize: DictionaryType<D, C, A>['serialize'],
+    is: DictionaryType<D, C, A, O, I>['is'],
+    validate: DictionaryType<D, C, A, O, I>['validate'],
+    serialize: DictionaryType<D, C, A, O, I>['serialize'],
     readonly domain: D,
     readonly codomain: C
   ) {
@@ -585,17 +595,21 @@ export class DictionaryType<D extends Any, C extends Any, A> extends Type<mixed,
   }
 }
 
-export const dictionary = <D extends Any, C extends Any>(
+export type TypeOfDictionary<D extends Any, C extends Any> = { [K in TypeOf<D>]: TypeOf<C> }
+
+export type OutputOfDictionary<D extends Any, C extends Any> = { [K in OutputOf<D>]: OutputOf<C> }
+
+export const dictionary = <D extends Mixed, C extends Mixed>(
   domain: D,
   codomain: C,
   name: string = `{ [K in ${domain.name}]: ${codomain.name} }`
-): DictionaryType<D, C, { [K in TypeOf<D>]: TypeOf<C> }> =>
+): DictionaryType<D, C, TypeOfDictionary<D, C>, OutputOfDictionary<C, D>, mixed> =>
   new DictionaryType(
     name,
-    (v): v is { [K in TypeOf<D>]: TypeOf<C> } =>
-      Dictionary.is(v) && Object.keys(v).every(k => domain.is(k) && codomain.is(v[k])),
-    (s, c) =>
-      Dictionary.validate(s, c).chain(o => {
+    (m): m is TypeOfDictionary<D, C> =>
+      Dictionary.is(m) && Object.keys(m).every(k => domain.is(k) && codomain.is(m[k])),
+    (m, c) =>
+      Dictionary.validate(m, c).chain(o => {
         const a: { [key: string]: any } = {}
         const errors: Errors = []
         let changed = false
@@ -627,7 +641,7 @@ export const dictionary = <D extends Any, C extends Any>(
           for (let k in a) {
             s[String(domain.serialize(k))] = codomain.serialize(a[k])
           }
-          return s
+          return s as any
         },
     domain,
     codomain
@@ -637,32 +651,32 @@ export const dictionary = <D extends Any, C extends Any>(
 // unions
 //
 
-export class UnionType<RTS extends Array<Any>, A> extends Type<mixed, A> {
+export class UnionType<RTS extends Array<Any>, A = any, O = A, I = mixed> extends Type<A, O, I> {
   readonly _tag: 'UnionType' = 'UnionType'
   constructor(
     name: string,
-    is: UnionType<RTS, A>['is'],
-    validate: UnionType<RTS, A>['validate'],
-    serialize: UnionType<RTS, A>['serialize'],
+    is: UnionType<RTS, A, O, I>['is'],
+    validate: UnionType<RTS, A, O, I>['validate'],
+    serialize: UnionType<RTS, A, O, I>['serialize'],
     readonly types: RTS
   ) {
     super(name, is, validate, serialize)
   }
 }
 
-export const union = <RTS extends Array<Any>>(
+export const union = <RTS extends Array<Mixed>>(
   types: RTS,
   name: string = `(${types.map(type => type.name).join(' | ')})`
-): UnionType<RTS, TypeOf<RTS['_A']>> => {
+): UnionType<RTS, TypeOf<RTS['_A']>, OutputOf<RTS['_A']>, mixed> => {
   const len = types.length
   return new UnionType(
     name,
-    (v): v is TypeOf<RTS['_A']> => types.some(type => type.is(v)),
-    (s, c) => {
+    (m): m is TypeOf<RTS['_A']> => types.some(type => type.is(m)),
+    (m, c) => {
       const errors: Errors = []
       for (let i = 0; i < len; i++) {
         const type = types[i]
-        const validation = type.validate(s, appendContext(c, String(i), type))
+        const validation = type.validate(m, appendContext(c, String(i), type))
         if (validation.isRight()) {
           return validation
         } else {
@@ -691,46 +705,59 @@ export const union = <RTS extends Array<Any>>(
 // intersections
 //
 
-export class IntersectionType<RTS extends Array<Any>, A> extends Type<mixed, A> {
+export class IntersectionType<RTS extends Array<Any>, A = any, O = A, I = mixed> extends Type<A, O, I> {
   readonly _tag: 'IntersectionType' = 'IntersectionType'
   constructor(
     name: string,
-    is: IntersectionType<RTS, A>['is'],
-    validate: IntersectionType<RTS, A>['validate'],
-    serialize: IntersectionType<RTS, A>['serialize'],
+    is: IntersectionType<RTS, A, O, I>['is'],
+    validate: IntersectionType<RTS, A, O, I>['validate'],
+    serialize: IntersectionType<RTS, A, O, I>['serialize'],
     readonly types: RTS
   ) {
     super(name, is, validate, serialize)
   }
 }
 
-export function intersection<A extends Any, B extends Any, C extends Any, D extends Any, E extends Any>(
+export function intersection<A extends Mixed, B extends Mixed, C extends Mixed, D extends Mixed, E extends Mixed>(
   types: [A, B, C, D, E],
   name?: string
-): IntersectionType<[A, B, C, D, E], TypeOf<A> & TypeOf<B> & TypeOf<C> & TypeOf<D> & TypeOf<E>>
-export function intersection<A extends Any, B extends Any, C extends Any, D extends Any>(
+): IntersectionType<
+  [A, B, C, D, E],
+  TypeOf<A> & TypeOf<B> & TypeOf<C> & TypeOf<D> & TypeOf<E>,
+  OutputOf<A> & OutputOf<B> & OutputOf<C> & OutputOf<D> & OutputOf<E>,
+  mixed
+>
+export function intersection<A extends Mixed, B extends Mixed, C extends Mixed, D extends Mixed>(
   types: [A, B, C, D],
   name?: string
-): IntersectionType<[A, B, C, D], TypeOf<A> & TypeOf<B> & TypeOf<C> & TypeOf<D>>
-export function intersection<A extends Any, B extends Any, C extends Any>(
+): IntersectionType<
+  [A, B, C, D],
+  TypeOf<A> & TypeOf<B> & TypeOf<C> & TypeOf<D>,
+  OutputOf<A> & OutputOf<B> & OutputOf<C> & OutputOf<D>,
+  mixed
+>
+export function intersection<A extends Mixed, B extends Mixed, C extends Mixed>(
   types: [A, B, C],
   name?: string
-): IntersectionType<[A, B, C], TypeOf<A> & TypeOf<B> & TypeOf<C>>
-export function intersection<A extends Any, B extends Any>(
+): IntersectionType<[A, B, C], TypeOf<A> & TypeOf<B> & TypeOf<C>, OutputOf<A> & OutputOf<B> & OutputOf<C>, mixed>
+export function intersection<A extends Mixed, B extends Mixed>(
   types: [A, B],
   name?: string
-): IntersectionType<[A, B], TypeOf<A> & TypeOf<B>>
-export function intersection<A extends Any>(types: [A], name?: string): IntersectionType<[A], TypeOf<A>>
-export function intersection<RTS extends Array<Any>>(
+): IntersectionType<[A, B], TypeOf<A> & TypeOf<B>, OutputOf<A> & OutputOf<B>, mixed>
+export function intersection<A extends Mixed>(
+  types: [A],
+  name?: string
+): IntersectionType<[A], TypeOf<A>, OutputOf<A>, mixed>
+export function intersection<RTS extends Array<Mixed>>(
   types: RTS,
   name: string = `(${types.map(type => type.name).join(' & ')})`
-): IntersectionType<RTS, any> {
+): IntersectionType<RTS, any, any, mixed> {
   const len = types.length
   return new IntersectionType(
     name,
-    (v): v is any => types.every(type => type.is(v)),
-    (s, c) => {
-      let a = s
+    (m): m is any => types.every(type => type.is(m)),
+    (m, c) => {
+      let a = m
       const errors: Errors = []
       for (let i = 0; i < len; i++) {
         const type = types[i]
@@ -757,46 +784,56 @@ export function intersection<RTS extends Array<Any>>(
 // tuples
 //
 
-export class TupleType<RTS extends Array<Any>, A> extends Type<mixed, A> {
+export class TupleType<RTS extends Array<Any>, A = any, O = A, I = mixed> extends Type<A, O, I> {
   readonly _tag: 'TupleType' = 'TupleType'
   constructor(
     name: string,
-    is: TupleType<RTS, A>['is'],
-    validate: TupleType<RTS, A>['validate'],
-    serialize: TupleType<RTS, A>['serialize'],
+    is: TupleType<RTS, A, O, I>['is'],
+    validate: TupleType<RTS, A, O, I>['validate'],
+    serialize: TupleType<RTS, A, O, I>['serialize'],
     readonly types: RTS
   ) {
     super(name, is, validate, serialize)
   }
 }
 
-export function tuple<A extends Any, B extends Any, C extends Any, D extends Any, E extends Any>(
+export function tuple<A extends Mixed, B extends Mixed, C extends Mixed, D extends Mixed, E extends Mixed>(
   types: [A, B, C, D, E],
   name?: string
-): TupleType<[A, B, C, D, E], [TypeOf<A>, TypeOf<B>, TypeOf<C>, TypeOf<D>, TypeOf<E>]>
-export function tuple<A extends Any, B extends Any, C extends Any, D extends Any>(
+): TupleType<
+  [A, B, C, D, E],
+  [TypeOf<A>, TypeOf<B>, TypeOf<C>, TypeOf<D>, TypeOf<E>],
+  [OutputOf<A>, OutputOf<B>, OutputOf<C>, OutputOf<D>, OutputOf<E>],
+  mixed
+>
+export function tuple<A extends Mixed, B extends Mixed, C extends Mixed, D extends Mixed>(
   types: [A, B, C, D],
   name?: string
-): TupleType<[A, B, C, D], [TypeOf<A>, TypeOf<B>, TypeOf<C>, TypeOf<D>]>
-export function tuple<A extends Any, B extends Any, C extends Any>(
+): TupleType<
+  [A, B, C, D],
+  [TypeOf<A>, TypeOf<B>, TypeOf<C>, TypeOf<D>],
+  [OutputOf<A>, OutputOf<B>, OutputOf<C>, OutputOf<D>],
+  mixed
+>
+export function tuple<A extends Mixed, B extends Mixed, C extends Mixed>(
   types: [A, B, C],
   name?: string
-): TupleType<[A, B, C], [TypeOf<A>, TypeOf<B>, TypeOf<C>]>
-export function tuple<A extends Any, B extends Any>(
+): TupleType<[A, B, C], [TypeOf<A>, TypeOf<B>, TypeOf<C>], [OutputOf<A>, OutputOf<B>, OutputOf<C>], mixed>
+export function tuple<A extends Mixed, B extends Mixed>(
   types: [A, B],
   name?: string
-): TupleType<[A, B], [TypeOf<A>, TypeOf<B>]>
-export function tuple<A extends Any>(types: [A], name?: string): TupleType<[A], [TypeOf<A>]>
-export function tuple<RTS extends Array<Any>>(
+): TupleType<[A, B], [TypeOf<A>, TypeOf<B>], [OutputOf<A>, OutputOf<B>], mixed>
+export function tuple<A extends Mixed>(types: [A], name?: string): TupleType<[A], [TypeOf<A>], [OutputOf<A>], mixed>
+export function tuple<RTS extends Array<Mixed>>(
   types: RTS,
   name: string = `[${types.map(type => type.name).join(', ')}]`
-): TupleType<RTS, any> {
+): TupleType<RTS, any, any, mixed> {
   const len = types.length
   return new TupleType(
     name,
-    (v): v is any => arrayType.is(v) && v.length === len && types.every((type, i) => type.is(v[i])),
-    (s, c) =>
-      arrayType.validate(s, c).chain(as => {
+    (m): m is any => arrayType.is(m) && m.length === len && types.every((type, i) => type.is(m[i])),
+    (m, c) =>
+      arrayType.validate(m, c).chain(as => {
         let t: Array<any> = as
         const errors: Errors = []
         for (let i = 0; i < len; i++) {
@@ -829,28 +866,28 @@ export function tuple<RTS extends Array<Any>>(
 // readonly objects
 //
 
-export class ReadonlyType<RT extends Any, A> extends Type<mixed, A> {
+export class ReadonlyType<RT extends Any, A = any, O = A, I = mixed> extends Type<A, O, I> {
   readonly _tag: 'ReadonlyType' = 'ReadonlyType'
   constructor(
     name: string,
-    is: ReadonlyType<RT, A>['is'],
-    validate: ReadonlyType<RT, A>['validate'],
-    serialize: ReadonlyType<RT, A>['serialize'],
+    is: ReadonlyType<RT, A, O, I>['is'],
+    validate: ReadonlyType<RT, A, O, I>['validate'],
+    serialize: ReadonlyType<RT, A, O, I>['serialize'],
     readonly type: RT
   ) {
     super(name, is, validate, serialize)
   }
 }
 
-export const readonly = <RT extends Any>(
+export const readonly = <RT extends Mixed>(
   type: RT,
   name: string = `Readonly<${type.name}>`
-): ReadonlyType<RT, Readonly<TypeOf<RT>>> =>
+): ReadonlyType<RT, Readonly<TypeOf<RT>>, Readonly<OutputOf<RT>>, mixed> =>
   new ReadonlyType(
     name,
     type.is,
-    (s, c) =>
-      type.validate(s, c).map(x => {
+    (m, c) =>
+      type.validate(m, c).map(x => {
         if (process.env.NODE_ENV !== 'production') {
           return Object.freeze(x)
         }
@@ -864,29 +901,29 @@ export const readonly = <RT extends Any>(
 // readonly arrays
 //
 
-export class ReadonlyArrayType<RT extends Any, A> extends Type<mixed, A> {
+export class ReadonlyArrayType<RT extends Any, A = any, O = A, I = mixed> extends Type<A, O, I> {
   readonly _tag: 'ReadonlyArrayType' = 'ReadonlyArrayType'
   constructor(
     name: string,
-    is: ReadonlyArrayType<RT, A>['is'],
-    validate: ReadonlyArrayType<RT, A>['validate'],
-    serialize: ReadonlyArrayType<RT, A>['serialize'],
+    is: ReadonlyArrayType<RT, A, O, I>['is'],
+    validate: ReadonlyArrayType<RT, A, O, I>['validate'],
+    serialize: ReadonlyArrayType<RT, A, O, I>['serialize'],
     readonly type: RT
   ) {
     super(name, is, validate, serialize)
   }
 }
 
-export const readonlyArray = <RT extends Any>(
+export const readonlyArray = <RT extends Mixed>(
   type: RT,
   name: string = `ReadonlyArray<${type.name}>`
-): ReadonlyArrayType<RT, ReadonlyArray<TypeOf<RT>>> => {
+): ReadonlyArrayType<RT, ReadonlyArray<TypeOf<RT>>, ReadonlyArray<OutputOf<RT>>, mixed> => {
   const arrayType = array(type)
   return new ReadonlyArrayType(
     name,
     arrayType.is,
-    (s, c) =>
-      arrayType.validate(s, c).map(x => {
+    (m, c) =>
+      arrayType.validate(m, c).map(x => {
         if (process.env.NODE_ENV !== 'production') {
           return Object.freeze(x)
         } else {
@@ -902,13 +939,13 @@ export const readonlyArray = <RT extends Any>(
 // strict interfaces
 //
 
-export class StrictType<P extends Props, A> extends Type<mixed, A> {
+export class StrictType<P extends AnyProps, A = any, O = A, I = mixed> extends Type<A, O, I> {
   readonly _tag: 'StrictType' = 'StrictType'
   constructor(
     name: string,
-    is: StrictType<P, A>['is'],
-    validate: StrictType<P, A>['validate'],
-    serialize: StrictType<P, A>['serialize'],
+    is: StrictType<P, A, O, I>['is'],
+    validate: StrictType<P, A, O, I>['validate'],
+    serialize: StrictType<P, A, O, I>['serialize'],
     readonly props: P
   ) {
     super(name, is, validate, serialize)
@@ -919,13 +956,13 @@ export class StrictType<P extends Props, A> extends Type<mixed, A> {
 export const strict = <P extends Props>(
   props: P,
   name: string = `StrictType<${getNameFromProps(props)}>`
-): StrictType<P, InterfaceOf<P>> => {
+): StrictType<P, TypeOfProps<P>, OutputOfProps<P>, mixed> => {
   const loose = type(props)
   return new StrictType(
     name,
-    (v): v is InterfaceOf<P> => loose.is(v) && Object.getOwnPropertyNames(v).every(k => props.hasOwnProperty(k)),
-    (s, c) =>
-      loose.validate(s, c).chain(o => {
+    (m): m is TypeOfProps<P> => loose.is(m) && Object.getOwnPropertyNames(m).every(k => props.hasOwnProperty(k)),
+    (m, c) =>
+      loose.validate(m, c).chain(o => {
         const keys = Object.getOwnPropertyNames(o)
         const len = keys.length
         const errors: Errors = []
@@ -947,24 +984,24 @@ export const strict = <P extends Props>(
 //
 
 export type TaggedProps<Tag extends string> = { [K in Tag]: LiteralType<any> }
-export interface TaggedRefinement<Tag extends string, A> extends RefinementType<Tagged<Tag>, mixed, A> {}
+export interface TaggedRefinement<Tag extends string, A> extends RefinementType<Tagged<Tag>, A> {}
 export interface TaggedUnion<Tag extends string, A> extends UnionType<Array<Tagged<Tag>>, A> {}
 export type TaggedIntersectionArgument<Tag extends string> =
   | [Tagged<Tag>]
-  | [Tagged<Tag>, Any]
-  | [Any, Tagged<Tag>]
-  | [Tagged<Tag>, Any, Any]
-  | [Any, Tagged<Tag>, Any]
-  | [Any, Any, Tagged<Tag>]
-  | [Tagged<Tag>, Any, Any, Any]
-  | [Any, Tagged<Tag>, Any, Any]
-  | [Any, Any, Tagged<Tag>, Any]
-  | [Any, Any, Any, Tagged<Tag>]
-  | [Tagged<Tag>, Any, Any, Any, Any]
-  | [Any, Tagged<Tag>, Any, Any, Any]
-  | [Any, Any, Tagged<Tag>, Any, Any]
-  | [Any, Any, Any, Tagged<Tag>, Any]
-  | [Any, Any, Any, Any, Tagged<Tag>]
+  | [Tagged<Tag>, Mixed]
+  | [Mixed, Tagged<Tag>]
+  | [Tagged<Tag>, Mixed, Mixed]
+  | [Mixed, Tagged<Tag>, Mixed]
+  | [Mixed, Mixed, Tagged<Tag>]
+  | [Tagged<Tag>, Mixed, Mixed, Mixed]
+  | [Mixed, Tagged<Tag>, Mixed, Mixed]
+  | [Mixed, Mixed, Tagged<Tag>, Mixed]
+  | [Mixed, Mixed, Mixed, Tagged<Tag>]
+  | [Tagged<Tag>, Mixed, Mixed, Mixed, Mixed]
+  | [Mixed, Tagged<Tag>, Mixed, Mixed, Mixed]
+  | [Mixed, Mixed, Tagged<Tag>, Mixed, Mixed]
+  | [Mixed, Mixed, Mixed, Tagged<Tag>, Mixed]
+  | [Mixed, Mixed, Mixed, Mixed, Tagged<Tag>]
 export interface TaggedIntersection<Tag extends string, A>
   extends IntersectionType<TaggedIntersectionArgument<Tag>, A> {}
 export type Tagged<Tag extends string, A = any> =
@@ -974,8 +1011,8 @@ export type Tagged<Tag extends string, A = any> =
   | TaggedUnion<Tag, A>
   | TaggedIntersection<Tag, A>
 
-const isTagged = <Tag extends string>(tag: Tag): ((type: Any) => type is Tagged<Tag>) => {
-  const f = (type: Any): type is Tagged<Tag> => {
+const isTagged = <Tag extends string>(tag: Tag): ((type: Mixed) => type is Tagged<Tag>) => {
+  const f = (type: Mixed): type is Tagged<Tag> => {
     if (type instanceof InterfaceType || type instanceof StrictType) {
       return type.props.hasOwnProperty(tag)
     } else if (type instanceof IntersectionType) {
@@ -1025,7 +1062,7 @@ export const taggedUnion = <Tag extends string, RTS extends Array<Tagged<Tag>>>(
   tag: Tag,
   types: RTS,
   name: string = `(${types.map(type => type.name).join(' | ')})`
-): UnionType<RTS, TypeOf<RTS['_A']>> => {
+): UnionType<RTS, TypeOf<RTS['_A']>, OutputOf<RTS['_A']>, mixed> => {
   const tagValue2Index: { [key: string]: number } = {}
   const tagValues: { [key: string]: null } = {}
   const len = types.length
@@ -1036,7 +1073,7 @@ export const taggedUnion = <Tag extends string, RTS extends Array<Tagged<Tag>>>(
     tagValues[value] = null
   }
   const TagValue = keyof(tagValues)
-  return new UnionType(
+  return new UnionType<RTS, TypeOf<RTS['_A']>, OutputOf<RTS['_A']>, mixed>(
     name,
     (v): v is TypeOf<RTS['_A']> => {
       if (!Dictionary.is(v)) {
@@ -1053,7 +1090,9 @@ export const taggedUnion = <Tag extends string, RTS extends Array<Tagged<Tag>>>(
           return type.validate(d, appendContext(c, String(i), type))
         })
       ),
-    types.every(type => type.serialize === identity) ? identity : a => types[tagValue2Index[a[tag]]].serialize(a),
+    types.every(type => type.serialize === identity)
+      ? identity
+      : a => types[tagValue2Index[a[tag] as any]].serialize(a),
     types
   )
 }
