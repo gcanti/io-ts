@@ -15,7 +15,7 @@ const Rec1 = t.recursion<RecT1>('T', Self =>
     items: t.array(Self)
   })
 )
-// $ExpectError Type 'InterfaceOf<{ type: LiteralType<"a">; items: ArrayType<Type<mixed, string>, string[]>; }>' is not assignable to type 'string'
+// $ExpectError Argument of type '(Self: Type<string, string, mixed>) => InterfaceType<{ type: LiteralType<"a">; items: ArrayType<T...' is not assignable to parameter of type '(self: Type<string, string, mixed>) => Type<string, string, mixed>'
 const Rec2 = t.recursion<string>('T', Self =>
   t.interface({
     type: t.literal('a'),
@@ -92,9 +92,10 @@ const x8: TypeOf<typeof I1> = { age: 43 }
 const x9: TypeOf<typeof I1> = { name: 'name', age: 43 }
 
 const I2 = t.interface({ name: t.string, father: t.interface({ surname: t.string }) })
+type I2T = TypeOf<typeof I2>
 // $ExpectError Property 'surname' is missing in type '{}'
-const x10: TypeOf<typeof I2> = { name: 'name', father: {} }
-const x11: TypeOf<typeof I2> = { name: 'name', father: { surname: 'surname' } }
+const x10: I2T = { name: 'name', father: {} }
+const x11: I2T = { name: 'name', father: { surname: 'surname' } }
 
 //
 // dictionary
@@ -103,7 +104,7 @@ const x11: TypeOf<typeof I2> = { name: 'name', father: { surname: 'surname' } }
 const D1 = t.dictionary(t.keyof({ a: true }), t.number)
 // $ExpectError Type 'string' is not assignable to type 'number'
 const x12: TypeOf<typeof D1> = { a: 's' }
-// $ExpectError Object literal may only specify known properties, and 'c' does not exist in type '{ a: number; }'
+// $ExpectError Type '{ c: number; }' is not assignable to type 'TypeOfDictionary<KeyofType<{ a: boolean; }>, NumberType>'
 const x12_2: TypeOf<typeof D1> = { c: 1 }
 const x13: TypeOf<typeof D1> = { a: 1 }
 
@@ -140,10 +141,11 @@ const x20: TypeOf<typeof T1> = ['s', 1]
 //
 
 const P1 = t.partial({ name: t.string })
+type P1T = TypeOf<typeof P1>
 // $ExpectError Type 'number' is not assignable to type 'string | undefined'
-const x21: TypeOf<typeof P1> = { name: 1 }
-const x22: TypeOf<typeof P1> = {}
-const x23: TypeOf<typeof P1> = { name: 's' }
+const x21: P1T = { name: 1 }
+const x22: P1T = {}
+const x23: P1T = { name: 's' }
 
 //
 // readonly
@@ -161,7 +163,7 @@ const x25: TypeOf<typeof RO1> = { name: 1 }
 //
 
 const ROA1 = t.readonlyArray(t.number)
-// $ExpectError Type 'string' is not assignable to type 'number'
+// $ExpectError Type 'string[]' is not assignable to type 'ReadonlyArray<number>'
 const x26: TypeOf<typeof ROA1> = ['s']
 const x27: TypeOf<typeof ROA1> = [1]
 // $ExpectError Index signature in type 'ReadonlyArray<number>' only permits reading
@@ -191,18 +193,18 @@ const x34: TO1 = { name: 'Giulio' }
 const x35: TO1 = 'foo'
 
 type GenerableProps = { [key: string]: Generable }
-type GenerableInterface = t.InterfaceType<GenerableProps, any>
-type GenerableStrict = t.StrictType<GenerableProps, any>
-type GenerablePartials = t.PartialType<GenerableProps, any>
-interface GenerableDictionary extends t.DictionaryType<Generable, Generable, any> {}
-interface GenerableRefinement extends t.RefinementType<Generable, any, any> {}
-interface GenerableArray extends t.ArrayType<Generable, any> {}
-interface GenerableUnion extends t.UnionType<Array<Generable>, any> {}
-interface GenerableIntersection extends t.IntersectionType<Array<Generable>, any> {}
-interface GenerableTuple extends t.TupleType<Array<Generable>, any> {}
-interface GenerableReadonly extends t.ReadonlyType<Generable, any> {}
-interface GenerableReadonlyArray extends t.ReadonlyArrayType<Generable, any> {}
-interface GenerableRecursive extends t.RecursiveType<Generable, any> {}
+type GenerableInterface = t.InterfaceType<GenerableProps>
+type GenerableStrict = t.StrictType<GenerableProps>
+type GenerablePartials = t.PartialType<GenerableProps>
+interface GenerableDictionary extends t.DictionaryType<Generable, Generable> {}
+interface GenerableRefinement extends t.RefinementType<Generable> {}
+interface GenerableArray extends t.ArrayType<Generable> {}
+interface GenerableUnion extends t.UnionType<Array<Generable>> {}
+interface GenerableIntersection extends t.IntersectionType<Array<Generable>> {}
+interface GenerableTuple extends t.TupleType<Array<Generable>> {}
+interface GenerableReadonly extends t.ReadonlyType<Generable> {}
+interface GenerableReadonlyArray extends t.ReadonlyArrayType<Generable> {}
+interface GenerableRecursive extends t.RecursiveType<Generable> {}
 type Generable =
   | t.StringType
   | t.NumberType
@@ -286,16 +288,15 @@ const schema = t.interface({
 })
 
 f(schema) // OK!
-
 type Rec = {
   a: number
   b: Rec | undefined
 }
 
-const Rec = t.recursion<Rec, GenerableInterface>('T', Self =>
+const Rec = t.recursion<Rec, Rec, t.mixed, GenerableInterface>('T', self =>
   t.interface({
     a: t.number,
-    b: t.union([Self, t.undefined])
+    b: t.union([self, t.undefined])
   })
 )
 
@@ -304,20 +305,22 @@ f(Rec) // OK!
 //
 // tagged union
 //
-
 const TU1 = t.taggedUnion('type', [t.type({ type: t.literal('a') }), t.type({ type: t.literal('b') })])
-// $ExpectError Type 'true' is not assignable to type 'InterfaceOf<{ type: LiteralType<"a">; }> | InterfaceOf<{ type: LiteralType<"b">; }>'
+// $ExpectError Type 'true' is not assignable to type 'TypeOfProps<{ type: LiteralType<"a">; }> | TypeOfProps<{ type: LiteralType<"b">; }>'
 const x36: TypeOf<typeof TU1> = true
 const x37: TypeOf<typeof TU1> = { type: 'a' }
 const x38: TypeOf<typeof TU1> = { type: 'b' }
 
-export function interfaceWithOptionals<R extends t.Props, O extends t.Props>(
-  required: R,
-  optional: O,
+export function interfaceWithOptionals<RequiredProps extends t.Props, OptionalProps extends t.Props>(
+  required: RequiredProps,
+  optional: OptionalProps,
   name?: string
 ): t.IntersectionType<
-  [t.InterfaceType<R, t.InterfaceOf<R>>, t.PartialType<O, t.PartialOf<O>>],
-  t.InterfaceOf<R> & t.PartialOf<O>
+  [
+    t.InterfaceType<RequiredProps, t.TypeOfProps<RequiredProps>>,
+    t.PartialType<OptionalProps, t.TypeOfPartialProps<OptionalProps>>
+  ],
+  t.TypeOfProps<RequiredProps> & t.TypeOfPartialProps<OptionalProps>
 > {
   return t.intersection([t.interface(required), t.partial(optional)], name)
 }

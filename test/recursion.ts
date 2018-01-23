@@ -20,6 +20,16 @@ describe('recursion', () => {
   })
 
   it('should return the same reference if validation succeeded', () => {
+    type T = {
+      a: number
+      b: T | null | undefined
+    }
+    const T = t.recursion<T>('T', self =>
+      t.interface({
+        a: t.number,
+        b: t.union([self, t.undefined, t.null])
+      })
+    )
     const value = { a: 1, b: { a: 2, b: null } }
     assertStrictEqual(T.decode(value), value)
   })
@@ -35,11 +45,15 @@ describe('recursion', () => {
   })
 
   it('should serialize a deserialized', () => {
-    type T = {
+    type A = {
       a: Date
-      b: T | null
+      b: A | null
     }
-    const T = t.recursion<T>('T', self =>
+    type O = {
+      a: number
+      b: O | null
+    }
+    const T = t.recursion<A, O>('T', self =>
       t.interface({
         a: DateFromNumber,
         b: t.union([self, t.null])
@@ -50,11 +64,15 @@ describe('recursion', () => {
   })
 
   it('should type guard', () => {
-    type T = {
+    type A = {
       a: Date
-      b: T | null
+      b: A | null
     }
-    const T = t.recursion<T>('T', self =>
+    type O = {
+      a: number
+      b: O | null
+    }
+    const T = t.recursion<A, O>('T', self =>
       t.interface({
         a: DateFromNumber,
         b: t.union([self, t.null])
@@ -87,7 +105,7 @@ describe('recursion', () => {
     type B = {
       a: A | null
     }
-    const A: t.RecursiveType<t.Any, A> = t.recursion<A>('A', self =>
+    const A: t.RecursiveType<t.Mixed, A> = t.recursion<A>('A', self =>
       t.interface({
         b: t.union([self, B, t.null])
       })
