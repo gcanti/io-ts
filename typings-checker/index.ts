@@ -300,3 +300,13 @@ const Rec = t.recursion<Rec, GenerableInterface>('T', Self =>
 )
 
 f(Rec) // OK!
+
+//
+// tagged union
+//
+
+const TU1 = t.taggedUnion('type', [t.type({ type: t.literal('a') }), t.type({ type: t.literal('b') })])
+// $ExpectError Type 'true' is not assignable to type 'InterfaceOf<{ type: LiteralType<"a">; }> | InterfaceOf<{ type: LiteralType<"b">; }>'
+const x36: TypeOf<typeof TU1> = true
+const x37: TypeOf<typeof TU1> = { type: 'a' }
+const x38: TypeOf<typeof TU1> = { type: 'b' }
