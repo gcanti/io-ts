@@ -353,7 +353,7 @@ export class RecursiveType<RT extends Any, A> extends Type<mixed, A> {
   }
 }
 
-export const recursion = <A, RT extends Any = Any>(
+export const recursion = <A, RT extends Type<mixed, A> = Type<mixed, A>>(
   name: string,
   definition: (self: RT) => RT
 ): RecursiveType<RT, A> => {
