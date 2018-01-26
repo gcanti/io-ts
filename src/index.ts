@@ -936,4 +936,120 @@ export const strict = <P extends Props>(
   )
 }
 
+//
+// tagged unions
+//
+
+export type TaggedProps<Tag extends string> = { [K in Tag]: LiteralType<any> }
+export interface TaggedUnion<Tag extends string, A> extends UnionType<Array<Tagged<Tag>>, A> {}
+export type TaggedIntersectionArgument<Tag extends string> =
+  | [Tagged<Tag>]
+  | [Tagged<Tag>, Any]
+  | [Any, Tagged<Tag>]
+  | [Tagged<Tag>, Any, Any]
+  | [Any, Tagged<Tag>, Any]
+  | [Any, Any, Tagged<Tag>]
+  | [Tagged<Tag>, Any, Any, Any]
+  | [Any, Tagged<Tag>, Any, Any]
+  | [Any, Any, Tagged<Tag>, Any]
+  | [Any, Any, Any, Tagged<Tag>]
+  | [Tagged<Tag>, Any, Any, Any, Any]
+  | [Any, Tagged<Tag>, Any, Any, Any]
+  | [Any, Any, Tagged<Tag>, Any, Any]
+  | [Any, Any, Any, Tagged<Tag>, Any]
+  | [Any, Any, Any, Any, Tagged<Tag>]
+export interface TaggedIntersection<Tag extends string, A>
+  extends IntersectionType<TaggedIntersectionArgument<Tag>, A> {}
+export interface TaggedRefinement<Tag extends string, A> extends RefinementType<Tagged<Tag>, mixed, A> {}
+export type Tagged<Tag extends string> =
+  | InterfaceType<TaggedProps<Tag>, any>
+  | TaggedIntersection<Tag, any>
+  | StrictType<TaggedProps<Tag>, any>
+  | TaggedRefinement<Tag, any>
+  | TaggedUnion<Tag, any>
+
+const isTagged = <Tag extends string>(tag: Tag): ((type: Any) => type is Tagged<Tag>) => {
+  const f = (type: Any): type is Tagged<Tag> => {
+    if (type instanceof InterfaceType || type instanceof StrictType) {
+      return type.props.hasOwnProperty(tag)
+    } else if (type instanceof IntersectionType) {
+      return type.types.some(f)
+    } else if (type instanceof UnionType) {
+      return type.types.every(f)
+    } else if (type instanceof RefinementType) {
+      return f(type.type)
+    } else {
+      return false
+    }
+  }
+  return f
+}
+
+const findTagged = <Tag extends string>(tag: Tag, types: TaggedIntersectionArgument<Tag>): Tagged<Tag> => {
+  const len = types.length
+  const is = isTagged(tag)
+  let i = 0
+  for (; i < len - 1; i++) {
+    const type = types[i]
+    if (is(type)) {
+      return type
+    }
+  }
+  return types[i] as any
+}
+
+const getTagValue = <Tag extends string>(tag: Tag): ((type: Tagged<Tag>) => string) => {
+  const f = (type: Tagged<Tag>): string => {
+    switch (type._tag) {
+      case 'InterfaceType':
+      case 'StrictType':
+        return type.props[tag].value
+      case 'IntersectionType':
+        return f(findTagged(tag, type.types))
+      case 'UnionType':
+        return f(type.types[0])
+      case 'RefinementType':
+        return f(type.type)
+    }
+  }
+  return f
+}
+
+export const taggedUnion = <Tag extends string, RTS extends Array<Tagged<Tag>>>(
+  tag: Tag,
+  types: RTS,
+  name: string = `(${types.map(type => type.name).join(' | ')})`
+): UnionType<RTS, TypeOf<RTS['_A']>> => {
+  const tagValue2Index: { [key: string]: number } = {}
+  const tagValues: { [key: string]: null } = {}
+  const len = types.length
+  const get = getTagValue(tag)
+  for (let i = 0; i < len; i++) {
+    const value = get(types[i])
+    tagValue2Index[value] = i
+    tagValues[value] = null
+  }
+  const TagValue = keyof(tagValues)
+  return new UnionType(
+    name,
+    (v): v is TypeOf<RTS['_A']> => {
+      if (!Dictionary.is(v)) {
+        return false
+      }
+      const tagValue = v[tag]
+      return TagValue.is(tagValue) && types[tagValue2Index[tagValue]].is(v)
+    },
+    (s, c) =>
+      Dictionary.validate(s, c).chain(d =>
+        TagValue.validate(d[tag], appendContext(c, tag, TagValue)).chain(tagValue => {
+          const i = tagValue2Index[tagValue]
+          const type = types[i]
+          return type.validate(d, appendContext(c, String(i), type))
+        })
+      ),
+    types.every(type => type.serialize === identity) ? identity : a => types[tagValue2Index[a[tag]]].serialize(a),
+    types
+  )
+}
+
 export { nullType as null, undefinedType as undefined, arrayType as Array, type as interface }
