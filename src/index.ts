@@ -39,8 +39,10 @@ export interface Encoder<S, A> {
 
 /**
  * Laws:
- * 1. validate(x).fold(() => x, serialize) = x
- * 2. validate(serialize(x)) = Right(x)
+ * 1. validate(x, T).fold(() => x, T.serialize) = x
+ * 2. validate(T.serialize(x), T) = Right(x)
+ *
+ * where `T` is a runtime type
  */
 export class Type<S, A> implements Decoder<S, A>, Encoder<S, A> {
   // prettier-ignore
