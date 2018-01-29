@@ -941,6 +941,7 @@ export const strict = <P extends Props>(
 //
 
 export type TaggedProps<Tag extends string> = { [K in Tag]: LiteralType<any> }
+export interface TaggedRefinement<Tag extends string, A> extends RefinementType<Tagged<Tag>, mixed, A> {}
 export interface TaggedUnion<Tag extends string, A> extends UnionType<Array<Tagged<Tag>>, A> {}
 export type TaggedIntersectionArgument<Tag extends string> =
   | [Tagged<Tag>]
@@ -960,13 +961,12 @@ export type TaggedIntersectionArgument<Tag extends string> =
   | [Any, Any, Any, Any, Tagged<Tag>]
 export interface TaggedIntersection<Tag extends string, A>
   extends IntersectionType<TaggedIntersectionArgument<Tag>, A> {}
-export interface TaggedRefinement<Tag extends string, A> extends RefinementType<Tagged<Tag>, mixed, A> {}
-export type Tagged<Tag extends string> =
-  | InterfaceType<TaggedProps<Tag>, any>
-  | TaggedIntersection<Tag, any>
-  | StrictType<TaggedProps<Tag>, any>
-  | TaggedRefinement<Tag, any>
-  | TaggedUnion<Tag, any>
+export type Tagged<Tag extends string, A = any> =
+  | InterfaceType<TaggedProps<Tag>, A>
+  | StrictType<TaggedProps<Tag>, A>
+  | TaggedRefinement<Tag, A>
+  | TaggedUnion<Tag, A>
+  | TaggedIntersection<Tag, A>
 
 const isTagged = <Tag extends string>(tag: Tag): ((type: Any) => type is Tagged<Tag>) => {
   const f = (type: Any): type is Tagged<Tag> => {
