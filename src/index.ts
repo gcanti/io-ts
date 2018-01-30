@@ -60,7 +60,7 @@ export class Type<S, A> implements Decoder<S, A>, Encoder<S, A> {
     /** converts a value of type A to a value of type S */
     readonly serialize: Serialize<S, A>
   ) {
-    this.validate = (s: any, c?: any[]) => _validate(s, c || [{ key: '', type: this }])
+    this.validate = (s, c) => _validate(s, c || [{ key: '', type: this }])
   }
   pipe<B>(ab: Type<A, B>, name?: string): Type<S, B> {
     return new Type(
