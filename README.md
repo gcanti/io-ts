@@ -178,12 +178,32 @@ import * as t from 'io-ts'
 | interface             | `interface A { name: string }`          | `interface A { name: string }`          | `t.interface({ name: t.string })` or `t.type({ name: t.string })` |
 | interface inheritance | `interface B extends A {}`              | `interface B extends A {}`              | `t.intersection([ A, t.interface({}) ])`                          |
 | tuple                 | `[ A, B ]`                              | `[ A, B ]`                              | `t.tuple([ A, B ])`                                               |
-| union                 | `A \| B`                                | `A \| B`                                | `t.union([ A, B ])`                                               |
+| union                 | `A \| B`                                | `A \| B`                                | `t.union([ A, B ])` or `t.taggedUnion(tag, [ A, B ])`             |
 | intersection          | `A & B`                                 | `A & B`                                 | `t.intersection([ A, B ])`                                        |
 | keyof                 | `keyof M`                               | `$Keys<M>`                              | `t.keyof(M)`                                                      |
 | recursive types       | see [Recursive types](#recursive-types) | see [Recursive types](#recursive-types) | `t.recursion(name, definition)`                                   |
 | refinement            | ✘                                       | ✘                                       | `t.refinement(A, predicate)`                                      |
 | strict/exact types    | ✘                                       | `$Exact<{{ name: t.string }}>`          | `t.strict({ name: t.string })`                                    |
+
+# Tagged unions
+
+If you are encoding tagged unions you may want to use the `taggedUnion` combinator instead of the general purpose
+`union` combinator
+
+```ts
+const A = t.type({
+  tag: t.literal('A'),
+  foo: t.string
+})
+
+const B = t.type({
+  tag: t.literal('B'),
+  bar: t.number
+})
+
+// the actual presence of the tag is statically checked
+const U = t.taggedUnion('tag', [A, B])
+```
 
 # Refinements
 
