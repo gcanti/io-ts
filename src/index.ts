@@ -49,18 +49,23 @@ export class Type<S, A> implements Decoder<S, A>, Encoder<S, A> {
   readonly '_A': A
   // prettier-ignore
   readonly '_S': S
-  readonly maybe: (value: A) => Validation<A>
+  readonly validate: {
+    /** succeeds if a value of type A can be decoded at runtime */
+    (value: A): Validation<A>
+    /** succeeds if a value of type S can be decoded to a value of type A */
+    (s: S, context: Context): Validation<A>
+  }
   constructor(
     /** a unique name for this runtime type */
     readonly name: string,
     /** a custom type guard */
     readonly is: Is<A>,
     /** succeeds if a value of type S can be decoded to a value of type A */
-    readonly validate: Validate<S, A>,
+    protected readonly _validate: Validate<S, A>,
     /** converts a value of type A to a value of type S */
     readonly serialize: Serialize<S, A>
   ) {
-    this.maybe = (value: any) => validate(value, [{ key: '', type: this }])
+    this.validate = (s: any, c: any[] | null = null) => _validate(s, c || [{ key: '', type: this }])
   }
   pipe<B>(ab: Type<A, B>, name?: string): Type<S, B> {
     return new Type(
@@ -263,7 +268,7 @@ export class RefinementType<RT extends Type<any, any>, S, A> extends Type<S, A> 
   constructor(
     name: string,
     is: RefinementType<RT, S, A>['is'],
-    validate: RefinementType<RT, S, A>['validate'],
+    validate: RefinementType<RT, S, A>['_validate'],
     serialize: RefinementType<RT, S, A>['serialize'],
     readonly type: RT,
     readonly predicate: Predicate<A>
@@ -297,7 +302,7 @@ export class LiteralType<V extends string | number | boolean> extends Type<mixed
   constructor(
     name: string,
     is: LiteralType<V>['is'],
-    validate: LiteralType<V>['validate'],
+    validate: LiteralType<V>['_validate'],
     serialize: LiteralType<V>['serialize'],
     readonly value: V
   ) {
@@ -322,7 +327,7 @@ export class KeyofType<D extends { [key: string]: any }> extends Type<mixed, key
   constructor(
     name: string,
     is: KeyofType<D>['is'],
-    validate: KeyofType<D>['validate'],
+    validate: KeyofType<D>['_validate'],
     serialize: KeyofType<D>['serialize'],
     readonly keys: D
   ) {
@@ -347,7 +352,7 @@ export class RecursiveType<RT extends Any, A> extends Type<mixed, A> {
   constructor(
     name: string,
     is: RecursiveType<RT, A>['is'],
-    validate: RecursiveType<RT, A>['validate'],
+    validate: RecursiveType<RT, A>['_validate'],
     serialize: RecursiveType<RT, A>['serialize'],
     private runDefinition: () => RT
   ) {
@@ -388,7 +393,7 @@ export class ArrayType<RT extends Any, A> extends Type<mixed, A> {
   constructor(
     name: string,
     is: ArrayType<RT, A>['is'],
-    validate: ArrayType<RT, A>['validate'],
+    validate: ArrayType<RT, A>['_validate'],
     serialize: ArrayType<RT, A>['serialize'],
     readonly type: RT
   ) {
@@ -442,7 +447,7 @@ export class InterfaceType<P extends Props, A> extends Type<mixed, A> {
   constructor(
     name: string,
     is: InterfaceType<P, A>['is'],
-    validate: InterfaceType<P, A>['validate'],
+    validate: InterfaceType<P, A>['_validate'],
     serialize: InterfaceType<P, A>['serialize'],
     readonly props: P
   ) {
@@ -527,7 +532,7 @@ export class PartialType<P extends Props, A> extends Type<mixed, A> {
   constructor(
     name: string,
     is: PartialType<P, A>['is'],
-    validate: PartialType<P, A>['validate'],
+    validate: PartialType<P, A>['_validate'],
     serialize: PartialType<P, A>['serialize'],
     readonly props: P
   ) {
@@ -573,7 +578,7 @@ export class DictionaryType<D extends Any, C extends Any, A> extends Type<mixed,
   constructor(
     name: string,
     is: DictionaryType<D, C, A>['is'],
-    validate: DictionaryType<D, C, A>['validate'],
+    validate: DictionaryType<D, C, A>['_validate'],
     serialize: DictionaryType<D, C, A>['serialize'],
     readonly domain: D,
     readonly codomain: C
@@ -639,7 +644,7 @@ export class UnionType<RTS extends Array<Any>, A> extends Type<mixed, A> {
   constructor(
     name: string,
     is: UnionType<RTS, A>['is'],
-    validate: UnionType<RTS, A>['validate'],
+    validate: UnionType<RTS, A>['_validate'],
     serialize: UnionType<RTS, A>['serialize'],
     readonly types: RTS
   ) {
@@ -693,7 +698,7 @@ export class IntersectionType<RTS extends Array<Any>, A> extends Type<mixed, A> 
   constructor(
     name: string,
     is: IntersectionType<RTS, A>['is'],
-    validate: IntersectionType<RTS, A>['validate'],
+    validate: IntersectionType<RTS, A>['_validate'],
     serialize: IntersectionType<RTS, A>['serialize'],
     readonly types: RTS
   ) {
@@ -759,7 +764,7 @@ export class TupleType<RTS extends Array<Any>, A> extends Type<mixed, A> {
   constructor(
     name: string,
     is: TupleType<RTS, A>['is'],
-    validate: TupleType<RTS, A>['validate'],
+    validate: TupleType<RTS, A>['_validate'],
     serialize: TupleType<RTS, A>['serialize'],
     readonly types: RTS
   ) {
@@ -831,7 +836,7 @@ export class ReadonlyType<RT extends Any, A> extends Type<mixed, A> {
   constructor(
     name: string,
     is: ReadonlyType<RT, A>['is'],
-    validate: ReadonlyType<RT, A>['validate'],
+    validate: ReadonlyType<RT, A>['_validate'],
     serialize: ReadonlyType<RT, A>['serialize'],
     readonly type: RT
   ) {
@@ -866,7 +871,7 @@ export class ReadonlyArrayType<RT extends Any, A> extends Type<mixed, A> {
   constructor(
     name: string,
     is: ReadonlyArrayType<RT, A>['is'],
-    validate: ReadonlyArrayType<RT, A>['validate'],
+    validate: ReadonlyArrayType<RT, A>['_validate'],
     serialize: ReadonlyArrayType<RT, A>['serialize'],
     readonly type: RT
   ) {
@@ -904,7 +909,7 @@ export class StrictType<P extends Props, A> extends Type<mixed, A> {
   constructor(
     name: string,
     is: StrictType<P, A>['is'],
-    validate: StrictType<P, A>['validate'],
+    validate: StrictType<P, A>['_validate'],
     serialize: StrictType<P, A>['serialize'],
     readonly props: P
   ) {
