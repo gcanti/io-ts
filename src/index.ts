@@ -51,7 +51,7 @@ export class Type<S, A> implements Decoder<S, A>, Encoder<S, A> {
   readonly '_S': S
   readonly validate: {
     /** succeeds if a value of type A can be decoded at runtime */
-    (value: A): Validation<A>
+    (s: S): Validation<A>
     /** succeeds if a value of type S can be decoded to a value of type A */
     (s: S, context: Context): Validation<A>
   }
