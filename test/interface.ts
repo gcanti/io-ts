@@ -50,7 +50,6 @@ describe('interface', () => {
 
   it('should fail validating an invalid value with implicit context', () => {
     const T = t.interface({ a: t.string })
-    // "as any" is required here because T.validate with one argument validates the input type
     assertFailure(T.validate(1), ['Invalid value 1 supplied to : { a: string }'])
     assertFailure(T.validate({}), ['Invalid value undefined supplied to : { a: string }/a: string'])
     assertFailure(T.validate({ a: 1 }), ['Invalid value 1 supplied to : { a: string }/a: string'])
