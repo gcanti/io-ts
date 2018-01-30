@@ -49,6 +49,7 @@ export class Type<S, A> implements Decoder<S, A>, Encoder<S, A> {
   readonly '_A': A
   // prettier-ignore
   readonly '_S': S
+  readonly maybe: (value: A) => Validation<A>
   constructor(
     /** a unique name for this runtime type */
     readonly name: string,
@@ -58,7 +59,9 @@ export class Type<S, A> implements Decoder<S, A>, Encoder<S, A> {
     readonly validate: Validate<S, A>,
     /** converts a value of type A to a value of type S */
     readonly serialize: Serialize<S, A>
-  ) {}
+  ) {
+    this.maybe = (value: any) => validate(value, [{ key: '', type: this }])
+  }
   pipe<B>(ab: Type<A, B>, name?: string): Type<S, B> {
     return new Type(
       name || `pipe(${this.name}, ${ab.name})`,
