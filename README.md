@@ -187,8 +187,8 @@ import * as t from 'io-ts'
 
 # Tagged unions
 
-If you are encoding tagged unions you may want to use the `taggedUnion` combinator instead of the general purpose
-`union` combinator
+If you are encoding tagged unions, instead of the general purpose `union` combinator, you may want to use the
+`taggedUnion` combinator in order to get better performances
 
 ```ts
 const A = t.type({
