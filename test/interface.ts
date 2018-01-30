@@ -9,6 +9,17 @@ describe('interface', () => {
     assertSuccess(t.validate({ a: 's' }, T))
   })
 
+  it('should succeed validating a valid value with maybe', () => {
+    const T = t.interface({ a: t.string })
+    assertSuccess(T.maybe({ a: 's' }))
+  })
+
+  it('should succeed validating with maybe without binding', () => {
+    const T = t.interface({ a: t.string })
+    const validation = [{ a: 's' }].map(T.maybe)[0] // no need for T.maybe.bind(T)
+    assertSuccess(validation)
+  })
+
   it('should keep unknown properties', () => {
     const T = t.interface({ a: t.string })
     const validation = t.validate({ a: 's', b: 1 }, T)
@@ -35,6 +46,14 @@ describe('interface', () => {
     assertFailure(t.validate(1, T), ['Invalid value 1 supplied to : { a: string }'])
     assertFailure(t.validate({}, T), ['Invalid value undefined supplied to : { a: string }/a: string'])
     assertFailure(t.validate({ a: 1 }, T), ['Invalid value 1 supplied to : { a: string }/a: string'])
+  })
+
+  it('should fail validating an invalid value with maybe', () => {
+    const T = t.interface({ a: t.string })
+    // "as any" is required here because T.maybe validates the input type
+    assertFailure(T.maybe(1 as any), ['Invalid value 1 supplied to : { a: string }'])
+    assertFailure(T.maybe({} as any), ['Invalid value undefined supplied to : { a: string }/a: string'])
+    assertFailure(T.maybe({ a: 1 } as any), ['Invalid value 1 supplied to : { a: string }/a: string'])
   })
 
   it('should support the alias `type`', () => {
