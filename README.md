@@ -1,3 +1,7 @@
+[![build status](https://img.shields.io/travis/gcanti/io-ts/master.svg?style=flat-square)](https://travis-ci.org/gcanti/io-ts)
+[![dependency status](https://img.shields.io/david/gcanti/io-ts.svg?style=flat-square)](https://david-dm.org/gcanti/io-ts)
+![npm downloads](https://img.shields.io/npm/dm/io-ts.svg)
+
 # The idea
 
 A value of type `Type<S, A>` (called "runtime type") is the runtime representation of the static type `A`.
