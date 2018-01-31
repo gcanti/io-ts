@@ -1,4 +1,4 @@
-import { Either, Left, Right, isRight } from 'fp-ts/lib/Either'
+import { Either, Left, Right } from 'fp-ts/lib/Either'
 
 import { Predicate } from 'fp-ts/lib/function'
 
@@ -657,7 +657,7 @@ export const union = <RTS extends Array<Any>>(
       for (let i = 0; i < len; i++) {
         const type = types[i]
         const validation = type.validate(s, appendContext(c, String(i), type))
-        if (isRight(validation)) {
+        if (validation.isRight()) {
           return validation
         } else {
           pushAll(errors, validation.value)
