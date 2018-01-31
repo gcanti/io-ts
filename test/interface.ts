@@ -1,4 +1,3 @@
-import { isRight } from 'fp-ts/lib/Either'
 import * as assert from 'assert'
 import * as t from '../src/index'
 import { assertSuccess, assertFailure, assertStrictEqual, assertDeepEqual, DateFromNumber } from './helpers'
@@ -12,7 +11,7 @@ describe('interface', () => {
   it('should keep unknown properties', () => {
     const T = t.interface({ a: t.string })
     const validation = t.validate({ a: 's', b: 1 }, T)
-    if (isRight(validation)) {
+    if (validation.isRight()) {
       assert.deepEqual(validation.value, { a: 's', b: 1 })
     } else {
       assert.ok(false)
