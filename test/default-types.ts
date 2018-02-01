@@ -3,67 +3,67 @@ import { assertSuccess, assertFailure } from './helpers'
 
 describe('Dictionary', () => {
   it('should accept arrays', () => {
-    assertSuccess(t.validate([], t.Dictionary))
+    assertSuccess(t.Dictionary.decode([]))
   })
 
   it('should accept objects', () => {
-    assertSuccess(t.validate({}, t.Dictionary))
+    assertSuccess(t.Dictionary.decode({}))
   })
 
   it('should fail with primitives', () => {
     const T = t.Dictionary
-    assertFailure(t.validate('s', T), ['Invalid value "s" supplied to : Dictionary'])
-    assertFailure(t.validate(1, T), ['Invalid value 1 supplied to : Dictionary'])
-    assertFailure(t.validate(true, T), ['Invalid value true supplied to : Dictionary'])
+    assertFailure(T.decode('s'), ['Invalid value "s" supplied to : Dictionary'])
+    assertFailure(T.decode(1), ['Invalid value 1 supplied to : Dictionary'])
+    assertFailure(T.decode(true), ['Invalid value true supplied to : Dictionary'])
   })
 
   it('should fail with null and undefined', () => {
     const T = t.Dictionary
-    assertFailure(t.validate(null, T), ['Invalid value null supplied to : Dictionary'])
-    assertFailure(t.validate(undefined, T), ['Invalid value undefined supplied to : Dictionary'])
+    assertFailure(T.decode(null), ['Invalid value null supplied to : Dictionary'])
+    assertFailure(T.decode(undefined), ['Invalid value undefined supplied to : Dictionary'])
   })
 })
 
 describe('Integer', () => {
   it('should validate integers', () => {
-    assertSuccess(t.validate(1, t.Integer))
-    assertFailure(t.validate(0.5, t.Integer), ['Invalid value 0.5 supplied to : Integer'])
-    assertFailure(t.validate('foo', t.Integer), ['Invalid value "foo" supplied to : Integer'])
+    assertSuccess(t.Integer.decode(1))
+    assertFailure(t.Integer.decode(0.5), ['Invalid value 0.5 supplied to : Integer'])
+    assertFailure(t.Integer.decode('foo'), ['Invalid value "foo" supplied to : Integer'])
   })
 })
 
 describe('null', () => {
   it('should support the alias `nullType`', () => {
-    assertSuccess(t.validate(null, t.null))
-    assertFailure(t.validate(1, t.null), ['Invalid value 1 supplied to : null'])
+    assertSuccess(t.null.decode(null))
+    assertFailure(t.null.decode(1), ['Invalid value 1 supplied to : null'])
   })
 })
 
 describe('object', () => {
   it('should accept arrays', () => {
-    assertSuccess(t.validate([], t.object))
+    assertSuccess(t.object.decode([]))
   })
 
   it('should accept objects', () => {
-    assertSuccess(t.validate({}, t.object))
+    assertSuccess(t.object.decode({}))
   })
 
   it('should fail with primitives', () => {
     const T = t.object
-    assertFailure(t.validate('s', T), ['Invalid value "s" supplied to : object'])
-    assertFailure(t.validate(1, T), ['Invalid value 1 supplied to : object'])
-    assertFailure(t.validate(true, T), ['Invalid value true supplied to : object'])
+    assertFailure(T.decode('s'), ['Invalid value "s" supplied to : object'])
+    assertFailure(T.decode(1), ['Invalid value 1 supplied to : object'])
+    assertFailure(T.decode(true), ['Invalid value true supplied to : object'])
   })
 
   it('should fail with null and undefined', () => {
     const T = t.object
-    assertFailure(t.validate(null, T), ['Invalid value null supplied to : object'])
-    assertFailure(t.validate(undefined, T), ['Invalid value undefined supplied to : object'])
+    assertFailure(T.decode(null), ['Invalid value null supplied to : object'])
+    assertFailure(T.decode(undefined), ['Invalid value undefined supplied to : object'])
   })
 })
 
 describe('Function', () => {
   it('should accept functions', () => {
-    assertSuccess(t.validate(t.identity, t.Function))
+    assertSuccess(t.Function.decode(t.identity))
   })
 })

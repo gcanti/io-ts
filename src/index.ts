@@ -31,6 +31,7 @@ export type InputOf<RT extends Type<any, any>> = RT['_S']
 export interface Decoder<S, A> {
   readonly name: string
   readonly validate: Validate<S, A>
+  readonly decode: (s: S) => Validation<A>
 }
 
 export interface Encoder<S, A> {
@@ -75,6 +76,10 @@ export class Type<S, A> implements Decoder<S, A>, Encoder<S, A> {
   asEncoder(): Encoder<S, A> {
     return this
   }
+  /** succeeds if a value of type S can be decoded to a value of type A */
+  decode(s: S): Validation<A> {
+    return this.validate(s, getDefaultContext(this))
+  }
 }
 
 export const identity = <A>(a: A): A => a
@@ -105,6 +110,7 @@ export const failure = <T>(value: mixed, context: Context): Validation<T> =>
 
 export const success = <T>(value: T): Validation<T> => new Right<Errors, T>(value)
 
+/** @deprecated use `type.decode(value)` instead */
 export const validate = <S, A>(value: S, type: Decoder<S, A>): Validation<A> =>
   type.validate(value, getDefaultContext(type))
 

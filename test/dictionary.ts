@@ -5,48 +5,48 @@ import { assertSuccess, assertFailure, assertStrictEqual, assertDeepEqual, strin
 describe('dictionary', () => {
   it('should succeed validating a valid value', () => {
     const T1 = t.dictionary(t.string, t.number)
-    assertSuccess(t.validate({}, T1))
-    assertSuccess(t.validate({ aa: 1 }, T1))
+    assertSuccess(T1.decode({}))
+    assertSuccess(T1.decode({ aa: 1 }))
     const T2 = t.dictionary(t.refinement(t.string, s => s.length >= 2), t.number)
-    assertSuccess(t.validate({}, T2))
-    assertSuccess(t.validate({ aa: 1 }, T2))
+    assertSuccess(T2.decode({}))
+    assertSuccess(T2.decode({ aa: 1 }))
     const T3 = t.dictionary(string2, t.number)
-    assertSuccess(t.validate({}, T3))
-    assertSuccess(t.validate({ aa: 1 }, T3))
+    assertSuccess(T3.decode({}))
+    assertSuccess(T3.decode({ aa: 1 }))
   })
 
   it('should return the same reference if validation succeeded if nothing changed', () => {
     const T1 = t.dictionary(t.string, t.number)
     const value1 = { aa: 1 }
-    assertStrictEqual(t.validate(value1, T1), value1)
+    assertStrictEqual(T1.decode(value1), value1)
     const T2 = t.dictionary(t.refinement(t.string, s => s.length >= 2), t.number)
     const value2 = { aa: 1 }
-    assertStrictEqual(t.validate(value2, T2), value2)
+    assertStrictEqual(T2.decode(value2), value2)
   })
 
   it('should return a new reference if validation succeeded and something changed', () => {
     const T = t.dictionary(string2, t.number)
     const value = { aa: 1 }
-    assertDeepEqual(t.validate(value, T), { 'a-a': 1 })
+    assertDeepEqual(T.decode(value), { 'a-a': 1 })
   })
 
   it('should fail validating an invalid value', () => {
     const T = t.dictionary(t.string, t.number)
-    assertFailure(t.validate({ aa: 's' }, T), ['Invalid value "s" supplied to : { [K in string]: number }/aa: number'])
+    assertFailure(T.decode({ aa: 's' }), ['Invalid value "s" supplied to : { [K in string]: number }/aa: number'])
   })
 
   it('should support literals as domain type', () => {
     const T = t.dictionary(t.literal('foo'), t.string)
-    assertSuccess(t.validate({ foo: 'bar' }, T))
-    assertFailure(t.validate({ foo: 'bar', baz: 'bob' }, T), [
+    assertSuccess(T.decode({ foo: 'bar' }))
+    assertFailure(T.decode({ foo: 'bar', baz: 'bob' }), [
       'Invalid value "baz" supplied to : { [K in "foo"]: string }/baz: "foo"'
     ])
   })
 
   it('should support keyof as domain type', () => {
     const T = t.dictionary(t.keyof({ foo: true, bar: true }), t.string)
-    assertSuccess(t.validate({ foo: 'bar' }, T))
-    assertFailure(t.validate({ foo: 'bar', baz: 'bob' }, T), [
+    assertSuccess(T.decode({ foo: 'bar' }))
+    assertFailure(T.decode({ foo: 'bar', baz: 'bob' }), [
       'Invalid value "baz" supplied to : { [K in (keyof ["foo","bar"])]: string }/baz: (keyof ["foo","bar"])'
     ])
   })

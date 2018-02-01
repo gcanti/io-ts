@@ -12,22 +12,20 @@ import {
 describe('partial', () => {
   it('should succeed validating a valid value', () => {
     const T = t.partial({ a: t.number })
-    assertSuccess(t.validate({}, T))
-    assertSuccess(t.validate({ a: 1 }, T))
+    assertSuccess(T.decode({}))
+    assertSuccess(T.decode({ a: 1 }))
   })
 
   it('should not add optional keys', () => {
     const T = t.partial({ a: t.number })
     assert.strictEqual(
-      t
-        .validate({}, T)
+      T.decode({})
         .fold<any>(t.identity, t.identity)
         .hasOwnProperty('a'),
       false
     )
     assert.strictEqual(
-      t
-        .validate({ b: 1 }, T)
+      T.decode({ b: 1 })
         .fold<any>(t.identity, t.identity)
         .hasOwnProperty('a'),
       false
@@ -37,12 +35,12 @@ describe('partial', () => {
   it('should return the same reference if validation succeeded', () => {
     const T = t.partial({ a: t.number })
     const value = {}
-    assertStrictEqual(t.validate(value, T), value)
+    assertStrictEqual(T.decode(value), value)
   })
 
   it('should fail validating an invalid value', () => {
     const T = t.partial({ a: t.number })
-    assertFailure(t.validate({ a: 's' }, T), [
+    assertFailure(T.decode({ a: 's' }), [
       'Invalid value "s" supplied to : PartialType<{ a: number }>/a: (number | undefined)/0: number',
       'Invalid value "s" supplied to : PartialType<{ a: number }>/a: (number | undefined)/1: undefined'
     ])
@@ -76,6 +74,6 @@ describe('partial', () => {
     const T = t.partial({
       name: withDefault(t.string, 'foo')
     })
-    assertDeepEqual(t.validate({}, T), { name: 'foo' })
+    assertDeepEqual(T.decode({}), { name: 'foo' })
   })
 })

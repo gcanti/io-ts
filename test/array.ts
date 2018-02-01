@@ -5,25 +5,25 @@ import { assertSuccess, assertFailure, assertStrictEqual, assertDeepEqual, DateF
 describe('array', () => {
   it('should succeed validating a valid value', () => {
     const T = t.array(t.number)
-    assertSuccess(t.validate([], T))
-    assertSuccess(t.validate([1, 2, 3], T))
+    assertSuccess(T.decode([]))
+    assertSuccess(T.decode([1, 2, 3]))
   })
 
   it('should return the same reference if validation succeeded and nothing changed', () => {
     const T = t.array(t.number)
     const value = [1, 2, 3]
-    assertStrictEqual(t.validate(value, T), value)
+    assertStrictEqual(T.decode(value), value)
   })
 
   it('should return a new reference if validation succeeded and something changed', () => {
     const T = t.array(DateFromNumber)
-    assertDeepEqual(t.validate([1, 2, 3], T), [new Date(1), new Date(2), new Date(3)])
+    assertDeepEqual(T.decode([1, 2, 3]), [new Date(1), new Date(2), new Date(3)])
   })
 
   it('should fail validating an invalid value', () => {
     const T = t.array(t.number)
-    assertFailure(t.validate(1, T), ['Invalid value 1 supplied to : Array<number>'])
-    assertFailure(t.validate([1, 's', 3], T), ['Invalid value "s" supplied to : Array<number>/1: number'])
+    assertFailure(T.decode(1), ['Invalid value 1 supplied to : Array<number>'])
+    assertFailure(T.decode([1, 's', 3]), ['Invalid value "s" supplied to : Array<number>/1: number'])
   })
 
   it('should serialize a deserialized', () => {
