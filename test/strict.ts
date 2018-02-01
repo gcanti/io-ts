@@ -5,23 +5,23 @@ import * as assert from 'assert'
 describe('strict', () => {
   it('should succeed validating a valid value', () => {
     const T = t.strict({ foo: t.string })
-    assertSuccess(t.validate({ foo: 'foo' }, T))
+    assertSuccess(T.decode({ foo: 'foo' }))
   })
 
   it('should succeed validating an undefined field', () => {
     const T = t.strict({ foo: t.string, bar: t.union([t.string, t.undefined]) })
-    assertSuccess(t.validate({ foo: 'foo' }, T))
+    assertSuccess(T.decode({ foo: 'foo' }))
   })
 
   it('should return the same reference if validation succeeded', () => {
     const T = t.strict({ foo: t.string })
     const value = { foo: 'foo' }
-    assertStrictEqual(t.validate(value, T), value)
+    assertStrictEqual(T.decode(value), value)
   })
 
   it('should fail validating an invalid value', () => {
     const T = t.strict({ foo: t.string })
-    assertFailure(t.validate({ foo: 'foo', bar: 1, baz: true }, T), [
+    assertFailure(T.decode({ foo: 'foo', bar: 1, baz: true }), [
       'Invalid value 1 supplied to : StrictType<{ foo: string }>/bar: never',
       'Invalid value true supplied to : StrictType<{ foo: string }>/baz: never'
     ])

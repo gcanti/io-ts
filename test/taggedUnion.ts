@@ -34,28 +34,28 @@ const T = t.taggedUnion('type', [TUA, TUB, TUC])
 
 describe('taggedUnion', () => {
   it('should succeed validating a valid value', () => {
-    assertSuccess(t.validate({ type: 'a', foo: 'foo' }, T))
-    assertSuccess(t.validate({ type: 'b', bar: 1 }, T))
-    assertSuccess(t.validate({ type: 'c', baz: 0 }, T))
+    assertSuccess(T.decode({ type: 'a', foo: 'foo' }))
+    assertSuccess(T.decode({ type: 'b', bar: 1 }))
+    assertSuccess(T.decode({ type: 'c', baz: 0 }))
   })
 
   it('should return the same reference if validation succeeded', () => {
     const value = { type: 'a', foo: 'foo' }
-    assertStrictEqual(t.validate(value, T), value)
+    assertStrictEqual(T.decode(value), value)
   })
 
   it('should fail validating an invalid value', () => {
-    assertFailure(t.validate(true, T), ['Invalid value true supplied to : (TUA | TUB | TUC)'])
-    assertFailure(t.validate({ type: 'D' }, T), [
+    assertFailure(T.decode(true), ['Invalid value true supplied to : (TUA | TUB | TUC)'])
+    assertFailure(T.decode({ type: 'D' }), [
       'Invalid value "D" supplied to : (TUA | TUB | TUC)/type: (keyof ["a","b","c"])'
     ])
-    assertFailure(t.validate({ type: 'a' }, T), [
+    assertFailure(T.decode({ type: 'a' }), [
       'Invalid value undefined supplied to : (TUA | TUB | TUC)/0: TUA/foo: string'
     ])
-    assertFailure(t.validate({ type: 'b' }, T), [
+    assertFailure(T.decode({ type: 'b' }), [
       'Invalid value undefined supplied to : (TUA | TUB | TUC)/1: TUB/bar: number'
     ])
-    assertFailure(t.validate({ type: 'c' }, T), [
+    assertFailure(T.decode({ type: 'c' }), [
       'Invalid value undefined supplied to : (TUA | TUB | TUC)/2: TUC/baz: DateFromNumber'
     ])
   })

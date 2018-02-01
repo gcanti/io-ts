@@ -5,19 +5,19 @@ import { assertSuccess, assertFailure, assertStrictEqual, DateFromNumber } from 
 describe('union', () => {
   it('should succeed validating a valid value', () => {
     const T = t.union([t.string, t.number])
-    assertSuccess(t.validate('s', T))
-    assertSuccess(t.validate(1, T))
+    assertSuccess(T.decode('s'))
+    assertSuccess(T.decode(1))
   })
 
   it('should return the same reference if validation succeeded', () => {
     const T = t.union([t.Dictionary, t.number])
     const value = {}
-    assertStrictEqual(t.validate(value, T), value)
+    assertStrictEqual(T.decode(value), value)
   })
 
   it('should fail validating an invalid value', () => {
     const T = t.union([t.string, t.number])
-    assertFailure(t.validate(true, T), [
+    assertFailure(T.decode(true), [
       'Invalid value true supplied to : (string | number)/0: string',
       'Invalid value true supplied to : (string | number)/1: number'
     ])

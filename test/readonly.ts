@@ -5,17 +5,17 @@ import { assertSuccess, assertFailure, DateFromNumber } from './helpers'
 describe('readonly', () => {
   it('should succeed validating a valid value', () => {
     const T = t.readonly(t.interface({ a: t.number }))
-    assertSuccess(t.validate({ a: 1 }, T))
+    assertSuccess(T.decode({ a: 1 }))
   })
 
   it('should fail validating an invalid value', () => {
     const T = t.readonly(t.interface({ a: t.number }))
-    assertFailure(t.validate({}, T), ['Invalid value undefined supplied to : Readonly<{ a: number }>/a: number'])
+    assertFailure(T.decode({}), ['Invalid value undefined supplied to : Readonly<{ a: number }>/a: number'])
   })
 
   it('should freeze the value', () => {
     const T = t.readonly(t.interface({ a: t.number }))
-    t.validate({ a: 1 }, T).map(x => assert.ok(Object.isFrozen(x)))
+    T.decode({ a: 1 }).map(x => assert.ok(Object.isFrozen(x)))
   })
 
   it('should serialize a deserialized', () => {

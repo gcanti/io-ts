@@ -5,12 +5,12 @@ import { assertSuccess, assertFailure } from './helpers'
 describe('literal', () => {
   it('should succeed validating a valid value', () => {
     const T = t.literal('a')
-    assertSuccess(t.validate('a', T))
+    assertSuccess(T.decode('a'))
   })
 
   it('should fail validating an invalid value', () => {
     const T = t.literal('a')
-    assertFailure(t.validate(1, T), ['Invalid value 1 supplied to : "a"'])
+    assertFailure(T.decode(1), ['Invalid value 1 supplied to : "a"'])
   })
 
   it('should return the same reference when serializing', () => {

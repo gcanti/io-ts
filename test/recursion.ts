@@ -15,19 +15,19 @@ const T = t.recursion<T>('T', self =>
 
 describe('recursion', () => {
   it('should succeed validating a valid value', () => {
-    assertSuccess(t.validate({ a: 1, b: null }, T))
-    assertSuccess(t.validate({ a: 1, b: { a: 2, b: null } }, T))
+    assertSuccess(T.decode({ a: 1, b: null }))
+    assertSuccess(T.decode({ a: 1, b: { a: 2, b: null } }))
   })
 
   it('should return the same reference if validation succeeded', () => {
     const value = { a: 1, b: { a: 2, b: null } }
-    assertStrictEqual(t.validate(value, T), value)
+    assertStrictEqual(T.decode(value), value)
   })
 
   it('should fail validating an invalid value', () => {
-    assertFailure(t.validate(1, T), ['Invalid value 1 supplied to : T'])
-    assertFailure(t.validate({}, T), ['Invalid value undefined supplied to : T/a: number'])
-    assertFailure(t.validate({ a: 1, b: {} }, T), [
+    assertFailure(T.decode(1), ['Invalid value 1 supplied to : T'])
+    assertFailure(T.decode({}), ['Invalid value undefined supplied to : T/a: number'])
+    assertFailure(T.decode({ a: 1, b: {} }), [
       'Invalid value undefined supplied to : T/b: (T | undefined | null)/0: T/a: number',
       'Invalid value {} supplied to : T/b: (T | undefined | null)/1: undefined',
       'Invalid value {} supplied to : T/b: (T | undefined | null)/2: null'
