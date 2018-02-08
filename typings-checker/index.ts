@@ -310,3 +310,14 @@ const TU1 = t.taggedUnion('type', [t.type({ type: t.literal('a') }), t.type({ ty
 const x36: TypeOf<typeof TU1> = true
 const x37: TypeOf<typeof TU1> = { type: 'a' }
 const x38: TypeOf<typeof TU1> = { type: 'b' }
+
+export function interfaceWithOptionals<R extends t.Props, O extends t.Props>(
+  required: R,
+  optional: O,
+  name?: string
+): t.IntersectionType<
+  [t.InterfaceType<R, t.InterfaceOf<R>>, t.PartialType<O, t.PartialOf<O>>],
+  t.InterfaceOf<R> & t.PartialOf<O>
+> {
+  return t.intersection([t.interface(required), t.partial(optional)], name)
+}
