@@ -13,6 +13,13 @@
 **Note**: Gaps between patch versions are faulty/broken releases. **Note**: A feature tagged as Experimental is in a
 high state of flux, you're at risk of it changing without notice.
 
+# 0.9.8
+
+* **New Feature**
+  * add decode and deprecate top level validate (@gcanti)
+* **Internal**
+  * when checking validations use methods instead of top level functions (@gcanti)
+
 # 0.9.7
 
 * **New Feature**

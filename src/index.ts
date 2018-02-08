@@ -40,8 +40,8 @@ export interface Encoder<S, A> {
 
 /**
  * Laws:
- * 1. validate(x, T).fold(() => x, T.serialize) = x
- * 2. validate(T.serialize(x), T) = Right(x)
+ * 1. T.decode(x).fold(() => x, T.serialize) = x
+ * 2. T.decode(T.serialize(x)) = right(x)
  *
  * where `T` is a runtime type
  */
@@ -76,7 +76,7 @@ export class Type<S, A> implements Decoder<S, A>, Encoder<S, A> {
   asEncoder(): Encoder<S, A> {
     return this
   }
-  /** succeeds if a value of type S can be decoded to a value of type A */
+  /** a version of `validate` with a default context */
   decode(s: S): Validation<A> {
     return this.validate(s, getDefaultContext(this))
   }

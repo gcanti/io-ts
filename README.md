@@ -8,7 +8,7 @@ A value of type `Type<S, A>` (called "runtime type") is the runtime representati
 
 Also a runtime type can
 
-* decode inputs (through `validate`)
+* decode inputs (through `decode`)
 * encode outputs (through `serialize`)
 * be used as a custom type guard (through `is`)
 
@@ -28,6 +28,8 @@ class Type<S, A> {
     /** converts a value of type A to a value of type S */
     readonly serialize: (output: A) => S
   ) {}
+  /** a version of `validate` with a default context */
+  decode(s: S): Either<Errors, A>
 }
 ```
 
@@ -62,10 +64,10 @@ const Person = t.interface({
 })
 
 // ok
-t.validate(JSON.parse('{"name":"Giulio","age":43}'), Person) // => Right({name: "Giulio", age: 43})
+Person.decode(JSON.parse('{"name":"Giulio","age":43}')) // => Right({name: "Giulio", age: 43})
 
 // ko
-t.validate(JSON.parse('{"name":"Giulio"}'), Person) // => Left([...])
+Person.decode(JSON.parse('{"name":"Giulio"}')) // => Left([...])
 ```
 
 # Error reporters
@@ -89,12 +91,12 @@ Example
 import { PathReporter } from 'io-ts/lib/PathReporter'
 import { ThrowReporter } from 'io-ts/lib/ThrowReporter'
 
-const validation = t.validate({ name: 'Giulio' }, Person)
+const result = Person.decode({ name: 'Giulio' })
 
-console.log(PathReporter.report(validation))
+console.log(PathReporter.report(result))
 // => ['Invalid value undefined supplied to : { name: string, age: number }/age: number']
 
-ThrowReporter.report(validation)
+ThrowReporter.report(result)
 // => throws 'Invalid value undefined supplied to : { name: string, age: number }/age: number'
 ```
 
@@ -231,8 +233,8 @@ const Person = t.interface({
 
 const StrictPerson = t.strict(Person.props)
 
-t.validate({ name: 'Giulio', age: 43, surname: 'Canti' }, Person) // ok
-t.validate({ name: 'Giulio', age: 43, surname: 'Canti' }, StrictPerson) // fails
+Person.decode({ name: 'Giulio', age: 43, surname: 'Canti' }) // ok
+StrictPerson.decode({ name: 'Giulio', age: 43, surname: 'Canti' }) // fails
 ```
 
 # Mixing required and optional props
@@ -297,10 +299,10 @@ const DateFromString = new t.Type<t.mixed, Date>(
 
 const s = new Date(1973, 10, 30).toISOString()
 
-t.validate(s, DateFromString)
+DateFromString.decode(s)
 // right(new Date('1973-11-29T23:00:00.000Z'))
 
-t.validate('foo', DateFromString)
+DateFromString.decode('foo')
 // left(errors...)
 ```
 
@@ -366,7 +368,7 @@ const { NODE_ENV } = process.env
 
 export function unsafeValidate<S, A>(value: any, type: t.Type<S, A>): A {
   if (NODE_ENV !== 'production') {
-    return t.validate(value, type).getOrElse(errors => {
+    return type.decode(value).getOrElse(errors => {
       throw new Error(failure(errors).join('\n'))
     })
   }
