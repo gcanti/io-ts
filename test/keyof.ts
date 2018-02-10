@@ -16,7 +16,7 @@ describe('keyof', () => {
 
   it('should return the same reference when serializing', () => {
     const T = t.keyof({ a: 1, b: 2 })
-    assert.strictEqual(T.serialize, t.identity)
+    assert.strictEqual(T.encode, t.identity)
   })
 
   it('should type guard', () => {

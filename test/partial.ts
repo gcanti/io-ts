@@ -48,13 +48,13 @@ describe('partial', () => {
 
   it('should serialize a deserialized', () => {
     const T = t.partial({ a: DateFromNumber })
-    assert.deepEqual(T.serialize({ a: new Date(0) }), { a: 0 })
-    assert.deepEqual(T.serialize({}), {})
+    assert.deepEqual(T.encode({ a: new Date(0) }), { a: 0 })
+    assert.deepEqual(T.encode({}), {})
   })
 
   it('should return the same reference when serializing', () => {
     const T = t.partial({ a: t.number })
-    assert.strictEqual(T.serialize, t.identity)
+    assert.strictEqual(T.encode, t.identity)
   })
 
   it('should type guard', () => {

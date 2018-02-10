@@ -59,8 +59,8 @@ describe('recursion', () => {
         b: t.union([self, t.null])
       })
     )
-    assert.deepEqual(T.serialize({ a: new Date(0), b: null }), { a: 0, b: null })
-    assert.deepEqual(T.serialize({ a: new Date(0), b: { a: new Date(1), b: null } }), { a: 0, b: { a: 1, b: null } })
+    assert.deepEqual(T.encode({ a: new Date(0), b: null }), { a: 0, b: null })
+    assert.deepEqual(T.encode({ a: new Date(0), b: { a: new Date(1), b: null } }), { a: 0, b: { a: 1, b: null } })
   })
 
   it('should type guard', () => {

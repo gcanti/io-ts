@@ -9,7 +9,7 @@ A value of type `Type<A, O, I>` (called "runtime type") is the runtime represent
 Also a runtime type can
 
 * decode inputs of type `I` (through `decode`)
-* encode outputs of type `O` (through `serialize`)
+* encode outputs of type `O` (through `encode`)
 * be used as a custom type guard (through `is`)
 
 ```ts
@@ -27,7 +27,7 @@ class Type<A, O = A, I = mixed> {
     /** succeeds if a value of type S can be decoded to a value of type A */
     readonly validate: (input: I, context: Context) => Either<Errors, A>,
     /** converts a value of type A to a value of type S */
-    readonly serialize: (output: A) => O
+    readonly encode: (a: A) => O
   ) {}
   /** a version of `validate` with a default context */
   decode(i: I): Either<Errors, A>

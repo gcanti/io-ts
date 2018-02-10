@@ -28,12 +28,12 @@ describe('array', () => {
 
   it('should serialize a deserialized', () => {
     const T = t.array(DateFromNumber)
-    assert.deepEqual(T.serialize([new Date(0), new Date(1)]), [0, 1])
+    assert.deepEqual(T.encode([new Date(0), new Date(1)]), [0, 1])
   })
 
   it('should return the same reference when serializing', () => {
     const T = t.array(t.number)
-    assert.strictEqual(T.serialize, t.identity)
+    assert.strictEqual(T.encode, t.identity)
   })
 
   it('should type guard', () => {

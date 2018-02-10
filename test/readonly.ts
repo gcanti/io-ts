@@ -20,12 +20,12 @@ describe('readonly', () => {
 
   it('should serialize a deserialized', () => {
     const T = t.readonly(t.interface({ a: DateFromNumber }))
-    assert.deepEqual(T.serialize({ a: new Date(0) }), { a: 0 })
+    assert.deepEqual(T.encode({ a: new Date(0) }), { a: 0 })
   })
 
   it('should return the same reference when serializing', () => {
     const T = t.readonly(t.type({ a: t.number }))
-    assert.strictEqual(T.serialize, t.identity)
+    assert.strictEqual(T.encode, t.identity)
   })
 
   it('should type guard', () => {

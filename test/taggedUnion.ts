@@ -61,14 +61,14 @@ describe('taggedUnion', () => {
   })
 
   it('should serialize a deserialized', () => {
-    assert.deepEqual(T.serialize({ type: 'a', foo: 'foo' }), { type: 'a', foo: 'foo' })
-    assert.deepEqual(T.serialize({ type: 'b', bar: 1 }), { type: 'b', bar: 1 })
-    assert.deepEqual(T.serialize({ type: 'c', baz: new Date(0) }), { type: 'c', baz: 0 })
+    assert.deepEqual(T.encode({ type: 'a', foo: 'foo' }), { type: 'a', foo: 'foo' })
+    assert.deepEqual(T.encode({ type: 'b', bar: 1 }), { type: 'b', bar: 1 })
+    assert.deepEqual(T.encode({ type: 'c', baz: new Date(0) }), { type: 'c', baz: 0 })
   })
 
   it('should return the same reference when serializing', () => {
     const T = t.taggedUnion('type', [TUA, TUB])
-    assert.strictEqual(T.serialize, t.identity)
+    assert.strictEqual(T.encode, t.identity)
   })
 
   it('should type guard', () => {
