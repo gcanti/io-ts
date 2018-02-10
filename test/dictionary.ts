@@ -53,16 +53,16 @@ describe('dictionary', () => {
 
   it('should serialize a deserialized', () => {
     const T1 = t.dictionary(t.string, DateFromNumber)
-    assert.deepEqual(T1.serialize({ a: new Date(0), b: new Date(1) }), { a: 0, b: 1 })
+    assert.deepEqual(T1.encode({ a: new Date(0), b: new Date(1) }), { a: 0, b: 1 })
     const T2 = t.dictionary(string2, t.number)
-    assert.deepEqual(T2.serialize({ 'a-a': 1, 'a-b': 2 }), { aa: 1, ab: 2 })
+    assert.deepEqual(T2.encode({ 'a-a': 1, 'a-b': 2 }), { aa: 1, ab: 2 })
   })
 
   it('should return the same reference when serializing', () => {
     const T1 = t.dictionary(t.string, t.number)
-    assert.strictEqual(T1.serialize, t.identity)
+    assert.strictEqual(T1.encode, t.identity)
     const T2 = t.dictionary(string2, t.number)
-    assert.strictEqual(T2.serialize === t.identity, false)
+    assert.strictEqual(T2.encode === t.identity, false)
   })
 
   it('should type guard', () => {

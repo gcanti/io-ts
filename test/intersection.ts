@@ -38,12 +38,12 @@ describe('intersection', () => {
 
   it('should serialize a deserialized', () => {
     const T = t.intersection([t.interface({ a: DateFromNumber }), t.interface({ b: t.number })])
-    assert.deepEqual(T.serialize({ a: new Date(0), b: 1 }), { a: 0, b: 1 })
+    assert.deepEqual(T.encode({ a: new Date(0), b: 1 }), { a: 0, b: 1 })
   })
 
   it('should return the same reference when serializing', () => {
     const T = t.intersection([t.interface({ a: t.number }), t.interface({ b: t.number })])
-    assert.strictEqual(T.serialize, t.identity)
+    assert.strictEqual(T.encode, t.identity)
   })
 
   it('should type guard', () => {

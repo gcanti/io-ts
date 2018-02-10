@@ -32,12 +32,12 @@ describe('tuple', () => {
 
   it('should serialize a deserialized', () => {
     const T = t.tuple([DateFromNumber, t.string])
-    assert.deepEqual(T.serialize([new Date(0), 'foo']), [0, 'foo'])
+    assert.deepEqual(T.encode([new Date(0), 'foo']), [0, 'foo'])
   })
 
   it('should return the same reference when serializing', () => {
     const T = t.tuple([t.number, t.string])
-    assert.strictEqual(T.serialize, t.identity)
+    assert.strictEqual(T.encode, t.identity)
   })
 
   it('should type guard', () => {

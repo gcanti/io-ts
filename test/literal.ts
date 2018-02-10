@@ -15,7 +15,7 @@ describe('literal', () => {
 
   it('should return the same reference when serializing', () => {
     const T = t.literal('a')
-    assert.strictEqual(T.serialize, t.identity)
+    assert.strictEqual(T.encode, t.identity)
   })
 
   it('should type guard', () => {

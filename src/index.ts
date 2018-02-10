@@ -23,7 +23,8 @@ export type Errors = Array<ValidationError>
 export type Validation<A> = Either<Errors, A>
 export type Is<A> = (m: mixed) => m is A
 export type Validate<I, A> = (i: I, context: Context) => Validation<A>
-export type Serialize<A, O> = (a: A) => O
+export type Decode<I, A> = (i: I) => Validation<A>
+export type Encode<A, O> = (a: A) => O
 export type Any = Type<any, any, any>
 export type Mixed = Type<any, any, mixed>
 export type TypeOf<RT extends Any> = RT['_A']
@@ -33,11 +34,11 @@ export type OutputOf<RT extends Any> = RT['_O']
 export interface Decoder<I, A> {
   readonly name: string
   readonly validate: Validate<I, A>
-  readonly decode: (i: I) => Validation<A>
+  readonly decode: Decode<I, A>
 }
 
 export interface Encoder<A, O> {
-  readonly serialize: Serialize<A, O>
+  readonly encode: Encode<A, O>
 }
 
 /**
@@ -62,16 +63,14 @@ export class Type<A, O = A, I = mixed> implements Decoder<I, A>, Encoder<A, O> {
     /** succeeds if a value of type I can be decoded to a value of type A */
     readonly validate: Validate<I, A>,
     /** converts a value of type A to a value of type O */
-    readonly serialize: Serialize<A, O>
+    readonly encode: Encode<A, O>
   ) {}
   pipe<B>(ab: Type<B, A, A>, name?: string): Type<B, O, I> {
     return new Type(
       name || `pipe(${this.name}, ${ab.name})`,
       ab.is,
       (i, c) => this.validate(i, c).chain(a => ab.validate(a, c)),
-      this.serialize === identity && ab.serialize === identity
-        ? (identity as any)
-        : b => this.serialize(ab.serialize(b))
+      this.encode === identity && ab.encode === identity ? (identity as any) : b => this.encode(ab.encode(b))
     )
   }
   asDecoder(): Decoder<I, A> {
@@ -267,7 +266,7 @@ export class RefinementType<RT extends Any, A = any, O = A, I = mixed> extends T
     name: string,
     is: RefinementType<RT, A, O, I>['is'],
     validate: RefinementType<RT, A, O, I>['validate'],
-    serialize: RefinementType<RT, A, O, I>['serialize'],
+    serialize: RefinementType<RT, A, O, I>['encode'],
     readonly type: RT,
     readonly predicate: Predicate<A>
   ) {
@@ -284,7 +283,7 @@ export const refinement = <RT extends Any>(
     name,
     (m): m is TypeOf<RT> => type.is(m) && predicate(m),
     (i, c) => type.validate(i, c).chain(a => (predicate(a) ? success(a) : failure(a, c))),
-    type.serialize,
+    type.encode,
     type,
     predicate
   )
@@ -301,7 +300,7 @@ export class LiteralType<V extends string | number | boolean> extends Type<V> {
     name: string,
     is: LiteralType<V>['is'],
     validate: LiteralType<V>['validate'],
-    serialize: LiteralType<V>['serialize'],
+    serialize: LiteralType<V>['encode'],
     readonly value: V
   ) {
     super(name, is, validate, serialize)
@@ -326,7 +325,7 @@ export class KeyofType<D extends { [key: string]: mixed }> extends Type<keyof D>
     name: string,
     is: KeyofType<D>['is'],
     validate: KeyofType<D>['validate'],
-    serialize: KeyofType<D>['serialize'],
+    serialize: KeyofType<D>['encode'],
     readonly keys: D
   ) {
     super(name, is, validate, serialize)
@@ -351,7 +350,7 @@ export class RecursiveType<RT extends Any, A = any, O = A, I = mixed> extends Ty
     name: string,
     is: RecursiveType<RT, A, O, I>['is'],
     validate: RecursiveType<RT, A, O, I>['validate'],
-    serialize: RecursiveType<RT, A, O, I>['serialize'],
+    serialize: RecursiveType<RT, A, O, I>['encode'],
     private runDefinition: () => RT
   ) {
     super(name, is, validate, serialize)
@@ -376,7 +375,7 @@ export const recursion = <A, O = A, I = mixed, RT extends Type<A, O, I> = Type<A
     name,
     (m): m is A => runDefinition().is(m),
     (m, c) => runDefinition().validate(m, c),
-    a => runDefinition().serialize(a),
+    a => runDefinition().encode(a),
     runDefinition
   )
   return Self
@@ -392,7 +391,7 @@ export class ArrayType<RT extends Any, A = any, O = A, I = mixed> extends Type<A
     name: string,
     is: ArrayType<RT, A, O, I>['is'],
     validate: ArrayType<RT, A, O, I>['validate'],
-    serialize: ArrayType<RT, A, O, I>['serialize'],
+    serialize: ArrayType<RT, A, O, I>['encode'],
     readonly type: RT
   ) {
     super(name, is, validate, serialize)
@@ -428,7 +427,7 @@ export const array = <RT extends Mixed>(
         }
         return errors.length ? failures(errors) : success(a)
       }),
-    type.serialize === identity ? identity : a => a.map(type.serialize),
+    type.encode === identity ? identity : a => a.map(type.encode),
     type
   )
 
@@ -442,7 +441,7 @@ export class InterfaceType<P extends AnyProps, A = any, O = A, I = mixed> extend
     name: string,
     is: InterfaceType<P, A, O, I>['is'],
     validate: InterfaceType<P, A, O, I>['validate'],
-    serialize: InterfaceType<P, A, O, I>['serialize'],
+    serialize: InterfaceType<P, A, O, I>['encode'],
     readonly props: P
   ) {
     super(name, is, validate, serialize)
@@ -460,7 +459,7 @@ const getNameFromProps = (props: Props): string =>
 
 const useIdentity = (props: Props): boolean => {
   for (let k in props) {
-    if (props[k].serialize !== identity) {
+    if (props[k].encode !== identity) {
       return false
     }
   }
@@ -520,7 +519,7 @@ export const type = <P extends Props>(
       : a => {
           const s: { [x: string]: any } = { ...(a as any) }
           for (let k in props) {
-            s[k] = props[k].serialize(a[k])
+            s[k] = props[k].encode(a[k])
           }
           return s as any
         },
@@ -537,7 +536,7 @@ export class PartialType<P extends AnyProps, A = any, O = A, I = mixed> extends 
     name: string,
     is: PartialType<P, A, O, I>['is'],
     validate: PartialType<P, A, O, I>['validate'],
-    serialize: PartialType<P, A, O, I>['serialize'],
+    serialize: PartialType<P, A, O, I>['encode'],
     readonly props: P
   ) {
     super(name, is, validate, serialize)
@@ -568,7 +567,7 @@ export const partial = <P extends Props>(
           for (let k in props) {
             const ak = a[k]
             if (ak !== undefined) {
-              s[k] = props[k].serialize(ak)
+              s[k] = props[k].encode(ak)
             }
           }
           return s as any
@@ -587,7 +586,7 @@ export class DictionaryType<D extends Any, C extends Any, A = any, O = A, I = mi
     name: string,
     is: DictionaryType<D, C, A, O, I>['is'],
     validate: DictionaryType<D, C, A, O, I>['validate'],
-    serialize: DictionaryType<D, C, A, O, I>['serialize'],
+    serialize: DictionaryType<D, C, A, O, I>['encode'],
     readonly domain: D,
     readonly codomain: C
   ) {
@@ -634,12 +633,12 @@ export const dictionary = <D extends Mixed, C extends Mixed>(
         }
         return errors.length ? failures(errors) : success((changed ? a : o) as any)
       }),
-    domain.serialize === identity && codomain.serialize === identity
+    domain.encode === identity && codomain.encode === identity
       ? identity
       : a => {
           const s: { [key: string]: any } = {}
           for (let k in a) {
-            s[String(domain.serialize(k))] = codomain.serialize(a[k])
+            s[String(domain.encode(k))] = codomain.encode(a[k])
           }
           return s as any
         },
@@ -657,7 +656,7 @@ export class UnionType<RTS extends Array<Any>, A = any, O = A, I = mixed> extend
     name: string,
     is: UnionType<RTS, A, O, I>['is'],
     validate: UnionType<RTS, A, O, I>['validate'],
-    serialize: UnionType<RTS, A, O, I>['serialize'],
+    serialize: UnionType<RTS, A, O, I>['encode'],
     readonly types: RTS
   ) {
     super(name, is, validate, serialize)
@@ -685,17 +684,17 @@ export const union = <RTS extends Array<Mixed>>(
       }
       return failures(errors)
     },
-    types.every(type => type.serialize === identity)
+    types.every(type => type.encode === identity)
       ? identity
       : a => {
           let i = 0
           for (; i < len - 1; i++) {
             const type = types[i]
             if (type.is(a)) {
-              return type.serialize(a)
+              return type.encode(a)
             }
           }
-          return types[i].serialize(a)
+          return types[i].encode(a)
         },
     types
   )
@@ -711,7 +710,7 @@ export class IntersectionType<RTS extends Array<Any>, A = any, O = A, I = mixed>
     name: string,
     is: IntersectionType<RTS, A, O, I>['is'],
     validate: IntersectionType<RTS, A, O, I>['validate'],
-    serialize: IntersectionType<RTS, A, O, I>['serialize'],
+    serialize: IntersectionType<RTS, A, O, I>['encode'],
     readonly types: RTS
   ) {
     super(name, is, validate, serialize)
@@ -766,13 +765,13 @@ export function intersection<RTS extends Array<Mixed>>(
       }
       return errors.length ? failures(errors) : success(a)
     },
-    types.every(type => type.serialize === identity)
+    types.every(type => type.encode === identity)
       ? identity
       : a => {
           let s = a
           for (let i = 0; i < len; i++) {
             const type = types[i]
-            s = type.serialize(s)
+            s = type.encode(s)
           }
           return s
         },
@@ -790,7 +789,7 @@ export class TupleType<RTS extends Array<Any>, A = any, O = A, I = mixed> extend
     name: string,
     is: TupleType<RTS, A, O, I>['is'],
     validate: TupleType<RTS, A, O, I>['validate'],
-    serialize: TupleType<RTS, A, O, I>['serialize'],
+    serialize: TupleType<RTS, A, O, I>['encode'],
     readonly types: RTS
   ) {
     super(name, is, validate, serialize)
@@ -857,7 +856,7 @@ export function tuple<RTS extends Array<Mixed>>(
         }
         return errors.length ? failures(errors) : success(t)
       }),
-    types.every(type => type.serialize === identity) ? identity : a => types.map((type, i) => type.serialize(a[i])),
+    types.every(type => type.encode === identity) ? identity : a => types.map((type, i) => type.encode(a[i])),
     types
   )
 }
@@ -872,7 +871,7 @@ export class ReadonlyType<RT extends Any, A = any, O = A, I = mixed> extends Typ
     name: string,
     is: ReadonlyType<RT, A, O, I>['is'],
     validate: ReadonlyType<RT, A, O, I>['validate'],
-    serialize: ReadonlyType<RT, A, O, I>['serialize'],
+    serialize: ReadonlyType<RT, A, O, I>['encode'],
     readonly type: RT
   ) {
     super(name, is, validate, serialize)
@@ -893,7 +892,7 @@ export const readonly = <RT extends Mixed>(
         }
         return x
       }),
-    type.serialize === identity ? identity : type.serialize,
+    type.encode === identity ? identity : type.encode,
     type
   )
 
@@ -907,7 +906,7 @@ export class ReadonlyArrayType<RT extends Any, A = any, O = A, I = mixed> extend
     name: string,
     is: ReadonlyArrayType<RT, A, O, I>['is'],
     validate: ReadonlyArrayType<RT, A, O, I>['validate'],
-    serialize: ReadonlyArrayType<RT, A, O, I>['serialize'],
+    serialize: ReadonlyArrayType<RT, A, O, I>['encode'],
     readonly type: RT
   ) {
     super(name, is, validate, serialize)
@@ -930,7 +929,7 @@ export const readonlyArray = <RT extends Mixed>(
           return x
         }
       }),
-    arrayType.serialize as any,
+    arrayType.encode as any,
     type
   )
 }
@@ -945,7 +944,7 @@ export class StrictType<P extends AnyProps, A = any, O = A, I = mixed> extends T
     name: string,
     is: StrictType<P, A, O, I>['is'],
     validate: StrictType<P, A, O, I>['validate'],
-    serialize: StrictType<P, A, O, I>['serialize'],
+    serialize: StrictType<P, A, O, I>['encode'],
     readonly props: P
   ) {
     super(name, is, validate, serialize)
@@ -974,7 +973,7 @@ export const strict = <P extends Props>(
         }
         return errors.length ? failures(errors) : success(o)
       }),
-    loose.serialize,
+    loose.encode,
     props
   )
 }
@@ -1090,9 +1089,7 @@ export const taggedUnion = <Tag extends string, RTS extends Array<Tagged<Tag>>>(
           return type.validate(d, appendContext(c, String(i), type))
         })
       ),
-    types.every(type => type.serialize === identity)
-      ? identity
-      : a => types[tagValue2Index[a[tag] as any]].serialize(a),
+    types.every(type => type.encode === identity) ? identity : a => types[tagValue2Index[a[tag] as any]].encode(a),
     types
   )
 }

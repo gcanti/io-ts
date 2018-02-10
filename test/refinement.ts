@@ -29,12 +29,12 @@ describe('refinement', () => {
 
   it('should serialize a deserialized', () => {
     const T = t.refinement(t.array(DateFromNumber), () => true)
-    assert.deepEqual(T.serialize([new Date(0)]), [0])
+    assert.deepEqual(T.encode([new Date(0)]), [0])
   })
 
   it('should return the same reference when serializing', () => {
     const T = t.refinement(t.array(t.number), () => true)
-    assert.strictEqual(T.serialize, t.identity)
+    assert.strictEqual(T.encode, t.identity)
   })
 
   it('should type guard', () => {
