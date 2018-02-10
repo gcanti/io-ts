@@ -61,6 +61,6 @@ export function withDefault<T extends t.Mixed>(type: T, defaultValue: t.TypeOf<T
     `withDefault(${type.name}, ${JSON.stringify(defaultValue)})`,
     type.is,
     (v, c) => type.validate(v != null ? v : defaultValue, c),
-    type.serialize
+    type.encode
   )
 }
