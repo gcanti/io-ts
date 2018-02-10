@@ -311,6 +311,10 @@ const x36: TypeOf<typeof TU1> = true
 const x37: TypeOf<typeof TU1> = { type: 'a' }
 const x38: TypeOf<typeof TU1> = { type: 'b' }
 
+//
+// custom combinators
+//
+
 export function interfaceWithOptionals<RequiredProps extends t.Props, OptionalProps extends t.Props>(
   required: RequiredProps,
   optional: OptionalProps,
@@ -324,3 +328,35 @@ export function interfaceWithOptionals<RequiredProps extends t.Props, OptionalPr
 > {
   return t.intersection([t.interface(required), t.partial(optional)], name)
 }
+
+export function maybe<RT extends t.Any>(
+  type: RT,
+  name?: string
+): t.UnionType<[RT, t.NullType], t.TypeOf<RT> | null, t.OutputOf<RT> | null, t.InputOf<RT> | null> {
+  return t.union<[RT, t.NullType]>([type, t.null], name)
+}
+
+const pluck = <F extends string, U extends t.UnionType<Array<t.InterfaceType<{ [K in F]: t.Mixed }>>>>(
+  union: U,
+  field: F
+): t.Type<t.TypeOf<U>[F]> => {
+  return t.union(union.types.map(type => type.props[field]))
+}
+
+export const Action = t.union([
+  t.type({
+    type: t.literal('Action1'),
+    payload: t.type({
+      foo: t.string
+    })
+  }),
+  t.type({
+    type: t.literal('Action2'),
+    payload: t.type({
+      bar: t.string
+    })
+  })
+])
+
+// ActionType: t.Type<"Action1" | "Action2", "Action1" | "Action2", t.mixed>
+const ActionType = pluck(Action, 'type')

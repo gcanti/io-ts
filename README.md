@@ -4,32 +4,33 @@
 
 # The idea
 
-A value of type `Type<S, A>` (called "runtime type") is the runtime representation of the static type `A`.
+A value of type `Type<A, O, I>` (called "runtime type") is the runtime representation of the static type `A`.
 
 Also a runtime type can
 
-* decode inputs (through `decode`)
-* encode outputs (through `serialize`)
+* decode inputs of type `I` (through `decode`)
+* encode outputs of type `O` (through `serialize`)
 * be used as a custom type guard (through `is`)
 
 ```ts
 export type mixed = object | number | string | boolean | symbol | undefined | null
 
-class Type<S, A> {
+class Type<A, O = A, I = mixed> {
   readonly _A: A
-  readonly _S: S
+  readonly _O: O
+  readonly _I: I
   constructor(
     /** a unique name for this runtime type */
     readonly name: string,
     /** a custom type guard */
     readonly is: (v: mixed) => v is A,
     /** succeeds if a value of type S can be decoded to a value of type A */
-    readonly validate: (input: S, context: Context) => Either<Errors, A>,
+    readonly validate: (input: I, context: Context) => Either<Errors, A>,
     /** converts a value of type A to a value of type S */
-    readonly serialize: (output: A) => S
+    readonly serialize: (output: A) => O
   ) {}
   /** a version of `validate` with a default context */
-  decode(s: S): Either<Errors, A>
+  decode(i: I): Either<Errors, A>
 }
 ```
 
@@ -43,12 +44,13 @@ A runtime type representing `string` can be defined as
 ```js
 import * as t from 'io-ts'
 
-export class StringType extends Type<mixed, string> {
+export class StringType extends Type<string> { // equivalent to Type<string, string, mixed> as per type parameter defaults
+  readonly _tag: 'StringType' = 'StringType'
   constructor() {
     super(
       'string',
-      (v): v is string => typeof v === 'string',
-      (s, c) => (this.is(s) ? success(s) : failure(s, c)),
+      (m): m is string => typeof m === 'string',
+      (m, c) => (this.is(m) ? success(m) : failure(m, c)),
       a => a
     )
   }
@@ -58,7 +60,7 @@ export class StringType extends Type<mixed, string> {
 A runtime type can be used to validate an object in memory (for example an API payload)
 
 ```js
-const Person = t.interface({
+const Person = t.type({
   name: t.string,
   age: t.number
 })
@@ -133,7 +135,43 @@ type IPerson = {
 }
 ```
 
-## Recursive types
+# Implemented types / combinators
+
+```js
+import * as t from 'io-ts'
+```
+
+| Type                  | TypeScript                              | Flow                                    | Runtime type / combinator                                    |
+| --------------------- | --------------------------------------- | --------------------------------------- | ------------------------------------------------------------ |
+| null                  | `null`                                  | `null`                                  | `t.null` or `t.nullType`                                     |
+| undefined             | `undefined`                             | `void`                                  | `t.undefined`                                                |
+| string                | `string`                                | `string`                                | `t.string`                                                   |
+| number                | `number`                                | `number`                                | `t.number`                                                   |
+| boolean               | `boolean`                               | `boolean`                               | `t.boolean`                                                  |
+| any                   | `any`                                   | `any`                                   | `t.any`                                                      |
+| never                 | `never`                                 | `empty`                                 | `t.never`                                                    |
+| object                | `object`                                | ✘                                       | `t.object`                                                   |
+| integer               | ✘                                       | ✘                                       | `t.Integer`                                                  |
+| array of any          | `Array<mixed>`                          | `Array<mixed>`                          | `t.Array`                                                    |
+| array of type         | `Array<A>`                              | `Array<A>`                              | `t.array(A)`                                                 |
+| dictionary of any     | `{ [key: string]: mixed }`              | `{ [key: string]: mixed }`              | `t.Dictionary`                                               |
+| dictionary of type    | `{ [K in A]: B }`                       | `{ [key: A]: B }`                       | `t.dictionary(A, B)`                                         |
+| function              | `Function`                              | `Function`                              | `t.Function`                                                 |
+| literal               | `'s'`                                   | `'s'`                                   | `t.literal('s')`                                             |
+| partial               | `Partial<{ name: string }>`             | `$Shape<{ name: string }>`              | `t.partial({ name: t.string })`                              |
+| readonly              | `Readonly<T>`                           | `ReadOnly<T>`                           | `t.readonly(T)`                                              |
+| readonly array        | `ReadonlyArray<number>`                 | `ReadOnlyArray<number>`                 | `t.readonlyArray(t.number)`                                  |
+| interface             | `interface A { name: string }`          | `interface A { name: string }`          | `t.type({ name: t.string })` or `t.type({ name: t.string })` |
+| interface inheritance | `interface B extends A {}`              | `interface B extends A {}`              | `t.intersection([ A, t.type({}) ])`                          |
+| tuple                 | `[ A, B ]`                              | `[ A, B ]`                              | `t.tuple([ A, B ])`                                          |
+| union                 | `A \| B`                                | `A \| B`                                | `t.union([ A, B ])` or `t.taggedUnion(tag, [ A, B ])`        |
+| intersection          | `A & B`                                 | `A & B`                                 | `t.intersection([ A, B ])`                                   |
+| keyof                 | `keyof M`                               | `$Keys<M>`                              | `t.keyof(M)`                                                 |
+| recursive types       | see [Recursive types](#recursive-types) | see [Recursive types](#recursive-types) | `t.recursion(name, definition)`                              |
+| refinement            | ✘                                       | ✘                                       | `t.refinement(A, predicate)`                                 |
+| strict/exact types    | ✘                                       | `$Exact<{{ name: t.string }}>`          | `t.strict({ name: t.string })`                               |
+
+# Recursive types
 
 Recursive types can't be inferred by TypeScript so you must provide the static type as a hint
 
@@ -149,47 +187,11 @@ const Category =
   ICategory >
   ('Category',
   self =>
-    t.interface({
+    t.type({
       name: t.string,
       categories: t.array(self)
     }))
 ```
-
-# Implemented types / combinators
-
-```js
-import * as t from 'io-ts'
-```
-
-| Type                  | TypeScript                              | Flow                                    | Runtime type / combinator                                         |
-| --------------------- | --------------------------------------- | --------------------------------------- | ----------------------------------------------------------------- |
-| null                  | `null`                                  | `null`                                  | `t.null` or `t.nullType`                                          |
-| undefined             | `undefined`                             | `void`                                  | `t.undefined`                                                     |
-| string                | `string`                                | `string`                                | `t.string`                                                        |
-| number                | `number`                                | `number`                                | `t.number`                                                        |
-| boolean               | `boolean`                               | `boolean`                               | `t.boolean`                                                       |
-| any                   | `any`                                   | `any`                                   | `t.any`                                                           |
-| never                 | `never`                                 | `empty`                                 | `t.never`                                                         |
-| object                | `object`                                | ✘                                       | `t.object`                                                        |
-| integer               | ✘                                       | ✘                                       | `t.Integer`                                                       |
-| array of any          | `Array<mixed>`                          | `Array<mixed>`                          | `t.Array`                                                         |
-| array of type         | `Array<A>`                              | `Array<A>`                              | `t.array(A)`                                                      |
-| dictionary of any     | `{ [key: string]: mixed }`              | `{ [key: string]: mixed }`              | `t.Dictionary`                                                    |
-| dictionary of type    | `{ [K in A]: B }`                       | `{ [key: A]: B }`                       | `t.dictionary(A, B)`                                              |
-| function              | `Function`                              | `Function`                              | `t.Function`                                                      |
-| literal               | `'s'`                                   | `'s'`                                   | `t.literal('s')`                                                  |
-| partial               | `Partial<{ name: string }>`             | `$Shape<{ name: string }>`              | `t.partial({ name: t.string })`                                   |
-| readonly              | `Readonly<T>`                           | `ReadOnly<T>`                           | `t.readonly(T)`                                                   |
-| readonly array        | `ReadonlyArray<number>`                 | `ReadOnlyArray<number>`                 | `t.readonlyArray(t.number)`                                       |
-| interface             | `interface A { name: string }`          | `interface A { name: string }`          | `t.interface({ name: t.string })` or `t.type({ name: t.string })` |
-| interface inheritance | `interface B extends A {}`              | `interface B extends A {}`              | `t.intersection([ A, t.interface({}) ])`                          |
-| tuple                 | `[ A, B ]`                              | `[ A, B ]`                              | `t.tuple([ A, B ])`                                               |
-| union                 | `A \| B`                                | `A \| B`                                | `t.union([ A, B ])` or `t.taggedUnion(tag, [ A, B ])`             |
-| intersection          | `A & B`                                 | `A & B`                                 | `t.intersection([ A, B ])`                                        |
-| keyof                 | `keyof M`                               | `$Keys<M>`                              | `t.keyof(M)`                                                      |
-| recursive types       | see [Recursive types](#recursive-types) | see [Recursive types](#recursive-types) | `t.recursion(name, definition)`                                   |
-| refinement            | ✘                                       | ✘                                       | `t.refinement(A, predicate)`                                      |
-| strict/exact types    | ✘                                       | `$Exact<{{ name: t.string }}>`          | `t.strict({ name: t.string })`                                    |
 
 # Tagged unions
 
@@ -226,7 +228,7 @@ const Adult = t.refinement(Person, person => person.age >= 18, 'Adult')
 You can make an interface strict (which means that only the given properties are allowed) using the `strict` combinator
 
 ```ts
-const Person = t.interface({
+const Person = t.type({
   name: t.string,
   age: t.number
 })
@@ -242,7 +244,7 @@ StrictPerson.decode({ name: 'Giulio', age: 43, surname: 'Canti' }) // fails
 Note. You can mix required and optional props using an intersection
 
 ```ts
-const A = t.interface({
+const A = t.type({
   foo: t.string
 })
 
@@ -264,13 +266,16 @@ type CT = {
 You can define a custom combinator to avoid the boilerplate
 
 ```ts
-export function interfaceWithOptionals<R extends t.Props, O extends t.Props>(
-  required: R,
-  optional: O,
+export function interfaceWithOptionals<RequiredProps extends t.Props, OptionalProps extends t.Props>(
+  required: RequiredProps,
+  optional: OptionalProps,
   name?: string
 ): t.IntersectionType<
-  [t.InterfaceType<R, t.InterfaceOf<R>>, t.PartialType<O, t.PartialOf<O>>],
-  t.InterfaceOf<R> & t.PartialOf<O>
+  [
+    t.InterfaceType<RequiredProps, t.TypeOfProps<RequiredProps>>,
+    t.PartialType<OptionalProps, t.TypeOfPartialProps<OptionalProps>>
+  ],
+  t.TypeOfProps<RequiredProps> & t.TypeOfPartialProps<OptionalProps>
 > {
   return t.intersection([t.interface(required), t.partial(optional)], name)
 }
@@ -286,11 +291,11 @@ You can define your own types. Let's see an example
 import * as t from 'io-ts'
 
 // represents a Date from an ISO string
-const DateFromString = new t.Type<t.mixed, Date>(
+const DateFromString = new t.Type<Date, string>(
   'DateFromString',
-  (v): v is Date => v instanceof Date,
-  (v, c) =>
-    t.string.validate(v, c).chain(s => {
+  (m): m is Date => m instanceof Date,
+  (m, c) =>
+    t.string.validate(m, c).chain(s => {
       const d = new Date(s)
       return isNaN(d.getTime()) ? t.failure(s, c) : t.success(d)
     }),
@@ -317,7 +322,10 @@ You can define your own combinators. Let's see some examples
 An equivalent to `T | null`
 
 ```ts
-export function maybe<RT extends t.Any>(type: RT, name?: string): t.UnionType<[RT, t.NullType], t.TypeOf<RT> | null> {
+export function maybe<RT extends t.Any>(
+  type: RT,
+  name?: string
+): t.UnionType<[RT, t.NullType], t.TypeOf<RT> | null, t.OutputOf<RT> | null, t.InputOf<RT> | null> {
   return t.union<[RT, t.NullType]>([type, t.null], name)
 }
 ```
@@ -327,29 +335,29 @@ export function maybe<RT extends t.Any>(type: RT, name?: string): t.UnionType<[R
 Extracting the runtime type of a field contained in each member of a union
 
 ```ts
-const pluck = <F extends string, U extends t.UnionType<Array<t.InterfaceType<{ [K in F]: t.Any }, any>>, any>>(
+const pluck = <F extends string, U extends t.UnionType<Array<t.InterfaceType<{ [K in F]: t.Mixed }>>>>(
   union: U,
   field: F
-): t.Type<t.mixed, t.TypeOf<U>[F]> => {
+): t.Type<t.TypeOf<U>[F]> => {
   return t.union(union.types.map(type => type.props[field]))
 }
 
 export const Action = t.union([
-  t.interface({
+  t.type({
     type: t.literal('Action1'),
-    payload: t.interface({
+    payload: t.type({
       foo: t.string
     })
   }),
-  t.interface({
+  t.type({
     type: t.literal('Action2'),
-    payload: t.interface({
+    payload: t.type({
       bar: t.string
     })
   })
 ])
 
-// ActionType: t.Type<t.mixed, "Action1" | "Action2">
+// ActionType: t.Type<"Action1" | "Action2", "Action1" | "Action2", t.mixed>
 const ActionType = pluck(Action, 'type')
 ```
 
@@ -383,8 +391,8 @@ Due to an upstream [bug](https://github.com/Microsoft/TypeScript/issues/14041), 
 nested interfaces
 
 ```ts
-const NestedInterface = t.interface({
-  foo: t.interface({
+const NestedInterface = t.type({
+  foo: t.type({
     bar: t.string
   })
 })
