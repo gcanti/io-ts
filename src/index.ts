@@ -478,7 +478,7 @@ export interface Props {
 export const type = <P extends Props>(
   props: P,
   name: string = getNameFromProps(props)
-): InterfaceType<P, TypeOfProps<P>, OutputOfProps<P>, mixed> =>
+): InterfaceType<P, { [K in keyof P]: TypeOf<P[K]> }, { [K in keyof P]: OutputOf<P[K]> }, mixed> =>
   new InterfaceType(
     name,
     (m): m is TypeOfProps<P> => {
@@ -550,7 +550,7 @@ export type InputOfPartialProps<P extends AnyProps> = { [K in keyof P]?: OutputO
 export const partial = <P extends Props>(
   props: P,
   name: string = `PartialType<${getNameFromProps(props)}>`
-): PartialType<P, TypeOfPartialProps<P>, InputOfPartialProps<P>, mixed> => {
+): PartialType<P, { [K in keyof P]?: TypeOf<P[K]> }, { [K in keyof P]?: OutputOf<P[K]> }, mixed> => {
   const partials: Props = {}
   for (let k in props) {
     partials[k] = union([props[k], undefinedType])
@@ -602,7 +602,7 @@ export const dictionary = <D extends Mixed, C extends Mixed>(
   domain: D,
   codomain: C,
   name: string = `{ [K in ${domain.name}]: ${codomain.name} }`
-): DictionaryType<D, C, TypeOfDictionary<D, C>, OutputOfDictionary<C, D>, mixed> =>
+): DictionaryType<D, C, { [K in TypeOf<D>]: TypeOf<C> }, { [K in OutputOf<D>]: OutputOf<C> }, mixed> =>
   new DictionaryType(
     name,
     (m): m is TypeOfDictionary<D, C> =>
@@ -955,7 +955,7 @@ export class StrictType<P extends AnyProps, A = any, O = A, I = mixed> extends T
 export const strict = <P extends Props>(
   props: P,
   name: string = `StrictType<${getNameFromProps(props)}>`
-): StrictType<P, TypeOfProps<P>, OutputOfProps<P>, mixed> => {
+): StrictType<P, { [K in keyof P]: TypeOf<P[K]> }, { [K in keyof P]: OutputOf<P[K]> }, mixed> => {
   const loose = type(props)
   return new StrictType(
     name,
