@@ -13,6 +13,12 @@
 **Note**: Gaps between patch versions are faulty/broken releases. **Note**: A feature tagged as Experimental is in a
 high state of flux, you're at risk of it changing without notice.
 
+# 1.0.0
+
+* **Breaking Change**
+  * upgrade to `fp-ts@1.0.0`
+  * see https://github.com/gcanti/io-ts/pull/112 (@gcanti)
+
 # 0.9.8
 
 * **New Feature**
