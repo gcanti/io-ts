@@ -545,7 +545,7 @@ export class PartialType<P extends AnyProps, A = any, O = A, I = mixed> extends 
 
 export type TypeOfPartialProps<P extends AnyProps> = { [K in keyof P]?: TypeOf<P[K]> }
 
-export type InputOfPartialProps<P extends AnyProps> = { [K in keyof P]?: OutputOf<P[K]> }
+export type OutputOfPartialProps<P extends AnyProps> = { [K in keyof P]?: OutputOf<P[K]> }
 
 export const partial = <P extends Props>(
   props: P,
