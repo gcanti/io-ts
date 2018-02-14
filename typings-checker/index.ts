@@ -360,3 +360,10 @@ export const Action = t.union([
 
 // ActionType: t.Type<"Action1" | "Action2", "Action1" | "Action2", t.mixed>
 const ActionType = pluck(Action, 'type')
+
+//
+// AnyType
+//
+
+declare const Any1: t.AnyType | t.InterfaceType<any>
+Any1.decode(1)
