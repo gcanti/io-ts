@@ -387,13 +387,14 @@ export function unsafeValidate<S, A>(value: any, type: t.Type<S, A>): A {
 
 # Known issues
 
-Due to an upstream [bug](https://github.com/Microsoft/TypeScript/issues/14041), VS Code might display weird types for
-nested interfaces
+Due to an upstream [bug](https://github.com/Microsoft/TypeScript/issues/14041), VS Code might display `any` for nested
+types
 
 ```ts
 const NestedInterface = t.type({
-  foo: t.type({
-    bar: t.string
+  foo: t.string,
+  bar: t.type({
+    baz: t.string
   })
 })
 
@@ -402,17 +403,17 @@ type NestedInterfaceType = t.TypeOf<typeof NestedInterface>
 Hover on NestedInterfaceType will display
 
 type NestedInterfaceType = {
-  foo: t.InterfaceOf<{
-    bar: t.StringType;
-  }>;
+  foo: string;
+  bar: any;
 }
 
 instead of
 
 type NestedInterfaceType = {
-  foo: {
-    bar: string;
-  };
+  foo: string;
+  bar: {
+    baz: string
+  }
 }
 */
 ```
