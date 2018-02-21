@@ -68,7 +68,14 @@ export class Type<A, O = A, I = mixed> implements Decoder<I, A>, Encoder<A, O> {
     return new Type(
       name || `pipe(${this.name}, ${ab.name})`,
       ab.is,
-      (i, c) => this.validate(i, c).chain(a => ab.validate(a, c)),
+      (i, c) => {
+        const validation = this.validate(i, c)
+        if (validation.isLeft()) {
+          return validation as any
+        } else {
+          return ab.validate(validation.value, c)
+        }
+      },
       this.encode === identity && ab.encode === identity ? (identity as any) : b => this.encode(ab.encode(b))
     )
   }
@@ -286,7 +293,15 @@ export const refinement = <RT extends Any>(
   new RefinementType(
     name,
     (m): m is TypeOf<RT> => type.is(m) && predicate(m),
-    (i, c) => type.validate(i, c).chain(a => (predicate(a) ? success(a) : failure(a, c))),
+    (i, c) => {
+      const validation = type.validate(i, c)
+      if (validation.isLeft()) {
+        return validation
+      } else {
+        const a = validation.value
+        return predicate(a) ? success(a) : failure(a, c)
+      }
+    },
     type.encode,
     type,
     predicate
@@ -409,8 +424,12 @@ export const array = <RT extends Mixed>(
   new ArrayType(
     name,
     (m): m is Array<TypeOf<RT>> => arrayType.is(m) && m.every(type.is),
-    (m, c) =>
-      arrayType.validate(m, c).chain(xs => {
+    (m, c) => {
+      const arrayValidation = arrayType.validate(m, c)
+      if (arrayValidation.isLeft()) {
+        return arrayValidation
+      } else {
+        const xs = arrayValidation.value
         const len = xs.length
         let a: Array<TypeOf<RT>> = xs
         const errors: Errors = []
@@ -430,7 +449,8 @@ export const array = <RT extends Mixed>(
           }
         }
         return errors.length ? failures(errors) : success(a)
-      }),
+      }
+    },
     type.encode === identity ? identity : a => a.map(type.encode),
     type
   )
@@ -496,8 +516,12 @@ export const type = <P extends Props>(
       }
       return true
     },
-    (m, c) =>
-      Dictionary.validate(m, c).chain(o => {
+    (m, c) => {
+      const dictionaryValidation = Dictionary.validate(m, c)
+      if (dictionaryValidation.isLeft()) {
+        return dictionaryValidation
+      } else {
+        const o = dictionaryValidation.value
         let a = o
         const errors: Errors = []
         for (let k in props) {
@@ -517,7 +541,8 @@ export const type = <P extends Props>(
           }
         }
         return errors.length ? failures(errors) : success(a as any)
-      }),
+      }
+    },
     useIdentity(props)
       ? identity
       : a => {
@@ -611,8 +636,12 @@ export const dictionary = <D extends Mixed, C extends Mixed>(
     name,
     (m): m is TypeOfDictionary<D, C> =>
       Dictionary.is(m) && Object.keys(m).every(k => domain.is(k) && codomain.is(m[k])),
-    (m, c) =>
-      Dictionary.validate(m, c).chain(o => {
+    (m, c) => {
+      const dictionaryValidation = Dictionary.validate(m, c)
+      if (dictionaryValidation.isLeft()) {
+        return dictionaryValidation
+      } else {
+        const o = dictionaryValidation.value
         const a: { [key: string]: any } = {}
         const errors: Errors = []
         let changed = false
@@ -636,7 +665,8 @@ export const dictionary = <D extends Mixed, C extends Mixed>(
           }
         }
         return errors.length ? failures(errors) : success((changed ? a : o) as any)
-      }),
+      }
+    },
     domain.encode === identity && codomain.encode === identity
       ? identity
       : a => {
@@ -839,8 +869,12 @@ export function tuple<RTS extends Array<Mixed>>(
   return new TupleType(
     name,
     (m): m is any => arrayType.is(m) && m.length === len && types.every((type, i) => type.is(m[i])),
-    (m, c) =>
-      arrayType.validate(m, c).chain(as => {
+    (m, c) => {
+      const arrayValidation = arrayType.validate(m, c)
+      if (arrayValidation.isLeft()) {
+        return arrayValidation
+      } else {
+        const as = arrayValidation.value
         let t: Array<any> = as
         const errors: Errors = []
         for (let i = 0; i < len; i++) {
@@ -863,7 +897,8 @@ export function tuple<RTS extends Array<Mixed>>(
           errors.push(getValidationError(as[len], appendContext(c, String(len), never)))
         }
         return errors.length ? failures(errors) : success(t)
-      }),
+      }
+    },
     types.every(type => type.encode === identity) ? identity : a => types.map((type, i) => type.encode(a[i])),
     types
   )
@@ -968,8 +1003,12 @@ export const strict = <P extends Props>(
   return new StrictType(
     name,
     (m): m is TypeOfProps<P> => loose.is(m) && Object.getOwnPropertyNames(m).every(k => props.hasOwnProperty(k)),
-    (m, c) =>
-      loose.validate(m, c).chain(o => {
+    (m, c) => {
+      const looseValidation = loose.validate(m, c)
+      if (looseValidation.isLeft()) {
+        return looseValidation
+      } else {
+        const o = looseValidation.value
         const keys = Object.getOwnPropertyNames(o)
         const len = keys.length
         const errors: Errors = []
@@ -980,7 +1019,8 @@ export const strict = <P extends Props>(
           }
         }
         return errors.length ? failures(errors) : success(o)
-      }),
+      }
+    },
     loose.encode,
     props
   )
@@ -1089,14 +1129,23 @@ export const taggedUnion = <Tag extends string, RTS extends Array<Tagged<Tag>>>(
       const tagValue = v[tag]
       return TagValue.is(tagValue) && types[tagValue2Index[tagValue]].is(v)
     },
-    (s, c) =>
-      Dictionary.validate(s, c).chain(d =>
-        TagValue.validate(d[tag], appendContext(c, tag, TagValue)).chain(tagValue => {
+    (s, c) => {
+      const dictionaryValidation = Dictionary.validate(s, c)
+      if (dictionaryValidation.isLeft()) {
+        return dictionaryValidation
+      } else {
+        const d = dictionaryValidation.value
+        const tagValueValidation = TagValue.validate(d[tag], appendContext(c, tag, TagValue))
+        if (tagValueValidation.isLeft()) {
+          return tagValueValidation
+        } else {
+          const tagValue = tagValueValidation.value
           const i = tagValue2Index[tagValue]
           const type = types[i]
           return type.validate(d, appendContext(c, String(i), type))
-        })
-      ),
+        }
+      }
+    },
     types.every(type => type.encode === identity) ? identity : a => types[tagValue2Index[a[tag] as any]].encode(a),
     types
   )
