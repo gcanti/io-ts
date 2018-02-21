@@ -113,7 +113,12 @@ export const failure = <T>(value: mixed, context: Context): Validation<T> =>
 
 export const success = <T>(value: T): Validation<T> => new Right<Errors, T>(value)
 
-const pushAll = <A>(xs: Array<A>, ys: Array<A>): void => Array.prototype.push.apply(xs, ys)
+const pushAll = <A>(xs: Array<A>, ys: Array<A>): void => {
+  const l = ys.length
+  for (let i = 0; i < l; i++) {
+    xs.push(ys[i])
+  }
+}
 
 //
 // basic types
