@@ -1,5 +1,4 @@
 import { Either, Left, Right } from 'fp-ts/lib/Either'
-
 import { Predicate } from 'fp-ts/lib/function'
 
 declare global {
@@ -418,17 +417,17 @@ export const array = <RT extends Mixed>(
         for (let i = 0; i < len; i++) {
           const x = xs[i]
           const validation = type.validate(x, appendContext(c, String(i), type))
-          validation.fold(
-            e => pushAll(errors, e),
-            vx => {
-              if (vx !== x) {
-                if (a === xs) {
-                  a = xs.slice()
-                }
-                a[i] = vx
+          if (validation.isLeft()) {
+            pushAll(errors, validation.value)
+          } else {
+            const vx = validation.value
+            if (vx !== x) {
+              if (a === xs) {
+                a = xs.slice()
               }
+              a[i] = vx
             }
-          )
+          }
         }
         return errors.length ? failures(errors) : success(a)
       }),
@@ -505,17 +504,17 @@ export const type = <P extends Props>(
           const ok = o[k]
           const type = props[k]
           const validation = type.validate(ok, appendContext(c, k, type))
-          validation.fold(
-            e => pushAll(errors, e),
-            vok => {
-              if (vok !== ok) {
-                if (a === o) {
-                  a = { ...o }
-                }
-                a[k] = vok
+          if (validation.isLeft()) {
+            pushAll(errors, validation.value)
+          } else {
+            const vok = validation.value
+            if (vok !== ok) {
+              if (a === o) {
+                a = { ...o }
               }
+              a[k] = vok
             }
-          )
+          }
         }
         return errors.length ? failures(errors) : success(a as any)
       }),
@@ -621,20 +620,20 @@ export const dictionary = <D extends Mixed, C extends Mixed>(
           const ok = o[k]
           const domainValidation = domain.validate(k, appendContext(c, k, domain))
           const codomainValidation = codomain.validate(ok, appendContext(c, k, codomain))
-          domainValidation.fold(
-            e => pushAll(errors, e),
-            vk => {
-              changed = changed || vk !== k
-              k = vk
-            }
-          )
-          codomainValidation.fold(
-            e => pushAll(errors, e),
-            vok => {
-              changed = changed || vok !== ok
-              a[k] = vok
-            }
-          )
+          if (domainValidation.isLeft()) {
+            pushAll(errors, domainValidation.value)
+          } else {
+            const vk = domainValidation.value
+            changed = changed || vk !== k
+            k = vk
+          }
+          if (codomainValidation.isLeft()) {
+            pushAll(errors, codomainValidation.value)
+          } else {
+            const vok = codomainValidation.value
+            changed = changed || vok !== ok
+            a[k] = vok
+          }
         }
         return errors.length ? failures(errors) : success((changed ? a : o) as any)
       }),
@@ -766,7 +765,11 @@ export function intersection<RTS extends Array<Mixed>>(
       for (let i = 0; i < len; i++) {
         const type = types[i]
         const validation = type.validate(a, c)
-        validation.fold(e => pushAll(errors, e), va => (a = va))
+        if (validation.isLeft()) {
+          pushAll(errors, validation.value)
+        } else {
+          a = validation.value
+        }
       }
       return errors.length ? failures(errors) : success(a)
     },
@@ -844,17 +847,17 @@ export function tuple<RTS extends Array<Mixed>>(
           const a = as[i]
           const type = types[i]
           const validation = type.validate(a, appendContext(c, String(i), type))
-          validation.fold(
-            e => pushAll(errors, e),
-            va => {
-              if (va !== a) {
-                if (t === as) {
-                  t = as.slice()
-                }
-                t[i] = va
+          if (validation.isLeft()) {
+            pushAll(errors, validation.value)
+          } else {
+            const va = validation.value
+            if (va !== a) {
+              if (t === as) {
+                t = as.slice()
               }
+              t[i] = va
             }
-          )
+          }
         }
         if (as.length > len) {
           errors.push(getValidationError(as[len], appendContext(c, String(len), never)))
