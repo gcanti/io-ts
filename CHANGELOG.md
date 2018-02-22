@@ -13,6 +13,11 @@
 **Note**: Gaps between patch versions are faulty/broken releases. **Note**: A feature tagged as Experimental is in a
 high state of flux, you're at risk of it changing without notice.
 
+# 1.0.3
+
+* **Internal**
+  * optimizations, https://github.com/gcanti/io-ts/pull/134 (@gcanti, @sledorze)
+
 # 1.0.2
 
 * **Bug Fix**
