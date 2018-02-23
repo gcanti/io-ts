@@ -481,9 +481,9 @@ const getNameFromProps = (props: Props): string =>
     .map(k => `${k}: ${props[k].name}`)
     .join(', ')} }`
 
-const useIdentity = (props: Props): boolean => {
-  for (let k in props) {
-    if (props[k].encode !== identity) {
+const useIdentity = (types: Array<Any>, len: number): boolean => {
+  for (let i = 0; i < len; i++) {
+    if (types[i].encode !== identity) {
       return false
     }
   }
@@ -502,15 +502,18 @@ export interface Props {
 export const type = <P extends Props>(
   props: P,
   name: string = getNameFromProps(props)
-): InterfaceType<P, { [K in keyof P]: TypeOf<P[K]> }, { [K in keyof P]: OutputOf<P[K]> }, mixed> =>
-  new InterfaceType(
+): InterfaceType<P, { [K in keyof P]: TypeOf<P[K]> }, { [K in keyof P]: OutputOf<P[K]> }, mixed> => {
+  const keys = Object.keys(props)
+  const types = keys.map(key => props[key])
+  const len = keys.length
+  return new InterfaceType(
     name,
     (m): m is TypeOfProps<P> => {
       if (!Dictionary.is(m)) {
         return false
       }
-      for (let k in props) {
-        if (!props[k].is(m[k])) {
+      for (let i = 0; i < len; i++) {
+        if (!types[i].is(m[keys[i]])) {
           return false
         }
       }
@@ -524,9 +527,10 @@ export const type = <P extends Props>(
         const o = dictionaryValidation.value
         let a = o
         const errors: Errors = []
-        for (let k in props) {
+        for (let i = 0; i < len; i++) {
+          const k = keys[i]
           const ok = o[k]
-          const type = props[k]
+          const type = types[i]
           const validation = type.validate(ok, appendContext(c, k, type))
           if (validation.isLeft()) {
             pushAll(errors, validation.value)
@@ -543,17 +547,19 @@ export const type = <P extends Props>(
         return errors.length ? failures(errors) : success(a as any)
       }
     },
-    useIdentity(props)
+    useIdentity(types, len)
       ? identity
       : a => {
           const s: { [x: string]: any } = { ...(a as any) }
-          for (let k in props) {
-            s[k] = props[k].encode(a[k])
+          for (let i = 0; i < len; i++) {
+            const k = keys[i]
+            s[k] = types[i].encode(a[k])
           }
           return s as any
         },
     props
   )
+}
 
 //
 // partials
@@ -580,23 +586,27 @@ export const partial = <P extends Props>(
   props: P,
   name: string = `PartialType<${getNameFromProps(props)}>`
 ): PartialType<P, { [K in keyof P]?: TypeOf<P[K]> }, { [K in keyof P]?: OutputOf<P[K]> }, mixed> => {
+  const keys = Object.keys(props)
+  const types = keys.map(key => props[key])
+  const len = keys.length
   const partials: Props = {}
-  for (let k in props) {
-    partials[k] = union([props[k], undefinedType])
+  for (let i = 0; i < len; i++) {
+    partials[keys[i]] = union([types[i], undefinedType])
   }
   const partial = type(partials)
   return new PartialType(
     name,
     partial.is as any,
     partial.validate as any,
-    useIdentity(props)
+    useIdentity(types, len)
       ? identity
       : a => {
           const s: { [key: string]: any } = {}
-          for (let k in props) {
+          for (let i = 0; i < len; i++) {
+            const k = keys[i]
             const ak = a[k]
             if (ak !== undefined) {
-              s[k] = props[k].encode(ak)
+              s[k] = types[i].encode(ak)
             }
           }
           return s as any
@@ -644,8 +654,11 @@ export const dictionary = <D extends Mixed, C extends Mixed>(
         const o = dictionaryValidation.value
         const a: { [key: string]: any } = {}
         const errors: Errors = []
-        let changed = false
-        for (let k in o) {
+        const keys = Object.keys(o)
+        const len = keys.length
+        let changed: boolean = false
+        for (let i = 0; i < len; i++) {
+          let k = keys[i]
           const ok = o[k]
           const domainValidation = domain.validate(k, appendContext(c, k, domain))
           const codomainValidation = codomain.validate(ok, appendContext(c, k, codomain))
@@ -671,7 +684,10 @@ export const dictionary = <D extends Mixed, C extends Mixed>(
       ? identity
       : a => {
           const s: { [key: string]: any } = {}
-          for (let k in a) {
+          const keys = Object.keys(a)
+          const len = keys.length
+          for (let i = 0; i < len; i++) {
+            const k = keys[i]
             s[String(domain.encode(k))] = codomain.encode(a[k])
           }
           return s as any
