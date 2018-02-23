@@ -112,10 +112,15 @@ export const appendContext = (c: Context, key: string, type: Decoder<any, any>):
   return r
 }
 
+const pushContext = (c: Context, key: string, type: Decoder<any, any>): Context => {
+  c.push({ key, type })
+  return c
+}
+
 export const failures = <T>(errors: Errors): Validation<T> => new Left(errors)
 
 export const failure = <T>(value: mixed, context: Context): Validation<T> =>
-  failures([getValidationError(value, context)])
+  failures([getValidationError(value, context.slice())])
 
 export const success = <T>(value: T): Validation<T> => new Right<Errors, T>(value)
 
@@ -435,7 +440,8 @@ export const array = <RT extends Mixed>(
         const errors: Errors = []
         for (let i = 0; i < len; i++) {
           const x = xs[i]
-          const validation = type.validate(x, appendContext(c, String(i), type))
+          const validation = type.validate(x, pushContext(c, String(i), type))
+          c.pop()
           if (validation.isLeft()) {
             pushAll(errors, validation.value)
           } else {
@@ -531,7 +537,8 @@ export const type = <P extends Props>(
           const k = keys[i]
           const ok = o[k]
           const type = types[i]
-          const validation = type.validate(ok, appendContext(c, k, type))
+          const validation = type.validate(ok, pushContext(c, k, type))
+          c.pop()
           if (validation.isLeft()) {
             pushAll(errors, validation.value)
           } else {
@@ -660,8 +667,10 @@ export const dictionary = <D extends Mixed, C extends Mixed>(
         for (let i = 0; i < len; i++) {
           let k = keys[i]
           const ok = o[k]
-          const domainValidation = domain.validate(k, appendContext(c, k, domain))
-          const codomainValidation = codomain.validate(ok, appendContext(c, k, codomain))
+          const domainValidation = domain.validate(k, pushContext(c, k, domain))
+          c.pop()
+          const codomainValidation = codomain.validate(ok, pushContext(c, k, codomain))
+          c.pop()
           if (domainValidation.isLeft()) {
             pushAll(errors, domainValidation.value)
           } else {
@@ -725,7 +734,8 @@ export const union = <RTS extends Array<Mixed>>(
       const errors: Errors = []
       for (let i = 0; i < len; i++) {
         const type = types[i]
-        const validation = type.validate(m, appendContext(c, String(i), type))
+        const validation = type.validate(m, pushContext(c, String(i), type))
+        c.pop()
         if (validation.isRight()) {
           return validation
         } else {
@@ -896,7 +906,8 @@ export function tuple<RTS extends Array<Mixed>>(
         for (let i = 0; i < len; i++) {
           const a = as[i]
           const type = types[i]
-          const validation = type.validate(a, appendContext(c, String(i), type))
+          const validation = type.validate(a, pushContext(c, String(i), type))
+          c.pop()
           if (validation.isLeft()) {
             pushAll(errors, validation.value)
           } else {
@@ -1151,14 +1162,17 @@ export const taggedUnion = <Tag extends string, RTS extends Array<Tagged<Tag>>>(
         return dictionaryValidation
       } else {
         const d = dictionaryValidation.value
-        const tagValueValidation = TagValue.validate(d[tag], appendContext(c, tag, TagValue))
+        const tagValueValidation = TagValue.validate(d[tag], pushContext(c, tag, TagValue))
+        c.pop()
         if (tagValueValidation.isLeft()) {
           return tagValueValidation
         } else {
           const tagValue = tagValueValidation.value
           const i = tagValue2Index[tagValue]
           const type = types[i]
-          return type.validate(d, appendContext(c, String(i), type))
+          const validation = type.validate(d, pushContext(c, String(i), type))
+          c.pop()
+          return validation
         }
       }
     },
