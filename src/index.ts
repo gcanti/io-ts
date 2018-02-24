@@ -13,7 +13,7 @@ export interface ContextEntry {
   readonly key: string
   readonly type: Decoder<any, any>
 }
-export type Context = Array<ContextEntry>
+export type Context = ReadonlyArray<ContextEntry>
 export interface ValidationError {
   readonly value: mixed
   readonly context: Context
