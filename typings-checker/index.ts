@@ -367,3 +367,17 @@ const ActionType = pluck(Action, 'type')
 
 declare const Any1: t.AnyType | t.InterfaceType<any>
 Any1.decode(1)
+
+//
+// optional combinator
+//
+
+const OC1 = t.type({
+  a: t.string,
+  b: t.optional(t.number)
+})
+
+// $ExpectError Type '{ a: string; b: string; }' is not assignable to type 'TypeOfProps<{ a: StringType; b: OptionalType<NumberType, number | undefined, number | undefined, ...'
+const x39: TypeOf<typeof OC1> = { a: 'a', b: 'b' }
+const x40: TypeOf<typeof OC1> = { a: 'a' }
+const x41: TypeOf<typeof OC1> = { a: 'a', b: 1 }
