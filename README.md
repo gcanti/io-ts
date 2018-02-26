@@ -168,6 +168,7 @@ import * as t from 'io-ts'
 | function              | `Function`                              | `Function`                              | `t.Function`                                                 |
 | literal               | `'s'`                                   | `'s'`                                   | `t.literal('s')`                                             |
 | partial               | `Partial<{ name: string }>`             | `$Shape<{ name: string }>`              | `t.partial({ name: t.string })`                              |
+| optional              | `name?: string`                         | ✘                                       | `name: t.optional(t.string)`                                 |
 | readonly              | `Readonly<T>`                           | `ReadOnly<T>`                           | `t.readonly(T)`                                              |
 | readonly array        | `ReadonlyArray<number>`                 | `ReadOnlyArray<number>`                 | `t.readonlyArray(t.number)`                                  |
 | interface             | `interface A { name: string }`          | `interface A { name: string }`          | `t.type({ name: t.string })` or `t.type({ name: t.string })` |
@@ -247,7 +248,28 @@ StrictPerson.decode({ name: 'Giulio', age: 43, surname: 'Canti' }) // fails
 
 # Mixing required and optional props
 
-Note. You can mix required and optional props using an intersection
+**After 1.1.0**
+
+You can mix required and optional props using the `optional` combinator
+
+```ts
+const A = t.type({
+  foo: t.string,
+  bar: t.optional(t.number)
+})
+
+type AT = t.TypeOf<typeof A>
+
+// same as
+type AT = {
+  foo: string
+  bar?: number
+}
+```
+
+**Before 1.1.0**
+
+You can mix required and optional props using an intersection
 
 ```ts
 const A = t.type({
