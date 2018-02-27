@@ -550,10 +550,13 @@ export const type = <P extends Props>(
     useIdentity(types, len)
       ? identity
       : a => {
-          const s: { [x: string]: any } = { ...(a as any) }
+          const s: { [x: string]: any } = { ...a }
           for (let i = 0; i < len; i++) {
             const k = keys[i]
-            s[k] = types[i].encode(a[k])
+            const encode = types[i].encode
+            if (encode !== identity) {
+              s[k] = encode(a[k])
+            }
           }
           return s as any
         },
