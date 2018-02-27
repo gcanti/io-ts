@@ -48,12 +48,9 @@ export interface Encoder<A, O> {
  * where `T` is a runtime type
  */
 export class Type<A, O = A, I = mixed> implements Decoder<I, A>, Encoder<A, O> {
-  // prettier-ignore
-  readonly '_A': A
-  // prettier-ignore
-  readonly '_O': O
-  // prettier-ignore
-  readonly '_I': I
+  readonly _A!: A
+  readonly _O!: O
+  readonly _I!: I
   constructor(
     /** a unique name for this runtime type */
     readonly name: string,
