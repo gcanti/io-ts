@@ -104,7 +104,7 @@ const x11: I2T = { name: 'name', father: { surname: 'surname' } }
 const D1 = t.dictionary(t.keyof({ a: true }), t.number)
 // $ExpectError Type 'string' is not assignable to type 'number'
 const x12: TypeOf<typeof D1> = { a: 's' }
-// $ExpectError Type '{ c: number; }' is not assignable to type '{ a: number; }'.
+// $ExpectError Type '{ c: number; }' is not assignable to type 'TypeOfDictionary<KeyofType<{ a: true; }>, NumberType>'
 const x12_2: TypeOf<typeof D1> = { c: 1 }
 const x13: TypeOf<typeof D1> = { a: 1 }
 
@@ -306,7 +306,7 @@ f(Rec) // OK!
 // tagged union
 //
 const TU1 = t.taggedUnion('type', [t.type({ type: t.literal('a') }), t.type({ type: t.literal('b') })])
-// $ExpectError Type 'true' is not assignable to type '{ type: "a"; } | { type: "b"; }'
+// $ExpectError Type 'true' is not assignable to type 'TypeOfProps<{ type: LiteralType<"a">; }> | TypeOfProps<{ type: LiteralType<"b">; }>'
 const x36: TypeOf<typeof TU1> = true
 const x37: TypeOf<typeof TU1> = { type: 'a' }
 const x38: TypeOf<typeof TU1> = { type: 'b' }
