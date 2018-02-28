@@ -403,8 +403,10 @@ type NestedInterfaceType = t.TypeOf<typeof NestedInterface>
 Hover on NestedInterfaceType will display
 
 type NestedInterfaceType = {
-  foo: string;
-  bar: any;
+    foo: string;
+    bar: t.TypeOfProps<{
+        baz: t.StringType;
+    }>;
 }
 
 instead of
