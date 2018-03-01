@@ -13,6 +13,14 @@
 **Note**: Gaps between patch versions are faulty/broken releases. **Note**: A feature tagged as Experimental is in a
 high state of flux, you're at risk of it changing without notice.
 
+# 1.0.5
+
+* **Bug Fix**
+  * workaround for upstream TypeScript bug 14041 (wrong generated declarations) (@gcanti)
+* **Internal**
+  * optimize InterfaceType.encode (@gcanti)
+  * use definite assignment assertion for phantom fields (@gcanti)
+
 # 1.0.4
 
 * **Bug Fix**
