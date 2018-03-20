@@ -40,13 +40,6 @@ export interface Encoder<A, O> {
   readonly encode: Encode<A, O>
 }
 
-/**
- * Laws:
- * 1. T.decode(x).fold(() => x, T.serialize) = x
- * 2. T.decode(T.serialize(x)) = right(x)
- *
- * where `T` is a runtime type
- */
 export class Type<A, O = A, I = mixed> implements Decoder<I, A>, Encoder<A, O> {
   readonly _A!: A
   readonly _O!: O

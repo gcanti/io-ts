@@ -24,9 +24,9 @@ class Type<A, O = A, I = mixed> {
     readonly name: string,
     /** a custom type guard */
     readonly is: (v: mixed) => v is A,
-    /** succeeds if a value of type S can be decoded to a value of type A */
+    /** succeeds if a value of type I can be decoded to a value of type A */
     readonly validate: (input: I, context: Context) => Either<Errors, A>,
-    /** converts a value of type A to a value of type S */
+    /** converts a value of type A to a value of type O */
     readonly encode: (a: A) => O
   ) {}
   /** a version of `validate` with a default context */
