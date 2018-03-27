@@ -4,6 +4,8 @@
 
 # The idea
 
+Blog post: ["Typescript and validations at runtime boundaries"](https://lorefnon.tech/2018/03/25/typescript-and-validations-at-runtime-boundaries/) by [@lorefnon](https://github.com/lorefnon)
+
 A value of type `Type<A, O, I>` (called "runtime type") is the runtime representation of the static type `A`.
 
 Also a runtime type can
