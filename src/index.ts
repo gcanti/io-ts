@@ -248,6 +248,7 @@ export class FunctionType extends Type<Function> {
   constructor() {
     super(
       'Function',
+      // tslint:disable-next-line:strict-type-predicates
       (m): m is Function => typeof m === 'function',
       (m, c) => (this.is(m) ? success(m) : failure(m, c)),
       identity
