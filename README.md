@@ -111,7 +111,8 @@ ThrowReporter.report(result)
 * [io-ts-reporters](https://github.com/OliverJAsh/io-ts-reporters) - Error reporters for io-ts
 * [geojson-iots](https://github.com/pierremarc/geojson-iots) - Runtime types for GeoJSON as defined in rfc7946 made with
   io-ts
-
+* [graphql-to-io-ts](https://github.com/micimize/graphql-to-io-ts) - Generate typescript and cooresponding io-ts types from a graphql
+schema
 # TypeScript integration
 
 Runtime types can be inspected
