@@ -377,9 +377,9 @@ import { failure } from 'io-ts/lib/PathReporter'
 
 const { NODE_ENV } = process.env
 
-export function unsafeValidate<S, A>(value: any, type: t.Type<S, A>): A {
+export function unsafeValidate<A, O>(value: any, type: t.Type<A, O>): A {
   if (NODE_ENV !== 'production') {
-    return type.decode(value).getOrElse(errors => {
+    return type.decode(value).getOrElseL(errors => {
       throw new Error(failure(errors).join('\n'))
     })
   }
