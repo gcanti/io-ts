@@ -74,6 +74,10 @@ Person.decode(JSON.parse('{"name":"Giulio","age":43}')) // => Right({name: "Giul
 Person.decode(JSON.parse('{"name":"Giulio"}')) // => Left([...])
 ```
 
+# TypeScript compatibility
+
+The stable version is tested against TypeScript 2.8.x
+
 # Error reporters
 
 A reporter implements the following interface
@@ -112,7 +116,8 @@ ThrowReporter.report(result)
 * [geojson-iots](https://github.com/pierremarc/geojson-iots) - Runtime types for GeoJSON as defined in rfc7946 made with
   io-ts
 * [graphql-to-io-ts](https://github.com/micimize/graphql-to-io-ts) - Generate typescript and cooresponding io-ts types from a graphql
-schema
+  schema
+
 # TypeScript integration
 
 Runtime types can be inspected
