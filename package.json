@@ -1,6 +1,6 @@
 {
   "name": "io-ts",
-  "version": "1.0.5",
+  "version": "1.1.0",
   "description": "TypeScript compatible runtime type system for IO validation",
   "files": ["lib"],
   "main": "lib/index.js",
@@ -42,7 +42,7 @@
     "ts-node": "3.2.0",
     "tslint": "5.9.1",
     "tslint-config-standard": "7.0.0",
-    "typescript": "^2.7.2",
+    "typescript": "^2.8.3",
     "typings-checker": "1.1.2"
   },
   "tags": ["typescript", "validation", "inference", "types", "runtime"],
