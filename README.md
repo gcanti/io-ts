@@ -369,7 +369,7 @@ export const Action = t.union([
 const ActionType = pluck(Action, 'type')
 ```
 
-# Recipes
+# Tips and Tricks
 
 ## Is there a way to turn the checks off in production code?
 
@@ -392,6 +392,30 @@ export function unsafeValidate<A, O>(value: any, type: t.Type<A, O>): A {
   return value as A
 }
 ```
+
+## Union of string literals
+
+If you have to define a large union of string literals you may want to use `keyof` instead of `union`
+
+```ts
+// bad
+const CountryCode = t.union([
+  t.literal('GB'),
+  t.literal('IT'),
+  t.literal('US')
+  // actually all 100+ country codes here
+])
+
+// good
+const CountryCode = t.keyof({
+  GB: null,
+  IT: null,
+  US: null
+  // actually all 100+ country codes here
+})
+```
+
+Also `keyof` is nicer because, by accepting a dictionary `string -> whatever`, you get an implicit unique check on the keys for free.
 
 # Known issues
 
