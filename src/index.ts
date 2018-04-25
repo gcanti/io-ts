@@ -1098,7 +1098,7 @@ const findTagged = <Tag extends string>(tag: Tag, types: TaggedIntersectionArgum
   return types[i] as any
 }
 
-const getTagValue = <Tag extends string>(tag: Tag): ((type: Tagged<Tag>) => string) => {
+const getTagValue = <Tag extends string>(tag: Tag): ((type: Tagged<Tag>) => string | number | boolean) => {
   const f = (type: Tagged<Tag>): string => {
     switch (type._tag) {
       case 'InterfaceType':
@@ -1120,16 +1120,37 @@ export const taggedUnion = <Tag extends string, RTS extends Array<Tagged<Tag>>>(
   types: RTS,
   name: string = `(${types.map(type => type.name).join(' | ')})`
 ): UnionType<RTS, TypeOf<RTS['_A']>, OutputOf<RTS['_A']>, mixed> => {
-  const tagValue2Index: { [key: string]: number } = {}
-  const tagValues: { [key: string]: null } = {}
   const len = types.length
+  const values: Array<string | number | boolean> = new Array(len)
+  const hash: { [key: string]: number } = {}
+  let useHash = true
   const get = getTagValue(tag)
   for (let i = 0; i < len; i++) {
     const value = get(types[i])
-    tagValue2Index[value] = i
-    tagValues[value] = null
+    useHash = useHash && string.is(value)
+    values[i] = value
+    hash[String(value)] = i
   }
-  const TagValue = keyof(tagValues)
+  const isTagValue = useHash
+    ? (m: mixed): m is string | number | boolean => string.is(m) && hash.hasOwnProperty(m)
+    : (m: mixed): m is string | number | boolean => values.indexOf(m as any) !== -1
+  const getIndex: (tag: string | number | boolean) => number = useHash
+    ? tag => hash[tag as any]
+    : tag => {
+        let i = 0
+        for (; i < len - 1; i++) {
+          if (values[i] === tag) {
+            break
+          }
+        }
+        return i
+      }
+  const TagValue = new Type(
+    values.map(l => JSON.stringify(l)).join(' | '),
+    isTagValue,
+    (m, c) => (isTagValue(m) ? success(m) : failure(m, c)),
+    identity
+  )
   return new UnionType<RTS, TypeOf<RTS['_A']>, OutputOf<RTS['_A']>, mixed>(
     name,
     (v): v is TypeOf<RTS['_A']> => {
@@ -1137,7 +1158,7 @@ export const taggedUnion = <Tag extends string, RTS extends Array<Tagged<Tag>>>(
         return false
       }
       const tagValue = v[tag]
-      return TagValue.is(tagValue) && types[tagValue2Index[tagValue]].is(v)
+      return TagValue.is(tagValue) && types[getIndex(tagValue)].is(v)
     },
     (s, c) => {
       const dictionaryValidation = Dictionary.validate(s, c)
@@ -1149,14 +1170,13 @@ export const taggedUnion = <Tag extends string, RTS extends Array<Tagged<Tag>>>(
         if (tagValueValidation.isLeft()) {
           return tagValueValidation
         } else {
-          const tagValue = tagValueValidation.value
-          const i = tagValue2Index[tagValue]
+          const i = getIndex(tagValueValidation.value)
           const type = types[i]
           return type.validate(d, appendContext(c, String(i), type))
         }
       }
     },
-    types.every(type => type.encode === identity) ? identity : a => types[tagValue2Index[a[tag] as any]].encode(a),
+    types.every(type => type.encode === identity) ? identity : a => types[getIndex(a[tag] as any)].encode(a),
     types
   )
 }

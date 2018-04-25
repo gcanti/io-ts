@@ -13,6 +13,11 @@
 **Note**: Gaps between patch versions are faulty/broken releases. **Note**: A feature tagged as Experimental is in a
 high state of flux, you're at risk of it changing without notice.
 
+# 1.0.6
+
+* **Bug Fix**
+  * `taggedUnion` fails to decode when tag values are not string literals, fix #161 (@gcanti)
+
 # 1.0.5
 
 * **Bug Fix**
