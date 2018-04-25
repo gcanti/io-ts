@@ -43,17 +43,18 @@ common algebraic types in TypeScript.
 
 A runtime type representing `string` can be defined as
 
-```js
+```ts
 import * as t from 'io-ts'
 
-export class StringType extends t.Type<string> { // equivalent to Type<string, string, mixed> as per type parameter defaults
+export class StringType extends t.Type<string> {
+  // equivalent to Type<string, string, mixed> as per type parameter defaults
   readonly _tag: 'StringType' = 'StringType'
   constructor() {
     super(
       'string',
       (m): m is string => typeof m === 'string',
       (m, c) => (this.is(m) ? t.success(m) : t.failure(m, c)),
-      a => a
+      t.identity
     )
   }
 }
@@ -61,7 +62,7 @@ export class StringType extends t.Type<string> { // equivalent to Type<string, s
 
 A runtime type can be used to validate an object in memory (for example an API payload)
 
-```js
+```ts
 const Person = t.type({
   name: t.string,
   age: t.number
@@ -82,9 +83,9 @@ The stable version is tested against TypeScript 2.8.x
 
 A reporter implements the following interface
 
-```js
+```ts
 interface Reporter<A> {
-  report: (validation: Validation<any>) => A;
+  report: (validation: Validation<any>) => A
 }
 ```
 
@@ -95,7 +96,7 @@ This package exports two default reporters
 
 Example
 
-```js
+```ts
 import { PathReporter } from 'io-ts/lib/PathReporter'
 import { ThrowReporter } from 'io-ts/lib/ThrowReporter'
 
@@ -133,19 +134,19 @@ Note that the type annotation isn't needed, TypeScript infers the type automatic
 
 Static types can be extracted from runtime types with the `TypeOf` operator
 
-```js
+```ts
 type IPerson = t.TypeOf<typeof Person>
 
 // same as
 type IPerson = {
-  name: string,
+  name: string
   age: number
 }
 ```
 
 # Implemented types / combinators
 
-```js
+```ts
 import * as t from 'io-ts'
 ```
 
@@ -183,22 +184,19 @@ import * as t from 'io-ts'
 
 Recursive types can't be inferred by TypeScript so you must provide the static type as a hint
 
-```js
+```ts
 // helper type
 type ICategory = {
-  name: string,
+  name: string
   categories: Array<ICategory>
 }
 
-const Category =
-  t.recursion <
-  ICategory >
-  ('Category',
-  self =>
-    t.type({
-      name: t.string,
-      categories: t.array(self)
-    }))
+const Category = t.recursion<ICategory>('Category', self =>
+  t.type({
+    name: t.string,
+    categories: t.array(self)
+  })
+)
 ```
 
 # Tagged unions
@@ -395,27 +393,29 @@ export function unsafeValidate<A, O>(value: any, type: t.Type<A, O>): A {
 
 ## Union of string literals
 
-If you have to define a large union of string literals you may want to use `keyof` instead of `union`
+Use `keyof` instead of `union` when defining a union of string literals
 
 ```ts
-// bad
-const CountryCode = t.union([
-  t.literal('GB'),
-  t.literal('IT'),
-  t.literal('US')
-  // actually all 100+ country codes here
+const Bad = t.union([
+  t.literal('foo'),
+  t.literal('bar'),
+  t.literal('baz')
+  // etc...
 ])
 
-// good
-const CountryCode = t.keyof({
-  GB: null,
-  IT: null,
-  US: null
-  // actually all 100+ country codes here
+const Good = t.keyof({
+  foo: null,
+  bar: null,
+  baz: null
+  // etc...
 })
 ```
 
-Also `keyof` is nicer because, by accepting a dictionary `string -> whatever`, you get an implicit unique check on the keys for free.
+Benefits
+
+* unique check for free
+* better performance
+* quick info stays responsive
 
 # Known issues
 
