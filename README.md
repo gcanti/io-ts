@@ -46,13 +46,13 @@ A runtime type representing `string` can be defined as
 ```js
 import * as t from 'io-ts'
 
-export class StringType extends Type<string> { // equivalent to Type<string, string, mixed> as per type parameter defaults
+export class StringType extends t.Type<string> { // equivalent to Type<string, string, mixed> as per type parameter defaults
   readonly _tag: 'StringType' = 'StringType'
   constructor() {
     super(
       'string',
       (m): m is string => typeof m === 'string',
-      (m, c) => (this.is(m) ? success(m) : failure(m, c)),
+      (m, c) => (this.is(m) ? t.success(m) : t.failure(m, c)),
       a => a
     )
   }
