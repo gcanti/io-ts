@@ -38,7 +38,7 @@
     "@types/node": "7.0.4",
     "benchmark": "2.1.4",
     "mocha": "3.2.0",
-    "prettier": "^1.11.0",
+    "prettier": "1.12.1",
     "ts-node": "3.2.0",
     "tslint": "5.9.1",
     "tslint-config-standard": "7.0.0",
