@@ -419,8 +419,7 @@ Benefits
 
 # Known issues
 
-Due to an upstream [bug](https://github.com/Microsoft/TypeScript/issues/14041), VS Code might display `any` for nested
-types
+Due to an upstream [bug](https://github.com/Microsoft/TypeScript/issues/14041), VS Code might display weird types for nested types
 
 ```ts
 const NestedInterface = t.type({
