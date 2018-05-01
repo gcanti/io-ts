@@ -447,41 +447,6 @@ export const array = <RT extends Mixed>(
   )
 
 //
-// optionals
-//
-
-export class OptionalType<RT extends Any, A = any, O = A, I = mixed> extends Type<A, O, I> {
-  readonly _tag: 'OptionalType' = 'OptionalType'
-  constructor(
-    name: string,
-    is: OptionalType<RT, A, O, I>['is'],
-    validate: OptionalType<RT, A, O, I>['validate'],
-    serialize: OptionalType<RT, A, O, I>['encode'],
-    readonly type: RT
-  ) {
-    super(name, is, validate, serialize)
-  }
-}
-
-export const optional = <RT extends Mixed>(
-  type: RT,
-  name: string = `${type.name}?`
-): OptionalType<RT, TypeOf<RT> | undefined, OutputOf<RT> | undefined, mixed> =>
-  new OptionalType(
-    name,
-    (m): m is TypeOf<RT> | undefined => undefinedType.is(m) || type.is(m),
-    (i, c) => {
-      if (undefinedType.is(i)) {
-        return success(i)
-      } else {
-        return type.validate(i, c)
-      }
-    },
-    type.encode === identity ? identity : a => (undefinedType.is(a) ? a : type.encode(a)),
-    type
-  )
-
-//
 // interfaces
 //
 
@@ -516,15 +481,9 @@ const useIdentity = (types: Array<Any>, len: number): boolean => {
   return true
 }
 
-export type RequiredKeys<P> = { [K in keyof P]: P[K] extends OptionalType<any> ? never : K }[keyof P]
+export type TypeOfProps<P extends AnyProps> = { [K in keyof P]: TypeOf<P[K]> }
 
-export type OptionalKeys<P> = { [K in keyof P]: P[K] extends OptionalType<any> ? K : never }[keyof P]
-
-export type TypeOfProps<P extends AnyProps> = { [K in RequiredKeys<P>]: TypeOf<P[K]> } &
-  { [K in OptionalKeys<P>]?: TypeOf<P[K]> }
-
-export type OutputOfProps<P extends AnyProps> = { [K in RequiredKeys<P>]: OutputOf<P[K]> } &
-  { [K in OptionalKeys<P>]?: OutputOf<P[K]> }
+export type OutputOfProps<P extends AnyProps> = { [K in keyof P]: OutputOf<P[K]> }
 
 export interface Props {
   [key: string]: Mixed
@@ -587,10 +546,7 @@ export const type = <P extends Props>(
             const k = keys[i]
             const encode = types[i].encode
             if (encode !== identity) {
-              const v = encode(a[k])
-              if (s[k] !== v) {
-                s[k] = v
-              }
+              s[k] = encode(a[k])
             }
           }
           return s as any
@@ -1062,7 +1018,7 @@ export const strict = <P extends Props>(
       if (looseValidation.isLeft()) {
         return looseValidation
       } else {
-        const o: any = looseValidation.value
+        const o = looseValidation.value
         const keys = Object.getOwnPropertyNames(o)
         const len = keys.length
         const errors: Errors = []
