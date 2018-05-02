@@ -7,24 +7,7 @@ export function strictInterfaceWithOptionals<R extends t.Props, O extends t.Prop
   optional: O,
   name?: string
 ): t.Type<t.TypeOfProps<R> & t.TypeOfPartialProps<O>, t.OutputOfProps<R> & t.OutputOfPartialProps<O>> {
-  const loose = t.intersection([t.interface(required), t.partial(optional)])
-  const props = Object.assign({}, required, optional)
-  return new t.Type(
-    name || `StrictInterfaceWithOptionals(${loose.name})`,
-    (m): m is t.TypeOfProps<R> & t.TypeOfPartialProps<O> =>
-      loose.is(m) && Object.getOwnPropertyNames(m).every(k => props.hasOwnProperty(k)),
-    (m, c) =>
-      loose.validate(m, c).chain(o => {
-        const errors: t.Errors = Object.getOwnPropertyNames(o)
-          .map(
-            key =>
-              !props.hasOwnProperty(key) ? t.getValidationError(o[key], t.appendContext(c, key, t.never)) : undefined
-          )
-          .filter((e): e is t.ValidationError => e !== undefined)
-        return errors.length ? t.failures(errors) : t.success(o)
-      }),
-    loose.encode
-  )
+  return t.exact(t.intersection([t.interface(required), t.partial(optional)]), name)
 }
 
 describe('strictInterfaceWithOptionals', () => {
