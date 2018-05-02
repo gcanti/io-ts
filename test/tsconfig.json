@@ -12,7 +12,6 @@
     "strict": true,
     "target": "es5",
     "moduleResolution": "node",
-    "forceConsistentCasingInFileNames": true,
-    "lib": ["es6"]
+    "forceConsistentCasingInFileNames": true
   }
 }

@@ -367,3 +367,10 @@ const ActionType = pluck(Action, 'type')
 
 declare const Any1: t.AnyType | t.InterfaceType<any>
 Any1.decode(1)
+
+//
+// exact
+//
+
+declare const E1: t.InterfaceType<{ a: t.NumberType }, { a: number }, { a: number }, { a: number }>
+const E2: t.Type<any, any, { a: number }> = t.exact(E1)
