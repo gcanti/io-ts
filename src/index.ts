@@ -988,7 +988,7 @@ export const readonlyArray = <RT extends Mixed>(
 }
 
 //
-// strict interfaces
+// strict types
 //
 
 export class StrictType<P extends AnyProps, A = any, O = A, I = mixed> extends Type<A, O, I> {
@@ -1004,36 +1004,13 @@ export class StrictType<P extends AnyProps, A = any, O = A, I = mixed> extends T
   }
 }
 
-/** Specifies that only the given interface properties are allowed */
+/** Specifies that only the given properties are allowed */
 export const strict = <P extends Props>(
   props: P,
   name: string = `StrictType<${getNameFromProps(props)}>`
 ): StrictType<P, TypeOfProps<P>, OutputOfProps<P>, mixed> => {
-  const loose = type(props)
-  return new StrictType(
-    name,
-    (m): m is TypeOfProps<P> => loose.is(m) && Object.getOwnPropertyNames(m).every(k => props.hasOwnProperty(k)),
-    (m, c) => {
-      const looseValidation = loose.validate(m, c)
-      if (looseValidation.isLeft()) {
-        return looseValidation
-      } else {
-        const o = looseValidation.value
-        const keys = Object.getOwnPropertyNames(o)
-        const len = keys.length
-        const errors: Errors = []
-        for (let i = 0; i < len; i++) {
-          const key = keys[i]
-          if (!props.hasOwnProperty(key)) {
-            errors.push(getValidationError(o[key], appendContext(c, key, never)))
-          }
-        }
-        return errors.length ? failures(errors) : success(o)
-      }
-    },
-    loose.encode,
-    props
-  )
+  const exactType = exact(type(props))
+  return new StrictType(name, exactType.is, exactType.validate, exactType.encode, props)
 }
 
 //
@@ -1061,12 +1038,14 @@ export type TaggedIntersectionArgument<Tag extends string> =
   | [Mixed, Mixed, Mixed, Mixed, Tagged<Tag>]
 export interface TaggedIntersection<Tag extends string, A, O = A>
   extends IntersectionType<TaggedIntersectionArgument<Tag>, A, O> {}
+export interface TaggedExact<Tag extends string> extends ExactType<Tagged<Tag>> {}
 export type Tagged<Tag extends string, A = any, O = A> =
   | InterfaceType<TaggedProps<Tag>, A, O>
   | StrictType<TaggedProps<Tag>, A, O>
   | TaggedRefinement<Tag, A, O>
   | TaggedUnion<Tag, A, O>
   | TaggedIntersection<Tag, A, O>
+  | TaggedExact<Tag>
 
 const isTagged = <Tag extends string>(tag: Tag): ((type: Mixed) => type is Tagged<Tag>) => {
   const f = (type: Mixed): type is Tagged<Tag> => {
@@ -1109,6 +1088,7 @@ const getTagValue = <Tag extends string>(tag: Tag): ((type: Tagged<Tag>) => stri
       case 'UnionType':
         return f(type.types[0])
       case 'RefinementType':
+      case 'ExactType':
         return f(type.type)
     }
   }
@@ -1178,6 +1158,67 @@ export const taggedUnion = <Tag extends string, RTS extends Array<Tagged<Tag>>>(
     },
     types.every(type => type.encode === identity) ? identity : a => types[getIndex(a[tag] as any)].encode(a),
     types
+  )
+}
+
+//
+// exact types
+//
+
+export class ExactType<RT extends Any, A = any, O = A, I = mixed> extends Type<A, O, I> {
+  readonly _tag: 'ExactType' = 'ExactType'
+  constructor(
+    name: string,
+    is: ExactType<RT, A, O, I>['is'],
+    validate: ExactType<RT, A, O, I>['validate'],
+    serialize: ExactType<RT, A, O, I>['encode'],
+    readonly type: RT
+  ) {
+    super(name, is, validate, serialize)
+  }
+}
+
+export interface ExactableIntersection extends IntersectionType<Array<Exactable>> {}
+export type Exactable = InterfaceType<any> | PartialType<any> | ExactableIntersection
+
+const getProps = (type: Exactable): Props => {
+  switch (type._tag) {
+    case 'InterfaceType':
+    case 'PartialType':
+      return type.props
+    case 'IntersectionType':
+      return type.types.reduce((props, type) => ({ ...props, ...getProps(type) }), {})
+  }
+}
+
+export function exact<RT extends Exactable>(
+  type: RT,
+  name: string = `ExactType<${type.name}>`
+): ExactType<RT, TypeOf<RT>, OutputOf<RT>, mixed> {
+  const props: Props = getProps(type)
+  return new ExactType(
+    name,
+    (m): m is TypeOf<RT> => type.is(m) && Object.getOwnPropertyNames(m).every(k => props.hasOwnProperty(k)),
+    (m, c) => {
+      const looseValidation = type.validate(m, c)
+      if (looseValidation.isLeft()) {
+        return looseValidation
+      } else {
+        const o = looseValidation.value
+        const keys = Object.getOwnPropertyNames(o)
+        const len = keys.length
+        const errors: Errors = []
+        for (let i = 0; i < len; i++) {
+          const key = keys[i]
+          if (!props.hasOwnProperty(key)) {
+            errors.push(getValidationError(o[key], appendContext(c, key, never)))
+          }
+        }
+        return errors.length ? failures(errors) : success(o)
+      }
+    },
+    type.encode,
+    type
   )
 }
 

@@ -22,11 +22,11 @@ const TUB = t.intersection(
   'TUB'
 )
 
-const TUC = t.type(
-  {
+const TUC = t.exact(
+  t.type({
     type: t.literal('c'),
     baz: DateFromNumber
-  },
+  }),
   'TUC'
 )
 
