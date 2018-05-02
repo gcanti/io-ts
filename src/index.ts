@@ -1225,4 +1225,28 @@ export function exact<RT extends Exactable>(
   )
 }
 
+/** Drops the runtime type "kind" */
+export function clean<A, O = A>(type: Type<A, O>): Type<A, O> {
+  return type as any
+}
+
+export type Exact<T, X extends T> = T &
+  { [K in ({ [K in keyof X]: K } & { [K in keyof T]: never } & { [key: string]: never })[keyof X]]?: never }
+
+/** Keeps the runtime type "kind" */
+export function alias<P extends Props, A, O>(
+  type: PartialType<P, A, O>
+): <AA extends Exact<A, AA>, OO extends Exact<O, OO> = O>() => PartialType<P, AA, OO>
+export function alias<P extends Props, A, O>(
+  type: StrictType<P, A, O>
+): <AA extends Exact<A, AA>, OO extends Exact<O, OO> = O>() => StrictType<P, AA, OO>
+export function alias<P extends Props, A, O>(
+  type: InterfaceType<P, A, O>
+): <AA extends Exact<A, AA>, OO extends Exact<O, OO> = O>() => InterfaceType<P, AA, OO>
+export function alias<A, O>(
+  type: Type<A, O>
+): <AA extends Exact<A, AA>, OO extends Exact<O, OO> = O>() => Type<AA, OO> {
+  return type as any
+}
+
 export { nullType as null, undefinedType as undefined, arrayType as Array, type as interface }

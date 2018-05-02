@@ -374,3 +374,42 @@ Any1.decode(1)
 
 declare const E1: t.InterfaceType<{ a: t.NumberType }, { a: number }, { a: number }, { a: number }>
 const E2: t.Type<any, any, { a: number }> = t.exact(E1)
+
+//
+// clean / alias
+//
+
+import { DateFromNumber } from '../test/helpers'
+
+const C1 = t.type({
+  a: t.string,
+  b: DateFromNumber
+})
+
+interface C1 {
+  a: string
+  b: Date
+}
+
+interface C1O {
+  a: string
+  b: number
+}
+
+interface C1WithAdditionalProp {
+  a: string
+  b: Date
+  c: boolean
+}
+
+// $ExpectError ype 'number' is not assignable to type 'Date'
+const C2 = t.clean<C1>(C1)
+// $ExpectError Property 'c' is missing in type 'TypeOfProps<{ a: StringType; b: Type<Date, number, mixed>; }>'
+const C3 = t.clean<C1WithAdditionalProp, C1O>(C1)
+const C4 = t.clean<C1, C1O>(C1)
+const C5 = t.alias(C1)<C1>()
+// $ExpectError Type 'Date' is not assignable to type 'number'
+const C6 = t.alias(C1)<C1, C1>()
+// $ExpectError Type 'boolean' is not assignable to type 'undefined'
+const C7 = t.alias(C1)<C1WithAdditionalProp, C1O>()
+const C8 = t.alias(C1)<C1, C1O>()
