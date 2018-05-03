@@ -15,8 +15,12 @@ high state of flux, you're at risk of it changing without notice.
 
 # 1.1.1
 
-* **New Feature**
+* **Experimental**
   * add `clean` / `alias` functions, closes #149 (@gcanti)
+  * add `exact` combinator (@gcanti)
+    * the `strict` combinator is deprecated
+  * remove `optional` combinator (@gcanti)
+    * it doesn't play well with advanced combinators, see [here](https://github.com/gcanti/io-ts/issues/140) for a discussion
 
 # 1.0.6
 
