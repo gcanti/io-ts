@@ -1230,6 +1230,8 @@ export function clean<A, O = A, I = mixed>(type: Type<A, O, I>): Type<A, O, I> {
   return type as any
 }
 
+export type PropsOf<T extends { props: any }> = T['props']
+
 export type Exact<T, X extends T> = T &
   { [K in ({ [K in keyof X]: K } & { [K in keyof T]: never } & { [key: string]: never })[keyof X]]?: never }
 
