@@ -1239,24 +1239,24 @@ export function alias<A, O, P, I>(
 ): <
   AA extends Exact<A, AA>,
   OO extends Exact<O, OO> = O,
-  II extends I = I,
-  PP extends Exact<P, PP> = P
+  PP extends Exact<P, PP> = P,
+  II extends I = I
 >() => PartialType<PP, AA, OO, II>
 export function alias<A, O, P, I>(
   type: StrictType<P, A, O, I>
 ): <
   AA extends Exact<A, AA>,
   OO extends Exact<O, OO> = O,
-  II extends I = I,
-  PP extends Exact<P, PP> = P
+  PP extends Exact<P, PP> = P,
+  II extends I = I
 >() => StrictType<PP, AA, OO, II>
 export function alias<A, O, P, I>(
   type: InterfaceType<P, A, O, I>
 ): <
   AA extends Exact<A, AA>,
   OO extends Exact<O, OO> = O,
-  II extends I = I,
-  PP extends Exact<P, PP> = P
+  PP extends Exact<P, PP> = P,
+  II extends I = I
 >() => InterfaceType<PP, AA, OO, II>
 export function alias<A, O, I>(
   type: Type<A, O, I>
