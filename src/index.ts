@@ -1181,27 +1181,39 @@ export class ExactType<RT extends Any, A = any, O = A, I = mixed> extends Type<A
   }
 }
 
-export interface ExactableIntersection extends IntersectionType<Array<Exactable>, any, any, any> {}
-export type Exactable = InterfaceType<any, any, any, any> | PartialType<any, any, any, any> | ExactableIntersection
+export interface HasPropsRefinement extends RefinementType<HasProps, any, any, any> {}
+export interface HasPropsReadonly extends ReadonlyType<HasProps, any, any, any> {}
+export interface HasPropsIntersection extends IntersectionType<Array<HasProps>, any, any, any> {}
+export type HasProps =
+  | HasPropsRefinement
+  | HasPropsReadonly
+  | HasPropsIntersection
+  | InterfaceType<any, any, any, any>
+  | StrictType<any, any, any, any>
+  | PartialType<any, any, any, any>
 
 // typings-checker doesn't know Object.assign
 const assign = (Object as any).assign
 
-const getExactableProps = (type: Exactable): Props => {
+const getProps = (type: HasProps): Props => {
   switch (type._tag) {
+    case 'RefinementType':
+    case 'ReadonlyType':
+      return getProps(type.type)
     case 'InterfaceType':
+    case 'StrictType':
     case 'PartialType':
       return type.props
     case 'IntersectionType':
-      return type.types.reduce<Props>((props, type) => assign(props, getExactableProps(type)), {})
+      return type.types.reduce<Props>((props, type) => assign(props, getProps(type)), {})
   }
 }
 
-export function exact<RT extends Exactable>(
+export function exact<RT extends HasProps>(
   type: RT,
   name: string = `ExactType<${type.name}>`
 ): ExactType<RT, TypeOf<RT>, OutputOf<RT>, InputOf<RT>> {
-  const props: Props = getExactableProps(type)
+  const props: Props = getProps(type)
   return new ExactType(
     name,
     (m): m is TypeOf<RT> => type.is(m) && Object.getOwnPropertyNames(m).every(k => props.hasOwnProperty(k)),

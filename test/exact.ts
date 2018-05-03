@@ -22,6 +22,16 @@ describe('exact', () => {
     assertSuccess(T.decode({ foo: 'foo' }))
   })
 
+  it('should succeed validating a valid value (refinement)', () => {
+    const T = t.exact(t.refinement(t.type({ foo: t.string }), p => p.foo.length > 2))
+    assertSuccess(T.decode({ foo: 'foo' }))
+  })
+
+  it('should succeed validating a valid value (readonly)', () => {
+    const T = t.exact(t.readonly(t.type({ foo: t.string })))
+    assertSuccess(T.decode({ foo: 'foo' }))
+  })
+
   it('should succeed validating an undefined field', () => {
     const T = t.exact(t.type({ foo: t.string, bar: t.union([t.string, t.undefined]) }))
     assertSuccess(T.decode({ foo: 'foo' }))
@@ -52,6 +62,20 @@ describe('exact', () => {
     const T = t.exact(t.partial({ foo: t.string }))
     assertFailure(T.decode({ bar: 1 }), [
       'Invalid value 1 supplied to : ExactType<PartialType<{ foo: string }>>/bar: never'
+    ])
+  })
+
+  it('should fail validating an invalid value (refinement)', () => {
+    const T = t.exact(t.refinement(t.type({ foo: t.string }), p => p.foo.length > 2))
+    assertFailure(T.decode({ foo: 'foo', bar: 1 }), [
+      'Invalid value 1 supplied to : ExactType<({ foo: string } | <function1>)>/bar: never'
+    ])
+  })
+
+  it('should fail validating an invalid value (readonly)', () => {
+    const T = t.exact(t.readonly(t.type({ foo: t.string })))
+    assertFailure(T.decode({ foo: 'foo', bar: 1 }), [
+      'Invalid value 1 supplied to : ExactType<Readonly<{ foo: string }>>/bar: never'
     ])
   })
 
