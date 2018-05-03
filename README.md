@@ -381,3 +381,45 @@ type NestedInterfaceType = {
 }
 */
 ```
+
+## Solution: the `clean` and `alias` functions
+
+The pattern
+
+```ts
+// private runtime type
+const _NestedInterface = t.type({
+  foo: t.string,
+  bar: t.type({
+    baz: t.string
+  })
+})
+
+// a type alias using interface
+export interface NestedInterface extends t.TypeOf<typeof _NestedInterface> {}
+
+//
+// Two possible options for the exported runtime type
+//
+
+// a clean NestedInterface which drops the kind...
+export const NestedInterface = t.clean<NestedInterface, NestedInterface>(_NestedInterface)
+/*
+NestedInterface: t.Type<NestedInterface, NestedInterface, t.mixed>
+*/
+
+// ... or an alias of _NestedInterface which keeps the kind
+export const NestedInterface = t.alias(_NestedInterface)<NestedInterface, NestedInterface>()
+/*
+t.InterfaceType<{
+    foo: t.StringType;
+    bar: t.InterfaceType<{
+        baz: t.StringType;
+    }, t.TypeOfProps<{
+        baz: t.StringType;
+    }>, t.OutputOfProps<{
+        baz: t.StringType;
+    }>, t.mixed>;
+}, NestedInterface, NestedInterface, t.mixed>
+*/
+```

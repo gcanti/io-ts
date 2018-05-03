@@ -450,7 +450,7 @@ export const array = <RT extends Mixed>(
 // interfaces
 //
 
-export class InterfaceType<P extends AnyProps, A = any, O = A, I = mixed> extends Type<A, O, I> {
+export class InterfaceType<P, A = any, O = A, I = mixed> extends Type<A, O, I> {
   readonly _tag: 'InterfaceType' = 'InterfaceType'
   constructor(
     name: string,
@@ -559,7 +559,7 @@ export const type = <P extends Props>(
 // partials
 //
 
-export class PartialType<P extends AnyProps, A = any, O = A, I = mixed> extends Type<A, O, I> {
+export class PartialType<P, A = any, O = A, I = mixed> extends Type<A, O, I> {
   readonly _tag: 'PartialType' = 'PartialType'
   constructor(
     name: string,
@@ -991,7 +991,7 @@ export const readonlyArray = <RT extends Mixed>(
 // strict types
 //
 
-export class StrictType<P extends AnyProps, A = any, O = A, I = mixed> extends Type<A, O, I> {
+export class StrictType<P, A = any, O = A, I = mixed> extends Type<A, O, I> {
   readonly _tag: 'StrictType' = 'StrictType'
   constructor(
     name: string,
@@ -1223,6 +1223,45 @@ export function exact<RT extends Exactable>(
     type.encode,
     type
   )
+}
+
+/** Drops the runtime type "kind" */
+export function clean<A, O = A, I = mixed>(type: Type<A, O, I>): Type<A, O, I> {
+  return type as any
+}
+
+export type Exact<T, X extends T> = T &
+  { [K in ({ [K in keyof X]: K } & { [K in keyof T]: never } & { [key: string]: never })[keyof X]]?: never }
+
+/** Keeps the runtime type "kind" */
+export function alias<A, O, P, I>(
+  type: PartialType<P, A, O, I>
+): <
+  AA extends Exact<A, AA>,
+  OO extends Exact<O, OO> = O,
+  PP extends Exact<P, PP> = P,
+  II extends I = I
+>() => PartialType<PP, AA, OO, II>
+export function alias<A, O, P, I>(
+  type: StrictType<P, A, O, I>
+): <
+  AA extends Exact<A, AA>,
+  OO extends Exact<O, OO> = O,
+  PP extends Exact<P, PP> = P,
+  II extends I = I
+>() => StrictType<PP, AA, OO, II>
+export function alias<A, O, P, I>(
+  type: InterfaceType<P, A, O, I>
+): <
+  AA extends Exact<A, AA>,
+  OO extends Exact<O, OO> = O,
+  PP extends Exact<P, PP> = P,
+  II extends I = I
+>() => InterfaceType<PP, AA, OO, II>
+export function alias<A, O, I>(
+  type: Type<A, O, I>
+): <AA extends Exact<A, AA>, OO extends Exact<O, OO> = O>() => Type<AA, OO, I> {
+  return type as any
 }
 
 export { nullType as null, undefinedType as undefined, arrayType as Array, type as interface }
