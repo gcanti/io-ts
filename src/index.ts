@@ -1226,7 +1226,7 @@ export function exact<RT extends Exactable>(
 }
 
 /** Drops the runtime type "kind" */
-export function clean<A, O = A>(type: Type<A, O>): Type<A, O> {
+export function clean<A, O = A, I = mixed>(type: Type<A, O, I>): Type<A, O, I> {
   return type as any
 }
 
@@ -1234,18 +1234,33 @@ export type Exact<T, X extends T> = T &
   { [K in ({ [K in keyof X]: K } & { [K in keyof T]: never } & { [key: string]: never })[keyof X]]?: never }
 
 /** Keeps the runtime type "kind" */
-export function alias<A, O, P>(
-  type: PartialType<P, A, O>
-): <AA extends Exact<A, AA>, OO extends Exact<O, OO> = O, PP extends Exact<P, PP> = P>() => PartialType<PP, AA, OO>
-export function alias<A, O, P>(
-  type: StrictType<P, A, O>
-): <AA extends Exact<A, AA>, OO extends Exact<O, OO> = O, PP extends Exact<P, PP> = P>() => StrictType<PP, AA, OO>
-export function alias<A, O, P>(
-  type: InterfaceType<P, A, O>
-): <AA extends Exact<A, AA>, OO extends Exact<O, OO> = O, PP extends Exact<P, PP> = P>() => InterfaceType<PP, AA, OO>
-export function alias<A, O>(
-  type: Type<A, O>
-): <AA extends Exact<A, AA>, OO extends Exact<O, OO> = O>() => Type<AA, OO> {
+export function alias<A, O, P, I>(
+  type: PartialType<P, A, O, I>
+): <
+  AA extends Exact<A, AA>,
+  OO extends Exact<O, OO> = O,
+  II extends I = I,
+  PP extends Exact<P, PP> = P
+>() => PartialType<PP, AA, OO, II>
+export function alias<A, O, P, I>(
+  type: StrictType<P, A, O, I>
+): <
+  AA extends Exact<A, AA>,
+  OO extends Exact<O, OO> = O,
+  II extends I = I,
+  PP extends Exact<P, PP> = P
+>() => StrictType<PP, AA, OO, II>
+export function alias<A, O, P, I>(
+  type: InterfaceType<P, A, O, I>
+): <
+  AA extends Exact<A, AA>,
+  OO extends Exact<O, OO> = O,
+  II extends I = I,
+  PP extends Exact<P, PP> = P
+>() => InterfaceType<PP, AA, OO, II>
+export function alias<A, O, I>(
+  type: Type<A, O, I>
+): <AA extends Exact<A, AA>, OO extends Exact<O, OO> = O>() => Type<AA, OO, I> {
   return type as any
 }
 
