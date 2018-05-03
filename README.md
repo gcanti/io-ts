@@ -150,34 +150,35 @@ type IPerson = {
 import * as t from 'io-ts'
 ```
 
-| Type               | TypeScript                              | Runtime type / combinator                             |
-| ------------------ | --------------------------------------- | ----------------------------------------------------- |
-| null               | `null`                                  | `t.null` or `t.nullType`                              |
-| undefined          | `undefined`                             | `t.undefined`                                         |
-| string             | `string`                                | `t.string`                                            |
-| number             | `number`                                | `t.number`                                            |
-| boolean            | `boolean`                               | `t.boolean`                                           |
-| any                | `any`                                   | `t.any`                                               |
-| never              | `never`                                 | `t.never`                                             |
-| object             | `object`                                | `t.object`                                            |
-| integer            | ✘                                       | `t.Integer`                                           |
-| array of any       | `Array<mixed>`                          | `t.Array`                                             |
-| array of type      | `Array<A>`                              | `t.array(A)`                                          |
-| dictionary of any  | `{ [key: string]: mixed }`              | `t.Dictionary`                                        |
-| dictionary of type | `{ [K in A]: B }`                       | `t.dictionary(A, B)`                                  |
-| function           | `Function`                              | `t.Function`                                          |
-| literal            | `'s'`                                   | `t.literal('s')`                                      |
-| partial            | `Partial<{ name: string }>`             | `t.partial({ name: t.string })`                       |
-| readonly           | `Readonly<T>`                           | `t.readonly(T)`                                       |
-| readonly array     | `ReadonlyArray<number>`                 | `t.readonlyArray(t.number)`                           |
-| type alias         | `type A = { name: string }`             | `t.type({ name: t.string })`                          |
-| tuple              | `[ A, B ]`                              | `t.tuple([ A, B ])`                                   |
-| union              | `A \| B`                                | `t.union([ A, B ])` or `t.taggedUnion(tag, [ A, B ])` |
-| intersection       | `A & B`                                 | `t.intersection([ A, B ])`                            |
-| keyof              | `keyof M`                               | `t.keyof(M)`                                          |
-| recursive types    | see [Recursive types](#recursive-types) | `t.recursion(name, definition)`                       |
-| refinement         | ✘                                       | `t.refinement(A, predicate)`                          |
-| strict type alias  | ✘                                       | `t.strict({ name: t.string })`                        |
+| Type                      | TypeScript                              | Runtime type / combinator                             |
+| ------------------------- | --------------------------------------- | ----------------------------------------------------- |
+| null                      | `null`                                  | `t.null` or `t.nullType`                              |
+| undefined                 | `undefined`                             | `t.undefined`                                         |
+| string                    | `string`                                | `t.string`                                            |
+| number                    | `number`                                | `t.number`                                            |
+| boolean                   | `boolean`                               | `t.boolean`                                           |
+| any                       | `any`                                   | `t.any`                                               |
+| never                     | `never`                                 | `t.never`                                             |
+| object                    | `object`                                | `t.object`                                            |
+| integer                   | ✘                                       | `t.Integer`                                           |
+| array of any              | `Array<mixed>`                          | `t.Array`                                             |
+| array of type             | `Array<A>`                              | `t.array(A)`                                          |
+| dictionary of any         | `{ [key: string]: mixed }`              | `t.Dictionary`                                        |
+| dictionary of type        | `{ [K in A]: B }`                       | `t.dictionary(A, B)`                                  |
+| function                  | `Function`                              | `t.Function`                                          |
+| literal                   | `'s'`                                   | `t.literal('s')`                                      |
+| partial                   | `Partial<{ name: string }>`             | `t.partial({ name: t.string })`                       |
+| readonly                  | `Readonly<T>`                           | `t.readonly(T)`                                       |
+| readonly array            | `ReadonlyArray<number>`                 | `t.readonlyArray(t.number)`                           |
+| type alias                | `type A = { name: string }`             | `t.type({ name: t.string })`                          |
+| tuple                     | `[ A, B ]`                              | `t.tuple([ A, B ])`                                   |
+| union                     | `A \| B`                                | `t.union([ A, B ])` or `t.taggedUnion(tag, [ A, B ])` |
+| intersection              | `A & B`                                 | `t.intersection([ A, B ])`                            |
+| keyof                     | `keyof M`                               | `t.keyof(M)`                                          |
+| recursive types           | see [Recursive types](#recursive-types) | `t.recursion(name, definition)`                       |
+| refinement                | ✘                                       | `t.refinement(A, predicate)`                          |
+| exact types               | ✘                                       | `t.exact(type)`                                       |
+| strict types (deprecated) | ✘                                       | `t.strict({ name: t.string })`                        |
 
 # Recursive types
 
@@ -228,9 +229,27 @@ const Positive = t.refinement(t.number, n => n >= 0, 'Positive')
 const Adult = t.refinement(Person, person => person.age >= 18, 'Adult')
 ```
 
-# Strict type alias
+# Exact types
 
-You can make a type alias strict (which means that only the given properties are allowed) using the `strict` combinator
+You can make a runtime type alias exact (which means that only the given properties are allowed) using the `exact` combinator
+
+```ts
+const Person = t.type({
+  name: t.string,
+  age: t.number
+})
+
+const ExactPerson = t.exact(Person)
+
+Person.decode({ name: 'Giulio', age: 43, surname: 'Canti' }) // ok
+ExactPerson.decode({ name: 'Giulio', age: 43, surname: 'Canti' }) // fails
+```
+
+# Strict types (deprecated)
+
+**Note**. This combinator is deprecated, use `exact` instead.
+
+You can make a runtime type strict (which means that only the given properties are allowed) using the `strict` combinator
 
 ```ts
 const Person = t.type({

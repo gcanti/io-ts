@@ -1004,7 +1004,10 @@ export class StrictType<P, A = any, O = A, I = mixed> extends Type<A, O, I> {
   }
 }
 
-/** Specifies that only the given properties are allowed */
+/**
+ * Specifies that only the given properties are allowed
+ * @deprecated use `exact` instead
+ */
 export const strict = <P extends Props>(
   props: P,
   name: string = `StrictType<${getNameFromProps(props)}>`
