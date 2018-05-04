@@ -441,4 +441,11 @@ t.InterfaceType<{
     }>, t.mixed>;
 }, NestedInterface, NestedInterface, t.mixed>
 */
+
+// you can also alias the props
+interface NestedInterfaceProps extends t.PropsOf<typeof _NestedInterface> {}
+export const NestedInterface = t.alias(_NestedInterface)<NestedInterface, NestedInterface, NestedInterfaceProps>()
+/*
+const NestedInterface: t.InterfaceType<NestedInterfaceProps, NestedInterface, NestedInterface, t.mixed>
+*/
 ```
