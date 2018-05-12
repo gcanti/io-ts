@@ -76,4 +76,11 @@ describe('partial', () => {
     })
     assertDeepEqual(T.decode({}), { name: 'foo' })
   })
+
+  it('should assign a default name', () => {
+    const T1 = t.partial({ a: t.number })
+    assert.strictEqual(T1.name, 'PartialType<{ a: number }>')
+    const T2 = t.partial({ a: t.number }, 'T2')
+    assert.strictEqual(T2.name, 'T2')
+  })
 })

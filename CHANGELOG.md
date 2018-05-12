@@ -13,6 +13,12 @@
 **Note**: Gaps between patch versions are faulty/broken releases. **Note**: A feature tagged as Experimental is in a
 high state of flux, you're at risk of it changing without notice.
 
+# 1.1.2
+
+* **Bug Fix**
+  * fix `alias` implementation (@gcanti)
+  * handle exact types in `isTagged` (@gcanti)
+
 # 1.1.1
 
 * **Experimental**

@@ -1,12 +1,13 @@
+import * as assert from 'assert'
 import * as t from '../src/index'
 import { assertSuccess, assertFailure } from './helpers'
 
 describe('Dictionary', () => {
-  it('should accept arrays', () => {
+  it('should decode arrays', () => {
     assertSuccess(t.Dictionary.decode([]))
   })
 
-  it('should accept objects', () => {
+  it('should decode objects', () => {
     assertSuccess(t.Dictionary.decode({}))
   })
 
@@ -40,11 +41,11 @@ describe('null', () => {
 })
 
 describe('object', () => {
-  it('should accept arrays', () => {
+  it('should decode arrays', () => {
     assertSuccess(t.object.decode([]))
   })
 
-  it('should accept objects', () => {
+  it('should decode objects', () => {
     assertSuccess(t.object.decode({}))
   })
 
@@ -63,7 +64,74 @@ describe('object', () => {
 })
 
 describe('Function', () => {
-  it('should accept functions', () => {
+  it('should decode functions', () => {
     assertSuccess(t.Function.decode(t.identity))
+  })
+
+  it('should not decode non-functions', () => {
+    assertFailure(t.Function.decode(1), ['Invalid value 1 supplied to : Function'])
+  })
+})
+
+describe('any', () => {
+  it('should decode any value', () => {
+    assertSuccess(t.any.decode(null))
+    assertSuccess(t.any.decode(undefined))
+    assertSuccess(t.any.decode('foo'))
+    assertSuccess(t.any.decode(1))
+    assertSuccess(t.any.decode(true))
+    assertSuccess(t.any.decode(t.identity))
+    assertSuccess(t.any.decode({}))
+    assertSuccess(t.any.decode([]))
+    assertSuccess(t.any.decode(/a/))
+  })
+
+  it('should accept any value', () => {
+    assert.ok(t.any.is(null))
+    assert.ok(t.any.is(undefined))
+    assert.ok(t.any.is('foo'))
+    assert.ok(t.any.is(1))
+    assert.ok(t.any.is(true))
+    assert.ok(t.any.is(t.identity))
+    assert.ok(t.any.is({}))
+    assert.ok(t.any.is([]))
+    assert.ok(t.any.is(/a/))
+  })
+})
+
+describe('never', () => {
+  it('should not decode any value', () => {
+    assertFailure(t.never.decode(null), ['Invalid value null supplied to : never'])
+    assertFailure(t.never.decode(undefined), ['Invalid value undefined supplied to : never'])
+    assertFailure(t.never.decode('foo'), ['Invalid value "foo" supplied to : never'])
+    assertFailure(t.never.decode(1), ['Invalid value 1 supplied to : never'])
+    assertFailure(t.never.decode(true), ['Invalid value true supplied to : never'])
+    assertFailure(t.never.decode(t.identity), ['Invalid value <function1> supplied to : never'])
+    assertFailure(t.never.decode({}), ['Invalid value {} supplied to : never'])
+    assertFailure(t.never.decode([]), ['Invalid value [] supplied to : never'])
+    assertFailure(t.never.decode(/a/), ['Invalid value {} supplied to : never'])
+  })
+
+  it('should not accept any value', () => {
+    assert.ok(!t.never.is(null))
+    assert.ok(!t.never.is(undefined))
+    assert.ok(!t.never.is('foo'))
+    assert.ok(!t.never.is(1))
+    assert.ok(!t.never.is(true))
+    assert.ok(!t.never.is(t.identity))
+    assert.ok(!t.never.is({}))
+    assert.ok(!t.never.is([]))
+    assert.ok(!t.never.is(/a/))
+  })
+})
+
+describe('boolean', () => {
+  it('should decode boolean values', () => {
+    assertSuccess(t.boolean.decode(true))
+    assertSuccess(t.boolean.decode(false))
+  })
+
+  it('should not decode non-boolean values', () => {
+    assertFailure(t.boolean.decode(1), ['Invalid value 1 supplied to : boolean'])
   })
 })

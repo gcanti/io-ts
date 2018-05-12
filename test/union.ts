@@ -46,4 +46,11 @@ describe('union', () => {
     assert.strictEqual(T2.is('foo'), true)
     assert.strictEqual(T2.is(true), false)
   })
+
+  it('should assign a default name', () => {
+    const T1 = t.union([t.string, t.number])
+    assert.strictEqual(T1.name, '(string | number)')
+    const T2 = t.union([t.string, t.number], 'T2')
+    assert.strictEqual(T2.name, 'T2')
+  })
 })

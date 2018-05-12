@@ -25,4 +25,11 @@ describe('keyof', () => {
     assert.strictEqual(T.is('c'), false)
     assert.strictEqual(T.is(undefined), false)
   })
+
+  it('should assign a default name', () => {
+    const T1 = t.keyof({ a: 1, b: 2 })
+    assert.strictEqual(T1.name, '(keyof ["a","b"])')
+    const T2 = t.keyof({ a: 1, b: 2 }, 'T2')
+    assert.strictEqual(T2.name, 'T2')
+  })
 })

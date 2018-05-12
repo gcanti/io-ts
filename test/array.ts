@@ -46,4 +46,11 @@ describe('array', () => {
     assert.strictEqual(T2.is([new Date(0)]), true)
     assert.strictEqual(T2.is([new Date(0), 0]), false)
   })
+
+  it('should assign a default name', () => {
+    const T1 = t.array(t.number)
+    assert.strictEqual(T1.name, 'Array<number>')
+    const T2 = t.array(t.number, 'T2')
+    assert.strictEqual(T2.name, 'T2')
+  })
 })

@@ -24,4 +24,11 @@ describe('literal', () => {
     assert.strictEqual(T.is('b'), false)
     assert.strictEqual(T.is(undefined), false)
   })
+
+  it('should assign a default name', () => {
+    const T1 = t.literal('a')
+    assert.strictEqual(T1.name, '"a"')
+    const T2 = t.literal('a', 'T2')
+    assert.strictEqual(T2.name, 'T2')
+  })
 })

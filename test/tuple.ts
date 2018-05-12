@@ -21,6 +21,7 @@ describe('tuple', () => {
 
   it('should fail validating an invalid value', () => {
     const T = t.tuple([t.number, t.string])
+    assertFailure(T.decode(1), ['Invalid value 1 supplied to : [number, string]'])
     assertFailure(T.decode([]), [
       'Invalid value undefined supplied to : [number, string]/0: number',
       'Invalid value undefined supplied to : [number, string]/1: string'
@@ -53,5 +54,12 @@ describe('tuple', () => {
     assert.strictEqual(T2.is(undefined), false)
     assert.strictEqual(T2.is([new Date(0)]), false)
     assert.strictEqual(T2.is([new Date(0), 'foo', true]), false)
+  })
+
+  it('should assign a default name', () => {
+    const T1 = t.tuple([t.number, t.string])
+    assert.strictEqual(T1.name, '[number, string]')
+    const T2 = t.tuple([t.number, t.string], 'T2')
+    assert.strictEqual(T2.name, 'T2')
   })
 })

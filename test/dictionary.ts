@@ -32,6 +32,7 @@ describe('dictionary', () => {
 
   it('should fail validating an invalid value', () => {
     const T = t.dictionary(t.string, t.number)
+    assertFailure(T.decode(1), ['Invalid value 1 supplied to : { [K in string]: number }'])
     assertFailure(T.decode({ aa: 's' }), ['Invalid value "s" supplied to : { [K in string]: number }/aa: number'])
   })
 
@@ -78,5 +79,12 @@ describe('dictionary', () => {
     assert.strictEqual(T3.is({}), true)
     assert.strictEqual(T3.is({ 'a-a': 1 }), true)
     assert.strictEqual(T3.is({ aa: 1 }), false)
+  })
+
+  it('should assign a default name', () => {
+    const T1 = t.dictionary(t.string, t.number)
+    assert.strictEqual(T1.name, '{ [K in string]: number }')
+    const T2 = t.dictionary(t.string, t.number, 'T2')
+    assert.strictEqual(T2.name, 'T2')
   })
 })

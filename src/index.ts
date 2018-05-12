@@ -160,8 +160,9 @@ export class NeverType extends Type<never> {
       'never',
       (_): _ is never => false,
       (m, c) => failure(m, c),
+      /* istanbul ignore next */
       () => {
-        throw new Error('cannot serialize never')
+        throw new Error('cannot encode never')
       }
     )
   }
@@ -528,6 +529,7 @@ export const type = <P extends Props>(
           } else {
             const vok = validation.value
             if (vok !== ok) {
+              /* istanbul ignore next */
               if (a === o) {
                 a = { ...o }
               }
@@ -896,6 +898,7 @@ export function tuple<RTS extends Array<Mixed>>(
           } else {
             const va = validation.value
             if (va !== a) {
+              /* istanbul ignore next */
               if (t === as) {
                 t = as.slice()
               }
@@ -1050,7 +1053,7 @@ export type Tagged<Tag extends string, A = any, O = A> =
   | TaggedIntersection<Tag, A, O>
   | TaggedExact<Tag>
 
-const isTagged = <Tag extends string>(tag: Tag): ((type: Mixed) => type is Tagged<Tag>) => {
+export const isTagged = <Tag extends string>(tag: Tag): ((type: Mixed) => type is Tagged<Tag>) => {
   const f = (type: Mixed): type is Tagged<Tag> => {
     if (type instanceof InterfaceType || type instanceof StrictType) {
       return type.props.hasOwnProperty(tag)
@@ -1058,7 +1061,7 @@ const isTagged = <Tag extends string>(tag: Tag): ((type: Mixed) => type is Tagge
       return type.types.some(f)
     } else if (type instanceof UnionType) {
       return type.types.every(f)
-    } else if (type instanceof RefinementType) {
+    } else if (type instanceof RefinementType || type instanceof ExactType) {
       return f(type.type)
     } else {
       return false
@@ -1080,7 +1083,7 @@ const findTagged = <Tag extends string>(tag: Tag, types: TaggedIntersectionArgum
   return types[i] as any
 }
 
-const getTagValue = <Tag extends string>(tag: Tag): ((type: Tagged<Tag>) => string | number | boolean) => {
+export const getTagValue = <Tag extends string>(tag: Tag): ((type: Tagged<Tag>) => string | number | boolean) => {
   const f = (type: Tagged<Tag>): string => {
     switch (type._tag) {
       case 'InterfaceType':
@@ -1278,7 +1281,7 @@ export function alias<A, O, P, I>(
 export function alias<A, O, I>(
   type: Type<A, O, I>
 ): <AA extends Exact<A, AA>, OO extends Exact<O, OO> = O>() => Type<AA, OO, I> {
-  return type as any
+  return () => type as any
 }
 
 export { nullType as null, undefinedType as undefined, arrayType as Array, type as interface }

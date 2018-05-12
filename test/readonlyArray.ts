@@ -18,6 +18,14 @@ describe('readonlyArray', () => {
     T.decode([1]).map(x => assert.ok(Object.isFrozen(x)))
   })
 
+  it('should not freeze in production', () => {
+    const env = process.env.NODE_ENV
+    process.env.NODE_ENV = 'production'
+    const T = t.readonlyArray(t.number)
+    T.decode([1]).map(x => assert.ok(!Object.isFrozen(x)))
+    process.env.NODE_ENV = env
+  })
+
   it('should serialize a deserialized', () => {
     const T = t.readonlyArray(DateFromNumber)
     assert.deepEqual(T.encode([new Date(0), new Date(1)]), [0, 1])
@@ -39,5 +47,12 @@ describe('readonlyArray', () => {
     assert.strictEqual(T2.is([new Date(0)]), true)
     assert.strictEqual(T2.is([new Date(0), 'foo']), false)
     assert.strictEqual(T2.is(undefined), false)
+  })
+
+  it('should assign a default name', () => {
+    const T1 = t.readonlyArray(t.number)
+    assert.strictEqual(T1.name, 'ReadonlyArray<number>')
+    const T2 = t.readonlyArray(t.number, 'T2')
+    assert.strictEqual(T2.name, 'T2')
   })
 })
