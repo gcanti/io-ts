@@ -321,23 +321,36 @@ Note that you can **deserialize** while validating.
 
 ## Is there a way to turn the checks off in production code?
 
-No, however you can define your own logic for that (if you _really_ trust the input and the involved types don't perform
-deserializations)
+No, however you can define your own logic for that (if you _really_ trust the input)
 
 ```ts
 import * as t from 'io-ts'
-import { failure } from 'io-ts/lib/PathReporter'
+import { Either, right } from 'fp-ts/lib/Either'
 
 const { NODE_ENV } = process.env
 
-export function unsafeValidate<A, O>(value: any, type: t.Type<A, O>): A {
-  if (NODE_ENV !== 'production') {
+export function unsafeDecode<A, O>(value: t.mixed, type: t.Type<A, O>): Either<t.Errors, A> {
+  if (NODE_ENV !== 'production' || type.encode !== t.identity) {
+    return type.decode(value)
+  } else {
+    // unsafe cast
+    return right(value as A)
+  }
+}
+
+// or...
+
+import { failure } from 'io-ts/lib/PathReporter'
+
+export function unsafeGet<A, O>(value: t.mixed, type: t.Type<A, O>): A {
+  if (NODE_ENV !== 'production' || type.encode !== t.identity) {
     return type.decode(value).getOrElseL(errors => {
       throw new Error(failure(errors).join('\n'))
     })
+  } else {
+    // unsafe cast
+    return value as A
   }
-  // unsafe cast
-  return value as A
 }
 ```
 
