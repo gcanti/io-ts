@@ -12,7 +12,8 @@
     "strict": true,
     "target": "es5",
     "moduleResolution": "node",
-    "forceConsistentCasingInFileNames": true
+    "forceConsistentCasingInFileNames": true,
+    "lib": ["es2015"]
   },
   "include": ["./src/**/*"]
 }
