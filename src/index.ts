@@ -1195,9 +1195,6 @@ export type HasProps =
   | StrictType<any, any, any, any>
   | PartialType<any, any, any, any>
 
-// typings-checker doesn't know Object.assign
-const assign = (Object as any).assign
-
 const getProps = (type: HasProps): Props => {
   switch (type._tag) {
     case 'RefinementType':
@@ -1208,7 +1205,7 @@ const getProps = (type: HasProps): Props => {
     case 'PartialType':
       return type.props
     case 'IntersectionType':
-      return type.types.reduce<Props>((props, type) => assign(props, getProps(type)), {})
+      return type.types.reduce<Props>((props, type) => Object.assign(props, getProps(type)), {})
   }
 }
 
