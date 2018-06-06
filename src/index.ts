@@ -7,7 +7,7 @@ declare global {
   }
 }
 
-export type mixed = object | number | string | boolean | symbol | undefined | null
+export type mixed = { [key: string]: any } | object | number | string | boolean | symbol | undefined | null
 
 export interface ContextEntry {
   readonly key: string
