@@ -13,6 +13,11 @@
 **Note**: Gaps between patch versions are faulty/broken releases. **Note**: A feature tagged as Experimental is in a
 high state of flux, you're at risk of it changing without notice.
 
+# 1.1.4
+
+* **Internal**
+  * fix broken build with `typescript@2.9.1`, closes #174 (@gcanti)
+
 # 1.1.3
 
 * **Internal**
