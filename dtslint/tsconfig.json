@@ -2,6 +2,10 @@
   "compilerOptions": {
     "noEmit": true,
     "strict": true,
+    "noImplicitAny": true,
+    "noImplicitThis": true,
+    "strictNullChecks": true,
+    "strictFunctionTypes": true,
     "noImplicitReturns": false,
     "noUnusedLocals": false,
     "noUnusedParameters": true,

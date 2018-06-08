@@ -1,10 +1,10 @@
 import * as t from '../src'
-import { TypeOf } from '../src'
 
 //
 // recursion
 //
-type RecT1 = {
+
+interface RecT1 {
   type: 'a'
   items: Array<RecT1>
 }
@@ -15,7 +15,8 @@ const Rec1 = t.recursion<RecT1>('T', Self =>
     items: t.array(Self)
   })
 )
-// $ExpectError Argument of type '(Self: Type<string, string, mixed>) => InterfaceType<{ type: LiteralType<"a">; items: ArrayType<T...' is not assignable to parameter of type '(self: Type<string, string, mixed>) => Type<string, string, mixed>'
+
+// $ExpectError
 const Rec2 = t.recursion<string>('T', Self =>
   t.interface({
     type: t.literal('a'),
@@ -28,72 +29,56 @@ const Rec2 = t.recursion<string>('T', Self =>
 //
 
 const L1 = t.literal('a')
-// $ExpectError Type '"s"' is not assignable to type '"a"'
-const x1: TypeOf<typeof L1> = 's'
-const x2: TypeOf<typeof L1> = 'a'
+type Assert1 = t.TypeOf<typeof L1> // $ExpectType "a"
 
 //
 // keyof
 //
 
 const K1 = t.keyof({ a: true, b: true })
-// $ExpectError Type '"s"' is not assignable to type '"a" | "b"'
-const x3: TypeOf<typeof K1> = 's'
-const x4: TypeOf<typeof K1> = 'a'
-const x5: TypeOf<typeof K1> = 'b'
+type Assert2 = t.TypeOf<typeof K1> // $ExpectType "a" | "b"
 
 //
 // default types
 //
 
-// $ExpectError Type 'undefined' cannot be converted to type 'null'
-undefined as TypeOf<typeof t.null>
-null as TypeOf<typeof t.null>
+type Assert3 = t.TypeOf<typeof t.null> // $ExpectType null
 
-// $ExpectError Type 'null' cannot be converted to type 'undefined'
-null as TypeOf<typeof t.undefined>
-undefined as TypeOf<typeof t.undefined>
+type Assert4 = t.TypeOf<typeof t.undefined> // $ExpectType undefined
 
-// $ExpectError Type 'number' cannot be converted to type 'string'
-1 as TypeOf<typeof t.string>
-'s' as TypeOf<typeof t.string>
+type Assert5 = t.TypeOf<typeof t.string> // $ExpectType string
 
 //
 // refinement
 //
 
 const R1 = t.refinement(t.number, n => n % 2 === 0)
-// $ExpectError Type 'string' cannot be converted to type 'number'
-'s' as TypeOf<typeof R1>
-2 as TypeOf<typeof R1>
+type Assert6 = t.TypeOf<typeof R1> // $ExpectType number
 
 //
 // array
 //
 
 const A1 = t.array(t.number)
-// $ExpectError Type 'string' cannot be converted to type 'number[]'
-'s' as TypeOf<typeof A1>
-// $ExpectError Type 'string' is not comparable to type 'number'
-['s'] as TypeOf<typeof A1>
-[1] as TypeOf<typeof A1>
+type Assert7 = t.TypeOf<typeof A1> // $ExpectType number[]
 
 //
 // interface
 //
 
 const I1 = t.interface({ name: t.string, age: t.number })
-// $ExpectError Property 'name' is missing in type '{}'
-const x6: TypeOf<typeof I1> = {}
-// $ExpectError Property 'age' is missing in type '{ name: string; }'
-const x7: TypeOf<typeof I1> = { name: 'name' }
-// $ExpectError Property 'name' is missing in type '{ age: number; }'
-const x8: TypeOf<typeof I1> = { age: 43 }
-const x9: TypeOf<typeof I1> = { name: 'name', age: 43 }
+type Assert8 = t.TypeOf<typeof I1> // $ExpectType TypeOfProps<{ name: StringType; age: NumberType; }>
+// $ExpectError
+const x6: t.TypeOf<typeof I1> = {}
+// $ExpectError
+const x7: t.TypeOf<typeof I1> = { name: 'name' }
+// $ExpectError
+const x8: t.TypeOf<typeof I1> = { age: 43 }
+const x9: t.TypeOf<typeof I1> = { name: 'name', age: 43 }
 
 const I2 = t.interface({ name: t.string, father: t.interface({ surname: t.string }) })
-type I2T = TypeOf<typeof I2>
-// $ExpectError Property 'surname' is missing in type '{}'
+type I2T = t.TypeOf<typeof I2>
+// $ExpectError
 const x10: I2T = { name: 'name', father: {} }
 const x11: I2T = { name: 'name', father: { surname: 'surname' } }
 
@@ -102,47 +87,47 @@ const x11: I2T = { name: 'name', father: { surname: 'surname' } }
 //
 
 const D1 = t.dictionary(t.keyof({ a: true }), t.number)
-// $ExpectError Type 'string' is not assignable to type 'number'
-const x12: TypeOf<typeof D1> = { a: 's' }
-// $ExpectError Type '{ c: number; }' is not assignable to type 'TypeOfDictionary<KeyofType<{ a: true; }>, NumberType>'
-const x12_2: TypeOf<typeof D1> = { c: 1 }
-const x13: TypeOf<typeof D1> = { a: 1 }
+type Assert9 = t.TypeOf<typeof D1> // $ExpectType TypeOfDictionary<KeyofType<{ a: true; }>, NumberType>
+// $ExpectError
+const x12: t.TypeOf<typeof D1> = { a: 's' }
+// $ExpectError
+const x12_2: t.TypeOf<typeof D1> = { c: 1 }
+const x13: t.TypeOf<typeof D1> = { a: 1 }
 
 //
 // union
 //
 
 const U1 = t.union([t.string, t.number])
-// $ExpectError Type 'true' is not assignable to type 'string | number'
-const x14: TypeOf<typeof U1> = true
-const x15: TypeOf<typeof U1> = 's'
-const x16: TypeOf<typeof U1> = 1
+type Assert10 = t.TypeOf<typeof U1> // $ExpectType string | number
 
 //
 // intersection
 //
 
-const IN1 = t.intersection([t.interface({ a: t.number }), t.interface({ b: t.string })])
-// $ExpectError Property 'b' is missing in type '{ a: number; }'
-const x17: TypeOf<typeof IN1> = { a: 1 }
-const x18: TypeOf<typeof IN1> = { a: 1, b: 's' }
+const IN1 = t.intersection([t.string, t.number])
+type Assert11 = t.TypeOf<typeof IN1> // $ExpectType string & number
+const IN2 = t.intersection([t.interface({ a: t.number }), t.interface({ b: t.string })])
+type Assert12 = t.TypeOf<typeof IN2> // $ExpectType TypeOfProps<{ a: NumberType; }> & TypeOfProps<{ b: StringType; }>
+// $ExpectError
+const x17: t.TypeOf<typeof IN2> = { a: 1 }
+const x18: t.TypeOf<typeof IN2> = { a: 1, b: 's' }
 
 //
 // tuple
 //
 
 const T1 = t.tuple([t.string, t.number])
-// $ExpectError Type 'boolean' is not assignable to type 'number'
-const x19: TypeOf<typeof T1> = ['s', true]
-const x20: TypeOf<typeof T1> = ['s', 1]
+type Assert13 = t.TypeOf<typeof T1> // $ExpectType [string, number]
 
 //
 // partial
 //
 
 const P1 = t.partial({ name: t.string })
-type P1T = TypeOf<typeof P1>
-// $ExpectError Type 'number' is not assignable to type 'string | undefined'
+type Assert14 = t.TypeOf<typeof P1> // $ExpectType TypeOfPartialProps<{ name: StringType; }>
+type P1T = t.TypeOf<typeof P1>
+// $ExpectError
 const x21: P1T = { name: 1 }
 const x22: P1T = {}
 const x23: P1T = { name: 's' }
@@ -152,23 +137,25 @@ const x23: P1T = { name: 's' }
 //
 
 const RO1 = t.readonly(t.interface({ name: t.string }))
-const x24: TypeOf<typeof RO1> = { name: 's' }
-// $ExpectError Cannot assign to 'name' because it is a constant or a read-only property
+type Assert15 = t.TypeOf<typeof RO1> // $ExpectType Readonly<TypeOfProps<{ name: StringType; }>>
+const x24: t.TypeOf<typeof RO1> = { name: 's' }
+// $ExpectError
 x24.name = 's2'
-// $ExpectError Type 'number' is not assignable to type 'string'
-const x25: TypeOf<typeof RO1> = { name: 1 }
+// $ExpectError
+const x25: t.TypeOf<typeof RO1> = { name: 1 }
 
 //
 // readonlyArray
 //
 
 const ROA1 = t.readonlyArray(t.number)
-// $ExpectError Type 'string[]' is not assignable to type 'ReadonlyArray<number>'
-const x26: TypeOf<typeof ROA1> = ['s']
-const x27: TypeOf<typeof ROA1> = [1]
-// $ExpectError Index signature in type 'ReadonlyArray<number>' only permits reading
+type Assert16 = t.TypeOf<typeof ROA1> // $ExpectType ReadonlyArray<number>
+// $ExpectError
+const x26: t.TypeOf<typeof ROA1> = ['s']
+const x27: t.TypeOf<typeof ROA1> = [1]
+// $ExpectError
 x27[0] = 2
-// $ExpectError Property 'push' does not exist on type 'ReadonlyArray<number>'
+// $ExpectError
 x27.push(2)
 
 //
@@ -176,23 +163,85 @@ x27.push(2)
 //
 
 const S1 = t.strict({ name: t.string })
-type TS1 = TypeOf<typeof S1>
+type Assert17 = t.TypeOf<typeof S1> // $ExpectType TypeOfProps<{ name: StringType; }>
+type TS1 = t.TypeOf<typeof S1>
 const x32: TS1 = { name: 'Giulio' }
 const x33input = { name: 'foo', foo: 'foo' }
 const x33: TS1 = x33input
-// $ExpectError Argument of type 'StringType' is not assignable to parameter of type 'Props'
+// $ExpectError
 const S2 = t.strict(t.string)
 
 //
 // object
 //
-const O1 = t.object
-type TO1 = TypeOf<typeof O1>
-const x34: TO1 = { name: 'Giulio' }
-// $ExpectError Type '"foo"' is not assignable to type 'object'
-const x35: TO1 = 'foo'
 
-type GenerableProps = { [key: string]: Generable }
+const O1 = t.object
+type Assert18 = t.TypeOf<typeof O1> // $ExpectType object
+
+//
+// tagged unions
+//
+
+const TU1 = t.taggedUnion('type', [t.type({ type: t.literal('a') }), t.type({ type: t.literal('b') })])
+type Assert19 = t.TypeOf<typeof TU1> // $ExpectType TypeOfProps<{ type: LiteralType<"a">; }> | TypeOfProps<{ type: LiteralType<"b">; }>
+// $ExpectError
+const x36: t.TypeOf<typeof TU1> = true
+const x37: t.TypeOf<typeof TU1> = { type: 'a' }
+const x38: t.TypeOf<typeof TU1> = { type: 'b' }
+
+//
+// exact
+//
+
+declare const E1: t.InterfaceType<{ a: t.NumberType }, { a: number }, { a: number }, { a: number }>
+const E2 = t.exact(E1) // $ExpectType ExactType<InterfaceType<{ a: NumberType; }, { a: number; }, { a: number; }, { a: number; }>, { a: number; }, { a: number; }, { a: number; }>
+
+//
+// clean / alias
+//
+
+import { DateFromNumber } from '../test/helpers'
+
+const C1 = t.type({
+  a: t.string,
+  b: DateFromNumber
+})
+
+interface C1 {
+  a: string
+  b: Date
+}
+
+interface C1O {
+  a: string
+  b: number
+}
+
+interface C1WithAdditionalProp {
+  a: string
+  b: Date
+  c: boolean
+}
+
+// $ExpectError
+const C2 = t.clean<C1>(C1)
+// $ExpectError
+const C3 = t.clean<C1WithAdditionalProp, C1O>(C1)
+const C4 = t.clean<C1, C1O>(C1) // $ExpectType Type<C1, C1O, mixed>
+const C5 = t.alias(C1)<C1>() // $ExpectType InterfaceType<{ a: StringType; b: Type<Date, number, mixed>; }, C1, OutputOfProps<{ a: StringType; b: Type<Date, number, mixed>; }>, mixed>
+// $ExpectError
+const C6 = t.alias(C1)<C1, C1>()
+// $ExpectError
+const C7 = t.alias(C1)<C1WithAdditionalProp, C1O>()
+const C8 = t.alias(C1)<C1, C1O>() // $ExpectType InterfaceType<{ a: StringType; b: Type<Date, number, mixed>; }, C1, C1O, mixed>
+
+//
+// combinators
+//
+
+interface GenerableProps {
+  [key: string]: Generable
+}
 type GenerableInterface = t.InterfaceType<GenerableProps>
 type GenerableStrict = t.StrictType<GenerableProps>
 type GenerablePartials = t.PartialType<GenerableProps>
@@ -252,7 +301,7 @@ function f(generable: Generable): string {
     case 'IntersectionType':
       return 'IntersectionType'
     case 'TupleType':
-      return generable.types.map(type => f(type)).join('/')
+      return generable.types.map(f).join('/')
     case 'ReadonlyType':
       return 'ReadonlyType'
     case 'ReadonlyArrayType':
@@ -288,7 +337,8 @@ const schema = t.interface({
 })
 
 f(schema) // OK!
-type Rec = {
+
+interface Rec {
   a: number
   b: Rec | undefined
 }
@@ -301,19 +351,6 @@ const Rec = t.recursion<Rec, Rec, t.mixed, GenerableInterface>('T', self =>
 )
 
 f(Rec) // OK!
-
-//
-// tagged union
-//
-const TU1 = t.taggedUnion('type', [t.type({ type: t.literal('a') }), t.type({ type: t.literal('b') })])
-// $ExpectError Type 'true' is not assignable to type 'TypeOfProps<{ type: LiteralType<"a">; }> | TypeOfProps<{ type: LiteralType<"b">; }>'
-const x36: TypeOf<typeof TU1> = true
-const x37: TypeOf<typeof TU1> = { type: 'a' }
-const x38: TypeOf<typeof TU1> = { type: 'b' }
-
-//
-// custom combinators
-//
 
 export function interfaceWithOptionals<RequiredProps extends t.Props, OptionalProps extends t.Props>(
   required: RequiredProps,
@@ -358,58 +395,5 @@ export const Action = t.union([
   })
 ])
 
-// ActionType: t.Type<"Action1" | "Action2", "Action1" | "Action2", t.mixed>
 const ActionType = pluck(Action, 'type')
-
-//
-// AnyType
-//
-
-declare const Any1: t.AnyType | t.InterfaceType<any>
-Any1.decode(1)
-
-//
-// exact
-//
-
-declare const E1: t.InterfaceType<{ a: t.NumberType }, { a: number }, { a: number }, { a: number }>
-const E2: t.Type<any, any, { a: number }> = t.exact(E1)
-
-//
-// clean / alias
-//
-
-import { DateFromNumber } from '../test/helpers'
-
-const C1 = t.type({
-  a: t.string,
-  b: DateFromNumber
-})
-
-interface C1 {
-  a: string
-  b: Date
-}
-
-interface C1O {
-  a: string
-  b: number
-}
-
-interface C1WithAdditionalProp {
-  a: string
-  b: Date
-  c: boolean
-}
-
-// $ExpectError ype 'number' is not assignable to type 'Date'
-const C2 = t.clean<C1>(C1)
-// $ExpectError Property 'c' is missing in type 'TypeOfProps<{ a: StringType; b: Type<Date, number, mixed>; }>'
-const C3 = t.clean<C1WithAdditionalProp, C1O>(C1)
-const C4 = t.clean<C1, C1O>(C1)
-const C5 = t.alias(C1)<C1>()
-// $ExpectError Type 'Date' is not assignable to type 'number'
-const C6 = t.alias(C1)<C1, C1>()
-// $ExpectError Type 'boolean' is not assignable to type 'undefined'
-const C7 = t.alias(C1)<C1WithAdditionalProp, C1O>()
-const C8 = t.alias(C1)<C1, C1O>()
+type Assert20 = t.TypeOf<typeof ActionType> // $ExpectType "Action1" | "Action2"

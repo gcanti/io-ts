@@ -2,22 +2,21 @@
   "name": "io-ts",
   "version": "1.1.4",
   "description": "TypeScript compatible runtime type system for IO validation",
-  "files": ["lib"],
+  "files": [
+    "lib"
+  ],
   "main": "lib/index.js",
   "typings": "lib/index.d.ts",
   "scripts": {
     "lint": "tslint -p tsconfig.json src/**/*.ts test/**/*.ts",
-    "typings-checker":
-      "typings-checker --allow-expect-error --project typings-checker/tsconfig.json typings-checker/index.ts",
     "jest": "jest",
-    "prettier":
-      "prettier --no-semi --single-quote --print-width 120 --parser typescript --list-different \"{src,test}/**/*.ts\"",
-    "fix-prettier":
-      "prettier --no-semi --single-quote --print-width 120 --parser typescript --write \"{src,test,examples,exercises}/**/*.ts\"",
-    "test": "npm run prettier && npm run lint && npm run typings-checker && npm run jest",
+    "prettier": "prettier --no-semi --single-quote --print-width 120 --parser typescript --list-different \"{src,test}/**/*.ts\"",
+    "fix-prettier": "prettier --no-semi --single-quote --print-width 120 --parser typescript --write \"{src,test,examples,exercises}/**/*.ts\"",
+    "test": "npm run prettier && npm run lint && npm run dtslint && npm run jest",
     "clean": "rimraf lib/*",
     "build": "npm run clean && tsc",
-    "perf": "node perf/index"
+    "perf": "node perf/index",
+    "dtslint": "dtslint dtslint"
   },
   "repository": {
     "type": "git",
@@ -37,17 +36,29 @@
     "@types/jest": "22.2.2",
     "@types/node": "7.0.4",
     "benchmark": "2.1.4",
+    "dtslint": "0.3.0",
     "jest": "22.4.3",
-    "prettier": "1.12.1",
+    "prettier": "1.13.4",
     "rimraf": "2.6.2",
     "ts-jest": "22.4.2",
     "tslint": "5.9.1",
     "tslint-config-standard": "7.0.0",
-    "typescript": "2.9.1",
-    "typings-checker": "2.0.0"
+    "typescript": "2.9.1"
   },
-  "tags": ["typescript", "validation", "inference", "types", "runtime"],
-  "keywords": ["typescript", "validation", "inference", "types", "runtime"],
+  "tags": [
+    "typescript",
+    "validation",
+    "inference",
+    "types",
+    "runtime"
+  ],
+  "keywords": [
+    "typescript",
+    "validation",
+    "inference",
+    "types",
+    "runtime"
+  ],
   "jest": {
     "globals": {
       "ts-jest": {
@@ -59,7 +70,12 @@
       "^.+\\.tsx?$": "ts-jest"
     },
     "testRegex": "test",
-    "moduleFileExtensions": ["ts", "js"],
-    "testPathIgnorePatterns": ["helpers.ts"]
+    "moduleFileExtensions": [
+      "ts",
+      "js"
+    ],
+    "testPathIgnorePatterns": [
+      "helpers.ts"
+    ]
   }
 }
