@@ -10,9 +10,9 @@ A value of type `Type<A, O, I>` (called "runtime type") is the runtime represent
 
 Also a runtime type can
 
-* decode inputs of type `I` (through `decode`)
-* encode outputs of type `O` (through `encode`)
-* be used as a custom type guard (through `is`)
+- decode inputs of type `I` (through `decode`)
+- encode outputs of type `O` (through `encode`)
+- be used as a custom type guard (through `is`)
 
 ```ts
 export type mixed = object | number | string | boolean | symbol | undefined | null
@@ -77,7 +77,7 @@ Person.decode(JSON.parse('{"name":"Giulio"}')) // => Left([...])
 
 # TypeScript compatibility
 
-The stable version is tested against TypeScript 2.9.x
+The stable version is tested against TypeScript 2.7.x+
 
 # Error reporters
 
@@ -91,8 +91,8 @@ interface Reporter<A> {
 
 This package exports two default reporters
 
-* `PathReporter: Reporter<Array<string>>`
-* `ThrowReporter: Reporter<void>`
+- `PathReporter: Reporter<Array<string>>`
+- `ThrowReporter: Reporter<void>`
 
 Example
 
@@ -111,12 +111,12 @@ ThrowReporter.report(result)
 
 # Community
 
-* [io-ts-types](https://github.com/gcanti/io-ts-types) - A collection of runtime types and combinators for use with
+- [io-ts-types](https://github.com/gcanti/io-ts-types) - A collection of runtime types and combinators for use with
   io-ts
-* [io-ts-reporters](https://github.com/OliverJAsh/io-ts-reporters) - Error reporters for io-ts
-* [geojson-iots](https://github.com/pierremarc/geojson-iots) - Runtime types for GeoJSON as defined in rfc7946 made with
+- [io-ts-reporters](https://github.com/OliverJAsh/io-ts-reporters) - Error reporters for io-ts
+- [geojson-iots](https://github.com/pierremarc/geojson-iots) - Runtime types for GeoJSON as defined in rfc7946 made with
   io-ts
-* [graphql-to-io-ts](https://github.com/micimize/graphql-to-io-ts) - Generate typescript and cooresponding io-ts types from a graphql
+- [graphql-to-io-ts](https://github.com/micimize/graphql-to-io-ts) - Generate typescript and cooresponding io-ts types from a graphql
   schema
 
 # TypeScript integration
@@ -376,9 +376,9 @@ const Good = t.keyof({
 
 Benefits
 
-* unique check for free
-* better performance
-* quick info stays responsive
+- unique check for free
+- better performance
+- quick info stays responsive
 
 # Known issues
 

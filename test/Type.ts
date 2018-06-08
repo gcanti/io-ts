@@ -12,7 +12,10 @@ const BAA = new t.Type<number, string, string>(
   n => String(n)
 )
 
-const BAI = t.string.pipe(BAA, 'T')
+const BAI = t.string.pipe(
+  BAA,
+  'T'
+)
 
 describe('Type', () => {
   describe('pipe', () => {
