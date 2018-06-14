@@ -13,6 +13,13 @@
 **Note**: Gaps between patch versions are faulty/broken releases. **Note**: A feature tagged as Experimental is in a
 high state of flux, you're at risk of it changing without notice.
 
+# 1.1.5
+
+- **Bug Fix**
+  - partial combinator should preserve additional properties while encoding, fixes #179 (@gcanti)
+- **Polish**
+  - use `useIdentity` when possible (@gcanti)
+
 # 1.1.4
 
 - **Internal**
