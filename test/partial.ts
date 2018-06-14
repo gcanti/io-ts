@@ -83,4 +83,10 @@ describe('partial', () => {
     const T2 = t.partial({ a: t.number }, 'T2')
     assert.strictEqual(T2.name, 'T2')
   })
+
+  it('should preserve additional properties while encoding', () => {
+    const T = t.partial({ a: DateFromNumber })
+    const x = { a: new Date(0), b: 'foo' }
+    assert.deepEqual(T.encode(x), { a: 0, b: 'foo' })
+  })
 })
