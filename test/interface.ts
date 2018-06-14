@@ -60,4 +60,10 @@ describe('interface', () => {
     assert.strictEqual(T2.is({ a: 0 }), false)
     assert.strictEqual(T2.is(undefined), false)
   })
+
+  it('should preserve additional properties while encoding', () => {
+    const T = t.type({ a: DateFromNumber })
+    const x = { a: new Date(0), b: 'foo' }
+    assert.deepEqual(T.encode(x), { a: 0, b: 'foo' })
+  })
 })
