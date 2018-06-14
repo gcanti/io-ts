@@ -597,7 +597,7 @@ export const partial = <P extends Props>(
     useIdentity(types, len)
       ? identity
       : a => {
-          const s: { [key: string]: any } = {}
+          const s: { [key: string]: any } = { ...(a as any) }
           for (let i = 0; i < len; i++) {
             const k = keys[i]
             const ak = a[k]
@@ -821,7 +821,7 @@ export function intersection<RTS extends Array<Mixed>>(
           let s = a
           for (let i = 0; i < len; i++) {
             const type = types[i]
-            s = { ...s, ...type.encode(s) }
+            s = type.encode(s)
           }
           return s
         },
