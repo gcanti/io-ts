@@ -821,7 +821,7 @@ export function intersection<RTS extends Array<Mixed>>(
           let s = a
           for (let i = 0; i < len; i++) {
             const type = types[i]
-            s = type.encode(s)
+            s = { ...s, ...type.encode(s) }
           }
           return s
         },
