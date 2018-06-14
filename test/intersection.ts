@@ -37,8 +37,8 @@ describe('intersection', () => {
   })
 
   it('should serialize a deserialized', () => {
-    const T = t.intersection([t.interface({ a: DateFromNumber }), t.interface({ b: t.number })])
-    assert.deepEqual(T.encode({ a: new Date(0), b: 1 }), { a: 0, b: 1 })
+    const T = t.intersection([t.partial({ a: DateFromNumber }), t.interface({ b: DateFromNumber })])
+    assert.deepEqual(T.encode({ a: new Date(0), b: new Date(1) }), { a: 0, b: 1 })
   })
 
   it('should return the same reference when serializing', () => {
