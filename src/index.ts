@@ -1113,11 +1113,30 @@ export const getTagValue = <Tag extends string>(tag: Tag): ((type: Tagged<Tag>) 
   return f
 }
 
+export class TaggedUnionType<
+  Tag extends string,
+  RTS extends Array<Tagged<Tag>>,
+  A = any,
+  O = A,
+  I = mixed
+> extends UnionType<RTS, A, O, I> {
+  constructor(
+    name: string,
+    is: TaggedUnionType<Tag, RTS, A, O, I>['is'],
+    validate: TaggedUnionType<Tag, RTS, A, O, I>['validate'],
+    serialize: TaggedUnionType<Tag, RTS, A, O, I>['encode'],
+    types: RTS,
+    readonly tag: Tag
+  ) {
+    super(name, is, validate, serialize, types) /* istanbul ignore next */ // <= workaround for https://github.com/Microsoft/TypeScript/issues/13455
+  }
+}
+
 export const taggedUnion = <Tag extends string, RTS extends Array<Tagged<Tag>>>(
   tag: Tag,
   types: RTS,
   name: string = `(${types.map(type => type.name).join(' | ')})`
-): UnionType<RTS, TypeOf<RTS['_A']>, OutputOf<RTS['_A']>, mixed> => {
+): TaggedUnionType<Tag, RTS, TypeOf<RTS['_A']>, OutputOf<RTS['_A']>, mixed> => {
   const len = types.length
   const values: Array<string | number | boolean> = new Array(len)
   const hash: { [key: string]: number } = {}
@@ -1149,7 +1168,7 @@ export const taggedUnion = <Tag extends string, RTS extends Array<Tagged<Tag>>>(
     (m, c) => (isTagValue(m) ? success(m) : failure(m, c)),
     identity
   )
-  return new UnionType<RTS, TypeOf<RTS['_A']>, OutputOf<RTS['_A']>, mixed>(
+  return new TaggedUnionType<Tag, RTS, TypeOf<RTS['_A']>, OutputOf<RTS['_A']>, mixed>(
     name,
     (v): v is TypeOf<RTS['_A']> => {
       if (!Dictionary.is(v)) {
@@ -1175,7 +1194,8 @@ export const taggedUnion = <Tag extends string, RTS extends Array<Tagged<Tag>>>(
       }
     },
     useIdentity(types, len) ? identity : a => types[getIndex(a[tag] as any)].encode(a),
-    types
+    types,
+    tag
   )
 }
 
