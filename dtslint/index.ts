@@ -397,3 +397,20 @@ export const Action = t.union([
 
 const ActionType = pluck(Action, 'type')
 type Assert20 = t.TypeOf<typeof ActionType> // $ExpectType "Action1" | "Action2"
+
+//
+// void
+//
+
+import { TaskEither } from 'fp-ts/lib/TaskEither'
+
+declare function withValidation<L, A>(
+  type: t.Type<A>,
+  f: (errors: t.Errors) => L,
+  fa: TaskEither<L, A>
+): TaskEither<L, A>
+
+// tslint:disable-next-line:void-return
+declare const fa: TaskEither<string, void>
+
+withValidation(t.void, () => 'validation error', fa)
