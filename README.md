@@ -158,6 +158,7 @@ import * as t from 'io-ts'
 | ------------------------- | --------------------------------------- | ----------------------------------------------------- |
 | null                      | `null`                                  | `t.null` or `t.nullType`                              |
 | undefined                 | `undefined`                             | `t.undefined`                                         |
+| void                      | `void`                                  | `t.void` or `t.voidType`                              |
 | string                    | `string`                                | `t.string`                                            |
 | number                    | `number`                                | `t.number`                                            |
 | boolean                   | `boolean`                               | `t.boolean`                                           |

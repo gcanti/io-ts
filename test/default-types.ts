@@ -35,8 +35,15 @@ describe('Integer', () => {
 
 describe('null', () => {
   it('should support the alias `nullType`', () => {
-    assertSuccess(t.null.decode(null))
-    assertFailure(t.null.decode(1), ['Invalid value 1 supplied to : null'])
+    assertSuccess(t.nullType.decode(null))
+    assertFailure(t.nullType.decode(1), ['Invalid value 1 supplied to : null'])
+  })
+})
+
+describe('void', () => {
+  it('should support the alias `voidType`', () => {
+    assertSuccess(t.voidType.decode(undefined))
+    assertFailure(t.voidType.decode(1), ['Invalid value 1 supplied to : void'])
   })
 })
 

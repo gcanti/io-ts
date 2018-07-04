@@ -13,6 +13,11 @@
 **Note**: Gaps between patch versions are faulty/broken releases. **Note**: A feature tagged as Experimental is in a
 high state of flux, you're at risk of it changing without notice.
 
+# 1.2.0
+
+- **New Feature**
+  - add `void` runtime type (@gcanti)
+
 # 1.1.5
 
 - **Bug Fix**

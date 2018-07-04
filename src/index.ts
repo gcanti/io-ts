@@ -7,7 +7,7 @@ declare global {
   }
 }
 
-export type mixed = { [key: string]: any } | object | number | string | boolean | symbol | undefined | null
+export type mixed = { [key: string]: any } | object | number | string | boolean | symbol | undefined | null | void
 
 export interface ContextEntry {
   readonly key: string
@@ -143,6 +143,16 @@ export class UndefinedType extends Type<undefined> {
 }
 
 const undefinedType: UndefinedType = new UndefinedType()
+
+export class VoidType extends Type<void> {
+  readonly _tag: 'VoidType' = 'VoidType'
+  constructor() {
+    super('void', undefinedType.is, undefinedType.validate, identity)
+  }
+}
+
+/** @alias `void` */
+export const voidType: VoidType = new VoidType()
 
 export class AnyType extends Type<any> {
   readonly _tag: 'AnyType' = 'AnyType'
@@ -1281,4 +1291,4 @@ export function alias<A, O, I>(
   return () => type as any
 }
 
-export { nullType as null, undefinedType as undefined, arrayType as Array, type as interface }
+export { nullType as null, undefinedType as undefined, arrayType as Array, type as interface, voidType as void }
