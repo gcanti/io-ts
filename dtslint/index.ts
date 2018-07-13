@@ -433,6 +433,7 @@ type Assert20 = t.TypeOf<typeof ActionType> // $ExpectType "Action1" | "Action2"
 
 import { TaskEither } from 'fp-ts/lib/TaskEither'
 
+// tslint:disable-next-line:strict-export-declare-modifiers
 declare function withValidation<L, A>(
   type: t.Type<A>,
   f: (errors: t.Errors) => L,
