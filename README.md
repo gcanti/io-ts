@@ -81,7 +81,7 @@ Person.decode(JSON.parse('{"name":"Giulio"}')) // => Left([...])
 
 # TypeScript compatibility
 
-The stable version is tested against TypeScript 2.9.x+
+The stable version is tested against TypeScript 3.0.1, but should run with TypeScript 2.7.2+ too
 
 # Error reporters
 
