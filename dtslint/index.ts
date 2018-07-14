@@ -183,6 +183,8 @@ type Assert18 = t.TypeOf<typeof O1> // $ExpectType object
 //
 
 const TU1 = t.taggedUnion('type', [t.type({ type: t.literal('a') }), t.type({ type: t.literal('b') })])
+// $ExpectError
+const TU2 = t.taggedUnion('type', [t.type({ type: t.literal('a') }), t.type({ bad: t.literal('b') })])
 type Assert19 = t.TypeOf<typeof TU1> // $ExpectType TypeOfProps<{ type: LiteralType<"a">; }> | TypeOfProps<{ type: LiteralType<"b">; }>
 // $ExpectError
 const x36: t.TypeOf<typeof TU1> = true
