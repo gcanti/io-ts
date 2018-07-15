@@ -183,8 +183,35 @@ type Assert18 = t.TypeOf<typeof O1> // $ExpectType object
 //
 
 const TU1 = t.taggedUnion('type', [t.type({ type: t.literal('a') }), t.type({ type: t.literal('b') })])
+
+interface TU2A1 {
+  type: 'TU2A1'
+  b: TU2B1 | undefined
+}
+
+interface TU2B1 {
+  type: 'TU2B1'
+  a: TU2A1 | undefined
+}
+
+const TU2A1: t.RecursiveType<any, TU2A1> = t.recursion<TU2A1>('TU2A1', _ =>
+  t.interface({
+    type: t.literal('TU2A1'),
+    b: t.union([TU2B1, t.undefined])
+  })
+)
+
+const TU2B1: t.RecursiveType<any, TU2B1> = t.recursion<TU2B1>('TU2B1', _ =>
+  t.interface({
+    type: t.literal('TU2B1'),
+    a: t.union([TU2A1, t.undefined])
+  })
+)
+
+const TU2 = t.taggedUnion('type', [TU2A1, TU2B1])
+
 // $ExpectError
-const TU2 = t.taggedUnion('type', [t.type({ type: t.literal('a') }), t.type({ bad: t.literal('b') })])
+const TU3 = t.taggedUnion('type', [t.type({ type: t.literal('a') }), t.type({ bad: t.literal('b') })])
 type Assert19 = t.TypeOf<typeof TU1> // $ExpectType TypeOfProps<{ type: LiteralType<"a">; }> | TypeOfProps<{ type: LiteralType<"b">; }>
 // $ExpectError
 const x36: t.TypeOf<typeof TU1> = true
