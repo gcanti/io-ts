@@ -191,17 +191,47 @@ Recursive types can't be inferred by TypeScript so you must provide the static t
 
 ```ts
 // helper type
-type ICategory = {
+interface ICategory {
   name: string
   categories: Array<ICategory>
 }
 
-const Category = t.recursion<ICategory>('Category', self =>
+const Category = t.recursion<ICategory>('Category', Category =>
   t.type({
     name: t.string,
-    categories: t.array(self)
+    categories: t.array(Category)
   })
 )
+```
+
+## Mutually recursive types
+
+```ts
+interface IFoo {
+  type: 'Foo'
+  b: IBar | undefined
+}
+
+interface IBar {
+  type: 'Bar'
+  a: IFoo | undefined
+}
+
+const Foo: t.RecursiveType<t.Type<IFoo>, IFoo> = t.recursion<IFoo>('Foo', _ =>
+  t.interface({
+    type: t.literal('Foo'),
+    b: t.union([Bar, t.undefined])
+  })
+)
+
+const Bar: t.RecursiveType<t.Type<IFoo>, IBar> = t.recursion<IBar>('Bar', _ =>
+  t.interface({
+    type: t.literal('Bar'),
+    a: t.union([Foo, t.undefined])
+  })
+)
+
+const FooBar = t.taggedUnion('type', [Foo, Bar])
 ```
 
 # Tagged unions

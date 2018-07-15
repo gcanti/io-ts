@@ -1062,6 +1062,7 @@ export type Tagged<Tag extends string, A = any, O = A> =
   | TaggedUnion<Tag, A, O>
   | TaggedIntersection<Tag, A, O>
   | TaggedExact<Tag>
+  | RecursiveType<any, A, O>
 
 export const isTagged = <Tag extends string>(tag: Tag): ((type: Mixed) => type is Tagged<Tag>) => {
   const f = (type: Mixed): type is Tagged<Tag> => {
@@ -1105,6 +1106,7 @@ export const getTagValue = <Tag extends string>(tag: Tag): ((type: Tagged<Tag>) 
         return f(type.types[0])
       case 'RefinementType':
       case 'ExactType':
+      case 'RecursiveType':
         return f(type.type)
     }
   }
