@@ -369,9 +369,9 @@ Would be:
 ```ts
 import * as t from 'io-ts';
 
-const ResponseBody = <RT extends iots.Mixed>(type: RT) =>
-  iots.interface({
-    result: iots.array(type),
+const ResponseBody = <RT extends t.Mixed>(type: RT) =>
+  t.interface({
+    result: type,
     _links: Links
   });
 
@@ -383,7 +383,7 @@ const Links = t.interface({
 And used like:
 ```ts
 const UserModel = t.interface({ name: t.string });
-functionThatRequiresRuntimeType(ResponseBody(UserModel), ...params);
+functionThatRequiresRuntimeType(ResponseBody(t.array(UserModel)), ...params);
 ```
 
 # Tips and Tricks
