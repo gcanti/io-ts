@@ -352,6 +352,40 @@ DateFromString.decode('foo')
 
 Note that you can **deserialize** while validating.
 
+# Generic Types
+Polymorphic runtime types are represented using functions.
+For example, the following typescript:
+```ts
+interface ResponseBody<T> {
+  result: T[];
+  _links: Links;
+}
+interface Links {
+  previous: string;
+  next: string;
+}
+```
+Would be:
+```ts
+import * as t from 'io-ts';
+
+const ResponseBody = <RT extends iots.Mixed>(type: RT) =>
+  iots.interface({
+    result: iots.array(type),
+    _links: Links
+  });
+
+const Links = t.interface({
+  previous: t.string,
+  next: t.string
+});
+```
+And used like:
+```ts
+const UserModel = t.interface({ name: t.string });
+functionThatRequiresRuntimeType(ResponseBody(UserModel), ...params);
+```
+
 # Tips and Tricks
 
 ## Is there a way to turn the checks off in production code?
