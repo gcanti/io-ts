@@ -357,7 +357,7 @@ Polymorphic runtime types are represented using functions.
 For example, the following typescript:
 ```ts
 interface ResponseBody<T> {
-  result: T[];
+  result: T;
   _links: Links;
 }
 interface Links {
