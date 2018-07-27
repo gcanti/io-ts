@@ -322,6 +322,25 @@ type CT = {
 }
 ```
 
+You can apply `partial` to an already defined runtime type via its `props` field
+
+```ts
+const Person = t.type({
+  name: t.string,
+  age: t.number
+})
+
+const PartialPerson = t.partial(Person.props)
+
+type PartialPerson = t.TypeOf<typeof PartialPerson>
+
+// same as
+type PartialPerson = {
+  name?: string
+  age?: number
+}
+```
+
 # Custom types
 
 You can define your own types. Let's see an example
@@ -351,40 +370,6 @@ DateFromString.decode('foo')
 ```
 
 Note that you can **deserialize** while validating.
-
-# Generic Types
-Polymorphic runtime types are represented using functions.
-For example, the following typescript:
-```ts
-interface ResponseBody<T> {
-  result: T;
-  _links: Links;
-}
-interface Links {
-  previous: string;
-  next: string;
-}
-```
-Would be:
-```ts
-import * as t from 'io-ts';
-
-const ResponseBody = <RT extends t.Mixed>(type: RT) =>
-  t.interface({
-    result: type,
-    _links: Links
-  });
-
-const Links = t.interface({
-  previous: t.string,
-  next: t.string
-});
-```
-And used like:
-```ts
-const UserModel = t.interface({ name: t.string });
-functionThatRequiresRuntimeType(ResponseBody(t.array(UserModel)), ...params);
-```
 
 # Tips and Tricks
 
