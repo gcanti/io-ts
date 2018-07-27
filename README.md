@@ -113,6 +113,38 @@ ThrowReporter.report(result)
 // => throws 'Invalid value undefined supplied to : { name: string, age: number }/age: number'
 ```
 
+You can define your own reporter. `Errors` has the following type
+
+```ts
+interface ContextEntry {
+  readonly key: string
+  readonly type: Decoder<any, any>
+}
+type Context = ReadonlyArray<ContextEntry>
+interface ValidationError {
+  readonly value: mixed
+  readonly context: Context
+}
+type Errors = Array<ValidationError>
+```
+
+Example
+
+```ts
+import * as t from 'io-ts'
+
+const getPaths = <A>(v: t.Validation<A>): Array<string> => {
+  return v.fold(errors => errors.map(error => error.context.map(({ key }) => key).join('.')), () => ['no errors'])
+}
+
+const Person = t.type({
+  name: t.string,
+  age: t.number
+})
+
+console.log(getPaths(Person.decode({}))) // => [ '.name', '.age' ]
+```
+
 # Community
 
 - [io-ts-types](https://github.com/gcanti/io-ts-types) - A collection of runtime types and combinators for use with
