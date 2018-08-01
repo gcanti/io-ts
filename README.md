@@ -171,10 +171,10 @@ Note that the type annotation isn't needed, TypeScript infers the type automatic
 Static types can be extracted from runtime types using the `TypeOf` operator
 
 ```ts
-type IPerson = t.TypeOf<typeof Person>
+interface IPerson extends t.TypeOf<typeof Person> {}
 
 // same as
-type IPerson = {
+interface IPerson {
   name: string
   age: number
 }
@@ -345,7 +345,7 @@ const B = t.partial({
 
 const C = t.intersection([A, B])
 
-type CT = t.TypeOf<typeof C>
+interface CT extends t.TypeOf<typeof C> {}
 
 // same as
 type CT = {
@@ -364,10 +364,10 @@ const Person = t.type({
 
 const PartialPerson = t.partial(Person.props)
 
-type PartialPerson = t.TypeOf<typeof PartialPerson>
+interface PartialPerson extends t.TypeOf<typeof PartialPerson> {}
 
 // same as
-type PartialPerson = {
+interface PartialPerson {
   name?: string
   age?: number
 }
