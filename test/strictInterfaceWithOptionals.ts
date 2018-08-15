@@ -20,10 +20,7 @@ describe('strictInterfaceWithOptionals', () => {
   it('should fail validating an invalid value', () => {
     const T = strictInterfaceWithOptionals({ foo: t.string }, { bar: t.string }, 'T')
     assertFailure(T.decode({ foo: 'foo', a: 1 }), ['Invalid value 1 supplied to : T/a: never'])
-    assertFailure(T.decode({ foo: 'foo', bar: 1 }), [
-      'Invalid value 1 supplied to : T/bar: (string | undefined)/0: string',
-      'Invalid value 1 supplied to : T/bar: (string | undefined)/1: undefined'
-    ])
+    assertFailure(T.decode({ foo: 'foo', bar: 1 }), ['Invalid value 1 supplied to : T/bar: (string | undefined)'])
   })
 
   it('should return the same reference when serializing', () => {

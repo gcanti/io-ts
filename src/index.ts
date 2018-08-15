@@ -597,7 +597,7 @@ export const partial = <P extends Props>(
   const len = keys.length
   const partials: Props = {}
   for (let i = 0; i < len; i++) {
-    partials[keys[i]] = union([types[i], undefinedType])
+    partials[keys[i]] = optional(types[i])
   }
   const partial = type(partials)
   return new PartialType(
@@ -618,6 +618,39 @@ export const partial = <P extends Props>(
           return s as any
         },
     props
+  )
+}
+
+//
+// optionals
+//
+
+export class OptionalType<RT extends Any, A = any, O = A, I = mixed> extends Type<A, O, I> {
+  readonly _tag: 'OptionalType' = 'OptionalType'
+  constructor(
+    name: string,
+    is: OptionalType<RT, A, O, I>['is'],
+    validate: OptionalType<RT, A, O, I>['validate'],
+    serialize: OptionalType<RT, A, O, I>['encode'],
+    readonly type: RT
+  ) {
+    super(name, is, validate, serialize)
+  }
+}
+
+export const optional = <RT extends Mixed>(
+  type: RT,
+  name: string = `(${type.name} | undefined)`
+): OptionalType<RT, TypeOf<RT['_A']>, OutputOf<RT['_A']>, mixed> => {
+  return new OptionalType(
+    name,
+    (m): m is TypeOf<OptionalType<RT>['_A']> => type.is(m) || undefinedType.is(m),
+    (m, c) => {
+      const v = type.validate(m, c)
+      return v.isLeft() && undefinedType.is(m) ? success(m) : v
+    },
+    type.encode !== identity ? a => (type.is(a) ? type.encode(a) : a) : identity,
+    type
   )
 }
 

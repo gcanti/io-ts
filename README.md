@@ -205,6 +205,7 @@ import * as t from 'io-ts'
 | function                  | `Function`                              | `t.Function`                                          |
 | literal                   | `'s'`                                   | `t.literal('s')`                                      |
 | partial                   | `Partial<{ name: string }>`             | `t.partial({ name: t.string })`                       |
+| optional                  | `A | undefined`                         | `t.optional(A)`                                       |
 | readonly                  | `Readonly<T>`                           | `t.readonly(T)`                                       |
 | readonly array            | `ReadonlyArray<number>`                 | `t.readonlyArray(t.number)`                           |
 | type alias                | `type A = { name: string }`             | `t.type({ name: t.string })`                          |
