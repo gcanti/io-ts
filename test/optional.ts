@@ -1,6 +1,6 @@
 import * as assert from 'assert'
 import * as t from '../src/index'
-import { assertSuccess, assertFailure, assertStrictEqual, DateFromNumber, withDefault } from './helpers'
+import { assertSuccess, assertFailure, assertStrictEqual, DateFromNumber } from './helpers'
 
 describe('optional', () => {
   it('should succeed validating a valid value', () => {
