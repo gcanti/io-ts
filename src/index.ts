@@ -641,10 +641,10 @@ export class OptionalType<RT extends Any, A = any, O = A, I = mixed> extends Typ
 export const optional = <RT extends Mixed>(
   type: RT,
   name: string = `(${type.name} | undefined)`
-): OptionalType<RT, TypeOf<RT['_A']>, OutputOf<RT['_A']>, mixed> => {
+): OptionalType<RT, TypeOf<RT> | undefined, OutputOf<RT> | undefined, InputOf<RT> | undefined> => {
   return new OptionalType(
     name,
-    (m): m is TypeOf<OptionalType<RT>['_A']> => type.is(m) || undefinedType.is(m),
+    (m): m is TypeOf<OptionalType<RT>> => type.is(m) || undefinedType.is(m),
     (m, c) => {
       const v = type.validate(m, c)
       return v.isLeft() && undefinedType.is(m) ? success(m) : v
