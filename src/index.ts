@@ -1,5 +1,7 @@
 import { Either, Left, Right } from 'fp-ts/lib/Either'
 import { Predicate } from 'fp-ts/lib/function'
+import { NonEmptyArray, nonEmptyArray, fromArray } from 'fp-ts/lib/NonEmptyArray'
+import { Some } from 'fp-ts/lib/Option'
 
 declare global {
   interface Array<T> {
@@ -18,7 +20,7 @@ export interface ValidationError {
   readonly value: mixed
   readonly context: Context
 }
-export type Errors = Array<ValidationError>
+export type Errors = NonEmptyArray<ValidationError>
 export type Validation<A> = Either<Errors, A>
 export type Is<A> = (m: mixed) => m is A
 export type Validate<I, A> = (i: I, context: Context) => Validation<A>
@@ -105,14 +107,15 @@ export const appendContext = (c: Context, key: string, type: Decoder<any, any>):
 export const failures = <T>(errors: Errors): Validation<T> => new Left(errors)
 
 export const failure = <T>(value: mixed, context: Context): Validation<T> =>
-  failures([getValidationError(value, context)])
+  failures(nonEmptyArray.of(getValidationError(value, context)))
 
 export const success = <T>(value: T): Validation<T> => new Right<Errors, T>(value)
 
-const pushAll = <A>(xs: Array<A>, ys: Array<A>): void => {
-  const l = ys.length
+const pushAll = <A>(xs: Array<A>, ys: NonEmptyArray<A>): void => {
+  const ysA = ys.toArray()
+  const l = ysA.length
   for (let i = 0; i < l; i++) {
-    xs.push(ys[i])
+    xs.push(ysA[i])
   }
 }
 
@@ -434,7 +437,7 @@ export const array = <RT extends Mixed>(
         const xs = arrayValidation.value
         const len = xs.length
         let a: Array<TypeOf<RT>> = xs
-        const errors: Errors = []
+        const errors: Array<ValidationError> = []
         for (let i = 0; i < len; i++) {
           const x = xs[i]
           const validation = type.validate(x, appendContext(c, String(i), type))
@@ -450,7 +453,7 @@ export const array = <RT extends Mixed>(
             }
           }
         }
-        return errors.length ? failures(errors) : success(a)
+        return fromArray(errors).fold(success(a), e => failures(e))
       }
     },
     type.encode === identity ? identity : a => a.map(type.encode),
@@ -528,7 +531,7 @@ export const type = <P extends Props>(
       } else {
         const o = dictionaryValidation.value
         let a = o
-        const errors: Errors = []
+        const errors: Array<ValidationError> = []
         for (let i = 0; i < len; i++) {
           const k = keys[i]
           const ok = o[k]
@@ -547,7 +550,7 @@ export const type = <P extends Props>(
             }
           }
         }
-        return errors.length ? failures(errors) : success(a as any)
+        return fromArray(errors).fold(success(a as any), e => failures(e))
       }
     },
     useIdentity(types, len)
@@ -659,7 +662,7 @@ export const dictionary = <D extends Mixed, C extends Mixed>(
       } else {
         const o = dictionaryValidation.value
         const a: { [key: string]: any } = {}
-        const errors: Errors = []
+        const errors: Array<ValidationError> = []
         const keys = Object.keys(o)
         const len = keys.length
         let changed: boolean = false
@@ -683,7 +686,7 @@ export const dictionary = <D extends Mixed, C extends Mixed>(
             a[k] = vok
           }
         }
-        return errors.length ? failures(errors) : success((changed ? a : o) as any)
+        return fromArray(errors).fold(success((changed ? a : o) as any), e => failures(e))
       }
     },
     domain.encode === identity && codomain.encode === identity
@@ -728,7 +731,7 @@ export const union = <RTS extends Array<Mixed>>(
     name,
     (m): m is TypeOf<RTS['_A']> => types.some(type => type.is(m)),
     (m, c) => {
-      const errors: Errors = []
+      const errors: Array<ValidationError> = []
       for (let i = 0; i < len; i++) {
         const type = types[i]
         const validation = type.validate(m, appendContext(c, String(i), type))
@@ -738,7 +741,7 @@ export const union = <RTS extends Array<Mixed>>(
           pushAll(errors, validation.value)
         }
       }
-      return failures(errors)
+      return failures((fromArray(errors) as Some<Errors>).value)
     },
     useIdentity(types, len)
       ? identity
@@ -813,7 +816,7 @@ export function intersection<RTS extends Array<Mixed>>(
     (m): m is any => types.every(type => type.is(m)),
     (m, c) => {
       let a = m
-      const errors: Errors = []
+      const errors: Array<ValidationError> = []
       for (let i = 0; i < len; i++) {
         const type = types[i]
         const validation = type.validate(a, c)
@@ -823,7 +826,7 @@ export function intersection<RTS extends Array<Mixed>>(
           a = validation.value
         }
       }
-      return errors.length ? failures(errors) : success(a)
+      return fromArray(errors).fold(success(a), e => failures(e))
     },
     useIdentity(types, len)
       ? identity
@@ -898,7 +901,7 @@ export function tuple<RTS extends Array<Mixed>>(
       } else {
         const as = arrayValidation.value
         let t: Array<any> = as
-        const errors: Errors = []
+        const errors: Array<ValidationError> = []
         for (let i = 0; i < len; i++) {
           const a = as[i]
           const type = types[i]
@@ -919,7 +922,7 @@ export function tuple<RTS extends Array<Mixed>>(
         if (as.length > len) {
           errors.push(getValidationError(as[len], appendContext(c, String(len), never)))
         }
-        return errors.length ? failures(errors) : success(t)
+        return fromArray(errors).fold(success(t), e => failures(e))
       }
     },
     useIdentity(types, len) ? identity : a => types.map((type, i) => type.encode(a[i])),
@@ -1257,14 +1260,14 @@ export function exact<RT extends HasProps>(
         const o = looseValidation.value
         const keys = Object.getOwnPropertyNames(o)
         const len = keys.length
-        const errors: Errors = []
+        const errors: Array<ValidationError> = []
         for (let i = 0; i < len; i++) {
           const key = keys[i]
           if (!props.hasOwnProperty(key)) {
             errors.push(getValidationError(o[key], appendContext(c, key, never)))
           }
         }
-        return errors.length ? failures(errors) : success(o)
+        return fromArray(errors).fold(success(o), e => failures(e))
       }
     },
     type.encode,
