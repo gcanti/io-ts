@@ -10,7 +10,7 @@ describe('PathReporter', () => {
     assert.deepEqual(PathReporter.report(t.number.decode(function f() {})), ['Invalid value f supplied to : number'])
   })
 
-  it('should say something whene there are no errors', () => {
+  it('should say something when there are no errors', () => {
     assert.deepEqual(PathReporter.report(t.number.decode(1)), ['No errors!'])
   })
 })
