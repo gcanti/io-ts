@@ -133,6 +133,17 @@ const x22: P1T = {}
 const x23: P1T = { name: 's' }
 
 //
+// optional
+//
+
+const Opt1 = t.optional(t.number);
+type Opt1T = t.TypeOf<typeof Opt1> // $ExpectType number | undefined
+const opt1_ok_1: Opt1T = 123;
+const opt1_ok_2: Opt1T = undefined;
+// $ExpectError
+const opt1_bad_1: Opt1T = null;
+
+//
 // readonly
 //
 
