@@ -41,8 +41,7 @@ describe('partial', () => {
   it('should fail validating an invalid value', () => {
     const T = t.partial({ a: t.number })
     assertFailure(T.decode({ a: 's' }), [
-      'Invalid value "s" supplied to : PartialType<{ a: number }>/a: (number | undefined)/0: number',
-      'Invalid value "s" supplied to : PartialType<{ a: number }>/a: (number | undefined)/1: undefined'
+      'Invalid value "s" supplied to : PartialType<{ a: number }>/a: (number | undefined)'
     ])
   })
 
@@ -88,5 +87,17 @@ describe('partial', () => {
     const T = t.partial({ a: DateFromNumber })
     const x = { a: new Date(0), b: 'foo' }
     assert.deepEqual(T.encode(x), { a: 0, b: 'foo' })
+  })
+
+  it('should report expected shallow validation error', () => {
+    const T = t.partial({ a: t.number }, 'T')
+    const x = { a: null }
+    assertFailure(T.decode(x), ['Invalid value null supplied to : T/a: (number | undefined)'])
+  })
+
+  it('should report expected deep validation error', () => {
+    const T = t.type({ a: t.partial({ b: t.type({ c: t.number }, 'Z') }, 'Y') }, 'X')
+    const x = { a: { b: { c: null } } }
+    assertFailure(T.decode(x), ['Invalid value null supplied to : X/a: Y/b: (Z | undefined)/c: number'])
   })
 })
