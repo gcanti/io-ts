@@ -256,7 +256,7 @@ const Foo: t.RecursiveType<t.Type<IFoo>, IFoo> = t.recursion<IFoo>('Foo', _ =>
   })
 )
 
-const Bar: t.RecursiveType<t.Type<IFoo>, IBar> = t.recursion<IBar>('Bar', _ =>
+const Bar: t.RecursiveType<t.Type<IBar>, IBar> = t.recursion<IBar>('Bar', _ =>
   t.interface({
     type: t.literal('Bar'),
     a: t.union([Foo, t.undefined])
