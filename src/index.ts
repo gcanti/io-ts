@@ -279,11 +279,11 @@ export class RefinementType<RT extends Any, A = any, O = A, I = mixed> extends T
     name: string,
     is: RefinementType<RT, A, O, I>['is'],
     validate: RefinementType<RT, A, O, I>['validate'],
-    serialize: RefinementType<RT, A, O, I>['encode'],
+    encode: RefinementType<RT, A, O, I>['encode'],
     readonly type: RT,
     readonly predicate: Predicate<A>
   ) {
-    super(name, is, validate, serialize)
+    super(name, is, validate, encode)
   }
 }
 
@@ -321,10 +321,10 @@ export class LiteralType<V extends string | number | boolean> extends Type<V> {
     name: string,
     is: LiteralType<V>['is'],
     validate: LiteralType<V>['validate'],
-    serialize: LiteralType<V>['encode'],
+    encode: LiteralType<V>['encode'],
     readonly value: V
   ) {
-    super(name, is, validate, serialize)
+    super(name, is, validate, encode)
   }
 }
 
@@ -346,10 +346,10 @@ export class KeyofType<D extends { [key: string]: mixed }> extends Type<keyof D>
     name: string,
     is: KeyofType<D>['is'],
     validate: KeyofType<D>['validate'],
-    serialize: KeyofType<D>['encode'],
+    encode: KeyofType<D>['encode'],
     readonly keys: D
   ) {
-    super(name, is, validate, serialize)
+    super(name, is, validate, encode)
   }
 }
 
@@ -371,10 +371,10 @@ export class RecursiveType<RT extends Any, A = any, O = A, I = mixed> extends Ty
     name: string,
     is: RecursiveType<RT, A, O, I>['is'],
     validate: RecursiveType<RT, A, O, I>['validate'],
-    serialize: RecursiveType<RT, A, O, I>['encode'],
+    encode: RecursiveType<RT, A, O, I>['encode'],
     private runDefinition: () => RT
   ) {
-    super(name, is, validate, serialize)
+    super(name, is, validate, encode)
   }
   get type(): RT {
     return this.runDefinition()
@@ -412,10 +412,10 @@ export class ArrayType<RT extends Any, A = any, O = A, I = mixed> extends Type<A
     name: string,
     is: ArrayType<RT, A, O, I>['is'],
     validate: ArrayType<RT, A, O, I>['validate'],
-    serialize: ArrayType<RT, A, O, I>['encode'],
+    encode: ArrayType<RT, A, O, I>['encode'],
     readonly type: RT
   ) {
-    super(name, is, validate, serialize)
+    super(name, is, validate, encode)
   }
 }
 
@@ -467,10 +467,10 @@ export class InterfaceType<P, A = any, O = A, I = mixed> extends Type<A, O, I> {
     name: string,
     is: InterfaceType<P, A, O, I>['is'],
     validate: InterfaceType<P, A, O, I>['validate'],
-    serialize: InterfaceType<P, A, O, I>['encode'],
+    encode: InterfaceType<P, A, O, I>['encode'],
     readonly props: P
   ) {
-    super(name, is, validate, serialize)
+    super(name, is, validate, encode)
   }
 }
 
@@ -577,10 +577,10 @@ export class PartialType<P, A = any, O = A, I = mixed> extends Type<A, O, I> {
     name: string,
     is: PartialType<P, A, O, I>['is'],
     validate: PartialType<P, A, O, I>['validate'],
-    serialize: PartialType<P, A, O, I>['encode'],
+    encode: PartialType<P, A, O, I>['encode'],
     readonly props: P
   ) {
-    super(name, is, validate, serialize)
+    super(name, is, validate, encode)
   }
 }
 
@@ -631,11 +631,11 @@ export class DictionaryType<D extends Any, C extends Any, A = any, O = A, I = mi
     name: string,
     is: DictionaryType<D, C, A, O, I>['is'],
     validate: DictionaryType<D, C, A, O, I>['validate'],
-    serialize: DictionaryType<D, C, A, O, I>['encode'],
+    encode: DictionaryType<D, C, A, O, I>['encode'],
     readonly domain: D,
     readonly codomain: C
   ) {
-    super(name, is, validate, serialize)
+    super(name, is, validate, encode)
   }
 }
 
@@ -712,10 +712,10 @@ export class UnionType<RTS extends Array<Any>, A = any, O = A, I = mixed> extend
     name: string,
     is: UnionType<RTS, A, O, I>['is'],
     validate: UnionType<RTS, A, O, I>['validate'],
-    serialize: UnionType<RTS, A, O, I>['encode'],
+    encode: UnionType<RTS, A, O, I>['encode'],
     readonly types: RTS
   ) {
-    super(name, is, validate, serialize)
+    super(name, is, validate, encode)
   }
 }
 
@@ -766,10 +766,10 @@ export class IntersectionType<RTS extends Array<Any>, A = any, O = A, I = mixed>
     name: string,
     is: IntersectionType<RTS, A, O, I>['is'],
     validate: IntersectionType<RTS, A, O, I>['validate'],
-    serialize: IntersectionType<RTS, A, O, I>['encode'],
+    encode: IntersectionType<RTS, A, O, I>['encode'],
     readonly types: RTS
   ) {
-    super(name, is, validate, serialize)
+    super(name, is, validate, encode)
   }
 }
 
@@ -849,10 +849,10 @@ export class TupleType<RTS extends Array<Any>, A = any, O = A, I = mixed> extend
     name: string,
     is: TupleType<RTS, A, O, I>['is'],
     validate: TupleType<RTS, A, O, I>['validate'],
-    serialize: TupleType<RTS, A, O, I>['encode'],
+    encode: TupleType<RTS, A, O, I>['encode'],
     readonly types: RTS
   ) {
-    super(name, is, validate, serialize)
+    super(name, is, validate, encode)
   }
 }
 
@@ -937,10 +937,10 @@ export class ReadonlyType<RT extends Any, A = any, O = A, I = mixed> extends Typ
     name: string,
     is: ReadonlyType<RT, A, O, I>['is'],
     validate: ReadonlyType<RT, A, O, I>['validate'],
-    serialize: ReadonlyType<RT, A, O, I>['encode'],
+    encode: ReadonlyType<RT, A, O, I>['encode'],
     readonly type: RT
   ) {
-    super(name, is, validate, serialize)
+    super(name, is, validate, encode)
   }
 }
 
@@ -972,10 +972,10 @@ export class ReadonlyArrayType<RT extends Any, A = any, O = A, I = mixed> extend
     name: string,
     is: ReadonlyArrayType<RT, A, O, I>['is'],
     validate: ReadonlyArrayType<RT, A, O, I>['validate'],
-    serialize: ReadonlyArrayType<RT, A, O, I>['encode'],
+    encode: ReadonlyArrayType<RT, A, O, I>['encode'],
     readonly type: RT
   ) {
-    super(name, is, validate, serialize)
+    super(name, is, validate, encode)
   }
 }
 
@@ -1010,10 +1010,10 @@ export class StrictType<P, A = any, O = A, I = mixed> extends Type<A, O, I> {
     name: string,
     is: StrictType<P, A, O, I>['is'],
     validate: StrictType<P, A, O, I>['validate'],
-    serialize: StrictType<P, A, O, I>['encode'],
+    encode: StrictType<P, A, O, I>['encode'],
     readonly props: P
   ) {
-    super(name, is, validate, serialize)
+    super(name, is, validate, encode)
   }
 }
 
@@ -1124,11 +1124,11 @@ export class TaggedUnionType<
     name: string,
     is: TaggedUnionType<Tag, RTS, A, O, I>['is'],
     validate: TaggedUnionType<Tag, RTS, A, O, I>['validate'],
-    serialize: TaggedUnionType<Tag, RTS, A, O, I>['encode'],
+    encode: TaggedUnionType<Tag, RTS, A, O, I>['encode'],
     types: RTS,
     readonly tag: Tag
   ) {
-    super(name, is, validate, serialize, types) /* istanbul ignore next */ // <= workaround for https://github.com/Microsoft/TypeScript/issues/13455
+    super(name, is, validate, encode, types) /* istanbul ignore next */ // <= workaround for https://github.com/Microsoft/TypeScript/issues/13455
   }
 }
 
@@ -1209,10 +1209,10 @@ export class ExactType<RT extends Any, A = any, O = A, I = mixed> extends Type<A
     name: string,
     is: ExactType<RT, A, O, I>['is'],
     validate: ExactType<RT, A, O, I>['validate'],
-    serialize: ExactType<RT, A, O, I>['encode'],
+    encode: ExactType<RT, A, O, I>['encode'],
     readonly type: RT
   ) {
-    super(name, is, validate, serialize)
+    super(name, is, validate, encode)
   }
 }
 
