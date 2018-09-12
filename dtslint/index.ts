@@ -37,7 +37,7 @@ type Assert1 = t.TypeOf<typeof L1> // $ExpectType "a"
 
 const K1 = t.keyof({ a: true, b: true })
 type Assert2 = t.TypeOf<typeof K1> // $ExpectType "a" | "b"
-type KeyofKeys = typeof K1.keys // $ExpectType { a: "a", b: "b" }
+type KeyofKeys = typeof K1.keys // $ExpectType { a: "a"; b: "b"; }
 
 //
 // default types
@@ -88,7 +88,7 @@ const x11: I2T = { name: 'name', father: { surname: 'surname' } }
 //
 
 const D1 = t.dictionary(t.keyof({ a: true }), t.number)
-type Assert9 = t.TypeOf<typeof D1> // $ExpectType TypeOfDictionary<KeyofType<{ a: true; }>, NumberType>
+type Assert9 = t.TypeOf<typeof D1> // $ExpectType TypeOfDictionary<KeyofType<{ a: "a"; }>, NumberType>
 // $ExpectError
 const x12: t.TypeOf<typeof D1> = { a: 's' }
 // $ExpectError
