@@ -34,7 +34,7 @@ describe('keyof', () => {
   })
 
   it('should provide a key map', () => {
-    const T = t.keyOf({ a: 1, b: 2 })
+    const T = t.keyof({ a: 1, b: 2 })
     assert.deepEqual(T.keys, { a: 'a', b: 'b' })
   })
 })
