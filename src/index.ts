@@ -356,10 +356,16 @@ export class KeyofType<D extends { [key: string]: mixed }> extends Type<keyof D>
 export const keyof = <D extends { [key: string]: mixed }>(
   keys: D,
   name: string = `(keyof ${JSON.stringify(Object.keys(keys))})`
-): KeyofType<: { [P in keyof D]: P }> => {
+): KeyofType<{ [P in keyof D]: P }> => {
   const is = (m: mixed): m is keyof D => string.is(m) && keys.hasOwnProperty(m)
   const keyMap = Object.keys(keys).reduce((map, next) => ({ ...map, [next]: next }), {} as any)
-  return new KeyofType(name, is, (m, c) => (is(m) ? success(m) : failure(m, c)), identity, keyMap)
+  return new KeyofType<{ [P in keyof D]: P }>(
+    name,
+    is,
+    (m, c) => (is(m) ? success(m) : failure(m, c)),
+    identity,
+    keyMap
+  )
 }
 
 //

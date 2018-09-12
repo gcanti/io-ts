@@ -37,7 +37,7 @@ type Assert1 = t.TypeOf<typeof L1> // $ExpectType "a"
 
 const K1 = t.keyof({ a: true, b: true })
 type Assert2 = t.TypeOf<typeof K1> // $ExpectType "a" | "b"
-type Assert3 = typeof K1.keys // $ExpectType { a: "a", b: "b" }
+type KeyofKeys = typeof K1.keys // $ExpectType { a: "a", b: "b" }
 
 //
 // default types
