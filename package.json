@@ -15,6 +15,7 @@
     "test": "npm run prettier && npm run lint && npm run dtslint && npm run jest",
     "clean": "rimraf lib/*",
     "build": "npm run clean && tsc",
+    "prepublish": "npm run build",
     "perf": "node perf/index",
     "dtslint": "dtslint dtslint"
   },

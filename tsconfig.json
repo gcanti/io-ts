@@ -1,7 +1,6 @@
 {
   "compilerOptions": {
     "outDir": "./lib",
-    "sourceMap": true,
     "declaration": true,
     "module": "commonjs",
     "noImplicitReturns": false,

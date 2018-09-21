@@ -17,12 +17,12 @@ const Rec1 = t.recursion<RecT1>('T', Self =>
 )
 
 // $ExpectError
-const Rec2 = t.recursion<string>('T', Self =>
-  t.interface({
+const Rec2 = t.recursion<string>('T', Self => {
+  return t.interface({
     type: t.literal('a'),
     items: t.array(Self)
   })
-)
+})
 
 //
 // literal
