@@ -194,6 +194,7 @@ import * as t from 'io-ts'
 | string                    | `string`                                | `t.string`                                            |
 | number                    | `number`                                | `t.number`                                            |
 | boolean                   | `boolean`                               | `t.boolean`                                           |
+| date                      | `date`                                  | `t.date`                                              |
 | any                       | `any`                                   | `t.any`                                               |
 | never                     | `never`                                 | `t.never`                                             |
 | object                    | `object`                                | `t.object`                                            |
