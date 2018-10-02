@@ -142,3 +142,13 @@ describe('boolean', () => {
     assertFailure(t.boolean.decode(1), ['Invalid value 1 supplied to : boolean'])
   })
 })
+
+describe('Date', () => {
+  it('should decode Date values', () => {
+    assertSuccess(t.date.decode(new Date(0)))
+  })
+
+  it('should not decode non-Date values', () => {
+    assertFailure(t.date.decode(1), ['Invalid value 1 supplied to : Date'])
+  })
+})

@@ -222,6 +222,15 @@ export class BooleanType extends Type<boolean> {
 
 export const boolean: BooleanType = new BooleanType()
 
+export class DateType extends Type<Date> {
+  readonly _tag: 'DateType' = 'DateType'
+  constructor() {
+    super('Date', (m): m is Date => m instanceof Date, (m, c) => (this.is(m) ? success(m) : failure(m, c)), identity)
+  }
+}
+
+export const date: DateType = new DateType()
+
 export class AnyArrayType extends Type<Array<mixed>> {
   readonly _tag: 'AnyArrayType' = 'AnyArrayType'
   constructor() {
