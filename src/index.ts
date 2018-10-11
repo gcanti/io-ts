@@ -13,19 +13,19 @@ export interface ContextEntry {
   readonly key: string
   readonly type: Decoder<any, any>
 }
-export type Context = ReadonlyArray<ContextEntry>
+export interface Context extends ReadonlyArray<ContextEntry> {}
 export interface ValidationError {
   readonly value: mixed
   readonly context: Context
 }
-export type Errors = Array<ValidationError>
+export interface Errors extends Array<ValidationError> {}
 export type Validation<A> = Either<Errors, A>
 export type Is<A> = (m: mixed) => m is A
 export type Validate<I, A> = (i: I, context: Context) => Validation<A>
 export type Decode<I, A> = (i: I) => Validation<A>
 export type Encode<A, O> = (a: A) => O
-export type Any = Type<any, any, any>
-export type Mixed = Type<any, any, mixed>
+export interface Any extends Type<any, any, any> {}
+export interface Mixed extends Type<any, any, mixed> {}
 export type TypeOf<RT extends Any> = RT['_A']
 export type InputOf<RT extends Any> = RT['_I']
 export type OutputOf<RT extends Any> = RT['_O']
