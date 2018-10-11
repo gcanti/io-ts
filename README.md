@@ -120,12 +120,12 @@ interface ContextEntry {
   readonly key: string
   readonly type: Decoder<any, any>
 }
-type Context = ReadonlyArray<ContextEntry>
+interface Context extends ReadonlyArray<ContextEntry> {}
 interface ValidationError {
   readonly value: mixed
   readonly context: Context
 }
-type Errors = Array<ValidationError>
+interface Errors extends Array<ValidationError> {}
 ```
 
 Example
