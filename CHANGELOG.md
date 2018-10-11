@@ -13,6 +13,15 @@
 **Note**: Gaps between patch versions are faulty/broken releases. **Note**: A feature tagged as Experimental is in a
 high state of flux, you're at risk of it changing without notice.
 
+# 1.3.1
+
+- **Polish**
+  - use interface instead of type alias (@gcanti)
+    - `Context`
+    - `Errors`
+    - `Any`
+    - `Mixed`
+
 # 1.3.0
 
 - **New Feature**
