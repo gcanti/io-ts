@@ -643,17 +643,20 @@ export type TypeOfDictionary<D extends Any, C extends Any> = { [K in TypeOf<D>]:
 
 export type OutputOfDictionary<D extends Any, C extends Any> = { [K in OutputOf<D>]: OutputOf<C> }
 
+const refinedDictionary = refinement(Dictionary, d => Object.prototype.toString.call(d) === '[object Object]')
+
 export const dictionary = <D extends Mixed, C extends Mixed>(
   domain: D,
   codomain: C,
   name: string = `{ [K in ${domain.name}]: ${codomain.name} }`
-): DictionaryType<D, C, TypeOfDictionary<D, C>, OutputOfDictionary<D, C>, mixed> =>
-  new DictionaryType(
+): DictionaryType<D, C, TypeOfDictionary<D, C>, OutputOfDictionary<D, C>, mixed> => {
+  const isIndexSignatureRequired = (codomain as any) !== any
+  const D = isIndexSignatureRequired ? refinedDictionary : Dictionary
+  return new DictionaryType(
     name,
-    (m): m is TypeOfDictionary<D, C> =>
-      Dictionary.is(m) && Object.keys(m).every(k => domain.is(k) && codomain.is(m[k])),
+    (m): m is TypeOfDictionary<D, C> => D.is(m) && Object.keys(m).every(k => domain.is(k) && codomain.is(m[k])),
     (m, c) => {
-      const dictionaryValidation = Dictionary.validate(m, c)
+      const dictionaryValidation = D.validate(m, c)
       if (dictionaryValidation.isLeft()) {
         return dictionaryValidation
       } else {
@@ -701,6 +704,7 @@ export const dictionary = <D extends Mixed, C extends Mixed>(
     domain,
     codomain
   )
+}
 
 //
 // unions
