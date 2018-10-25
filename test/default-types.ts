@@ -3,23 +3,20 @@ import * as t from '../src/index'
 import { assertSuccess, assertFailure } from './helpers'
 
 describe('Dictionary', () => {
-  it('should decode arrays', () => {
-    assertSuccess(t.Dictionary.decode([]))
-  })
-
-  it('should decode objects', () => {
+  it('should succeed validating a valid value', () => {
+    const T1 = t.Dictionary
     assertSuccess(t.Dictionary.decode({}))
+    assertSuccess(T1.decode([]))
+    assertSuccess(T1.decode([1]))
+    assertSuccess(T1.decode(new Number()))
+    assertSuccess(T1.decode(new Date()))
   })
 
-  it('should fail with primitives', () => {
+  it('should fail validating an invalid value', () => {
     const T = t.Dictionary
     assertFailure(T.decode('s'), ['Invalid value "s" supplied to : Dictionary'])
     assertFailure(T.decode(1), ['Invalid value 1 supplied to : Dictionary'])
     assertFailure(T.decode(true), ['Invalid value true supplied to : Dictionary'])
-  })
-
-  it('should fail with null and undefined', () => {
-    const T = t.Dictionary
     assertFailure(T.decode(null), ['Invalid value null supplied to : Dictionary'])
     assertFailure(T.decode(undefined), ['Invalid value undefined supplied to : Dictionary'])
   })

@@ -13,6 +13,11 @@ describe('dictionary', () => {
     const T3 = t.dictionary(string2, t.number)
     assertSuccess(T3.decode({}))
     assertSuccess(T3.decode({ aa: 1 }))
+    const T4 = t.dictionary(t.string, t.any)
+    assertSuccess(T4.decode([]))
+    assertSuccess(T4.decode([1]))
+    assertSuccess(T4.decode(new Number()))
+    assertSuccess(T4.decode(new Date()))
   })
 
   it('should return the same reference if validation succeeded if nothing changed', () => {
@@ -31,9 +36,16 @@ describe('dictionary', () => {
   })
 
   it('should fail validating an invalid value', () => {
-    const T = t.dictionary(t.string, t.number)
-    assertFailure(T.decode(1), ['Invalid value 1 supplied to : { [K in string]: number }'])
-    assertFailure(T.decode({ aa: 's' }), ['Invalid value "s" supplied to : { [K in string]: number }/aa: number'])
+    const T1 = t.dictionary(t.string, t.number)
+    assertFailure(T1.decode(1), ['Invalid value 1 supplied to : { [K in string]: number }'])
+    assertFailure(T1.decode({ aa: 's' }), ['Invalid value "s" supplied to : { [K in string]: number }/aa: number'])
+    assertFailure(T1.decode([]), ['Invalid value [] supplied to : { [K in string]: number }'])
+    assertFailure(T1.decode([1]), ['Invalid value [1] supplied to : { [K in string]: number }'])
+    assertFailure(T1.decode(new Number()), ['Invalid value 0 supplied to : { [K in string]: number }'])
+    const d = new Date()
+    assertFailure(T1.decode(d), [`Invalid value ${JSON.stringify(d)} supplied to : { [K in string]: number }`])
+    const T2 = t.dictionary(string2, t.any)
+    assertFailure(T2.decode([1]), ['Invalid value "0" supplied to : { [K in string2]: any }/0: string2'])
   })
 
   it('should support literals as domain type', () => {
