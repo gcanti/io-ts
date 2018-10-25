@@ -13,6 +13,11 @@
 **Note**: Gaps between patch versions are faulty/broken releases. **Note**: A feature tagged as Experimental is in a
 high state of flux, you're at risk of it changing without notice.
 
+# 1.3.2
+
+- **Bug Fix**
+  - dictionary type should not allow arrays, fix #218 (@gcanti)
+
 # 1.3.1
 
 - **Polish**
