@@ -8,6 +8,21 @@ describe('interface', () => {
     assertSuccess(T.decode({ a: 's' }))
   })
 
+  it('should emit expected keys while decoding (#214)', () => {
+    const T1 = t.type({ a: t.any })
+    assert.deepEqual(T1.decode({}).value, { a: undefined })
+
+    const T2 = t.type({ a: t.union([t.number, t.undefined]) })
+    const input = {}
+    assert.deepEqual(T2.decode(input).value, { a: undefined })
+    assert.deepEqual(input, {})
+
+    const jsonTurnaround = <A>(type: t.Type<A>, a: A): t.Validation<A> => {
+      return type.decode(JSON.parse(JSON.stringify(type.encode(a))))
+    }
+    assert.deepEqual(jsonTurnaround(T2, { a: undefined }).value, { a: undefined })
+  })
+
   it('should keep unknown properties', () => {
     const T = t.interface({ a: t.string })
     const validation = T.decode({ a: 's', b: 1 })
@@ -55,10 +70,16 @@ describe('interface', () => {
     const T1 = t.type({ a: t.number })
     assert.strictEqual(T1.is({ a: 0 }), true)
     assert.strictEqual(T1.is(undefined), false)
+
     const T2 = t.type({ a: DateFromNumber })
     assert.strictEqual(T2.is({ a: new Date(0) }), true)
     assert.strictEqual(T2.is({ a: 0 }), false)
     assert.strictEqual(T2.is(undefined), false)
+
+    const T3 = t.type({ a: t.union([t.number, t.undefined]) })
+    assert.strictEqual(T3.is({ a: 1 }), true)
+    assert.strictEqual(T3.is({ a: undefined }), true)
+    assert.strictEqual(T3.is({}), false)
   })
 
   it('should preserve additional properties while encoding', () => {
