@@ -1058,14 +1058,14 @@ export type TaggedIntersectionArgument<Tag extends string> =
   | [Mixed, Mixed, Mixed, Mixed, Tagged<Tag>]
 export interface TaggedIntersection<Tag extends string, A, O = A>
   extends IntersectionType<TaggedIntersectionArgument<Tag>, A, O> {}
-export interface TaggedExact<Tag extends string> extends ExactType<Tagged<Tag>> {}
+export interface TaggedExact<Tag extends string, A, O = A> extends ExactType<Tagged<Tag>, A, O> {}
 export type Tagged<Tag extends string, A = any, O = A> =
   | InterfaceType<TaggedProps<Tag>, A, O>
   | StrictType<TaggedProps<Tag>, A, O>
   | TaggedRefinement<Tag, A, O>
   | TaggedUnion<Tag, A, O>
   | TaggedIntersection<Tag, A, O>
-  | TaggedExact<Tag>
+  | TaggedExact<Tag, A, O>
   | RecursiveType<any, A, O>
 
 export const isTagged = <Tag extends string>(tag: Tag): ((type: Mixed) => type is Tagged<Tag>) => {
