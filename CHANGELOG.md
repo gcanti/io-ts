@@ -13,6 +13,11 @@
 **Note**: Gaps between patch versions are faulty/broken releases. **Note**: A feature tagged as Experimental is in a
 high state of flux, you're at risk of it changing without notice.
 
+# 1.3.3
+
+- **Bug Fix**
+  - align `TaggedExact` definition with siblings, fix #223 (@gcanti)
+
 # 1.3.2
 
 - **Bug Fix**
