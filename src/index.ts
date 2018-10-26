@@ -515,7 +515,8 @@ export const type = <P extends Props>(
         return false
       }
       for (let i = 0; i < len; i++) {
-        if (!types[i].is(m[keys[i]])) {
+        const k = keys[i]
+        if (!m.hasOwnProperty(k) || !types[i].is(m[k])) {
           return false
         }
       }
@@ -531,19 +532,25 @@ export const type = <P extends Props>(
         const errors: Errors = []
         for (let i = 0; i < len; i++) {
           const k = keys[i]
-          const ok = o[k]
+          if (!a.hasOwnProperty(k)) {
+            if (a === o) {
+              a = { ...o }
+            }
+            a[k] = a[k]
+          }
+          const ak = a[k]
           const type = types[i]
-          const validation = type.validate(ok, appendContext(c, k, type))
+          const validation = type.validate(ak, appendContext(c, k, type))
           if (validation.isLeft()) {
             pushAll(errors, validation.value)
           } else {
-            const vok = validation.value
-            if (vok !== ok) {
+            const vak = validation.value
+            if (vak !== ak) {
               /* istanbul ignore next */
               if (a === o) {
                 a = { ...o }
               }
-              a[k] = vok
+              a[k] = vak
             }
           }
         }
@@ -599,15 +606,53 @@ export const partial = <P extends Props>(
   for (let i = 0; i < len; i++) {
     partials[keys[i]] = union([types[i], undefinedType])
   }
-  const partial = type(partials)
   return new PartialType(
     name,
-    partial.is as any,
-    partial.validate as any,
+    (m): m is TypeOfPartialProps<P> => {
+      if (!Dictionary.is(m)) {
+        return false
+      }
+      for (let i = 0; i < len; i++) {
+        const k = keys[i]
+        if (!partials[k].is(m[k])) {
+          return false
+        }
+      }
+      return true
+    },
+    (m, c) => {
+      const dictionaryValidation = Dictionary.validate(m, c)
+      if (dictionaryValidation.isLeft()) {
+        return dictionaryValidation
+      } else {
+        const o = dictionaryValidation.value
+        let a = o
+        const errors: Errors = []
+        for (let i = 0; i < len; i++) {
+          const k = keys[i]
+          const ak = a[k]
+          const type = partials[k]
+          const validation = type.validate(ak, appendContext(c, k, type))
+          if (validation.isLeft()) {
+            pushAll(errors, validation.value)
+          } else {
+            const vak = validation.value
+            if (vak !== ak) {
+              /* istanbul ignore next */
+              if (a === o) {
+                a = { ...o }
+              }
+              a[k] = vak
+            }
+          }
+        }
+        return errors.length ? failures(errors) : success(a as any)
+      }
+    },
     useIdentity(types, len)
       ? identity
       : a => {
-          const s: { [key: string]: any } = { ...(a as any) }
+          const s: { [key: string]: any } = { ...a }
           for (let i = 0; i < len; i++) {
             const k = keys[i]
             const ak = a[k]
