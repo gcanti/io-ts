@@ -353,11 +353,13 @@ export class KeyofType<D extends { [key: string]: mixed }> extends Type<keyof D>
   }
 }
 
+const hasOwnProperty = Object.prototype.hasOwnProperty
+
 export const keyof = <D extends { [key: string]: mixed }>(
   keys: D,
   name: string = `(keyof ${JSON.stringify(Object.keys(keys))})`
 ): KeyofType<D> => {
-  const is = (m: mixed): m is keyof D => string.is(m) && keys.hasOwnProperty(m)
+  const is = (m: mixed): m is keyof D => string.is(m) && hasOwnProperty.call(keys, m)
   return new KeyofType(name, is, (m, c) => (is(m) ? success(m) : failure(m, c)), identity, keys)
 }
 
@@ -516,7 +518,7 @@ export const type = <P extends Props>(
       }
       for (let i = 0; i < len; i++) {
         const k = keys[i]
-        if (!m.hasOwnProperty(k) || !types[i].is(m[k])) {
+        if (!hasOwnProperty.call(m, k) || !types[i].is(m[k])) {
           return false
         }
       }
@@ -532,7 +534,7 @@ export const type = <P extends Props>(
         const errors: Errors = []
         for (let i = 0; i < len; i++) {
           const k = keys[i]
-          if (!a.hasOwnProperty(k)) {
+          if (!hasOwnProperty.call(a, k)) {
             if (a === o) {
               a = { ...o }
             }
@@ -1116,7 +1118,7 @@ export type Tagged<Tag extends string, A = any, O = A> =
 export const isTagged = <Tag extends string>(tag: Tag): ((type: Mixed) => type is Tagged<Tag>) => {
   const f = (type: Mixed): type is Tagged<Tag> => {
     if (type instanceof InterfaceType || type instanceof StrictType) {
-      return type.props.hasOwnProperty(tag)
+      return hasOwnProperty.call(type.props, tag)
     } else if (type instanceof IntersectionType) {
       return type.types.some(f)
     } else if (type instanceof UnionType) {
@@ -1198,7 +1200,7 @@ export const taggedUnion = <Tag extends string, RTS extends Array<Tagged<Tag>>>(
     hash[String(value)] = i
   }
   const isTagValue = useHash
-    ? (m: mixed): m is string | number | boolean => string.is(m) && hash.hasOwnProperty(m)
+    ? (m: mixed): m is string | number | boolean => string.is(m) && hasOwnProperty.call(hash, m)
     : (m: mixed): m is string | number | boolean => values.indexOf(m as any) !== -1
   const getIndex: (tag: string | number | boolean) => number = useHash
     ? tag => hash[tag as any]
@@ -1297,7 +1299,7 @@ export function exact<RT extends HasProps>(
   const props: Props = getProps(type)
   return new ExactType(
     name,
-    (m): m is TypeOf<RT> => type.is(m) && Object.getOwnPropertyNames(m).every(k => props.hasOwnProperty(k)),
+    (m): m is TypeOf<RT> => type.is(m) && Object.getOwnPropertyNames(m).every(k => hasOwnProperty.call(props, k)),
     (m, c) => {
       const looseValidation = type.validate(m, c)
       if (looseValidation.isLeft()) {
@@ -1309,7 +1311,7 @@ export function exact<RT extends HasProps>(
         const errors: Errors = []
         for (let i = 0; i < len; i++) {
           const key = keys[i]
-          if (!props.hasOwnProperty(key)) {
+          if (!hasOwnProperty.call(props, key)) {
             errors.push(getValidationError(o[key], appendContext(c, key, never)))
           }
         }

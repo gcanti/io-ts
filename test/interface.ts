@@ -11,6 +11,7 @@ describe('interface', () => {
   it('should emit expected keys while decoding (#214)', () => {
     const T1 = t.type({ a: t.any })
     assert.deepEqual(T1.decode({}).value, { a: undefined })
+    assert.deepEqual(T1.decode(Object.create(null)).value, { a: undefined })
 
     const T2 = t.type({ a: t.union([t.number, t.undefined]) })
     const input = {}
@@ -80,6 +81,7 @@ describe('interface', () => {
     assert.strictEqual(T3.is({ a: 1 }), true)
     assert.strictEqual(T3.is({ a: undefined }), true)
     assert.strictEqual(T3.is({}), false)
+    assert.strictEqual(T3.is(Object.create(null)), false)
   })
 
   it('should preserve additional properties while encoding', () => {
