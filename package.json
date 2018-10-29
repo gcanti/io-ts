@@ -1,6 +1,6 @@
 {
   "name": "io-ts",
-  "version": "1.3.4",
+  "version": "1.4.0",
   "description": "TypeScript compatible runtime type system for IO validation",
   "files": [
     "lib"
@@ -34,16 +34,16 @@
   },
   "devDependencies": {
     "@types/benchmark": "1.0.31",
-    "@types/jest": "22.2.2",
+    "@types/jest": "^23.3.8",
     "@types/node": "7.0.4",
     "benchmark": "2.1.4",
     "dtslint": "0.3.0",
-    "jest": "22.4.3",
+    "jest": "^23.6.0",
     "prettier": "1.13.4",
     "rimraf": "2.6.2",
-    "ts-jest": "22.4.2",
-    "tslint": "5.9.1",
-    "tslint-config-standard": "7.0.0",
+    "ts-jest": "^23.10.4",
+    "tslint": "^5.11.0",
+    "tslint-config-standard": "^8.0.1",
     "typescript": "^3.1.3"
   },
   "tags": [
@@ -61,11 +61,6 @@
     "runtime"
   ],
   "jest": {
-    "globals": {
-      "ts-jest": {
-        "skipBabel": true
-      }
-    },
     "collectCoverage": true,
     "transform": {
       "^.+\\.tsx?$": "ts-jest"
