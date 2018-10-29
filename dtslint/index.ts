@@ -87,7 +87,7 @@ const x11: I2T = { name: 'name', father: { surname: 'surname' } }
 //
 
 const D1 = t.dictionary(t.keyof({ a: true }), t.number)
-type Assert9 = t.TypeOf<typeof D1> // $ExpectType TypeOfDictionary<KeyofType<{ a: true; }>, NumberType>
+type Assert9 = t.TypeOf<typeof D1> // $ExpectType TypeOfDictionary<KeyofType<{ a: boolean; }>, NumberType>
 // $ExpectError
 const x12: t.TypeOf<typeof D1> = { a: 's' }
 // $ExpectError
@@ -256,13 +256,20 @@ interface C1WithAdditionalProp {
 const C2 = t.clean<C1>(C1)
 // $ExpectError
 const C3 = t.clean<C1WithAdditionalProp, C1O>(C1)
-const C4 = t.clean<C1, C1O>(C1) // $ExpectType Type<C1, C1O, mixed>
-const C5 = t.alias(C1)<C1>() // $ExpectType InterfaceType<{ a: StringType; b: Type<Date, number, mixed>; }, C1, OutputOfProps<{ a: StringType; b: Type<Date, number, mixed>; }>, mixed>
+const C4 = t.clean<C1, C1O>(C1)
+type Assert21 = t.TypeOf<typeof C4> // $ExpectType C1
+type Assert22 = t.OutputOf<typeof C4> // $ExpectType C1O
+const C5 = t.alias(C1)<C1>()
+type Assert23 = t.TypeOf<typeof C5> // $ExpectType C1
+type Assert24 = t.OutputOf<typeof C5>['a'] // $ExpectType string
+type Assert25 = t.OutputOf<typeof C5>['b'] // $ExpectType number
 // $ExpectError
 const C6 = t.alias(C1)<C1, C1>()
 // $ExpectError
 const C7 = t.alias(C1)<C1WithAdditionalProp, C1O>()
-const C8 = t.alias(C1)<C1, C1O>() // $ExpectType InterfaceType<{ a: StringType; b: Type<Date, number, mixed>; }, C1, C1O, mixed>
+const C8 = t.alias(C1)<C1, C1O>()
+type Assert26 = t.TypeOf<typeof C8> // $ExpectType C1
+type Assert27 = t.OutputOf<typeof C8> // $ExpectType C1O
 
 //
 // combinators

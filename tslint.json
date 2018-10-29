@@ -4,6 +4,7 @@
     "space-before-function-paren": false,
     "no-use-before-declare": false,
     "variable-name": false,
-    "ter-indent": false
+    "ter-indent": false,
+    "strict-type-predicates": false
   }
 }
