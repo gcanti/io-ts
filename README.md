@@ -83,6 +83,10 @@ Person.decode(JSON.parse('{"name":"Giulio"}')) // => Left([...])
 
 The stable version is tested against TypeScript 3.1.4, but should run with TypeScript 2.7.2+ too
 
+**Note**. If you are running `< typescript@3.0.1` you have to polyfill `unknown`.
+
+You can use [unknown-ts](https://github.com/gcanti/unknown-ts) as a polyfill.
+
 # Error reporters
 
 A reporter implements the following interface
