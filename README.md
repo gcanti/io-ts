@@ -15,7 +15,7 @@ Also a runtime type can
 - be used as a custom type guard (through `is`)
 
 ```ts
-export type mixed = object | number | string | boolean | symbol | undefined | null
+export type mixed = unknown
 
 class Type<A, O = A, I = mixed> {
   readonly _A: A
