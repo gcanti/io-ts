@@ -12,6 +12,8 @@ describe('keyof', () => {
   it('should fail validating an invalid value', () => {
     const T = t.keyof({ a: 1, b: 2 })
     assertFailure(T.decode('c'), ['Invalid value "c" supplied to : (keyof ["a","b"])'])
+    // check for hasOwnProperty oddity: { a: 1 }.hasOwnProperty(['a'] as any) === true
+    assertFailure(T.decode(['a']), ['Invalid value ["a"] supplied to : (keyof ["a","b"])'])
   })
 
   it('should return the same reference when serializing', () => {
