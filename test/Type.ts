@@ -37,10 +37,16 @@ describe('Type', () => {
       assert.strictEqual(t.string.pipe(t.string as t.Type<string, string, string>).encode, t.identity)
     })
 
-    it('accept to pipe to a Type with a wider input', () => {
+    it('accept to pipe a type with a wider input', () => {
       const T = t.string.pipe(t.string)
       assert.deepEqual(T.decode('a'), right('a'))
       assert.strictEqual(T.encode('a'), 'a')
+    })
+
+    it('accept to pipe a type with a narrower output', () => {
+      const T = t.string.pipe(t.literal('foo'))
+      assert.deepEqual(T.decode('foo'), right('foo'))
+      assert.strictEqual(T.encode('foo'), 'foo')
     })
   })
 
