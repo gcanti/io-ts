@@ -1,6 +1,7 @@
 import * as assert from 'assert'
 import * as t from '../src/index'
 import { assertSuccess, assertFailure } from './helpers'
+import { right } from 'fp-ts/lib/Either'
 
 const BAA = new t.Type<number, string, string>(
   'BAA',
@@ -35,6 +36,12 @@ describe('Type', () => {
     it('should ude identity as decoder function', () => {
       assert.strictEqual(t.string.pipe(t.string as t.Type<string, string, string>).encode, t.identity)
     })
+
+    it('accept to pipe to a Type with a wider input', () => {
+      const T = t.string.pipe(t.string)
+      assert.deepEqual(T.decode('a'), right('a'))
+      assert.strictEqual(T.encode('a'), 'a')
+    })
   })
 
   describe('asDecoder', () => {
@@ -52,7 +59,10 @@ describe('Type', () => {
 
 describe('getContextEntry', () => {
   it('should return a ContextEntry', () => {
-    assert.deepEqual(t.getContextEntry('key', t.string), { key: 'key', type: t.string })
+    assert.deepEqual(t.getContextEntry('key', t.string), {
+      key: 'key',
+      type: t.string
+    })
   })
 })
 
