@@ -55,9 +55,13 @@ export class Type<A, O = A, I = mixed> implements Decoder<I, A>, Encoder<A, O> {
     readonly encode: Encode<A, O>
   ) {}
 
-  pipe<B, IB, A extends IB, OB extends A>(this: Type<A, O, I>, ab: Type<B, OB, IB>, name?: string): Type<B, O, I> {
+  pipe<B, IB, A extends IB, OB extends A>(
+    this: Type<A, O, I>,
+    ab: Type<B, OB, IB>,
+    name: string = `pipe(${this.name}, ${ab.name})`
+  ): Type<B, O, I> {
     return new Type(
-      name || `pipe(${this.name}, ${ab.name})`,
+      name,
       ab.is,
       (i, c) => {
         const validation = this.validate(i, c)
