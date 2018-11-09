@@ -445,6 +445,27 @@ const UserModel = t.interface({ name: t.string })
 functionThatRequiresRuntimeType(ResponseBody(t.array(UserModel)), ...params)
 ```
 
+# Piping
+
+You can pipe two runtime types if their type parameters do align
+
+```ts
+const NumberDecoder = new t.Type<number, string, string>(
+  'NumberDecoder',
+  t.number.is,
+  (s, c) => {
+    const n = parseFloat(s)
+    return isNaN(n) ? t.failure(s, c) : t.success(n)
+  },
+  String
+)
+
+const NumberFromString = t.string.pipe(
+  NumberDecoder,
+  'NumberFromString'
+)
+```
+
 # Tips and Tricks
 
 ## Is there a way to turn the checks off in production code?
