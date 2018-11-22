@@ -824,13 +824,14 @@ export class IntersectionType<RTS extends Array<Any>, A = any, O = A, I = mixed>
   }
 }
 
+export type Compact<A> = { [K in keyof A]: A[K] }
 export function intersection<A extends Mixed, B extends Mixed, C extends Mixed, D extends Mixed, E extends Mixed>(
   types: [A, B, C, D, E],
   name?: string
 ): IntersectionType<
   [A, B, C, D, E],
-  TypeOf<A> & TypeOf<B> & TypeOf<C> & TypeOf<D> & TypeOf<E>,
-  OutputOf<A> & OutputOf<B> & OutputOf<C> & OutputOf<D> & OutputOf<E>,
+  Compact<TypeOf<A> & TypeOf<B> & TypeOf<C> & TypeOf<D> & TypeOf<E>>,
+  Compact<OutputOf<A> & OutputOf<B> & OutputOf<C> & OutputOf<D> & OutputOf<E>>,
   mixed
 >
 export function intersection<A extends Mixed, B extends Mixed, C extends Mixed, D extends Mixed>(
@@ -838,18 +839,23 @@ export function intersection<A extends Mixed, B extends Mixed, C extends Mixed, 
   name?: string
 ): IntersectionType<
   [A, B, C, D],
-  TypeOf<A> & TypeOf<B> & TypeOf<C> & TypeOf<D>,
-  OutputOf<A> & OutputOf<B> & OutputOf<C> & OutputOf<D>,
+  Compact<TypeOf<A> & TypeOf<B> & TypeOf<C> & TypeOf<D>>,
+  Compact<OutputOf<A> & OutputOf<B> & OutputOf<C> & OutputOf<D>>,
   mixed
 >
 export function intersection<A extends Mixed, B extends Mixed, C extends Mixed>(
   types: [A, B, C],
   name?: string
-): IntersectionType<[A, B, C], TypeOf<A> & TypeOf<B> & TypeOf<C>, OutputOf<A> & OutputOf<B> & OutputOf<C>, mixed>
+): IntersectionType<
+  [A, B, C],
+  Compact<TypeOf<A> & TypeOf<B> & TypeOf<C>>,
+  Compact<OutputOf<A> & OutputOf<B> & OutputOf<C>>,
+  mixed
+>
 export function intersection<A extends Mixed, B extends Mixed>(
   types: [A, B],
   name?: string
-): IntersectionType<[A, B], TypeOf<A> & TypeOf<B>, OutputOf<A> & OutputOf<B>, mixed>
+): IntersectionType<[A, B], Compact<TypeOf<A> & TypeOf<B>>, Compact<OutputOf<A> & OutputOf<B>>, mixed>
 export function intersection<A extends Mixed>(
   types: [A],
   name?: string

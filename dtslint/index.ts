@@ -106,9 +106,9 @@ type Assert10 = t.TypeOf<typeof U1> // $ExpectType string | number
 //
 
 const IN1 = t.intersection([t.string, t.number])
-type Assert11 = t.TypeOf<typeof IN1> // $ExpectType string & number
+type Assert11 = t.TypeOf<typeof IN1> // $ExpectType Compact<string & number>
 const IN2 = t.intersection([t.interface({ a: t.number }), t.interface({ b: t.string })])
-type Assert12 = t.TypeOf<typeof IN2> // $ExpectType TypeOfProps<{ a: NumberType; }> & TypeOfProps<{ b: StringType; }>
+type Assert12 = t.TypeOf<typeof IN2> // $ExpectType Compact<TypeOfProps<{ a: NumberType; }> & TypeOfProps<{ b: StringType; }>>
 // $ExpectError
 const x17: t.TypeOf<typeof IN2> = { a: 1 }
 const x18: t.TypeOf<typeof IN2> = { a: 1, b: 's' }
@@ -397,7 +397,7 @@ export function interfaceWithOptionals<RequiredProps extends t.Props, OptionalPr
     t.InterfaceType<RequiredProps, t.TypeOfProps<RequiredProps>>,
     t.PartialType<OptionalProps, t.TypeOfPartialProps<OptionalProps>>
   ],
-  t.TypeOfProps<RequiredProps> & t.TypeOfPartialProps<OptionalProps>
+  t.Compact<t.TypeOfProps<RequiredProps> & t.TypeOfPartialProps<OptionalProps>>
 > {
   return t.intersection([t.interface(required), t.partial(optional)], name)
 }
@@ -451,3 +451,9 @@ declare function withValidation<L, A>(
 declare const fa: TaskEither<string, void>
 
 withValidation(t.void, () => 'validation error', fa)
+
+// $ExpectError
+const T: t.Type<any, { [k: string]: string }> = t.intersection([
+  t.interface({ a: t.string }),
+  t.interface({ b: t.number })
+]);
