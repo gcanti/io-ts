@@ -13,6 +13,10 @@
 **Note**: Gaps between patch versions are faulty/broken releases. **Note**: A feature tagged as Experimental is in a
 high state of flux, you're at risk of it changing without notice.
 
+# 1.4.2
+
+use `Compact` in `intersection` signatures as a workaround for #234 (@sledorze)
+
 # 1.4.1
 
 - **Polish**

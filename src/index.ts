@@ -829,7 +829,9 @@ export class IntersectionType<RTS extends Array<Any>, A = any, O = A, I = mixed>
   }
 }
 
+// used in `intersection` as a workaround for #234
 export type Compact<A> = { [K in keyof A]: A[K] }
+
 export function intersection<A extends Mixed, B extends Mixed, C extends Mixed, D extends Mixed, E extends Mixed>(
   types: [A, B, C, D, E],
   name?: string
