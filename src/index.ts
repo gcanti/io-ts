@@ -1291,7 +1291,7 @@ export type HasProps =
   | StrictType<any, any, any, any>
   | PartialType<any, any, any, any>
 
-const getProps = (type: HasProps): Props => {
+export const getProps = (type: HasProps): Props => {
   switch (type._tag) {
     case 'RefinementType':
     case 'ReadonlyType':
