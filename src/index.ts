@@ -7,39 +7,105 @@ declare global {
   }
 }
 
+/**
+ * @since 1.0.0
+ */
 export type mixed = unknown
 
+/**
+ * @since 1.0.0
+ */
 export interface ContextEntry {
   readonly key: string
   readonly type: Decoder<any, any>
 }
+/**
+ * @since 1.0.0
+ */
 export interface Context extends ReadonlyArray<ContextEntry> {}
+
+/**
+ * @since 1.0.0
+ */
 export interface ValidationError {
   readonly value: mixed
   readonly context: Context
 }
+
+/**
+ * @since 1.0.0
+ */
 export interface Errors extends Array<ValidationError> {}
+
+/**
+ * @since 1.0.0
+ */
 export type Validation<A> = Either<Errors, A>
+
+/**
+ * @since 1.0.0
+ */
 export type Is<A> = (m: mixed) => m is A
+
+/**
+ * @since 1.0.0
+ */
 export type Validate<I, A> = (i: I, context: Context) => Validation<A>
+
+/**
+ * @since 1.0.0
+ */
 export type Decode<I, A> = (i: I) => Validation<A>
+
+/**
+ * @since 1.0.0
+ */
 export type Encode<A, O> = (a: A) => O
+
+/**
+ * @since 1.0.0
+ */
 export interface Any extends Type<any, any, any> {}
+
+/**
+ * @since 1.0.0
+ */
 export interface Mixed extends Type<any, any, mixed> {}
+
+/**
+ * @since 1.0.0
+ */
 export type TypeOf<RT extends Any> = RT['_A']
+
+/**
+ * @since 1.0.0
+ */
 export type InputOf<RT extends Any> = RT['_I']
+
+/**
+ * @since 1.0.0
+ */
 export type OutputOf<RT extends Any> = RT['_O']
 
+/**
+ * @since 1.0.0
+ */
 export interface Decoder<I, A> {
   readonly name: string
   readonly validate: Validate<I, A>
   readonly decode: Decode<I, A>
 }
 
+/**
+ * @since 1.0.0
+ */
 export interface Encoder<A, O> {
   readonly encode: Encode<A, O>
 }
 
+/**
+ * @since 1.0.0
+ */
 export class Type<A, O = A, I = mixed> implements Decoder<I, A>, Encoder<A, O> {
   readonly _A!: A
   readonly _O!: O
@@ -86,17 +152,35 @@ export class Type<A, O = A, I = mixed> implements Decoder<I, A>, Encoder<A, O> {
   }
 }
 
+/**
+ * @since 1.0.0
+ */
 export const identity = <A>(a: A): A => a
 
+/**
+ * @since 1.0.0
+ */
 export const getFunctionName = (f: Function): string =>
   (f as any).displayName || (f as any).name || `<function${f.length}>`
 
+/**
+ * @since 1.0.0
+ */
 export const getContextEntry = (key: string, type: Decoder<any, any>): ContextEntry => ({ key, type })
 
+/**
+ * @since 1.0.0
+ */
 export const getValidationError = (value: mixed, context: Context): ValidationError => ({ value, context })
 
+/**
+ * @since 1.0.0
+ */
 export const getDefaultContext = (type: Decoder<any, any>): Context => [{ key: '', type }]
 
+/**
+ * @since 1.0.0
+ */
 export const appendContext = (c: Context, key: string, type: Decoder<any, any>): Context => {
   const len = c.length
   const r = Array(len + 1)
@@ -107,11 +191,20 @@ export const appendContext = (c: Context, key: string, type: Decoder<any, any>):
   return r
 }
 
+/**
+ * @since 1.0.0
+ */
 export const failures = <T>(errors: Errors): Validation<T> => new Left(errors)
 
+/**
+ * @since 1.0.0
+ */
 export const failure = <T>(value: mixed, context: Context): Validation<T> =>
   failures([getValidationError(value, context)])
 
+/**
+ * @since 1.0.0
+ */
 export const success = <T>(value: T): Validation<T> => new Right<Errors, T>(value)
 
 const pushAll = <A>(xs: Array<A>, ys: Array<A>): void => {
@@ -125,6 +218,9 @@ const pushAll = <A>(xs: Array<A>, ys: Array<A>): void => {
 // basic types
 //
 
+/**
+ * @since 1.0.0
+ */
 export class NullType extends Type<null> {
   readonly _tag: 'NullType' = 'NullType'
   constructor() {
@@ -132,9 +228,15 @@ export class NullType extends Type<null> {
   }
 }
 
-/** @alias `null` */
+/**
+ * @alias `null`
+ * @since 1.0.0
+ */
 export const nullType: NullType = new NullType()
 
+/**
+ * @since 1.0.0
+ */
 export class UndefinedType extends Type<undefined> {
   readonly _tag: 'UndefinedType' = 'UndefinedType'
   constructor() {
@@ -149,6 +251,9 @@ export class UndefinedType extends Type<undefined> {
 
 const undefinedType: UndefinedType = new UndefinedType()
 
+/**
+ * @since 1.2.0
+ */
 export class VoidType extends Type<void> {
   readonly _tag: 'VoidType' = 'VoidType'
   constructor() {
@@ -156,9 +261,15 @@ export class VoidType extends Type<void> {
   }
 }
 
-/** @alias `void` */
+/**
+ * @alias `void`
+ * @since 1.2.0
+ */
 export const voidType: VoidType = new VoidType()
 
+/**
+ * @since 1.0.0
+ */
 export class AnyType extends Type<any> {
   readonly _tag: 'AnyType' = 'AnyType'
   constructor() {
@@ -166,8 +277,14 @@ export class AnyType extends Type<any> {
   }
 }
 
+/**
+ * @since 1.0.0
+ */
 export const any: AnyType = new AnyType()
 
+/**
+ * @since 1.0.0
+ */
 export class NeverType extends Type<never> {
   readonly _tag: 'NeverType' = 'NeverType'
   constructor() {
@@ -183,8 +300,14 @@ export class NeverType extends Type<never> {
   }
 }
 
+/**
+ * @since 1.0.0
+ */
 export const never: NeverType = new NeverType()
 
+/**
+ * @since 1.0.0
+ */
 export class StringType extends Type<string> {
   readonly _tag: 'StringType' = 'StringType'
   constructor() {
@@ -197,8 +320,14 @@ export class StringType extends Type<string> {
   }
 }
 
+/**
+ * @since 1.0.0
+ */
 export const string: StringType = new StringType()
 
+/**
+ * @since 1.0.0
+ */
 export class NumberType extends Type<number> {
   readonly _tag: 'NumberType' = 'NumberType'
   constructor() {
@@ -211,8 +340,14 @@ export class NumberType extends Type<number> {
   }
 }
 
+/**
+ * @since 1.0.0
+ */
 export const number: NumberType = new NumberType()
 
+/**
+ * @since 1.0.0
+ */
 export class BooleanType extends Type<boolean> {
   readonly _tag: 'BooleanType' = 'BooleanType'
   constructor() {
@@ -225,8 +360,14 @@ export class BooleanType extends Type<boolean> {
   }
 }
 
+/**
+ * @since 1.0.0
+ */
 export const boolean: BooleanType = new BooleanType()
 
+/**
+ * @since 1.0.0
+ */
 export class AnyArrayType extends Type<Array<mixed>> {
   readonly _tag: 'AnyArrayType' = 'AnyArrayType'
   constructor() {
@@ -236,6 +377,9 @@ export class AnyArrayType extends Type<Array<mixed>> {
 
 const arrayType: AnyArrayType = new AnyArrayType()
 
+/**
+ * @since 1.0.0
+ */
 export class AnyDictionaryType extends Type<{ [key: string]: mixed }> {
   readonly _tag: 'AnyDictionaryType' = 'AnyDictionaryType'
   constructor() {
@@ -248,8 +392,14 @@ export class AnyDictionaryType extends Type<{ [key: string]: mixed }> {
   }
 }
 
+/**
+ * @since 1.0.0
+ */
 export const Dictionary: AnyDictionaryType = new AnyDictionaryType()
 
+/**
+ * @since 1.0.0
+ */
 export class ObjectType extends Type<object> {
   readonly _tag: 'ObjectType' = 'ObjectType'
   constructor() {
@@ -257,8 +407,14 @@ export class ObjectType extends Type<object> {
   }
 }
 
+/**
+ * @since 1.0.0
+ */
 export const object: ObjectType = new ObjectType()
 
+/**
+ * @since 1.0.0
+ */
 export class FunctionType extends Type<Function> {
   readonly _tag: 'FunctionType' = 'FunctionType'
   constructor() {
@@ -272,12 +428,14 @@ export class FunctionType extends Type<Function> {
   }
 }
 
+/**
+ * @since 1.0.0
+ */
 export const Function: FunctionType = new FunctionType()
 
-//
-// refinements
-//
-
+/**
+ * @since 1.0.0
+ */
 export class RefinementType<RT extends Any, A = any, O = A, I = mixed> extends Type<A, O, I> {
   readonly _tag: 'RefinementType' = 'RefinementType'
   constructor(
@@ -292,6 +450,9 @@ export class RefinementType<RT extends Any, A = any, O = A, I = mixed> extends T
   }
 }
 
+/**
+ * @since 1.0.0
+ */
 export const refinement = <RT extends Any>(
   type: RT,
   predicate: Predicate<TypeOf<RT>>,
@@ -314,12 +475,14 @@ export const refinement = <RT extends Any>(
     predicate
   )
 
+/**
+ * @since 1.0.0
+ */
 export const Integer = refinement(number, n => n % 1 === 0, 'Integer')
 
-//
-// literals
-//
-
+/**
+ * @since 1.0.0
+ */
 export class LiteralType<V extends string | number | boolean> extends Type<V> {
   readonly _tag: 'LiteralType' = 'LiteralType'
   constructor(
@@ -333,6 +496,9 @@ export class LiteralType<V extends string | number | boolean> extends Type<V> {
   }
 }
 
+/**
+ * @since 1.0.0
+ */
 export const literal = <V extends string | number | boolean>(
   value: V,
   name: string = JSON.stringify(value)
@@ -341,10 +507,9 @@ export const literal = <V extends string | number | boolean>(
   return new LiteralType(name, is, (m, c) => (is(m) ? success(value) : failure(m, c)), identity, value)
 }
 
-//
-// keyof
-//
-
+/**
+ * @since 1.0.0
+ */
 export class KeyofType<D extends { [key: string]: mixed }> extends Type<keyof D> {
   readonly _tag: 'KeyofType' = 'KeyofType'
   constructor(
@@ -360,6 +525,9 @@ export class KeyofType<D extends { [key: string]: mixed }> extends Type<keyof D>
 
 const hasOwnProperty = Object.prototype.hasOwnProperty
 
+/**
+ * @since 1.0.0
+ */
 export const keyof = <D extends { [key: string]: mixed }>(
   keys: D,
   name: string = `(keyof ${JSON.stringify(Object.keys(keys))})`
@@ -368,10 +536,9 @@ export const keyof = <D extends { [key: string]: mixed }>(
   return new KeyofType(name, is, (m, c) => (is(m) ? success(m) : failure(m, c)), identity, keys)
 }
 
-//
-// recursive types
-//
-
+/**
+ * @since 1.0.0
+ */
 export class RecursiveType<RT extends Any, A = any, O = A, I = mixed> extends Type<A, O, I> {
   readonly _tag: 'RecursiveType' = 'RecursiveType'
   constructor(
@@ -388,6 +555,9 @@ export class RecursiveType<RT extends Any, A = any, O = A, I = mixed> extends Ty
   }
 }
 
+/**
+ * @since 1.0.0
+ */
 export const recursion = <A, O = A, I = mixed, RT extends Type<A, O, I> = Type<A, O, I>>(
   name: string,
   definition: (self: RT) => RT
@@ -409,10 +579,9 @@ export const recursion = <A, O = A, I = mixed, RT extends Type<A, O, I> = Type<A
   return Self
 }
 
-//
-// arrays
-//
-
+/**
+ * @since 1.0.0
+ */
 export class ArrayType<RT extends Any, A = any, O = A, I = mixed> extends Type<A, O, I> {
   readonly _tag: 'ArrayType' = 'ArrayType'
   constructor(
@@ -426,6 +595,9 @@ export class ArrayType<RT extends Any, A = any, O = A, I = mixed> extends Type<A
   }
 }
 
+/**
+ * @since 1.0.0
+ */
 export const array = <RT extends Mixed>(
   type: RT,
   name: string = `Array<${type.name}>`
@@ -464,10 +636,9 @@ export const array = <RT extends Mixed>(
     type
   )
 
-//
-// interfaces
-//
-
+/**
+ * @since 1.0.0
+ */
 export class InterfaceType<P, A = any, O = A, I = mixed> extends Type<A, O, I> {
   readonly _tag: 'InterfaceType' = 'InterfaceType'
   constructor(
@@ -481,6 +652,9 @@ export class InterfaceType<P, A = any, O = A, I = mixed> extends Type<A, O, I> {
   }
 }
 
+/**
+ * @since 1.0.0
+ */
 export interface AnyProps {
   [key: string]: Any
 }
@@ -499,15 +673,27 @@ const useIdentity = (types: Array<Any>, len: number): boolean => {
   return true
 }
 
+/**
+ * @since 1.0.0
+ */
 export type TypeOfProps<P extends AnyProps> = { [K in keyof P]: TypeOf<P[K]> }
 
+/**
+ * @since 1.0.0
+ */
 export type OutputOfProps<P extends AnyProps> = { [K in keyof P]: OutputOf<P[K]> }
 
+/**
+ * @since 1.0.0
+ */
 export interface Props {
   [key: string]: Mixed
 }
 
-/** @alias `interface` */
+/**
+ * @alias `interface`
+ * @since 1.0.0
+ */
 export const type = <P extends Props>(
   props: P,
   name: string = getNameFromProps(props)
@@ -581,10 +767,9 @@ export const type = <P extends Props>(
   )
 }
 
-//
-// partials
-//
-
+/**
+ * @since 1.0.0
+ */
 export class PartialType<P, A = any, O = A, I = mixed> extends Type<A, O, I> {
   readonly _tag: 'PartialType' = 'PartialType'
   constructor(
@@ -598,10 +783,19 @@ export class PartialType<P, A = any, O = A, I = mixed> extends Type<A, O, I> {
   }
 }
 
+/**
+ * @since 1.0.0
+ */
 export type TypeOfPartialProps<P extends AnyProps> = { [K in keyof P]?: TypeOf<P[K]> }
 
+/**
+ * @since 1.0.0
+ */
 export type OutputOfPartialProps<P extends AnyProps> = { [K in keyof P]?: OutputOf<P[K]> }
 
+/**
+ * @since 1.0.0
+ */
 export const partial = <P extends Props>(
   props: P,
   name: string = `PartialType<${getNameFromProps(props)}>`
@@ -673,10 +867,9 @@ export const partial = <P extends Props>(
   )
 }
 
-//
-// dictionaries
-//
-
+/**
+ * @since 1.0.0
+ */
 export class DictionaryType<D extends Any, C extends Any, A = any, O = A, I = mixed> extends Type<A, O, I> {
   readonly _tag: 'DictionaryType' = 'DictionaryType'
   constructor(
@@ -691,12 +884,21 @@ export class DictionaryType<D extends Any, C extends Any, A = any, O = A, I = mi
   }
 }
 
+/**
+ * @since 1.0.0
+ */
 export type TypeOfDictionary<D extends Any, C extends Any> = { [K in TypeOf<D>]: TypeOf<C> }
 
+/**
+ * @since 1.0.0
+ */
 export type OutputOfDictionary<D extends Any, C extends Any> = { [K in OutputOf<D>]: OutputOf<C> }
 
 const refinedDictionary = refinement(Dictionary, d => Object.prototype.toString.call(d) === '[object Object]')
 
+/**
+ * @since 1.0.0
+ */
 export const dictionary = <D extends Mixed, C extends Mixed>(
   domain: D,
   codomain: C,
@@ -758,10 +960,9 @@ export const dictionary = <D extends Mixed, C extends Mixed>(
   )
 }
 
-//
-// unions
-//
-
+/**
+ * @since 1.0.0
+ */
 export class UnionType<RTS extends Array<Any>, A = any, O = A, I = mixed> extends Type<A, O, I> {
   readonly _tag: 'UnionType' = 'UnionType'
   constructor(
@@ -775,6 +976,9 @@ export class UnionType<RTS extends Array<Any>, A = any, O = A, I = mixed> extend
   }
 }
 
+/**
+ * @since 1.0.0
+ */
 export const union = <RTS extends Array<Mixed>>(
   types: RTS,
   name: string = `(${types.map(type => type.name).join(' | ')})`
@@ -812,10 +1016,9 @@ export const union = <RTS extends Array<Mixed>>(
   )
 }
 
-//
-// intersections
-//
-
+/**
+ * @since 1.0.0
+ */
 export class IntersectionType<RTS extends Array<Any>, A = any, O = A, I = mixed> extends Type<A, O, I> {
   readonly _tag: 'IntersectionType' = 'IntersectionType'
   constructor(
@@ -829,9 +1032,15 @@ export class IntersectionType<RTS extends Array<Any>, A = any, O = A, I = mixed>
   }
 }
 
-// used in `intersection` as a workaround for #234
+/**
+ * used in `intersection` as a workaround for #234
+ * @since 1.0.0
+ */
 export type Compact<A> = { [K in keyof A]: A[K] }
 
+/**
+ * @since 1.0.0
+ */
 export function intersection<A extends Mixed, B extends Mixed, C extends Mixed, D extends Mixed, E extends Mixed>(
   types: [A, B, C, D, E],
   name?: string
@@ -903,10 +1112,9 @@ export function intersection<RTS extends Array<Mixed>>(
   )
 }
 
-//
-// tuples
-//
-
+/**
+ * @since 1.0.0
+ */
 export class TupleType<RTS extends Array<Any>, A = any, O = A, I = mixed> extends Type<A, O, I> {
   readonly _tag: 'TupleType' = 'TupleType'
   constructor(
@@ -920,6 +1128,9 @@ export class TupleType<RTS extends Array<Any>, A = any, O = A, I = mixed> extend
   }
 }
 
+/**
+ * @since 1.0.0
+ */
 export function tuple<A extends Mixed, B extends Mixed, C extends Mixed, D extends Mixed, E extends Mixed>(
   types: [A, B, C, D, E],
   name?: string
@@ -991,10 +1202,9 @@ export function tuple<RTS extends Array<Mixed>>(
   )
 }
 
-//
-// readonly objects
-//
-
+/**
+ * @since 1.0.0
+ */
 export class ReadonlyType<RT extends Any, A = any, O = A, I = mixed> extends Type<A, O, I> {
   readonly _tag: 'ReadonlyType' = 'ReadonlyType'
   constructor(
@@ -1008,6 +1218,9 @@ export class ReadonlyType<RT extends Any, A = any, O = A, I = mixed> extends Typ
   }
 }
 
+/**
+ * @since 1.0.0
+ */
 export const readonly = <RT extends Mixed>(
   type: RT,
   name: string = `Readonly<${type.name}>`
@@ -1026,10 +1239,9 @@ export const readonly = <RT extends Mixed>(
     type
   )
 
-//
-// readonly arrays
-//
-
+/**
+ * @since 1.0.0
+ */
 export class ReadonlyArrayType<RT extends Any, A = any, O = A, I = mixed> extends Type<A, O, I> {
   readonly _tag: 'ReadonlyArrayType' = 'ReadonlyArrayType'
   constructor(
@@ -1043,6 +1255,9 @@ export class ReadonlyArrayType<RT extends Any, A = any, O = A, I = mixed> extend
   }
 }
 
+/**
+ * @since 1.0.0
+ */
 export const readonlyArray = <RT extends Mixed>(
   type: RT,
   name: string = `ReadonlyArray<${type.name}>`
@@ -1064,10 +1279,9 @@ export const readonlyArray = <RT extends Mixed>(
   )
 }
 
-//
-// strict types
-//
-
+/**
+ * @since 1.0.0
+ */
 export class StrictType<P, A = any, O = A, I = mixed> extends Type<A, O, I> {
   readonly _tag: 'StrictType' = 'StrictType'
   constructor(
@@ -1084,6 +1298,7 @@ export class StrictType<P, A = any, O = A, I = mixed> extends Type<A, O, I> {
 /**
  * Specifies that only the given properties are allowed
  * @deprecated use `exact` instead
+ * @since 1.0.0
  */
 export const strict = <P extends Props>(
   props: P,
@@ -1093,13 +1308,21 @@ export const strict = <P extends Props>(
   return new StrictType(name, exactType.is, exactType.validate, exactType.encode, props)
 }
 
-//
-// tagged unions
-//
-
+/**
+ * @since 1.3.0
+ */
 export type TaggedProps<Tag extends string> = { [K in Tag]: LiteralType<any> }
+/**
+ * @since 1.3.0
+ */
 export interface TaggedRefinement<Tag extends string, A, O = A> extends RefinementType<Tagged<Tag>, A, O> {}
+/**
+ * @since 1.3.0
+ */
 export interface TaggedUnion<Tag extends string, A, O = A> extends UnionType<Array<Tagged<Tag>>, A, O> {}
+/**
+ * @since 1.3.0
+ */
 export type TaggedIntersectionArgument<Tag extends string> =
   | [Tagged<Tag>]
   | [Tagged<Tag>, Mixed]
@@ -1116,9 +1339,18 @@ export type TaggedIntersectionArgument<Tag extends string> =
   | [Mixed, Mixed, Tagged<Tag>, Mixed, Mixed]
   | [Mixed, Mixed, Mixed, Tagged<Tag>, Mixed]
   | [Mixed, Mixed, Mixed, Mixed, Tagged<Tag>]
+/**
+ * @since 1.3.0
+ */
 export interface TaggedIntersection<Tag extends string, A, O = A>
   extends IntersectionType<TaggedIntersectionArgument<Tag>, A, O> {}
+/**
+ * @since 1.3.0
+ */
 export interface TaggedExact<Tag extends string, A, O = A> extends ExactType<Tagged<Tag>, A, O> {}
+/**
+ * @since 1.3.0
+ */
 export type Tagged<Tag extends string, A = any, O = A> =
   | InterfaceType<TaggedProps<Tag>, A, O>
   | StrictType<TaggedProps<Tag>, A, O>
@@ -1128,6 +1360,9 @@ export type Tagged<Tag extends string, A = any, O = A> =
   | TaggedExact<Tag, A, O>
   | RecursiveType<any, A, O>
 
+/**
+ * @since 1.3.0
+ */
 export const isTagged = <Tag extends string>(tag: Tag): ((type: Mixed) => type is Tagged<Tag>) => {
   const f = (type: Mixed): type is Tagged<Tag> => {
     if (type instanceof InterfaceType || type instanceof StrictType) {
@@ -1158,6 +1393,9 @@ const findTagged = <Tag extends string>(tag: Tag, types: TaggedIntersectionArgum
   return types[i] as any
 }
 
+/**
+ * @since 1.3.0
+ */
 export const getTagValue = <Tag extends string>(tag: Tag): ((type: Tagged<Tag>) => string | number | boolean) => {
   const f = (type: Tagged<Tag>): string => {
     switch (type._tag) {
@@ -1177,6 +1415,9 @@ export const getTagValue = <Tag extends string>(tag: Tag): ((type: Tagged<Tag>) 
   return f
 }
 
+/**
+ * @since 1.3.0
+ */
 export class TaggedUnionType<
   Tag extends string,
   RTS extends Array<Tagged<Tag>>,
@@ -1196,6 +1437,9 @@ export class TaggedUnionType<
   }
 }
 
+/**
+ * @since 1.3.0
+ */
 export const taggedUnion = <Tag extends string, RTS extends Array<Tagged<Tag>>>(
   tag: Tag,
   types: RTS,
@@ -1263,10 +1507,9 @@ export const taggedUnion = <Tag extends string, RTS extends Array<Tagged<Tag>>>(
   )
 }
 
-//
-// exact types
-//
-
+/**
+ * @since 1.1.0
+ */
 export class ExactType<RT extends Any, A = any, O = A, I = mixed> extends Type<A, O, I> {
   readonly _tag: 'ExactType' = 'ExactType'
   constructor(
@@ -1280,9 +1523,21 @@ export class ExactType<RT extends Any, A = any, O = A, I = mixed> extends Type<A
   }
 }
 
+/**
+ * @since 1.1.0
+ */
 export interface HasPropsRefinement extends RefinementType<HasProps, any, any, any> {}
+/**
+ * @since 1.1.0
+ */
 export interface HasPropsReadonly extends ReadonlyType<HasProps, any, any, any> {}
+/**
+ * @since 1.1.0
+ */
 export interface HasPropsIntersection extends IntersectionType<Array<HasProps>, any, any, any> {}
+/**
+ * @since 1.1.0
+ */
 export type HasProps =
   | HasPropsRefinement
   | HasPropsReadonly
@@ -1305,6 +1560,9 @@ const getProps = (type: HasProps): Props => {
   }
 }
 
+/**
+ * @since 1.1.0
+ */
 export function exact<RT extends HasProps>(
   type: RT,
   name: string = `ExactType<${type.name}>`
@@ -1336,17 +1594,29 @@ export function exact<RT extends HasProps>(
   )
 }
 
-/** Drops the runtime type "kind" */
+/**
+ * Drops the runtime type "kind"
+ * @since 1.1.0
+ */
 export function clean<A, O = A, I = mixed>(type: Type<A, O, I>): Type<A, O, I> {
   return type as any
 }
 
+/**
+ * @since 1.0.0
+ */
 export type PropsOf<T extends { props: any }> = T['props']
 
+/**
+ * @since 1.1.0
+ */
 export type Exact<T, X extends T> = T &
   { [K in ({ [K in keyof X]: K } & { [K in keyof T]: never } & { [key: string]: never })[keyof X]]?: never }
 
-/** Keeps the runtime type "kind" */
+/**
+ * Keeps the runtime type "kind"
+ * @since 1.1.0
+ */
 export function alias<A, O, P, I>(
   type: PartialType<P, A, O, I>
 ): <
