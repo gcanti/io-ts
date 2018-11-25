@@ -479,12 +479,12 @@ import { Either, right } from 'fp-ts/lib/Either'
 
 const { NODE_ENV } = process.env
 
-export function unsafeDecode<A, O>(value: t.mixed, type: t.Type<A, O>): Either<t.Errors, A> {
+export function unsafeDecode<A, O, I>(value: I, type: t.Type<A, O, I>): Either<t.Errors, A> {
   if (NODE_ENV !== 'production' || type.encode !== t.identity) {
     return type.decode(value)
   } else {
     // unsafe cast
-    return right(value as A)
+    return right(value as any)
   }
 }
 
@@ -492,14 +492,14 @@ export function unsafeDecode<A, O>(value: t.mixed, type: t.Type<A, O>): Either<t
 
 import { failure } from 'io-ts/lib/PathReporter'
 
-export function unsafeGet<A, O>(value: t.mixed, type: t.Type<A, O>): A {
+export function unsafeGet<A, O, I>(value: I, type: t.Type<A, O, I>): A {
   if (NODE_ENV !== 'production' || type.encode !== t.identity) {
     return type.decode(value).getOrElseL(errors => {
       throw new Error(failure(errors).join('\n'))
     })
   } else {
     // unsafe cast
-    return value as A
+    return value as any
   }
 }
 ```
