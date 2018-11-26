@@ -1034,7 +1034,7 @@ export class IntersectionType<RTS extends Array<Any>, A = any, O = A, I = mixed>
 
 /**
  * used in `intersection` as a workaround for #234
- * @since 1.0.0
+ * @since 1.4.2
  */
 export type Compact<A> = { [K in keyof A]: A[K] }
 
