@@ -103,6 +103,32 @@ describe('any', () => {
   })
 })
 
+describe('unknown', () => {
+  it('should decode any value', () => {
+    assertSuccess(t.unknown.decode(null))
+    assertSuccess(t.unknown.decode(undefined))
+    assertSuccess(t.unknown.decode('foo'))
+    assertSuccess(t.unknown.decode(1))
+    assertSuccess(t.unknown.decode(true))
+    assertSuccess(t.unknown.decode(t.identity))
+    assertSuccess(t.unknown.decode({}))
+    assertSuccess(t.unknown.decode([]))
+    assertSuccess(t.unknown.decode(/a/))
+  })
+
+  it('should accept any value', () => {
+    assert.ok(t.unknown.is(null))
+    assert.ok(t.unknown.is(undefined))
+    assert.ok(t.unknown.is('foo'))
+    assert.ok(t.unknown.is(1))
+    assert.ok(t.unknown.is(true))
+    assert.ok(t.unknown.is(t.identity))
+    assert.ok(t.unknown.is({}))
+    assert.ok(t.unknown.is([]))
+    assert.ok(t.unknown.is(/a/))
+  })
+})
+
 describe('never', () => {
   it('should not decode any value', () => {
     assertFailure(t.never.decode(null), ['Invalid value null supplied to : never'])
