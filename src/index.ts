@@ -283,6 +283,21 @@ export class AnyType extends Type<any> {
 export const any: AnyType = new AnyType()
 
 /**
+ * @since 1.5.0
+ */
+export class UnknownType extends Type<unknown> {
+  readonly _tag: 'UnknownType' = 'UnknownType'
+  constructor() {
+    super('unknown', (_): _ is unknown => true, success, identity)
+  }
+}
+
+/**
+ * @since 1.5.0
+ */
+export const unknown: UnknownType = new UnknownType()
+
+/**
  * @since 1.0.0
  */
 export class NeverType extends Type<never> {
