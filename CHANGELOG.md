@@ -9,9 +9,17 @@
 > - [Internal]
 > - [Polish]
 > - [Experimental]
+> - [Deprecation]
 
 **Note**: Gaps between patch versions are faulty/broken releases. **Note**: A feature tagged as Experimental is in a
 high state of flux, you're at risk of it changing without notice.
+
+# 1.5.0
+
+- **New Feature**
+  - add `UnknownType`, closes #238 (@gcanti)
+- **Deprecation**
+  - `ThrowReporter` is now deprecated (@gcanti)
 
 # 1.4.2
 

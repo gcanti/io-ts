@@ -98,24 +98,17 @@ interface Reporter<A> {
 }
 ```
 
-This package exports two default reporters
-
-- `PathReporter: Reporter<Array<string>>`
-- `ThrowReporter: Reporter<void>`
+This package exports a default `PathReporter` reporter
 
 Example
 
 ```ts
 import { PathReporter } from 'io-ts/lib/PathReporter'
-import { ThrowReporter } from 'io-ts/lib/ThrowReporter'
 
 const result = Person.decode({ name: 'Giulio' })
 
 console.log(PathReporter.report(result))
 // => ['Invalid value undefined supplied to : { name: string, age: number }/age: number']
-
-ThrowReporter.report(result)
-// => throws 'Invalid value undefined supplied to : { name: string, age: number }/age: number'
 ```
 
 You can define your own reporter. `Errors` has the following type

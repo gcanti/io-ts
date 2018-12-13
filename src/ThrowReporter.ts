@@ -3,6 +3,7 @@ import { PathReporter } from './PathReporter'
 
 /**
  * @since 1.0.0
+ * @deprecated
  */
 export const ThrowReporter: Reporter<void> = {
   report: validation => {
