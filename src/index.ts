@@ -1,12 +1,6 @@
 import { Either, Left, Right } from 'fp-ts/lib/Either'
 import { Predicate } from 'fp-ts/lib/function'
 
-declare global {
-  interface Array<T> {
-    _A: T
-  }
-}
-
 /**
  * @since 1.0.0
  */
@@ -997,11 +991,11 @@ export class UnionType<RTS extends Array<Any>, A = any, O = A, I = mixed> extend
 export const union = <RTS extends Array<Mixed>>(
   types: RTS,
   name: string = `(${types.map(type => type.name).join(' | ')})`
-): UnionType<RTS, TypeOf<RTS['_A']>, OutputOf<RTS['_A']>, mixed> => {
+): UnionType<RTS, TypeOf<RTS[number]>, OutputOf<RTS[number]>, mixed> => {
   const len = types.length
   return new UnionType(
     name,
-    (m): m is TypeOf<RTS['_A']> => types.some(type => type.is(m)),
+    (m): m is TypeOf<RTS[number]> => types.some(type => type.is(m)),
     (m, c) => {
       const errors: Errors = []
       for (let i = 0; i < len; i++) {
@@ -1459,7 +1453,7 @@ export const taggedUnion = <Tag extends string, RTS extends Array<Tagged<Tag>>>(
   tag: Tag,
   types: RTS,
   name: string = `(${types.map(type => type.name).join(' | ')})`
-): TaggedUnionType<Tag, RTS, TypeOf<RTS['_A']>, OutputOf<RTS['_A']>, mixed> => {
+): TaggedUnionType<Tag, RTS, TypeOf<RTS[number]>, OutputOf<RTS[number]>, mixed> => {
   const len = types.length
   const values: Array<string | number | boolean> = new Array(len)
   const hash: { [key: string]: number } = {}
@@ -1491,9 +1485,9 @@ export const taggedUnion = <Tag extends string, RTS extends Array<Tagged<Tag>>>(
     (m, c) => (isTagValue(m) ? success(m) : failure(m, c)),
     identity
   )
-  return new TaggedUnionType<Tag, RTS, TypeOf<RTS['_A']>, OutputOf<RTS['_A']>, mixed>(
+  return new TaggedUnionType<Tag, RTS, TypeOf<RTS[number]>, OutputOf<RTS[number]>, mixed>(
     name,
-    (v): v is TypeOf<RTS['_A']> => {
+    (v): v is TypeOf<RTS[number]> => {
       if (!Dictionary.is(v)) {
         return false
       }
