@@ -8,6 +8,13 @@ describe('intersection', () => {
     assertSuccess(T.decode({ a: 1, b: 2 }))
   })
 
+  it('should handle primitive types', () => {
+    const T1 = t.intersection([t.string, t.string])
+    assertSuccess(T1.decode('foo'))
+    const T2 = t.intersection([t.string, t.number])
+    assertFailure(T2.decode('foo'), ['Invalid value "foo" supplied to : (string & number)'])
+  })
+
   it('should keep unknown properties', () => {
     const T = t.intersection([t.interface({ a: t.number }), t.interface({ b: t.number })])
     const validation = T.decode({ a: 1, b: 1, c: true })
