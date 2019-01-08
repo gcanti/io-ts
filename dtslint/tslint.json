@@ -2,6 +2,7 @@
   "extends": "dtslint/dtslint.json",
   "rules": {
     "semicolon": false,
-    "array-type": false
+    "array-type": false,
+    "no-unnecessary-generics": false
   }
 }
