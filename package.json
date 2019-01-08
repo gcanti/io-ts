@@ -37,7 +37,7 @@
     "@types/jest": "^23.3.8",
     "@types/node": "7.0.4",
     "benchmark": "2.1.4",
-    "dtslint": "0.3.0",
+    "dtslint": "^0.4.2",
     "jest": "^23.6.0",
     "prettier": "1.13.4",
     "rimraf": "2.6.2",
