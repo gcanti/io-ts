@@ -12,12 +12,13 @@
     "jest": "jest",
     "prettier": "prettier --no-semi --single-quote --print-width 120 --parser typescript --list-different \"{src,test}/**/*.ts\"",
     "fix-prettier": "prettier --no-semi --single-quote --print-width 120 --parser typescript --write \"{src,test,examples,exercises}/**/*.ts\"",
-    "test": "npm run prettier && npm run lint && npm run dtslint && npm run jest",
+    "test": "npm run prettier && npm run lint && npm run dtslint && npm run declaration && npm run jest",
     "clean": "rimraf lib/*",
     "build": "npm run clean && tsc",
     "prepublish": "npm run build",
     "perf": "node perf/index",
-    "dtslint": "dtslint dtslint"
+    "dtslint": "dtslint dtslint",
+    "declaration": "tsc -p declaration/tsconfig.json"
   },
   "repository": {
     "type": "git",
