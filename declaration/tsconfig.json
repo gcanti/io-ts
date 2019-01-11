@@ -1,0 +1,12 @@
+{
+  "compilerOptions": {
+    "outDir": "./out",
+    "declaration": true,
+    "module": "commonjs",
+    "strict": true,
+    "lib": ["es6"],
+    "emitDeclarationOnly": true,
+    "target": "es5"
+  },
+  "include": ["./index.ts"]
+}
