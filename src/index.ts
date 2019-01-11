@@ -69,17 +69,17 @@ export interface Mixed extends Type<any, any, mixed> {}
 /**
  * @since 1.0.0
  */
-export type TypeOf<RT extends Any> = RT['_A']
+export type TypeOf<RT extends any> = RT['_A']
 
 /**
  * @since 1.0.0
  */
-export type InputOf<RT extends Any> = RT['_I']
+export type InputOf<RT extends any> = RT['_I']
 
 /**
  * @since 1.0.0
  */
-export type OutputOf<RT extends Any> = RT['_O']
+export type OutputOf<RT extends any> = RT['_O']
 
 /**
  * @since 1.0.0
@@ -223,10 +223,15 @@ export class NullType extends Type<null> {
 }
 
 /**
+ * @since 1.5.3
+ */
+export interface NullC extends NullType {}
+
+/**
  * @alias `null`
  * @since 1.0.0
  */
-export const nullType: NullType = new NullType()
+export const nullType: NullC = new NullType()
 
 /**
  * @since 1.0.0
@@ -243,7 +248,12 @@ export class UndefinedType extends Type<undefined> {
   }
 }
 
-const undefinedType: UndefinedType = new UndefinedType()
+/**
+ * @since 1.5.3
+ */
+export interface UndefinedC extends UndefinedType {}
+
+const undefinedType: UndefinedC = new UndefinedType()
 
 /**
  * @since 1.2.0
@@ -256,10 +266,15 @@ export class VoidType extends Type<void> {
 }
 
 /**
+ * @since 1.5.3
+ */
+export interface VoidC extends VoidType {}
+
+/**
  * @alias `void`
  * @since 1.2.0
  */
-export const voidType: VoidType = new VoidType()
+export const voidType: VoidC = new VoidType()
 
 /**
  * @since 1.0.0
@@ -272,9 +287,14 @@ export class AnyType extends Type<any> {
 }
 
 /**
+ * @since 1.5.3
+ */
+export interface AnyC extends AnyType {}
+
+/**
  * @since 1.0.0
  */
-export const any: AnyType = new AnyType()
+export const any: AnyC = new AnyType()
 
 /**
  * @since 1.5.0
@@ -287,9 +307,14 @@ export class UnknownType extends Type<unknown> {
 }
 
 /**
+ * @since 1.5.3
+ */
+export interface UnknownC extends UnknownType {}
+
+/**
  * @since 1.5.0
  */
-export const unknown: UnknownType = new UnknownType()
+export const unknown: UnknownC = new UnknownType()
 
 /**
  * @since 1.0.0
@@ -310,9 +335,14 @@ export class NeverType extends Type<never> {
 }
 
 /**
+ * @since 1.5.3
+ */
+export interface NeverC extends NeverType {}
+
+/**
  * @since 1.0.0
  */
-export const never: NeverType = new NeverType()
+export const never: NeverC = new NeverType()
 
 /**
  * @since 1.0.0
@@ -330,9 +360,14 @@ export class StringType extends Type<string> {
 }
 
 /**
+ * @since 1.5.3
+ */
+export interface StringC extends StringType {}
+
+/**
  * @since 1.0.0
  */
-export const string: StringType = new StringType()
+export const string: StringC = new StringType()
 
 /**
  * @since 1.0.0
@@ -350,9 +385,14 @@ export class NumberType extends Type<number> {
 }
 
 /**
+ * @since 1.5.3
+ */
+export interface NumberC extends NumberType {}
+
+/**
  * @since 1.0.0
  */
-export const number: NumberType = new NumberType()
+export const number: NumberC = new NumberType()
 
 /**
  * @since 1.0.0
@@ -370,9 +410,14 @@ export class BooleanType extends Type<boolean> {
 }
 
 /**
+ * @since 1.5.3
+ */
+export interface BooleanC extends BooleanType {}
+
+/**
  * @since 1.0.0
  */
-export const boolean: BooleanType = new BooleanType()
+export const boolean: BooleanC = new BooleanType()
 
 /**
  * @since 1.0.0
@@ -384,7 +429,12 @@ export class AnyArrayType extends Type<Array<mixed>> {
   }
 }
 
-const arrayType: AnyArrayType = new AnyArrayType()
+/**
+ * @since 1.5.3
+ */
+export interface UnknownArrayC extends AnyArrayType {}
+
+const arrayType: UnknownArrayC = new AnyArrayType()
 
 /**
  * @since 1.0.0
@@ -402,9 +452,14 @@ export class AnyDictionaryType extends Type<{ [key: string]: mixed }> {
 }
 
 /**
+ * @since 1.5.3
+ */
+export interface UnknownRecordC extends AnyDictionaryType {}
+
+/**
  * @since 1.0.0
  */
-export const Dictionary: AnyDictionaryType = new AnyDictionaryType()
+export const Dictionary: UnknownRecordC = new AnyDictionaryType()
 
 /**
  * @since 1.0.0
@@ -417,9 +472,14 @@ export class ObjectType extends Type<object> {
 }
 
 /**
+ * @since 1.5.3
+ */
+export interface ObjectC extends ObjectType {}
+
+/**
  * @since 1.0.0
  */
-export const object: ObjectType = new ObjectType()
+export const object: ObjectC = new ObjectType()
 
 /**
  * @since 1.0.0
@@ -438,9 +498,14 @@ export class FunctionType extends Type<Function> {
 }
 
 /**
+ * @since 1.5.3
+ */
+export interface FunctionC extends FunctionType {}
+
+/**
  * @since 1.0.0
  */
-export const Function: FunctionType = new FunctionType()
+export const Function: FunctionC = new FunctionType()
 
 /**
  * @since 1.0.0
@@ -460,13 +525,18 @@ export class RefinementType<RT extends Any, A = any, O = A, I = mixed> extends T
 }
 
 /**
+ * @since 1.5.3
+ */
+export interface RefinementC<C extends Any> extends RefinementType<C, TypeOf<C>, OutputOf<C>, InputOf<C>> {}
+
+/**
  * @since 1.0.0
  */
 export const refinement = <RT extends Any>(
   type: RT,
   predicate: Predicate<TypeOf<RT>>,
   name: string = `(${type.name} | ${getFunctionName(predicate)})`
-): RefinementType<RT, TypeOf<RT>, OutputOf<RT>, InputOf<RT>> =>
+): RefinementC<RT> =>
   new RefinementType(
     name,
     (m): m is TypeOf<RT> => type.is(m) && predicate(m),
@@ -489,10 +559,12 @@ export const refinement = <RT extends Any>(
  */
 export const Integer = refinement(number, n => n % 1 === 0, 'Integer')
 
+type LiteralValue = string | number | boolean
+
 /**
  * @since 1.0.0
  */
-export class LiteralType<V extends string | number | boolean> extends Type<V> {
+export class LiteralType<V extends LiteralValue> extends Type<V> {
   readonly _tag: 'LiteralType' = 'LiteralType'
   constructor(
     name: string,
@@ -506,12 +578,14 @@ export class LiteralType<V extends string | number | boolean> extends Type<V> {
 }
 
 /**
+ * @since 1.5.3
+ */
+export interface LiteralC<V extends LiteralValue> extends LiteralType<V> {}
+
+/**
  * @since 1.0.0
  */
-export const literal = <V extends string | number | boolean>(
-  value: V,
-  name: string = JSON.stringify(value)
-): LiteralType<V> => {
+export const literal = <V extends LiteralValue>(value: V, name: string = JSON.stringify(value)): LiteralC<V> => {
   const is = (m: mixed): m is V => m === value
   return new LiteralType(name, is, (m, c) => (is(m) ? success(value) : failure(m, c)), identity, value)
 }
@@ -535,12 +609,17 @@ export class KeyofType<D extends { [key: string]: mixed }> extends Type<keyof D>
 const hasOwnProperty = Object.prototype.hasOwnProperty
 
 /**
+ * @since 1.5.3
+ */
+export interface KeyofC<D extends { [key: string]: mixed }> extends KeyofType<D> {}
+
+/**
  * @since 1.0.0
  */
 export const keyof = <D extends { [key: string]: mixed }>(
   keys: D,
   name: string = `(keyof ${JSON.stringify(Object.keys(keys))})`
-): KeyofType<D> => {
+): KeyofC<D> => {
   const is = (m: mixed): m is keyof D => string.is(m) && hasOwnProperty.call(keys, m)
   return new KeyofType(name, is, (m, c) => (is(m) ? success(m) : failure(m, c)), identity, keys)
 }
@@ -605,12 +684,14 @@ export class ArrayType<RT extends Any, A = any, O = A, I = mixed> extends Type<A
 }
 
 /**
+ * @since 1.5.3
+ */
+export interface ArrayC<C extends Mixed> extends ArrayType<C, Array<TypeOf<C>>, Array<OutputOf<C>>, unknown> {}
+
+/**
  * @since 1.0.0
  */
-export const array = <RT extends Mixed>(
-  type: RT,
-  name: string = `Array<${type.name}>`
-): ArrayType<RT, Array<TypeOf<RT>>, Array<OutputOf<RT>>, mixed> =>
+export const array = <RT extends Mixed>(type: RT, name: string = `Array<${type.name}>`): ArrayC<RT> =>
   new ArrayType(
     name,
     (m): m is Array<TypeOf<RT>> => arrayType.is(m) && m.every(type.is),
@@ -700,13 +781,15 @@ export interface Props {
 }
 
 /**
+ * @since 1.5.3
+ */
+export interface TypeC<P extends Props> extends InterfaceType<P, TypeOfProps<P>, OutputOfProps<P>, unknown> {}
+
+/**
  * @alias `interface`
  * @since 1.0.0
  */
-export const type = <P extends Props>(
-  props: P,
-  name: string = getNameFromProps(props)
-): InterfaceType<P, TypeOfProps<P>, OutputOfProps<P>, mixed> => {
+export const type = <P extends Props>(props: P, name: string = getNameFromProps(props)): TypeC<P> => {
   const keys = Object.keys(props)
   const types = keys.map(key => props[key])
   const len = keys.length
@@ -803,12 +886,18 @@ export type TypeOfPartialProps<P extends AnyProps> = { [K in keyof P]?: TypeOf<P
 export type OutputOfPartialProps<P extends AnyProps> = { [K in keyof P]?: OutputOf<P[K]> }
 
 /**
+ * @since 1.5.3
+ */
+export interface PartialC<P extends Props>
+  extends PartialType<P, TypeOfPartialProps<P>, OutputOfPartialProps<P>, unknown> {}
+
+/**
  * @since 1.0.0
  */
 export const partial = <P extends Props>(
   props: P,
   name: string = `PartialType<${getNameFromProps(props)}>`
-): PartialType<P, TypeOfPartialProps<P>, OutputOfPartialProps<P>, mixed> => {
+): PartialC<P> => {
   const keys = Object.keys(props)
   const types = keys.map(key => props[key])
   const len = keys.length
@@ -906,13 +995,19 @@ export type OutputOfDictionary<D extends Any, C extends Any> = { [K in OutputOf<
 const refinedDictionary = refinement(Dictionary, d => Object.prototype.toString.call(d) === '[object Object]')
 
 /**
+ * @since 1.5.3
+ */
+export interface RecordC<D extends Mixed, C extends Mixed>
+  extends DictionaryType<D, C, TypeOfDictionary<D, C>, OutputOfDictionary<D, C>, unknown> {}
+
+/**
  * @since 1.0.0
  */
 export const dictionary = <D extends Mixed, C extends Mixed>(
   domain: D,
   codomain: C,
   name: string = `{ [K in ${domain.name}]: ${codomain.name} }`
-): DictionaryType<D, C, TypeOfDictionary<D, C>, OutputOfDictionary<D, C>, mixed> => {
+): RecordC<D, C> => {
   const isIndexSignatureRequired = (codomain as any) !== any
   const D = isIndexSignatureRequired ? refinedDictionary : Dictionary
   return new DictionaryType(
@@ -986,12 +1081,18 @@ export class UnionType<RTS extends Array<Any>, A = any, O = A, I = mixed> extend
 }
 
 /**
+ * @since 1.5.3
+ */
+export interface UnionC<CS extends Array<Mixed>>
+  extends UnionType<CS, TypeOf<CS[number]>, OutputOf<CS[number]>, unknown> {}
+
+/**
  * @since 1.0.0
  */
 export const union = <RTS extends Array<Mixed>>(
   types: RTS,
   name: string = `(${types.map(type => type.name).join(' | ')})`
-): UnionType<RTS, TypeOf<RTS[number]>, OutputOf<RTS[number]>, mixed> => {
+): UnionC<RTS> => {
   const len = types.length
   return new UnionType(
     name,
@@ -1049,42 +1150,52 @@ export class IntersectionType<RTS extends Array<Any>, A = any, O = A, I = mixed>
 export type Compact<A> = { [K in keyof A]: A[K] }
 
 /**
+ * @since 1.5.3
+ */
+export interface IntersectionC<CS extends Array<Mixed>>
+  extends IntersectionType<
+      CS,
+      CS extends [Mixed, Mixed]
+        ? TypeOf<CS['0']> & TypeOf<CS['1']>
+        : CS extends [Mixed, Mixed, Mixed]
+          ? TypeOf<CS['0']> & TypeOf<CS['1']> & TypeOf<CS['2']>
+          : CS extends [Mixed, Mixed, Mixed, Mixed]
+            ? TypeOf<CS['0']> & TypeOf<CS['1']> & TypeOf<CS['2']> & TypeOf<CS['3']>
+            : CS extends [Mixed, Mixed, Mixed, Mixed, Mixed]
+              ? TypeOf<CS['0']> & TypeOf<CS['1']> & TypeOf<CS['2']> & TypeOf<CS['3']> & TypeOf<CS['3']>
+              : TypeOf<CS[number]>,
+      CS extends [Mixed, Mixed]
+        ? OutputOf<CS['0']> & OutputOf<CS['1']>
+        : CS extends [Mixed, Mixed, Mixed]
+          ? OutputOf<CS['0']> & OutputOf<CS['1']> & OutputOf<CS['2']>
+          : CS extends [Mixed, Mixed, Mixed, Mixed]
+            ? OutputOf<CS['0']> & OutputOf<CS['1']> & OutputOf<CS['2']> & OutputOf<CS['3']>
+            : CS extends [Mixed, Mixed, Mixed, Mixed, Mixed]
+              ? OutputOf<CS['0']> & OutputOf<CS['1']> & OutputOf<CS['2']> & OutputOf<CS['3']> & OutputOf<CS['3']>
+              : OutputOf<CS[number]>,
+      unknown
+    > {}
+
+/**
  * @since 1.0.0
  */
 export function intersection<A extends Mixed, B extends Mixed, C extends Mixed, D extends Mixed, E extends Mixed>(
   types: [A, B, C, D, E],
   name?: string
-): IntersectionType<
-  [A, B, C, D, E],
-  TypeOf<A> & TypeOf<B> & TypeOf<C> & TypeOf<D> & TypeOf<E>,
-  OutputOf<A> & OutputOf<B> & OutputOf<C> & OutputOf<D> & OutputOf<E>,
-  mixed
->
+): IntersectionC<[A, B, C, D, E]>
 export function intersection<A extends Mixed, B extends Mixed, C extends Mixed, D extends Mixed>(
   types: [A, B, C, D],
   name?: string
-): IntersectionType<
-  [A, B, C, D],
-  TypeOf<A> & TypeOf<B> & TypeOf<C> & TypeOf<D>,
-  OutputOf<A> & OutputOf<B> & OutputOf<C> & OutputOf<D>,
-  mixed
->
+): IntersectionC<[A, B, C, D]>
 export function intersection<A extends Mixed, B extends Mixed, C extends Mixed>(
   types: [A, B, C],
   name?: string
-): IntersectionType<[A, B, C], TypeOf<A> & TypeOf<B> & TypeOf<C>, OutputOf<A> & OutputOf<B> & OutputOf<C>, mixed>
-export function intersection<A extends Mixed, B extends Mixed>(
-  types: [A, B],
-  name?: string
-): IntersectionType<[A, B], TypeOf<A> & TypeOf<B>, OutputOf<A> & OutputOf<B>, mixed>
-export function intersection<A extends Mixed>(
-  types: [A],
-  name?: string
-): IntersectionType<[A], TypeOf<A>, OutputOf<A>, mixed>
+): IntersectionC<[A, B, C]>
+export function intersection<A extends Mixed, B extends Mixed>(types: [A, B], name?: string): IntersectionC<[A, B]>
 export function intersection<RTS extends Array<Mixed>>(
   types: RTS,
   name: string = `(${types.map(type => type.name).join(' & ')})`
-): IntersectionType<RTS, any, any, mixed> {
+): IntersectionC<RTS> {
   const len = types.length
   return new IntersectionType(
     name,
@@ -1134,39 +1245,53 @@ export class TupleType<RTS extends Array<Any>, A = any, O = A, I = mixed> extend
 }
 
 /**
+ * @since 1.5.3
+ */
+export interface TupleC<CS extends Array<Mixed>>
+  extends TupleType<
+      CS,
+      CS extends [Mixed, Mixed]
+        ? [TypeOf<CS['0']>, TypeOf<CS['1']>]
+        : CS extends [Mixed, Mixed, Mixed]
+          ? [TypeOf<CS['0']>, TypeOf<CS['1']>, TypeOf<CS['2']>]
+          : CS extends [Mixed, Mixed, Mixed, Mixed]
+            ? [TypeOf<CS['0']>, TypeOf<CS['1']>, TypeOf<CS['2']>, TypeOf<CS['3']>]
+            : CS extends [Mixed, Mixed, Mixed, Mixed, Mixed]
+              ? [TypeOf<CS['0']>, TypeOf<CS['1']>, TypeOf<CS['2']>, TypeOf<CS['3']>, TypeOf<CS['4']>]
+              : TypeOf<CS[number]>,
+      CS extends [Mixed, Mixed]
+        ? [OutputOf<CS['0']>, OutputOf<CS['1']>]
+        : CS extends [Mixed, Mixed, Mixed]
+          ? [OutputOf<CS['0']>, OutputOf<CS['1']>, OutputOf<CS['2']>]
+          : CS extends [Mixed, Mixed, Mixed, Mixed]
+            ? [OutputOf<CS['0']>, OutputOf<CS['1']>, OutputOf<CS['2']>, OutputOf<CS['3']>]
+            : CS extends [Mixed, Mixed, Mixed, Mixed, Mixed]
+              ? [OutputOf<CS['0']>, OutputOf<CS['1']>, OutputOf<CS['2']>, OutputOf<CS['3']>, OutputOf<CS['4']>]
+              : OutputOf<CS[number]>,
+      unknown
+    > {}
+
+/**
  * @since 1.0.0
  */
 export function tuple<A extends Mixed, B extends Mixed, C extends Mixed, D extends Mixed, E extends Mixed>(
   types: [A, B, C, D, E],
   name?: string
-): TupleType<
-  [A, B, C, D, E],
-  [TypeOf<A>, TypeOf<B>, TypeOf<C>, TypeOf<D>, TypeOf<E>],
-  [OutputOf<A>, OutputOf<B>, OutputOf<C>, OutputOf<D>, OutputOf<E>],
-  mixed
->
+): TupleC<[A, B, C, D, E]>
 export function tuple<A extends Mixed, B extends Mixed, C extends Mixed, D extends Mixed>(
   types: [A, B, C, D],
   name?: string
-): TupleType<
-  [A, B, C, D],
-  [TypeOf<A>, TypeOf<B>, TypeOf<C>, TypeOf<D>],
-  [OutputOf<A>, OutputOf<B>, OutputOf<C>, OutputOf<D>],
-  mixed
->
+): TupleC<[A, B, C, D]>
 export function tuple<A extends Mixed, B extends Mixed, C extends Mixed>(
   types: [A, B, C],
   name?: string
-): TupleType<[A, B, C], [TypeOf<A>, TypeOf<B>, TypeOf<C>], [OutputOf<A>, OutputOf<B>, OutputOf<C>], mixed>
-export function tuple<A extends Mixed, B extends Mixed>(
-  types: [A, B],
-  name?: string
-): TupleType<[A, B], [TypeOf<A>, TypeOf<B>], [OutputOf<A>, OutputOf<B>], mixed>
+): TupleC<[A, B, C]>
+export function tuple<A extends Mixed, B extends Mixed>(types: [A, B], name?: string): TupleC<[A, B]>
 export function tuple<A extends Mixed>(types: [A], name?: string): TupleType<[A], [TypeOf<A>], [OutputOf<A>], mixed>
 export function tuple<RTS extends Array<Mixed>>(
   types: RTS,
   name: string = `[${types.map(type => type.name).join(', ')}]`
-): TupleType<RTS, any, any, mixed> {
+): TupleC<RTS> {
   const len = types.length
   return new TupleType(
     name,
@@ -1224,12 +1349,15 @@ export class ReadonlyType<RT extends Any, A = any, O = A, I = mixed> extends Typ
 }
 
 /**
+ * @since 1.5.3
+ */
+export interface ReadonlyC<C extends Mixed>
+  extends ReadonlyType<C, Readonly<TypeOf<C>>, Readonly<OutputOf<C>>, unknown> {}
+
+/**
  * @since 1.0.0
  */
-export const readonly = <RT extends Mixed>(
-  type: RT,
-  name: string = `Readonly<${type.name}>`
-): ReadonlyType<RT, Readonly<TypeOf<RT>>, Readonly<OutputOf<RT>>, mixed> =>
+export const readonly = <RT extends Mixed>(type: RT, name: string = `Readonly<${type.name}>`): ReadonlyC<RT> =>
   new ReadonlyType(
     name,
     type.is,
@@ -1261,12 +1389,18 @@ export class ReadonlyArrayType<RT extends Any, A = any, O = A, I = mixed> extend
 }
 
 /**
+ * @since 1.5.3
+ */
+export interface ReadonlyArrayC<C extends Mixed>
+  extends ReadonlyArrayType<C, ReadonlyArray<TypeOf<C>>, ReadonlyArray<OutputOf<C>>, unknown> {}
+
+/**
  * @since 1.0.0
  */
 export const readonlyArray = <RT extends Mixed>(
   type: RT,
   name: string = `ReadonlyArray<${type.name}>`
-): ReadonlyArrayType<RT, ReadonlyArray<TypeOf<RT>>, ReadonlyArray<OutputOf<RT>>, mixed> => {
+): ReadonlyArrayC<RT> => {
   const arrayType = array(type)
   return new ReadonlyArrayType(
     name,
@@ -1301,6 +1435,11 @@ export class StrictType<P, A = any, O = A, I = mixed> extends Type<A, O, I> {
 }
 
 /**
+ * @since 1.5.3
+ */
+export interface StrictC<P extends Props> extends StrictType<P, TypeOfProps<P>, OutputOfProps<P>, unknown> {}
+
+/**
  * Specifies that only the given properties are allowed
  * @deprecated use `exact` instead
  * @since 1.0.0
@@ -1308,7 +1447,7 @@ export class StrictType<P, A = any, O = A, I = mixed> extends Type<A, O, I> {
 export const strict = <P extends Props>(
   props: P,
   name: string = `StrictType<${getNameFromProps(props)}>`
-): StrictType<P, TypeOfProps<P>, OutputOfProps<P>, mixed> => {
+): StrictC<P> => {
   const exactType = exact(type(props))
   return new StrictType(name, exactType.is, exactType.validate, exactType.encode, props)
 }
@@ -1443,13 +1582,19 @@ export class TaggedUnionType<
 }
 
 /**
+ * @since 1.5.3
+ */
+export interface TaggedUnionC<Tag extends string, CS extends Array<Tagged<Tag>>>
+  extends TaggedUnionType<Tag, CS, TypeOf<CS[number]>, OutputOf<CS[number]>, unknown> {}
+
+/**
  * @since 1.3.0
  */
 export const taggedUnion = <Tag extends string, RTS extends Array<Tagged<Tag>>>(
   tag: Tag,
   types: RTS,
   name: string = `(${types.map(type => type.name).join(' | ')})`
-): TaggedUnionType<Tag, RTS, TypeOf<RTS[number]>, OutputOf<RTS[number]>, mixed> => {
+): TaggedUnionC<Tag, RTS> => {
   const len = types.length
   const values: Array<string | number | boolean> = new Array(len)
   const hash: { [key: string]: number } = {}
@@ -1566,12 +1711,14 @@ const getProps = (type: HasProps): Props => {
 }
 
 /**
+ * @since 1.5.3
+ */
+export interface ExactC<C extends HasProps> extends ExactType<C, TypeOf<C>, OutputOf<C>, InputOf<C>> {}
+
+/**
  * @since 1.1.0
  */
-export function exact<RT extends HasProps>(
-  type: RT,
-  name: string = `ExactType<${type.name}>`
-): ExactType<RT, TypeOf<RT>, OutputOf<RT>, InputOf<RT>> {
+export function exact<RT extends HasProps>(type: RT, name: string = `ExactType<${type.name}>`): ExactC<RT> {
   const props: Props = getProps(type)
   return new ExactType(
     name,

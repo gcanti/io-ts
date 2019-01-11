@@ -67,7 +67,7 @@ type Assert7 = t.TypeOf<typeof A1> // $ExpectType number[]
 //
 
 const I1 = t.interface({ name: t.string, age: t.number })
-type Assert8 = t.TypeOf<typeof I1> // $ExpectType TypeOfProps<{ name: StringType; age: NumberType; }>
+type Assert8 = t.TypeOf<typeof I1> // $ExpectType TypeOfProps<{ name: StringC; age: NumberC; }>
 // $ExpectError
 const x6: t.TypeOf<typeof I1> = {}
 // $ExpectError
@@ -87,7 +87,7 @@ const x11: I2T = { name: 'name', father: { surname: 'surname' } }
 //
 
 const D1 = t.dictionary(t.keyof({ a: true }), t.number)
-type Assert9 = t.TypeOf<typeof D1> // $ExpectType TypeOfDictionary<KeyofType<{ a: boolean; }>, NumberType>
+type Assert9 = t.TypeOf<typeof D1> // $ExpectType TypeOfDictionary<KeyofC<{ a: boolean; }>, NumberC>
 // $ExpectError
 const x12: t.TypeOf<typeof D1> = { a: 's' }
 // $ExpectError
@@ -108,7 +108,7 @@ type Assert10 = t.TypeOf<typeof U1> // $ExpectType string | number
 const IN1 = t.intersection([t.string, t.number])
 type Assert11 = t.TypeOf<typeof IN1> // $ExpectType string & number
 const IN2 = t.intersection([t.interface({ a: t.number }), t.interface({ b: t.string })])
-type Assert12 = t.TypeOf<typeof IN2> // $ExpectType TypeOfProps<{ a: NumberType; }> & TypeOfProps<{ b: StringType; }>
+type Assert12 = t.TypeOf<typeof IN2> // $ExpectType TypeOfProps<{ a: NumberC; }> & TypeOfProps<{ b: StringC; }>
 // $ExpectError
 const x17: t.TypeOf<typeof IN2> = { a: 1 }
 const x18: t.TypeOf<typeof IN2> = { a: 1, b: 's' }
@@ -135,7 +135,7 @@ const IntersectionWithPrimitive = t.intersection([
   })
 ])
 
-type IntersectionWithPrimitive = t.TypeOf<typeof IntersectionWithPrimitive> // $ExpectType number & TypeOfProps<{ a: LiteralType<"a">; }>
+type IntersectionWithPrimitive = t.TypeOf<typeof IntersectionWithPrimitive> // $ExpectType number & TypeOfProps<{ a: LiteralC<"a">; }>
 
 //
 // tuple
@@ -144,12 +144,25 @@ type IntersectionWithPrimitive = t.TypeOf<typeof IntersectionWithPrimitive> // $
 const T1 = t.tuple([t.string, t.number])
 type Assert13 = t.TypeOf<typeof T1> // $ExpectType [string, number]
 
+type T2 = t.TupleC<[t.NumberC, t.StringC]>
+type TT2 = t.TypeOf<T2> // $ExpectType [number, string]
+type OT2 = t.OutputOf<T2> // $ExpectType [number, string]
+type T3 = t.TupleC<[t.NumberC, t.StringC, t.BooleanC]>
+type TT3 = t.TypeOf<T3> // $ExpectType [number, string, boolean]
+type OT3 = t.OutputOf<T3> // $ExpectType [number, string, boolean]
+type T4 = t.TupleC<[t.NumberC, t.StringC, t.BooleanC, t.NullC]>
+type TT4 = t.TypeOf<T4> // $ExpectType [number, string, boolean, null]
+type OT4 = t.OutputOf<T4> // $ExpectType [number, string, boolean, null]
+type T5 = t.TupleC<[t.NumberC, t.StringC, t.BooleanC, t.NullC, t.UndefinedC]>
+type TT5 = t.TypeOf<T5> // $ExpectType [number, string, boolean, null, undefined]
+type OT5 = t.OutputOf<T5> // $ExpectType [number, string, boolean, null, undefined]
+
 //
 // partial
 //
 
 const P1 = t.partial({ name: t.string })
-type Assert14 = t.TypeOf<typeof P1> // $ExpectType TypeOfPartialProps<{ name: StringType; }>
+type Assert14 = t.TypeOf<typeof P1> // $ExpectType TypeOfPartialProps<{ name: StringC; }>
 type P1T = t.TypeOf<typeof P1>
 // $ExpectError
 const x21: P1T = { name: 1 }
@@ -161,7 +174,7 @@ const x23: P1T = { name: 's' }
 //
 
 const RO1 = t.readonly(t.interface({ name: t.string }))
-type Assert15 = t.TypeOf<typeof RO1> // $ExpectType Readonly<TypeOfProps<{ name: StringType; }>>
+type Assert15 = t.TypeOf<typeof RO1> // $ExpectType Readonly<TypeOfProps<{ name: StringC; }>>
 const x24: t.TypeOf<typeof RO1> = { name: 's' }
 // $ExpectError
 x24.name = 's2'
@@ -187,7 +200,7 @@ x27.push(2)
 //
 
 const S1 = t.strict({ name: t.string })
-type Assert17 = t.TypeOf<typeof S1> // $ExpectType TypeOfProps<{ name: StringType; }>
+type Assert17 = t.TypeOf<typeof S1> // $ExpectType TypeOfProps<{ name: StringC; }>
 type TS1 = t.TypeOf<typeof S1>
 const x32: TS1 = { name: 'Giulio' }
 const x33input = { name: 'foo', foo: 'foo' }
@@ -236,7 +249,7 @@ const TU2 = t.taggedUnion('type', [TU2A1, TU2B1])
 
 // $ExpectError
 const TU3 = t.taggedUnion('type', [t.type({ type: t.literal('a') }), t.type({ bad: t.literal('b') })])
-type Assert19 = t.TypeOf<typeof TU1> // $ExpectType TypeOfProps<{ type: LiteralType<"a">; }> | TypeOfProps<{ type: LiteralType<"b">; }>
+type Assert19 = t.TypeOf<typeof TU1> // $ExpectType TypeOfProps<{ type: LiteralC<"a">; }> | TypeOfProps<{ type: LiteralC<"b">; }>
 // $ExpectError
 const x36: t.TypeOf<typeof TU1> = true
 const x37: t.TypeOf<typeof TU1> = { type: 'a' }
@@ -246,8 +259,8 @@ const x38: t.TypeOf<typeof TU1> = { type: 'b' }
 // exact
 //
 
-declare const E1: t.InterfaceType<{ a: t.NumberType }, { a: number }, { a: number }, { a: number }>
-const E2 = t.exact(E1) // $ExpectType ExactType<InterfaceType<{ a: NumberType; }, { a: number; }, { a: number; }, { a: number; }>, { a: number; }, { a: number; }, { a: number; }>
+declare const E1: t.TypeC<{ a: t.NumberC }>
+const E2 = t.exact(E1) // $ExpectType ExactC<TypeC<{ a: NumberC; }>>
 
 //
 // clean / alias
@@ -315,8 +328,8 @@ interface GenerableReadonly extends t.ReadonlyType<Generable> {}
 interface GenerableReadonlyArray extends t.ReadonlyArrayType<Generable> {}
 interface GenerableRecursive extends t.RecursiveType<Generable> {}
 type Generable =
-  | t.StringType
-  | t.NumberType
+  | t.StringC
+  | t.NumberC
   | t.BooleanType
   | GenerableInterface
   | GenerableRefinement
@@ -341,9 +354,9 @@ function f(generable: Generable): string {
         .map(k => f(generable.props[k]))
         .join('/')
     case 'StringType':
-      return 'StringType'
+      return 'StringC'
     case 'NumberType':
-      return 'StringType'
+      return 'StringC'
     case 'BooleanType':
       return 'BooleanType'
     case 'RefinementType':
