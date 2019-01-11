@@ -1749,6 +1749,7 @@ export function exact<RT extends HasProps>(type: RT, name: string = `ExactType<$
 /**
  * Drops the runtime type "kind"
  * @since 1.1.0
+ * @deprecated
  */
 export function clean<A, O = A, I = mixed>(type: Type<A, O, I>): Type<A, O, I> {
   return type as any
@@ -1756,11 +1757,13 @@ export function clean<A, O = A, I = mixed>(type: Type<A, O, I>): Type<A, O, I> {
 
 /**
  * @since 1.0.0
+ * @deprecated
  */
 export type PropsOf<T extends { props: any }> = T['props']
 
 /**
  * @since 1.1.0
+ * @deprecated
  */
 export type Exact<T, X extends T> = T &
   { [K in ({ [K in keyof X]: K } & { [K in keyof T]: never } & { [key: string]: never })[keyof X]]?: never }
@@ -1768,6 +1771,7 @@ export type Exact<T, X extends T> = T &
 /**
  * Keeps the runtime type "kind"
  * @since 1.1.0
+ * @deprecated
  */
 export function alias<A, O, P, I>(
   type: PartialType<P, A, O, I>

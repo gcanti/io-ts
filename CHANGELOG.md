@@ -48,6 +48,11 @@ high state of flux, you're at risk of it changing without notice.
     - `StrictC`
     - `TaggedUnionC`
     - `ExactC`
+- **Deprecation**
+  - deprecate `clean` (@gcanti)
+  - deprecate `alias` (@gcanti)
+  - deprecate `PropsOf` type (@gcanti)
+  - deprecate `Exact` type (@gcanti)
 
 # 1.5.2
 
