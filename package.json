@@ -18,7 +18,8 @@
     "prepublish": "npm run build",
     "perf": "node perf/index",
     "dtslint": "dtslint dtslint",
-    "declaration": "tsc -p declaration/tsconfig.json"
+    "declaration": "tsc -p declaration/tsconfig.json",
+    "mocha": "TS_NODE_CACHE=false mocha -r ts-node/register test/*.ts"
   },
   "repository": {
     "type": "git",
@@ -40,9 +41,11 @@
     "benchmark": "2.1.4",
     "dtslint": "^0.4.2",
     "jest": "^23.6.0",
+    "mocha": "^5.2.0",
     "prettier": "1.13.4",
     "rimraf": "2.6.2",
     "ts-jest": "^23.10.4",
+    "ts-node": "^7.0.1",
     "tslint": "^5.11.0",
     "tslint-config-standard": "^8.0.1",
     "typescript": "^3.2.2"

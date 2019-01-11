@@ -18,6 +18,36 @@ high state of flux, you're at risk of it changing without notice.
 
 - **Bug Fix**
   - missing context info while decoding an intersection, fix #246 (@gcanti)
+- **Experimental**
+  - add intermediary interfaces, closes #165 (@gcanti)
+    - `NullC`
+    - `UndefinedC`
+    - `VoidC`
+    - `AnyC`
+    - `UnknownC`
+    - `NeverC`
+    - `StringC`
+    - `NumberC`
+    - `BooleanC`
+    - `UnknownArrayC`
+    - `UnknownRecordC`
+    - `ObjectC`
+    - `FunctionC`
+    - `RefinementC`
+    - `LiteralC`
+    - `KeyofC`
+    - `ArrayC`
+    - `TypeC`
+    - `PartialC`
+    - `RecordC`
+    - `UnionC`
+    - `IntersectionC`
+    - `TupleC`
+    - `ReadonlyC`
+    - `ReadonlyArrayC`
+    - `StrictC`
+    - `TaggedUnionC`
+    - `ExactC`
 
 # 1.5.2
 
