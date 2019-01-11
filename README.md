@@ -169,10 +169,10 @@ Note that the type annotation isn't needed, TypeScript infers the type automatic
 Static types can be extracted from runtime types using the `TypeOf` operator
 
 ```ts
-interface IPerson extends t.TypeOf<typeof Person> {}
+type Person = t.TypeOf<typeof Person>
 
 // same as
-interface IPerson {
+type Person = {
   name: string
   age: number
 }
@@ -343,12 +343,13 @@ const B = t.partial({
 
 const C = t.intersection([A, B])
 
-interface CT extends t.TypeOf<typeof C> {}
+type C = t.TypeOf<typeof C>
 
 // same as
-type CT = {
+type C = {
   foo: string
-  bar?: number
+} & {
+  bar?: number | undefined
 }
 ```
 
@@ -362,10 +363,10 @@ const Person = t.type({
 
 const PartialPerson = t.partial(Person.props)
 
-interface PartialPerson extends t.TypeOf<typeof PartialPerson> {}
+type PartialPerson = t.TypeOf<typeof PartialPerson>
 
 // same as
-interface PartialPerson {
+type PartialPerson = {
   name?: string
   age?: number
 }
@@ -435,7 +436,10 @@ const Links = t.interface({
 And used like:
 
 ```ts
-const UserModel = t.interface({ name: t.string })
+const UserModel = t.type({
+  name: t.string
+})
+
 functionThatRequiresRuntimeType(ResponseBody(t.array(UserModel)), ...params)
 ```
 
@@ -522,86 +526,3 @@ Benefits
 - unique check for free
 - better performance
 - quick info stays responsive
-
-# Known issues
-
-VS Code might display weird types for nested types
-
-```ts
-const NestedInterface = t.type({
-  foo: t.string,
-  bar: t.type({
-    baz: t.string
-  })
-})
-
-type NestedInterfaceType = t.TypeOf<typeof NestedInterface>
-/*
-Hover on NestedInterfaceType will display
-
-type NestedInterfaceType = {
-    foo: string;
-    bar: t.TypeOfProps<{
-        baz: t.StringType;
-    }>;
-}
-
-instead of
-
-type NestedInterfaceType = {
-  foo: string;
-  bar: {
-    baz: string
-  }
-}
-*/
-```
-
-## Solution: the `clean` and `alias` functions
-
-The pattern
-
-```ts
-// private runtime type
-const _NestedInterface = t.type({
-  foo: t.string,
-  bar: t.type({
-    baz: t.string
-  })
-})
-
-// a type alias using interface
-export interface NestedInterface extends t.TypeOf<typeof _NestedInterface> {}
-
-//
-// Two possible options for the exported runtime type
-//
-
-// a clean NestedInterface which drops the kind...
-export const NestedInterface = t.clean<NestedInterface, NestedInterface>(_NestedInterface)
-/*
-NestedInterface: t.Type<NestedInterface, NestedInterface, t.mixed>
-*/
-
-// ... or an alias of _NestedInterface which keeps the kind
-export const NestedInterface = t.alias(_NestedInterface)<NestedInterface, NestedInterface>()
-/*
-t.InterfaceType<{
-    foo: t.StringType;
-    bar: t.InterfaceType<{
-        baz: t.StringType;
-    }, t.TypeOfProps<{
-        baz: t.StringType;
-    }>, t.OutputOfProps<{
-        baz: t.StringType;
-    }>, t.mixed>;
-}, NestedInterface, NestedInterface, t.mixed>
-*/
-
-// you can also alias the props
-interface NestedInterfaceProps extends t.PropsOf<typeof _NestedInterface> {}
-export const NestedInterface = t.alias(_NestedInterface)<NestedInterface, NestedInterface, NestedInterfaceProps>()
-/*
-const NestedInterface: t.InterfaceType<NestedInterfaceProps, NestedInterface, NestedInterface, t.mixed>
-*/
-```

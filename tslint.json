@@ -5,6 +5,7 @@
     "no-use-before-declare": false,
     "variable-name": false,
     "ter-indent": false,
-    "strict-type-predicates": false
+    "strict-type-predicates": false,
+    "deprecation": false
   }
 }
