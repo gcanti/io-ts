@@ -65,7 +65,7 @@ describe('taggedUnion', () => {
       'Invalid value undefined supplied to : (TUA | TUB | TUC | TUD)/0: TUA/foo: string'
     ])
     assertFailure(T.decode({ type: 'b' }), [
-      'Invalid value undefined supplied to : (TUA | TUB | TUC | TUD)/1: TUB/bar: number'
+      'Invalid value undefined supplied to : (TUA | TUB | TUC | TUD)/1: TUB/1: { bar: number }/bar: number'
     ])
     assertFailure(T.decode({ type: 'c' }), [
       'Invalid value undefined supplied to : (TUA | TUB | TUC | TUD)/2: TUC/baz: DateFromNumber'

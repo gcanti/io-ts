@@ -1094,7 +1094,7 @@ export function intersection<RTS extends Array<Mixed>>(
       const errors: Errors = []
       for (let i = 0; i < len; i++) {
         const type = types[i]
-        const validation = type.validate(a, c)
+        const validation = type.validate(a, appendContext(c, String(i), type))
         if (validation.isLeft()) {
           pushAll(errors, validation.value)
         } else {

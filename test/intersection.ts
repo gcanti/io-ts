@@ -12,7 +12,7 @@ describe('intersection', () => {
     const T1 = t.intersection([t.string, t.string])
     assertSuccess(T1.decode('foo'))
     const T2 = t.intersection([t.string, t.number])
-    assertFailure(T2.decode('foo'), ['Invalid value "foo" supplied to : (string & number)'])
+    assertFailure(T2.decode('foo'), ['Invalid value "foo" supplied to : (string & number)/1: number'])
   })
 
   it('should keep unknown properties', () => {
@@ -38,8 +38,12 @@ describe('intersection', () => {
 
   it('should fail validating an invalid value', () => {
     const T = t.intersection([t.interface({ a: t.number }), t.interface({ b: t.number })])
+    assertFailure(T.decode(null), [
+      'Invalid value null supplied to : ({ a: number } & { b: number })/0: { a: number }',
+      'Invalid value null supplied to : ({ a: number } & { b: number })/1: { b: number }'
+    ])
     assertFailure(T.decode({ a: 1 }), [
-      'Invalid value undefined supplied to : ({ a: number } & { b: number })/b: number'
+      'Invalid value undefined supplied to : ({ a: number } & { b: number })/1: { b: number }/b: number'
     ])
   })
 
