@@ -14,6 +14,20 @@
 **Note**: Gaps between patch versions are faulty/broken releases. **Note**: A feature tagged as Experimental is in a
 high state of flux, you're at risk of it changing without notice.
 
+# 1.6.0
+
+**Important**. This version requires `typescript@3.2.2+`
+
+- **New Feature**
+  - leverage `typescript@3.2.2` (@gcanti)
+    - `TypeC`
+    - `PartialC`
+    - `RecordC`
+    - `UnionC`
+    - `ReadonlyC`
+    - `StrictC`
+    - `TaggedUnionC`
+
 # 1.5.3
 
 - **Bug Fix**

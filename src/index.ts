@@ -69,17 +69,17 @@ export interface Mixed extends Type<any, any, unknown> {}
 /**
  * @since 1.0.0
  */
-export type TypeOf<RT extends Any> = RT['_A']
+export type TypeOf<C extends Any> = C['_A']
 
 /**
  * @since 1.0.0
  */
-export type InputOf<RT extends Any> = RT['_I']
+export type InputOf<C extends Any> = C['_I']
 
 /**
  * @since 1.0.0
  */
-export type OutputOf<RT extends Any> = RT['_O']
+export type OutputOf<C extends Any> = C['_O']
 
 /**
  * @since 1.0.0
@@ -510,14 +510,14 @@ export const Function: FunctionC = new FunctionType()
 /**
  * @since 1.0.0
  */
-export class RefinementType<RT extends Any, A = any, O = A, I = unknown> extends Type<A, O, I> {
+export class RefinementType<C extends Any, A = any, O = A, I = unknown> extends Type<A, O, I> {
   readonly _tag: 'RefinementType' = 'RefinementType'
   constructor(
     name: string,
-    is: RefinementType<RT, A, O, I>['is'],
-    validate: RefinementType<RT, A, O, I>['validate'],
-    encode: RefinementType<RT, A, O, I>['encode'],
-    readonly type: RT,
+    is: RefinementType<C, A, O, I>['is'],
+    validate: RefinementType<C, A, O, I>['validate'],
+    encode: RefinementType<C, A, O, I>['encode'],
+    readonly type: C,
     readonly predicate: Predicate<A>
   ) {
     super(name, is, validate, encode)
@@ -532,14 +532,14 @@ export interface RefinementC<C extends Any> extends RefinementType<C, TypeOf<C>,
 /**
  * @since 1.0.0
  */
-export const refinement = <RT extends Any>(
-  type: RT,
-  predicate: Predicate<TypeOf<RT>>,
+export const refinement = <C extends Any>(
+  type: C,
+  predicate: Predicate<TypeOf<C>>,
   name: string = `(${type.name} | ${getFunctionName(predicate)})`
-): RefinementC<RT> =>
+): RefinementC<C> =>
   new RefinementType(
     name,
-    (u): u is TypeOf<RT> => type.is(u) && predicate(u),
+    (u): u is TypeOf<C> => type.is(u) && predicate(u),
     (i, c) => {
       const validation = type.validate(i, c)
       if (validation.isLeft()) {
@@ -627,18 +627,18 @@ export const keyof = <D extends { [key: string]: unknown }>(
 /**
  * @since 1.0.0
  */
-export class RecursiveType<RT extends Any, A = any, O = A, I = unknown> extends Type<A, O, I> {
+export class RecursiveType<C extends Any, A = any, O = A, I = unknown> extends Type<A, O, I> {
   readonly _tag: 'RecursiveType' = 'RecursiveType'
   constructor(
     name: string,
-    is: RecursiveType<RT, A, O, I>['is'],
-    validate: RecursiveType<RT, A, O, I>['validate'],
-    encode: RecursiveType<RT, A, O, I>['encode'],
-    private runDefinition: () => RT
+    is: RecursiveType<C, A, O, I>['is'],
+    validate: RecursiveType<C, A, O, I>['validate'],
+    encode: RecursiveType<C, A, O, I>['encode'],
+    private runDefinition: () => C
   ) {
     super(name, is, validate, encode)
   }
-  get type(): RT {
+  get type(): C {
     return this.runDefinition()
   }
 }
@@ -646,18 +646,18 @@ export class RecursiveType<RT extends Any, A = any, O = A, I = unknown> extends 
 /**
  * @since 1.0.0
  */
-export const recursion = <A, O = A, I = unknown, RT extends Type<A, O, I> = Type<A, O, I>>(
+export const recursion = <A, O = A, I = unknown, C extends Type<A, O, I> = Type<A, O, I>>(
   name: string,
-  definition: (self: RT) => RT
-): RecursiveType<RT, A, O, I> => {
-  let cache: RT
-  const runDefinition = (): RT => {
+  definition: (self: C) => C
+): RecursiveType<C, A, O, I> => {
+  let cache: C
+  const runDefinition = (): C => {
     if (!cache) {
       cache = definition(Self)
     }
     return cache
   }
-  const Self: any = new RecursiveType<RT, A, O, I>(
+  const Self: any = new RecursiveType<C, A, O, I>(
     name,
     (u): u is A => runDefinition().is(u),
     (u, c) => runDefinition().validate(u, c),
@@ -670,14 +670,14 @@ export const recursion = <A, O = A, I = unknown, RT extends Type<A, O, I> = Type
 /**
  * @since 1.0.0
  */
-export class ArrayType<RT extends Any, A = any, O = A, I = unknown> extends Type<A, O, I> {
+export class ArrayType<C extends Any, A = any, O = A, I = unknown> extends Type<A, O, I> {
   readonly _tag: 'ArrayType' = 'ArrayType'
   constructor(
     name: string,
-    is: ArrayType<RT, A, O, I>['is'],
-    validate: ArrayType<RT, A, O, I>['validate'],
-    encode: ArrayType<RT, A, O, I>['encode'],
-    readonly type: RT
+    is: ArrayType<C, A, O, I>['is'],
+    validate: ArrayType<C, A, O, I>['validate'],
+    encode: ArrayType<C, A, O, I>['encode'],
+    readonly type: C
   ) {
     super(name, is, validate, encode)
   }
@@ -691,10 +691,10 @@ export interface ArrayC<C extends Mixed> extends ArrayType<C, Array<TypeOf<C>>, 
 /**
  * @since 1.0.0
  */
-export const array = <RT extends Mixed>(type: RT, name: string = `Array<${type.name}>`): ArrayC<RT> =>
+export const array = <C extends Mixed>(type: C, name: string = `Array<${type.name}>`): ArrayC<C> =>
   new ArrayType(
     name,
-    (u): u is Array<TypeOf<RT>> => arrayType.is(u) && u.every(type.is),
+    (u): u is Array<TypeOf<C>> => arrayType.is(u) && u.every(type.is),
     (u, c) => {
       const arrayValidation = arrayType.validate(u, c)
       if (arrayValidation.isLeft()) {
@@ -702,7 +702,7 @@ export const array = <RT extends Mixed>(type: RT, name: string = `Array<${type.n
       } else {
         const xs = arrayValidation.value
         const len = xs.length
-        let a: Array<TypeOf<RT>> = xs
+        let a: Array<TypeOf<C>> = xs
         const errors: Errors = []
         for (let i = 0; i < len; i++) {
           const x = xs[i]
@@ -783,7 +783,8 @@ export interface Props {
 /**
  * @since 1.5.3
  */
-export interface TypeC<P extends Props> extends InterfaceType<P, TypeOfProps<P>, OutputOfProps<P>, unknown> {}
+export interface TypeC<P extends Props>
+  extends InterfaceType<P, { [K in keyof P]: TypeOf<P[K]> }, { [K in keyof P]: OutputOf<P[K]> }, unknown> {}
 
 /**
  * @alias `interface`
@@ -889,7 +890,7 @@ export type OutputOfPartialProps<P extends AnyProps> = { [K in keyof P]?: Output
  * @since 1.5.3
  */
 export interface PartialC<P extends Props>
-  extends PartialType<P, TypeOfPartialProps<P>, OutputOfPartialProps<P>, unknown> {}
+  extends PartialType<P, { [K in keyof P]?: TypeOf<P[K]> }, { [K in keyof P]?: OutputOf<P[K]> }, unknown> {}
 
 /**
  * @since 1.0.0
@@ -998,7 +999,7 @@ const refinedDictionary = refinement(Dictionary, d => Object.prototype.toString.
  * @since 1.5.3
  */
 export interface RecordC<D extends Mixed, C extends Mixed>
-  extends DictionaryType<D, C, TypeOfDictionary<D, C>, OutputOfDictionary<D, C>, unknown> {}
+  extends DictionaryType<D, C, { [K in TypeOf<D>]: TypeOf<C> }, { [K in OutputOf<D>]: OutputOf<C> }, unknown> {}
 
 /**
  * @since 1.0.0
@@ -1067,14 +1068,14 @@ export const dictionary = <D extends Mixed, C extends Mixed>(
 /**
  * @since 1.0.0
  */
-export class UnionType<RTS extends Array<Any>, A = any, O = A, I = unknown> extends Type<A, O, I> {
+export class UnionType<CS extends Array<Any>, A = any, O = A, I = unknown> extends Type<A, O, I> {
   readonly _tag: 'UnionType' = 'UnionType'
   constructor(
     name: string,
-    is: UnionType<RTS, A, O, I>['is'],
-    validate: UnionType<RTS, A, O, I>['validate'],
-    encode: UnionType<RTS, A, O, I>['encode'],
-    readonly types: RTS
+    is: UnionType<CS, A, O, I>['is'],
+    validate: UnionType<CS, A, O, I>['validate'],
+    encode: UnionType<CS, A, O, I>['encode'],
+    readonly types: CS
   ) {
     super(name, is, validate, encode)
   }
@@ -1089,14 +1090,14 @@ export interface UnionC<CS extends [Mixed, Mixed, ...Array<Mixed>]>
 /**
  * @since 1.0.0
  */
-export const union = <RTS extends [Mixed, Mixed, ...Array<Mixed>]>(
-  types: RTS,
+export const union = <CS extends [Mixed, Mixed, ...Array<Mixed>]>(
+  types: CS,
   name: string = `(${types.map(type => type.name).join(' | ')})`
-): UnionC<RTS> => {
+): UnionC<CS> => {
   const len = types.length
   return new UnionType(
     name,
-    (u): u is TypeOf<RTS[number]> => types.some(type => type.is(u)),
+    (u): u is TypeOf<CS[number]> => types.some(type => type.is(u)),
     (u, c) => {
       const errors: Errors = []
       for (let i = 0; i < len; i++) {
@@ -1129,14 +1130,14 @@ export const union = <RTS extends [Mixed, Mixed, ...Array<Mixed>]>(
 /**
  * @since 1.0.0
  */
-export class IntersectionType<RTS extends Array<Any>, A = any, O = A, I = unknown> extends Type<A, O, I> {
+export class IntersectionType<CS extends Array<Any>, A = any, O = A, I = unknown> extends Type<A, O, I> {
   readonly _tag: 'IntersectionType' = 'IntersectionType'
   constructor(
     name: string,
-    is: IntersectionType<RTS, A, O, I>['is'],
-    validate: IntersectionType<RTS, A, O, I>['validate'],
-    encode: IntersectionType<RTS, A, O, I>['encode'],
-    readonly types: RTS
+    is: IntersectionType<CS, A, O, I>['is'],
+    validate: IntersectionType<CS, A, O, I>['validate'],
+    encode: IntersectionType<CS, A, O, I>['encode'],
+    readonly types: CS
   ) {
     super(name, is, validate, encode)
   }
@@ -1192,10 +1193,10 @@ export function intersection<A extends Mixed, B extends Mixed, C extends Mixed>(
   name?: string
 ): IntersectionC<[A, B, C]>
 export function intersection<A extends Mixed, B extends Mixed>(types: [A, B], name?: string): IntersectionC<[A, B]>
-export function intersection<RTS extends [Mixed, Mixed, ...Array<Mixed>]>(
-  types: RTS,
+export function intersection<CS extends [Mixed, Mixed, ...Array<Mixed>]>(
+  types: CS,
   name: string = `(${types.map(type => type.name).join(' & ')})`
-): IntersectionC<RTS> {
+): IntersectionC<CS> {
   const len = types.length
   return new IntersectionType(
     name,
@@ -1231,14 +1232,14 @@ export function intersection<RTS extends [Mixed, Mixed, ...Array<Mixed>]>(
 /**
  * @since 1.0.0
  */
-export class TupleType<RTS extends Array<Any>, A = any, O = A, I = unknown> extends Type<A, O, I> {
+export class TupleType<CS extends Array<Any>, A = any, O = A, I = unknown> extends Type<A, O, I> {
   readonly _tag: 'TupleType' = 'TupleType'
   constructor(
     name: string,
-    is: TupleType<RTS, A, O, I>['is'],
-    validate: TupleType<RTS, A, O, I>['validate'],
-    encode: TupleType<RTS, A, O, I>['encode'],
-    readonly types: RTS
+    is: TupleType<CS, A, O, I>['is'],
+    validate: TupleType<CS, A, O, I>['validate'],
+    encode: TupleType<CS, A, O, I>['encode'],
+    readonly types: CS
   ) {
     super(name, is, validate, encode)
   }
@@ -1292,10 +1293,10 @@ export function tuple<A extends Mixed, B extends Mixed, C extends Mixed>(
 ): TupleC<[A, B, C]>
 export function tuple<A extends Mixed, B extends Mixed>(types: [A, B], name?: string): TupleC<[A, B]>
 export function tuple<A extends Mixed>(types: [A], name?: string): TupleC<[A]>
-export function tuple<RTS extends [Mixed, ...Array<Mixed>]>(
-  types: RTS,
+export function tuple<CS extends [Mixed, ...Array<Mixed>]>(
+  types: CS,
   name: string = `[${types.map(type => type.name).join(', ')}]`
-): TupleC<RTS> {
+): TupleC<CS> {
   const len = types.length
   return new TupleType(
     name,
@@ -1339,14 +1340,14 @@ export function tuple<RTS extends [Mixed, ...Array<Mixed>]>(
 /**
  * @since 1.0.0
  */
-export class ReadonlyType<RT extends Any, A = any, O = A, I = unknown> extends Type<A, O, I> {
+export class ReadonlyType<C extends Any, A = any, O = A, I = unknown> extends Type<A, O, I> {
   readonly _tag: 'ReadonlyType' = 'ReadonlyType'
   constructor(
     name: string,
-    is: ReadonlyType<RT, A, O, I>['is'],
-    validate: ReadonlyType<RT, A, O, I>['validate'],
-    encode: ReadonlyType<RT, A, O, I>['encode'],
-    readonly type: RT
+    is: ReadonlyType<C, A, O, I>['is'],
+    validate: ReadonlyType<C, A, O, I>['validate'],
+    encode: ReadonlyType<C, A, O, I>['encode'],
+    readonly type: C
   ) {
     super(name, is, validate, encode)
   }
@@ -1356,12 +1357,17 @@ export class ReadonlyType<RT extends Any, A = any, O = A, I = unknown> extends T
  * @since 1.5.3
  */
 export interface ReadonlyC<C extends Mixed>
-  extends ReadonlyType<C, Readonly<TypeOf<C>>, Readonly<OutputOf<C>>, unknown> {}
+  extends ReadonlyType<
+    C,
+    { readonly [K in keyof TypeOf<C>]: TypeOf<C>[K] },
+    { readonly [K in keyof OutputOf<C>]: OutputOf<C>[K] },
+    unknown
+  > {}
 
 /**
  * @since 1.0.0
  */
-export const readonly = <RT extends Mixed>(type: RT, name: string = `Readonly<${type.name}>`): ReadonlyC<RT> =>
+export const readonly = <C extends Mixed>(type: C, name: string = `Readonly<${type.name}>`): ReadonlyC<C> =>
   new ReadonlyType(
     name,
     type.is,
@@ -1379,14 +1385,14 @@ export const readonly = <RT extends Mixed>(type: RT, name: string = `Readonly<${
 /**
  * @since 1.0.0
  */
-export class ReadonlyArrayType<RT extends Any, A = any, O = A, I = unknown> extends Type<A, O, I> {
+export class ReadonlyArrayType<C extends Any, A = any, O = A, I = unknown> extends Type<A, O, I> {
   readonly _tag: 'ReadonlyArrayType' = 'ReadonlyArrayType'
   constructor(
     name: string,
-    is: ReadonlyArrayType<RT, A, O, I>['is'],
-    validate: ReadonlyArrayType<RT, A, O, I>['validate'],
-    encode: ReadonlyArrayType<RT, A, O, I>['encode'],
-    readonly type: RT
+    is: ReadonlyArrayType<C, A, O, I>['is'],
+    validate: ReadonlyArrayType<C, A, O, I>['validate'],
+    encode: ReadonlyArrayType<C, A, O, I>['encode'],
+    readonly type: C
   ) {
     super(name, is, validate, encode)
   }
@@ -1401,10 +1407,10 @@ export interface ReadonlyArrayC<C extends Mixed>
 /**
  * @since 1.0.0
  */
-export const readonlyArray = <RT extends Mixed>(
-  type: RT,
+export const readonlyArray = <C extends Mixed>(
+  type: C,
   name: string = `ReadonlyArray<${type.name}>`
-): ReadonlyArrayC<RT> => {
+): ReadonlyArrayC<C> => {
   const arrayType = array(type)
   return new ReadonlyArrayType(
     name,
@@ -1441,7 +1447,8 @@ export class StrictType<P, A = any, O = A, I = unknown> extends Type<A, O, I> {
 /**
  * @since 1.5.3
  */
-export interface StrictC<P extends Props> extends StrictType<P, TypeOfProps<P>, OutputOfProps<P>, unknown> {}
+export interface StrictC<P extends Props>
+  extends StrictType<P, { [K in keyof P]: TypeOf<P[K]> }, { [K in keyof P]: OutputOf<P[K]> }, unknown> {}
 
 /**
  * Specifies that only the given properties are allowed
@@ -1568,17 +1575,17 @@ export const getTagValue = <Tag extends string>(tag: Tag): ((type: Tagged<Tag>) 
  */
 export class TaggedUnionType<
   Tag extends string,
-  RTS extends Array<Tagged<Tag>>,
+  CS extends Array<Tagged<Tag>>,
   A = any,
   O = A,
   I = unknown
-> extends UnionType<RTS, A, O, I> {
+> extends UnionType<CS, A, O, I> {
   constructor(
     name: string,
-    is: TaggedUnionType<Tag, RTS, A, O, I>['is'],
-    validate: TaggedUnionType<Tag, RTS, A, O, I>['validate'],
-    encode: TaggedUnionType<Tag, RTS, A, O, I>['encode'],
-    types: RTS,
+    is: TaggedUnionType<Tag, CS, A, O, I>['is'],
+    validate: TaggedUnionType<Tag, CS, A, O, I>['validate'],
+    encode: TaggedUnionType<Tag, CS, A, O, I>['encode'],
+    types: CS,
     readonly tag: Tag
   ) {
     super(name, is, validate, encode, types) /* istanbul ignore next */ // <= workaround for https://github.com/Microsoft/TypeScript/issues/13455
@@ -1594,11 +1601,11 @@ export interface TaggedUnionC<Tag extends string, CS extends [Tagged<Tag>, Tagge
 /**
  * @since 1.3.0
  */
-export const taggedUnion = <Tag extends string, RTS extends [Tagged<Tag>, Tagged<Tag>, ...Array<Tagged<Tag>>]>(
+export const taggedUnion = <Tag extends string, CS extends [Tagged<Tag>, Tagged<Tag>, ...Array<Tagged<Tag>>]>(
   tag: Tag,
-  types: RTS,
+  types: CS,
   name: string = `(${types.map(type => type.name).join(' | ')})`
-): TaggedUnionC<Tag, RTS> => {
+): TaggedUnionC<Tag, CS> => {
   const len = types.length
   const values: Array<string | number | boolean> = new Array(len)
   const hash: { [key: string]: number } = {}
@@ -1630,9 +1637,9 @@ export const taggedUnion = <Tag extends string, RTS extends [Tagged<Tag>, Tagged
     (u, c) => (isTagValue(u) ? success(u) : failure(u, c)),
     identity
   )
-  return new TaggedUnionType<Tag, RTS, TypeOf<RTS[number]>, OutputOf<RTS[number]>, unknown>(
+  return new TaggedUnionType<Tag, CS, TypeOf<CS[number]>, OutputOf<CS[number]>, unknown>(
     name,
-    (v): v is TypeOf<RTS[number]> => {
+    (v): v is TypeOf<CS[number]> => {
       if (!Dictionary.is(v)) {
         return false
       }
@@ -1664,14 +1671,14 @@ export const taggedUnion = <Tag extends string, RTS extends [Tagged<Tag>, Tagged
 /**
  * @since 1.1.0
  */
-export class ExactType<RT extends Any, A = any, O = A, I = unknown> extends Type<A, O, I> {
+export class ExactType<C extends Any, A = any, O = A, I = unknown> extends Type<A, O, I> {
   readonly _tag: 'ExactType' = 'ExactType'
   constructor(
     name: string,
-    is: ExactType<RT, A, O, I>['is'],
-    validate: ExactType<RT, A, O, I>['validate'],
-    encode: ExactType<RT, A, O, I>['encode'],
-    readonly type: RT
+    is: ExactType<C, A, O, I>['is'],
+    validate: ExactType<C, A, O, I>['validate'],
+    encode: ExactType<C, A, O, I>['encode'],
+    readonly type: C
   ) {
     super(name, is, validate, encode)
   }
@@ -1722,11 +1729,11 @@ export interface ExactC<C extends HasProps> extends ExactType<C, TypeOf<C>, Outp
 /**
  * @since 1.1.0
  */
-export function exact<RT extends HasProps>(type: RT, name: string = `ExactType<${type.name}>`): ExactC<RT> {
+export function exact<C extends HasProps>(type: C, name: string = `ExactType<${type.name}>`): ExactC<C> {
   const props: Props = getProps(type)
   return new ExactType(
     name,
-    (u): u is TypeOf<RT> => type.is(u) && Object.getOwnPropertyNames(u).every(k => hasOwnProperty.call(props, k)),
+    (u): u is TypeOf<C> => type.is(u) && Object.getOwnPropertyNames(u).every(k => hasOwnProperty.call(props, k)),
     (u, c) => {
       const looseValidation = type.validate(u, c)
       if (looseValidation.isLeft()) {
