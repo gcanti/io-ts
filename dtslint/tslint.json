@@ -13,6 +13,7 @@
     "no-angle-bracket-type-assertion": false,
     "object-literal-shorthand": false,
     "prefer-object-spread": false,
-    "whitespace": false
+    "whitespace": false,
+    "use-default-type-parameter": false
   }
 }
