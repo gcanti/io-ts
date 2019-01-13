@@ -69,17 +69,17 @@ export interface Mixed extends Type<any, any, mixed> {}
 /**
  * @since 1.0.0
  */
-export type TypeOf<RT extends any> = RT['_A']
+export type TypeOf<RT extends Any> = RT['_A']
 
 /**
  * @since 1.0.0
  */
-export type InputOf<RT extends any> = RT['_I']
+export type InputOf<RT extends Any> = RT['_I']
 
 /**
  * @since 1.0.0
  */
-export type OutputOf<RT extends any> = RT['_O']
+export type OutputOf<RT extends Any> = RT['_O']
 
 /**
  * @since 1.0.0
