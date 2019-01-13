@@ -1155,7 +1155,11 @@ export type Compact<A> = { [K in keyof A]: A[K] }
 export interface IntersectionC<CS extends Array<Mixed>>
   extends IntersectionType<
     CS,
-    CS extends [Mixed, Mixed]
+    CS extends []
+      ? never
+      : CS extends [Mixed]
+      ? TypeOf<CS['0']>
+      : CS extends [Mixed, Mixed]
       ? TypeOf<CS['0']> & TypeOf<CS['1']>
       : CS extends [Mixed, Mixed, Mixed]
       ? TypeOf<CS['0']> & TypeOf<CS['1']> & TypeOf<CS['2']>
@@ -1164,7 +1168,11 @@ export interface IntersectionC<CS extends Array<Mixed>>
       : CS extends [Mixed, Mixed, Mixed, Mixed, Mixed]
       ? TypeOf<CS['0']> & TypeOf<CS['1']> & TypeOf<CS['2']> & TypeOf<CS['3']> & TypeOf<CS['4']>
       : unknown,
-    CS extends [Mixed, Mixed]
+    CS extends []
+      ? never
+      : CS extends [Mixed]
+      ? OutputOf<CS['0']>
+      : CS extends [Mixed, Mixed]
       ? OutputOf<CS['0']> & OutputOf<CS['1']>
       : CS extends [Mixed, Mixed, Mixed]
       ? OutputOf<CS['0']> & OutputOf<CS['1']> & OutputOf<CS['2']>
