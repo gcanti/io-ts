@@ -1163,7 +1163,7 @@ export interface IntersectionC<CS extends Array<Mixed>>
       ? TypeOf<CS['0']> & TypeOf<CS['1']> & TypeOf<CS['2']> & TypeOf<CS['3']>
       : CS extends [Mixed, Mixed, Mixed, Mixed, Mixed]
       ? TypeOf<CS['0']> & TypeOf<CS['1']> & TypeOf<CS['2']> & TypeOf<CS['3']> & TypeOf<CS['4']>
-      : TypeOf<CS[number]>,
+      : unknown,
     CS extends [Mixed, Mixed]
       ? OutputOf<CS['0']> & OutputOf<CS['1']>
       : CS extends [Mixed, Mixed, Mixed]
@@ -1172,7 +1172,7 @@ export interface IntersectionC<CS extends Array<Mixed>>
       ? OutputOf<CS['0']> & OutputOf<CS['1']> & OutputOf<CS['2']> & OutputOf<CS['3']>
       : CS extends [Mixed, Mixed, Mixed, Mixed, Mixed]
       ? OutputOf<CS['0']> & OutputOf<CS['1']> & OutputOf<CS['2']> & OutputOf<CS['3']> & OutputOf<CS['4']>
-      : OutputOf<CS[number]>,
+      : unknown,
     unknown
   > {}
 
