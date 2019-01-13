@@ -122,17 +122,17 @@ type Dictionary2OutputTest = Equals<t.OutputOf<typeof Dictionary2>, { [K in stri
 // union
 //
 
-const Union0 = t.union([]) // $ExpectType UnionC<never[]>
+// $ExpectError
+const Union0 = t.union([])
 
-const Union1 = t.union([t.boolean]) // $ExpectType UnionC<BooleanC[]>
-type Union1TypeTest = t.TypeOf<typeof Union1> // $ExpectType boolean
-type Union1OutputTest = t.OutputOf<typeof Union1> // $ExpectType boolean
+// $ExpectError
+const Union1 = t.union([t.boolean])
 
-const Union2 = t.union([t.boolean, t.number]) // $ExpectType UnionC<(NumberC | BooleanC)[]>
+const Union2 = t.union([t.boolean, t.number]) // $ExpectType UnionC<[BooleanC, NumberC]>
 type Union2TypeTest = t.TypeOf<typeof Union2> // $ExpectType number | boolean
 type Union2OutputTest = t.OutputOf<typeof Union2> // $ExpectType number | boolean
 
-const Union3 = t.union([t.boolean, NumberFromString]) // $ExpectType UnionC<(Type<number, string, unknown> | BooleanC)[]>
+const Union3 = t.union([t.boolean, NumberFromString]) // $ExpectType UnionC<[BooleanC, Type<number, string, unknown>]>
 type Union3TypeTest = t.TypeOf<typeof Union3> // $ExpectType number | boolean
 type Union3OutputTest = t.OutputOf<typeof Union3> // $ExpectType string | boolean
 
@@ -192,6 +192,9 @@ const Intersection6 = t.intersection([t.type({ a: NumberFromString }), t.type({ 
 type Intersection6TypeTest = Equals<t.TypeOf<typeof Intersection6>, { a: number; b: string }> // $ExpectType "T"
 type Intersection6OutputTest = Equals<t.OutputOf<typeof Intersection6>, { a: string; b: string }> // $ExpectType "T"
 
+// $ExpectError
+const Intersection7 = t.intersection([t.string, t.string, t.string, t.string, t.string, t.string])
+
 declare function testIntersectionInput<T>(x: t.Type<Record<keyof T, string>, any, unknown>): void
 declare function testIntersectionOuput<T>(x: t.Type<any, Record<keyof T, string>, unknown>): void
 const QueryString = t.intersection([
@@ -220,9 +223,8 @@ type IntersectionWithPrimitiveTest = Equals<t.TypeOf<typeof IntersectionWithPrim
 // tuple
 //
 
-const Tuple1 = t.tuple([]) // $ExpectType TupleC<[]>
-type Tuple1TypeTest = t.TypeOf<typeof Tuple1> // $ExpectType []
-type Tuple1OutputTest = t.OutputOf<typeof Tuple1> // $ExpectType []
+// $ExpectError
+const Tuple1 = t.tuple([])
 
 const Tuple2 = t.tuple([t.string]) // $ExpectType TupleC<[StringC]>
 type Tuple2TypeTest = t.TypeOf<typeof Tuple2> // $ExpectType [string]
@@ -247,6 +249,9 @@ type Tuple6OutputTest = t.OutputOf<typeof Tuple6> // $ExpectType [string, number
 const Tuple7 = t.tuple([t.string, t.number, t.boolean, t.null, t.undefined]) // $ExpectType TupleC<[StringC, NumberC, BooleanC, NullC, UndefinedC]>
 type Tuple7TypeTest = t.TypeOf<typeof Tuple7> // $ExpectType [string, number, boolean, null, undefined]
 type Tuple7OutputTest = t.OutputOf<typeof Tuple7> // $ExpectType [string, number, boolean, null, undefined]
+
+// $ExpectError
+const Tuple8 = t.tuple([t.string, t.string, t.string, t.string, t.string, t.string])
 
 //
 // partial
@@ -308,7 +313,7 @@ const TaggedUnion1 = t.taggedUnion('type', [
   t.type({ type: t.literal('a'), a: t.number }),
   t.type({ type: t.literal('b') })
 ])
-const TaggedUnion1Type = TaggedUnion1 // $ExpectType TaggedUnionC<"type", (TypeC<{ type: LiteralC<"a">; a: NumberC; }> | TypeC<{ type: LiteralC<"b">; }>)[]>
+const TaggedUnion1Type = TaggedUnion1 // $ExpectType TaggedUnionC<"type", [TypeC<{ type: LiteralC<"a">; a: NumberC; }>, TypeC<{ type: LiteralC<"b">; }>]>
 type TaggedUnion1TypeTest = Equals<t.TypeOf<typeof TaggedUnion1>, { type: 'a'; a: number } | { type: 'b' }> // $ExpectType "T"
 type TaggedUnion1OutputTest = Equals<t.OutputOf<typeof TaggedUnion1>, { type: 'a'; a: number } | { type: 'b' }> // $ExpectType "T"
 
@@ -550,7 +555,7 @@ const pluck = <F extends string, U extends t.UnionType<Array<t.InterfaceType<{ [
   union: U,
   field: F
 ): t.Type<t.TypeOf<U>[F]> => {
-  return t.union(union.types.map(type => type.props[field]))
+  return t.union(union.types.map(type => type.props[field]) as any)
 }
 
 export const Action = t.union([

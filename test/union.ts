@@ -4,7 +4,7 @@ import { assertSuccess, assertFailure, assertStrictEqual, DateFromNumber } from 
 
 describe('union', () => {
   it('should succeed validating a valid value', () => {
-    const T1 = t.union([t.string])
+    const T1 = t.union([t.string] as any)
     assertSuccess(T1.decode('s'))
     const T2 = t.union([t.string, t.number])
     assertSuccess(T2.decode('s'))
@@ -18,9 +18,9 @@ describe('union', () => {
   })
 
   it('should fail validating an invalid value', () => {
-    const T0 = t.union([])
+    const T0 = t.union([] as any)
     assertFailure(T0.decode(true), ['Invalid value true supplied to : ()'])
-    const T1 = t.union([t.string])
+    const T1 = t.union([t.string] as any)
     assertFailure(T1.decode(true), ['Invalid value true supplied to : (string)/0: string'])
     const T2 = t.union([t.string, t.number])
     assertFailure(T2.decode(true), [
@@ -30,7 +30,7 @@ describe('union', () => {
   })
 
   it('should encode a nullary union', () => {
-    const T0 = t.union([])
+    const T0 = t.union([] as any)
     assert.strictEqual(T0.encode(1 as never), 1)
   })
 
@@ -48,7 +48,7 @@ describe('union', () => {
   })
 
   it('should type guard', () => {
-    const T0 = t.union([])
+    const T0 = t.union([] as any)
     assert.strictEqual(T0.is(0), false)
     const T1 = t.union([t.string, t.number])
     assert.strictEqual(T1.is(0), true)

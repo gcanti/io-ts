@@ -49,6 +49,9 @@ high state of flux, you're at risk of it changing without notice.
     - `TaggedUnionC`
     - `ExactC`
 - **Polishs**
+  - use rest elements in tuple types (typescript@3.0.1 feature) (@gcanti)
+    - remove tuple overladings
+    - remove intersection overladings
   - `union` should handle zero types (@gcanti)
   - `intersection` should handle zero / one types (@gcanti)
 - **Deprecation**
