@@ -214,25 +214,33 @@ type IntersectionWithPrimitiveTest = Equals<t.TypeOf<typeof IntersectionWithPrim
 // tuple
 //
 
-const Tuple1 = t.tuple([t.string, t.number]) // $ExpectType TupleC<[StringC, NumberC]>
-type Tuple1TypeTest = t.TypeOf<typeof Tuple1> // $ExpectType [string, number]
-type Tuple1OutputTest = t.OutputOf<typeof Tuple1> // $ExpectType [string, number]
+const Tuple1 = t.tuple([]) // $ExpectType TupleC<[]>
+type Tuple1TypeTest = t.TypeOf<typeof Tuple1> // $ExpectType []
+type Tuple1OutputTest = t.OutputOf<typeof Tuple1> // $ExpectType []
 
-const Tuple2 = t.tuple([t.string, NumberFromString]) // $ExpectType TupleC<[StringC, Type<number, string, unknown>]>
-type Tuple2TypeTest = t.TypeOf<typeof Tuple2> // $ExpectType [string, number]
-type Tuple2OutputTest = t.OutputOf<typeof Tuple2> // $ExpectType [string, string]
+const Tuple2 = t.tuple([t.string]) // $ExpectType TupleC<[StringC]>
+type Tuple2TypeTest = t.TypeOf<typeof Tuple2> // $ExpectType [string]
+type Tuple2OutputTest = t.OutputOf<typeof Tuple2> // $ExpectType [string]
 
-const Tuple3 = t.tuple([t.string, t.number, t.boolean]) // $ExpectType TupleC<[StringC, NumberC, BooleanC]>
-type Tuple3TypeTest = t.TypeOf<typeof Tuple3> // $ExpectType [string, number, boolean]
-type Tuple3OutputTest = t.OutputOf<typeof Tuple3> // $ExpectType [string, number, boolean]
+const Tuple3 = t.tuple([t.string, t.number]) // $ExpectType TupleC<[StringC, NumberC]>
+type Tuple3TypeTest = t.TypeOf<typeof Tuple3> // $ExpectType [string, number]
+type Tuple3OutputTest = t.OutputOf<typeof Tuple3> // $ExpectType [string, number]
 
-const Tuple4 = t.tuple([t.string, t.number, t.boolean, t.null]) // $ExpectType TupleC<[StringC, NumberC, BooleanC, NullC]>
-type Tuple4TypeTest = t.TypeOf<typeof Tuple4> // $ExpectType [string, number, boolean, null]
-type Tuple4OutputTest = t.OutputOf<typeof Tuple4> // $ExpectType [string, number, boolean, null]
+const Tuple4 = t.tuple([t.string, NumberFromString]) // $ExpectType TupleC<[StringC, Type<number, string, unknown>]>
+type Tuple4TypeTest = t.TypeOf<typeof Tuple4> // $ExpectType [string, number]
+type Tuple4OutputTest = t.OutputOf<typeof Tuple4> // $ExpectType [string, string]
 
-const Tuple5 = t.tuple([t.string, t.number, t.boolean, t.null, t.undefined]) // $ExpectType TupleC<[StringC, NumberC, BooleanC, NullC, UndefinedC]>
-type Tuple5TypeTest = t.TypeOf<typeof Tuple5> // $ExpectType [string, number, boolean, null, undefined]
-type Tuple5OutputTest = t.OutputOf<typeof Tuple5> // $ExpectType [string, number, boolean, null, undefined]
+const Tuple5 = t.tuple([t.string, t.number, t.boolean]) // $ExpectType TupleC<[StringC, NumberC, BooleanC]>
+type Tuple5TypeTest = t.TypeOf<typeof Tuple5> // $ExpectType [string, number, boolean]
+type Tuple5OutputTest = t.OutputOf<typeof Tuple5> // $ExpectType [string, number, boolean]
+
+const Tuple6 = t.tuple([t.string, t.number, t.boolean, t.null]) // $ExpectType TupleC<[StringC, NumberC, BooleanC, NullC]>
+type Tuple6TypeTest = t.TypeOf<typeof Tuple6> // $ExpectType [string, number, boolean, null]
+type Tuple6OutputTest = t.OutputOf<typeof Tuple6> // $ExpectType [string, number, boolean, null]
+
+const Tuple7 = t.tuple([t.string, t.number, t.boolean, t.null, t.undefined]) // $ExpectType TupleC<[StringC, NumberC, BooleanC, NullC, UndefinedC]>
+type Tuple7TypeTest = t.TypeOf<typeof Tuple7> // $ExpectType [string, number, boolean, null, undefined]
+type Tuple7OutputTest = t.OutputOf<typeof Tuple7> // $ExpectType [string, number, boolean, null, undefined]
 
 //
 // partial
