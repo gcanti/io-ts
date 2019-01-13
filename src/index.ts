@@ -1250,7 +1250,11 @@ export class TupleType<RTS extends Array<Any>, A = any, O = A, I = mixed> extend
 export interface TupleC<CS extends Array<Mixed>>
   extends TupleType<
     CS,
-    CS extends [Mixed, Mixed]
+    CS extends []
+      ? []
+      : CS extends [Mixed]
+      ? [TypeOf<CS['0']>]
+      : CS extends [Mixed, Mixed]
       ? [TypeOf<CS['0']>, TypeOf<CS['1']>]
       : CS extends [Mixed, Mixed, Mixed]
       ? [TypeOf<CS['0']>, TypeOf<CS['1']>, TypeOf<CS['2']>]
@@ -1258,8 +1262,12 @@ export interface TupleC<CS extends Array<Mixed>>
       ? [TypeOf<CS['0']>, TypeOf<CS['1']>, TypeOf<CS['2']>, TypeOf<CS['3']>]
       : CS extends [Mixed, Mixed, Mixed, Mixed, Mixed]
       ? [TypeOf<CS['0']>, TypeOf<CS['1']>, TypeOf<CS['2']>, TypeOf<CS['3']>, TypeOf<CS['4']>]
-      : TypeOf<CS[number]>,
-    CS extends [Mixed, Mixed]
+      : unknown,
+    CS extends []
+      ? []
+      : CS extends [Mixed]
+      ? [OutputOf<CS['0']>]
+      : CS extends [Mixed, Mixed]
       ? [OutputOf<CS['0']>, OutputOf<CS['1']>]
       : CS extends [Mixed, Mixed, Mixed]
       ? [OutputOf<CS['0']>, OutputOf<CS['1']>, OutputOf<CS['2']>]
@@ -1267,7 +1275,7 @@ export interface TupleC<CS extends Array<Mixed>>
       ? [OutputOf<CS['0']>, OutputOf<CS['1']>, OutputOf<CS['2']>, OutputOf<CS['3']>]
       : CS extends [Mixed, Mixed, Mixed, Mixed, Mixed]
       ? [OutputOf<CS['0']>, OutputOf<CS['1']>, OutputOf<CS['2']>, OutputOf<CS['3']>, OutputOf<CS['4']>]
-      : OutputOf<CS[number]>,
+      : unknown,
     unknown
   > {}
 
@@ -1287,7 +1295,8 @@ export function tuple<A extends Mixed, B extends Mixed, C extends Mixed>(
   name?: string
 ): TupleC<[A, B, C]>
 export function tuple<A extends Mixed, B extends Mixed>(types: [A, B], name?: string): TupleC<[A, B]>
-export function tuple<A extends Mixed>(types: [A], name?: string): TupleType<[A], [TypeOf<A>], [OutputOf<A>], mixed>
+export function tuple<A extends Mixed>(types: [A], name?: string): TupleC<[A]>
+export function tuple(types: [], name?: string): TupleC<[]>
 export function tuple<RTS extends Array<Mixed>>(
   types: RTS,
   name: string = `[${types.map(type => type.name).join(', ')}]`
