@@ -8,6 +8,22 @@ describe('intersection', () => {
     assertSuccess(T.decode({ a: 1, b: 2 }))
   })
 
+  it('should handle zero types', () => {
+    const T = t.intersection([] as any)
+    assert.strictEqual(T.is(1), false)
+    assertFailure(T.decode(1), ['Invalid value 1 supplied to : ()'])
+    assert.strictEqual(T.encode('a'), 'a')
+  })
+
+  it('should handle one type', () => {
+    const T = t.intersection([t.string] as any)
+    assert.strictEqual(T.is('a'), true)
+    assert.strictEqual(T.is(1), false)
+    assertSuccess(T.decode('a'))
+    assertFailure(T.decode(1), ['Invalid value 1 supplied to : (string)/0: string'])
+    assert.strictEqual(T.encode('a'), 'a')
+  })
+
   it('should handle primitive types', () => {
     const T1 = t.intersection([t.string, t.string])
     assertSuccess(T1.decode('foo'))

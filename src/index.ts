@@ -1199,7 +1199,7 @@ export function intersection<RTS extends Array<Mixed>>(
   const len = types.length
   return new IntersectionType(
     name,
-    (m): m is any => types.every(type => type.is(m)),
+    (m): m is any => (len === 0 ? false : types.every(type => type.is(m))),
     (m, c) => {
       let a = m
       const errors: Errors = []
@@ -1212,7 +1212,7 @@ export function intersection<RTS extends Array<Mixed>>(
           a = validation.value
         }
       }
-      return errors.length ? failures(errors) : success(a)
+      return errors.length ? failures(errors) : len === 0 ? failure(m, c) : success(a)
     },
     useIdentity(types, len)
       ? identity

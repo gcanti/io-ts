@@ -50,6 +50,7 @@ high state of flux, you're at risk of it changing without notice.
     - `ExactC`
 - **Polishs**
   - `union` should handle zero types (@gcanti)
+  - `intersection` should handle zero / one types (@gcanti)
 - **Deprecation**
   - deprecate `clean` (@gcanti)
   - deprecate `alias` (@gcanti)
