@@ -122,13 +122,19 @@ type Dictionary2OutputTest = Equals<t.OutputOf<typeof Dictionary2>, { [K in stri
 // union
 //
 
-const Union1 = t.union([t.boolean, t.number]) // $ExpectType UnionC<(NumberC | BooleanC)[]>
-type Union1TypeTest = t.TypeOf<typeof Union1> // $ExpectType number | boolean
-type Union1OutputTest = t.OutputOf<typeof Union1> // $ExpectType number | boolean
+const Union0 = t.union([]) // $ExpectType UnionC<never[]>
 
-const Union2 = t.union([t.boolean, NumberFromString]) // $ExpectType UnionC<(Type<number, string, unknown> | BooleanC)[]>
+const Union1 = t.union([t.boolean]) // $ExpectType UnionC<BooleanC[]>
+type Union1TypeTest = t.TypeOf<typeof Union1> // $ExpectType boolean
+type Union1OutputTest = t.OutputOf<typeof Union1> // $ExpectType boolean
+
+const Union2 = t.union([t.boolean, t.number]) // $ExpectType UnionC<(NumberC | BooleanC)[]>
 type Union2TypeTest = t.TypeOf<typeof Union2> // $ExpectType number | boolean
-type Union2OutputTest = t.OutputOf<typeof Union2> // $ExpectType string | boolean
+type Union2OutputTest = t.OutputOf<typeof Union2> // $ExpectType number | boolean
+
+const Union3 = t.union([t.boolean, NumberFromString]) // $ExpectType UnionC<(Type<number, string, unknown> | BooleanC)[]>
+type Union3TypeTest = t.TypeOf<typeof Union3> // $ExpectType number | boolean
+type Union3OutputTest = t.OutputOf<typeof Union3> // $ExpectType string | boolean
 
 //
 // intersection

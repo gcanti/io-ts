@@ -1108,7 +1108,7 @@ export const union = <RTS extends Array<Mixed>>(
           pushAll(errors, validation.value)
         }
       }
-      return failures(errors)
+      return errors.length ? failures(errors) : failure(m, c)
     },
     useIdentity(types, len)
       ? identity
