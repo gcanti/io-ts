@@ -48,6 +48,8 @@ high state of flux, you're at risk of it changing without notice.
     - `StrictC`
     - `TaggedUnionC`
     - `ExactC`
+- **Polishs**
+  - `union` should handle zero types (@gcanti)
 - **Deprecation**
   - deprecate `clean` (@gcanti)
   - deprecate `alias` (@gcanti)

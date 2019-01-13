@@ -4,9 +4,11 @@ import { assertSuccess, assertFailure, assertStrictEqual, DateFromNumber } from 
 
 describe('union', () => {
   it('should succeed validating a valid value', () => {
-    const T = t.union([t.string, t.number])
-    assertSuccess(T.decode('s'))
-    assertSuccess(T.decode(1))
+    const T1 = t.union([t.string])
+    assertSuccess(T1.decode('s'))
+    const T2 = t.union([t.string, t.number])
+    assertSuccess(T2.decode('s'))
+    assertSuccess(T2.decode(1))
   })
 
   it('should return the same reference if validation succeeded', () => {
@@ -16,11 +18,20 @@ describe('union', () => {
   })
 
   it('should fail validating an invalid value', () => {
-    const T = t.union([t.string, t.number])
-    assertFailure(T.decode(true), [
+    const T0 = t.union([])
+    assertFailure(T0.decode(true), ['Invalid value true supplied to : ()'])
+    const T1 = t.union([t.string])
+    assertFailure(T1.decode(true), ['Invalid value true supplied to : (string)/0: string'])
+    const T2 = t.union([t.string, t.number])
+    assertFailure(T2.decode(true), [
       'Invalid value true supplied to : (string | number)/0: string',
       'Invalid value true supplied to : (string | number)/1: number'
     ])
+  })
+
+  it('should encode a nullary union', () => {
+    const T0 = t.union([])
+    assert.strictEqual(T0.encode(1 as never), 1)
   })
 
   it('should serialize a deserialized', () => {
@@ -37,6 +48,8 @@ describe('union', () => {
   })
 
   it('should type guard', () => {
+    const T0 = t.union([])
+    assert.strictEqual(T0.is(0), false)
     const T1 = t.union([t.string, t.number])
     assert.strictEqual(T1.is(0), true)
     assert.strictEqual(T1.is('foo'), true)
