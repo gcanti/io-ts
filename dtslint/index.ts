@@ -1,26 +1,52 @@
 import * as t from '../src'
 
 //
+// helpers
+//
+
+type Compact<A> = { [K in keyof A]: A[K] }
+
+/**
+ * Returns the string literal 'T' if `A` and `B` are equal types, 'F' otherwise
+ */
+type Equals<A, B> = (<C>() => C extends Compact<A> ? 'T' : 'F') extends (<C>() => C extends Compact<B> ? 'T' : 'F')
+  ? 'T'
+  : 'F'
+
+export const NumberFromString = new t.Type<number, string, unknown>(
+  'NumberFromString',
+  t.number.is,
+  (u, c) =>
+    t.string.validate(u, c).chain(s => {
+      const n = parseFloat(s)
+      return isNaN(n) ? t.failure(s, c) : t.success(n)
+    }),
+  String
+)
+
+//
 // recursion
 //
 
-interface RecT1 {
+interface Recursion1 {
   type: 'a'
-  items: Array<RecT1>
+  items: Array<Recursion1>
 }
 
-const Rec1 = t.recursion<RecT1>('T', Self =>
-  t.interface({
+const Recursion1 = t.recursion<Recursion1>('T', _ =>
+  t.type({
     type: t.literal('a'),
-    items: t.array(Self)
+    items: t.array(_)
   })
 )
 
+const Recursion1TypeTest = Recursion1 // $ExpectType RecursiveType<Type<Recursion1, Recursion1, unknown>, Recursion1, Recursion1, unknown>
+
 // $ExpectError
-const Rec2 = t.recursion<string>('T', Self => {
-  return t.interface({
+const Recursion2 = t.recursion<string>('T', _ => {
+  return t.type({
     type: t.literal('a'),
-    items: t.array(Self)
+    items: t.array(_)
   })
 })
 
@@ -28,98 +54,145 @@ const Rec2 = t.recursion<string>('T', Self => {
 // literal
 //
 
-const L1 = t.literal('a')
-type Assert1 = t.TypeOf<typeof L1> // $ExpectType "a"
+const Literal1 = t.literal('a') // $ExpectType LiteralC<"a">
+type Literal1TypeTest = t.TypeOf<typeof Literal1> // $ExpectType "a"
+type Literal1OutputTest = t.OutputOf<typeof Literal1> // $ExpectType "a"
 
 //
 // keyof
 //
 
-const K1 = t.keyof({ a: true, b: true })
-type Assert2 = t.TypeOf<typeof K1> // $ExpectType "a" | "b"
-
-//
-// default types
-//
-
-type Assert3 = t.TypeOf<typeof t.null> // $ExpectType null
-
-type Assert4 = t.TypeOf<typeof t.undefined> // $ExpectType undefined
-
-type Assert5 = t.TypeOf<typeof t.string> // $ExpectType string
+const Keyof1 = t.keyof({ a: true, b: true }) // $ExpectType KeyofC<{ a: boolean; b: boolean; }>
+type Keyof1TypeTest = t.TypeOf<typeof Keyof1> // $ExpectType "a" | "b"
+type Keyof1OutputTest = t.OutputOf<typeof Keyof1> // $ExpectType "a" | "b"
 
 //
 // refinement
 //
 
-const R1 = t.refinement(t.number, n => n % 2 === 0)
-type Assert6 = t.TypeOf<typeof R1> // $ExpectType number
+const Refinement1 = t.refinement(t.number, n => n % 2 === 0) // $ExpectType RefinementC<NumberC>
+type Refinement1TypeTest = t.TypeOf<typeof Refinement1> // $ExpectType number
+type Refinement1OutputTest = t.OutputOf<typeof Refinement1> // $ExpectType number
+
+const Refinement2 = t.refinement(NumberFromString, n => n % 2 === 0) // $ExpectType RefinementC<Type<number, string, unknown>>
+type Refinement2TypeTest = t.TypeOf<typeof Refinement2> // $ExpectType number
+type Refinement2OutputTest = t.OutputOf<typeof Refinement2> // $ExpectType string
 
 //
 // array
 //
 
-const A1 = t.array(t.number)
-type Assert7 = t.TypeOf<typeof A1> // $ExpectType number[]
+const Array1 = t.array(t.number) // $ExpectType ArrayC<NumberC>
+type Array1TypeTest = t.TypeOf<typeof Array1> // $ExpectType number[]
+type Array1OutputTest = t.OutputOf<typeof Array1> // $ExpectType number[]
+
+const Array2 = t.array(NumberFromString) // $ExpectType ArrayC<Type<number, string, unknown>>
+type Array2TypeTest = t.TypeOf<typeof Array2> // $ExpectType number[]
+type Array2OutputTest = t.OutputOf<typeof Array2> // $ExpectType string[]
 
 //
-// interface
+// type
 //
 
-const I1 = t.interface({ name: t.string, age: t.number })
-type Assert8 = t.TypeOf<typeof I1> // $ExpectType TypeOfProps<{ name: StringC; age: NumberC; }>
-// $ExpectError
-const x6: t.TypeOf<typeof I1> = {}
-// $ExpectError
-const x7: t.TypeOf<typeof I1> = { name: 'name' }
-// $ExpectError
-const x8: t.TypeOf<typeof I1> = { age: 43 }
-const x9: t.TypeOf<typeof I1> = { name: 'name', age: 43 }
+const Type1 = t.type({ a: t.string, b: t.number }) // $ExpectType TypeC<{ a: StringC; b: NumberC; }>
+type Type1TypeTest = Equals<t.TypeOf<typeof Type1>, { a: string; b: number }> // $ExpectType "T"
+type Type1OutputTest = Equals<t.OutputOf<typeof Type1>, { a: string; b: number }> // $ExpectType "T"
 
-const I2 = t.interface({ name: t.string, father: t.interface({ surname: t.string }) })
-type I2T = t.TypeOf<typeof I2>
-// $ExpectError
-const x10: I2T = { name: 'name', father: {} }
-const x11: I2T = { name: 'name', father: { surname: 'surname' } }
+const Type2 = t.type({ a: t.type({ b: t.string }) }) // $ExpectType TypeC<{ a: TypeC<{ b: StringC; }>; }>
+type Type2TypeTest = Equals<t.TypeOf<typeof Type2>, { a: { b: string } }> // $ExpectType "T"
+type Type2OutputTest = Equals<t.OutputOf<typeof Type2>, { a: { b: string } }> // $ExpectType "T"
+
+const Type3 = t.type({ a: NumberFromString }) // $ExpectType TypeC<{ a: Type<number, string, unknown>; }>
+type Type3TypeTest = Equals<t.TypeOf<typeof Type3>, { a: number }> // $ExpectType "T"
+type Type3OutputTest = Equals<t.OutputOf<typeof Type3>, { a: string }> // $ExpectType "T"
 
 //
 // dictionary
 //
 
-const D1 = t.dictionary(t.keyof({ a: true }), t.number)
-type Assert9 = t.TypeOf<typeof D1> // $ExpectType TypeOfDictionary<KeyofC<{ a: boolean; }>, NumberC>
-// $ExpectError
-const x12: t.TypeOf<typeof D1> = { a: 's' }
-// $ExpectError
-const x12_2: t.TypeOf<typeof D1> = { c: 1 }
-const x13: t.TypeOf<typeof D1> = { a: 1 }
+const Dictionary1 = t.dictionary(t.keyof({ a: true }), t.number) // $ExpectType RecordC<KeyofC<{ a: boolean; }>, NumberC>
+type Dictionary1TypeTest = Equals<t.TypeOf<typeof Dictionary1>, { [K in 'a']: number }> // $ExpectType "T"
+type Dictionary1OutputTest = Equals<t.OutputOf<typeof Dictionary1>, { [K in 'a']: number }> // $ExpectType "T"
+
+const Dictionary2 = t.dictionary(t.string, NumberFromString) // $ExpectType RecordC<StringC, Type<number, string, unknown>>
+type Dictionary2TypeTest = Equals<t.TypeOf<typeof Dictionary2>, { [K in string]: number }> // $ExpectType "T"
+type Dictionary2OutputTest = Equals<t.OutputOf<typeof Dictionary2>, { [K in string]: string }> // $ExpectType "T"
 
 //
 // union
 //
 
-const U1 = t.union([t.string, t.number])
-type Assert10 = t.TypeOf<typeof U1> // $ExpectType string | number
+const Union1 = t.union([t.boolean, t.number]) // $ExpectType UnionC<(NumberC | BooleanC)[]>
+type Union1TypeTest = t.TypeOf<typeof Union1> // $ExpectType number | boolean
+type Union1OutputTest = t.OutputOf<typeof Union1> // $ExpectType number | boolean
+
+const Union2 = t.union([t.boolean, NumberFromString]) // $ExpectType UnionC<(Type<number, string, unknown> | BooleanC)[]>
+type Union2TypeTest = t.TypeOf<typeof Union2> // $ExpectType number | boolean
+type Union2OutputTest = t.OutputOf<typeof Union2> // $ExpectType string | boolean
 
 //
 // intersection
 //
 
-const IN1 = t.intersection([t.string, t.number])
-type Assert11 = t.TypeOf<typeof IN1> // $ExpectType string & number
-const IN2 = t.intersection([t.interface({ a: t.number }), t.interface({ b: t.string })])
-type Assert12 = t.TypeOf<typeof IN2> // $ExpectType TypeOfProps<{ a: NumberC; }> & TypeOfProps<{ b: StringC; }>
-// $ExpectError
-const x17: t.TypeOf<typeof IN2> = { a: 1 }
-const x18: t.TypeOf<typeof IN2> = { a: 1, b: 's' }
+const Intersection1 = t.intersection([t.string, t.number]) // $ExpectType IntersectionC<[StringC, NumberC]>
+type Intersection1TypeTest = t.TypeOf<typeof Intersection1> // $ExpectType string & number
+type Intersection1OutputTest = t.OutputOf<typeof Intersection1> // $ExpectType string & number
+
+const Intersection2 = t.intersection([t.type({ a: t.number }), t.type({ b: t.string })]) // $ExpectType IntersectionC<[TypeC<{ a: NumberC; }>, TypeC<{ b: StringC; }>]>
+type Intersection2TypeTest = Equals<t.TypeOf<typeof Intersection2>, { a: number; b: string }> // $ExpectType "T"
+type Intersection2OutputTest = Equals<t.OutputOf<typeof Intersection2>, { a: number; b: string }> // $ExpectType "T"
+
+const Intersection3 = t.intersection([t.type({ a: t.number }), t.type({ b: t.string }), t.type({ c: t.boolean })])
+const Intersection3Test = Intersection3 // $ExpectType IntersectionC<[TypeC<{ a: NumberC; }>, TypeC<{ b: StringC; }>, TypeC<{ c: BooleanC; }>]>
+type Intersection3TypeTest = Equals<t.TypeOf<typeof Intersection3>, { a: number; b: string; c: boolean }> // $ExpectType "T"
+type Intersection23OutputTest = Equals<t.OutputOf<typeof Intersection3>, { a: number; b: string; c: boolean }> // $ExpectType "T"
+
+const Intersection4 = t.intersection([
+  t.type({ a: t.number }),
+  t.type({ b: t.string }),
+  t.type({ c: t.boolean }),
+  t.type({ d: t.null })
+])
+const Intersection4Test = Intersection4 // $ExpectType IntersectionC<[TypeC<{ a: NumberC; }>, TypeC<{ b: StringC; }>, TypeC<{ c: BooleanC; }>, TypeC<{ d: NullC; }>]>
+type Intersection4TypeTest = Equals<t.TypeOf<typeof Intersection4>, { a: number; b: string; c: boolean; d: null }> // $ExpectType "T"
+type Intersection43OutputTest = Equals<t.OutputOf<typeof Intersection4>, { a: number; b: string; c: boolean; d: null }> // $ExpectType "T"
+
+const Intersection5 = t.intersection([
+  t.type({ a: t.number }),
+  t.type({ b: t.string }),
+  t.type({ c: t.boolean }),
+  t.type({ d: t.null }),
+  t.type({ e: t.undefined })
+])
+const Intersection5Test = Intersection5 // $ExpectType IntersectionC<[TypeC<{ a: NumberC; }>, TypeC<{ b: StringC; }>, TypeC<{ c: BooleanC; }>, TypeC<{ d: NullC; }>, TypeC<{ e: UndefinedC; }>]>
+interface ExpectedIntersection5TypeTest {
+  a: number
+  b: string
+  c: boolean
+  d: null
+  e: undefined
+}
+type Intersection5TypeTest = Equals<t.TypeOf<typeof Intersection5>, ExpectedIntersection5TypeTest> // $ExpectType "T"
+interface ExpectedIntersection53OutputTest {
+  a: number
+  b: string
+  c: boolean
+  d: null
+  e: undefined
+}
+type Intersection53OutputTest = Equals<t.OutputOf<typeof Intersection5>, ExpectedIntersection53OutputTest> // $ExpectType "T"
+
+const Intersection6 = t.intersection([t.type({ a: NumberFromString }), t.type({ b: t.string })]) // $ExpectType IntersectionC<[TypeC<{ a: Type<number, string, unknown>; }>, TypeC<{ b: StringC; }>]>
+type Intersection6TypeTest = Equals<t.TypeOf<typeof Intersection6>, { a: number; b: string }> // $ExpectType "T"
+type Intersection6OutputTest = Equals<t.OutputOf<typeof Intersection6>, { a: string; b: string }> // $ExpectType "T"
 
 declare function testIntersectionInput<T>(x: t.Type<Record<keyof T, string>, any, unknown>): void
 declare function testIntersectionOuput<T>(x: t.Type<any, Record<keyof T, string>, unknown>): void
 const QueryString = t.intersection([
-  t.interface({
+  t.type({
     a: t.string
   }),
-  t.interface({
+  t.type({
     b: t.number
   })
 ])
@@ -135,132 +208,138 @@ const IntersectionWithPrimitive = t.intersection([
   })
 ])
 
-type IntersectionWithPrimitive = t.TypeOf<typeof IntersectionWithPrimitive> // $ExpectType number & TypeOfProps<{ a: LiteralC<"a">; }>
+type IntersectionWithPrimitiveTest = Equals<t.TypeOf<typeof IntersectionWithPrimitive>, number & { a: 'a' }> // $ExpectType "T"
 
 //
 // tuple
 //
 
-const T1 = t.tuple([t.string, t.number])
-type Assert13 = t.TypeOf<typeof T1> // $ExpectType [string, number]
+const Tuple1 = t.tuple([t.string, t.number]) // $ExpectType TupleC<[StringC, NumberC]>
+type Tuple1TypeTest = t.TypeOf<typeof Tuple1> // $ExpectType [string, number]
+type Tuple1OutputTest = t.OutputOf<typeof Tuple1> // $ExpectType [string, number]
 
-type T2 = t.TupleC<[t.NumberC, t.StringC]>
-type TT2 = t.TypeOf<T2> // $ExpectType [number, string]
-type OT2 = t.OutputOf<T2> // $ExpectType [number, string]
-type T3 = t.TupleC<[t.NumberC, t.StringC, t.BooleanC]>
-type TT3 = t.TypeOf<T3> // $ExpectType [number, string, boolean]
-type OT3 = t.OutputOf<T3> // $ExpectType [number, string, boolean]
-type T4 = t.TupleC<[t.NumberC, t.StringC, t.BooleanC, t.NullC]>
-type TT4 = t.TypeOf<T4> // $ExpectType [number, string, boolean, null]
-type OT4 = t.OutputOf<T4> // $ExpectType [number, string, boolean, null]
-type T5 = t.TupleC<[t.NumberC, t.StringC, t.BooleanC, t.NullC, t.UndefinedC]>
-type TT5 = t.TypeOf<T5> // $ExpectType [number, string, boolean, null, undefined]
-type OT5 = t.OutputOf<T5> // $ExpectType [number, string, boolean, null, undefined]
+const Tuple2 = t.tuple([t.string, NumberFromString]) // $ExpectType TupleC<[StringC, Type<number, string, unknown>]>
+type Tuple2TypeTest = t.TypeOf<typeof Tuple2> // $ExpectType [string, number]
+type Tuple2OutputTest = t.OutputOf<typeof Tuple2> // $ExpectType [string, string]
+
+const Tuple3 = t.tuple([t.string, t.number, t.boolean]) // $ExpectType TupleC<[StringC, NumberC, BooleanC]>
+type Tuple3TypeTest = t.TypeOf<typeof Tuple3> // $ExpectType [string, number, boolean]
+type Tuple3OutputTest = t.OutputOf<typeof Tuple3> // $ExpectType [string, number, boolean]
+
+const Tuple4 = t.tuple([t.string, t.number, t.boolean, t.null]) // $ExpectType TupleC<[StringC, NumberC, BooleanC, NullC]>
+type Tuple4TypeTest = t.TypeOf<typeof Tuple4> // $ExpectType [string, number, boolean, null]
+type Tuple4OutputTest = t.OutputOf<typeof Tuple4> // $ExpectType [string, number, boolean, null]
+
+const Tuple5 = t.tuple([t.string, t.number, t.boolean, t.null, t.undefined]) // $ExpectType TupleC<[StringC, NumberC, BooleanC, NullC, UndefinedC]>
+type Tuple5TypeTest = t.TypeOf<typeof Tuple5> // $ExpectType [string, number, boolean, null, undefined]
+type Tuple5OutputTest = t.OutputOf<typeof Tuple5> // $ExpectType [string, number, boolean, null, undefined]
 
 //
 // partial
 //
 
-const P1 = t.partial({ name: t.string })
-type Assert14 = t.TypeOf<typeof P1> // $ExpectType TypeOfPartialProps<{ name: StringC; }>
-type P1T = t.TypeOf<typeof P1>
-// $ExpectError
-const x21: P1T = { name: 1 }
-const x22: P1T = {}
-const x23: P1T = { name: 's' }
+const Partial1 = t.partial({ a: t.string, b: t.number }) // $ExpectType PartialC<{ a: StringC; b: NumberC; }>
+type Partial1TypeTest = Equals<t.TypeOf<typeof Partial1>, { a?: string; b?: number }> // $ExpectType "T"
+type Partial1OutputTest = Equals<t.OutputOf<typeof Partial1>, { a?: string; b?: number }> // $ExpectType "T"
+
+const Partial2 = t.partial({ a: t.string, b: NumberFromString }) // $ExpectType PartialC<{ a: StringC; b: Type<number, string, unknown>; }>
+type Partial2TypeTest = Equals<t.TypeOf<typeof Partial2>, { a?: string; b?: number }> // $ExpectType "T"
+type Partial2OutputTest = Equals<t.OutputOf<typeof Partial2>, { a?: string; b?: string }> // $ExpectType "T"
 
 //
 // readonly
 //
 
-const RO1 = t.readonly(t.interface({ name: t.string }))
-type Assert15 = t.TypeOf<typeof RO1> // $ExpectType Readonly<TypeOfProps<{ name: StringC; }>>
-const x24: t.TypeOf<typeof RO1> = { name: 's' }
-// $ExpectError
-x24.name = 's2'
-// $ExpectError
-const x25: t.TypeOf<typeof RO1> = { name: 1 }
+const Readonly1 = t.readonly(t.type({ a: t.number })) // $ExpectType ReadonlyC<TypeC<{ a: NumberC; }>>
+type Readonly1TypeTest = Equals<t.TypeOf<typeof Readonly1>, { readonly a: number }> // $ExpectType "T"
+type Readonly1OutputTest = Equals<t.OutputOf<typeof Readonly1>, { readonly a: number }> // $ExpectType "T"
+
+const Readonly2 = t.readonly(t.type({ a: NumberFromString })) // $ExpectType ReadonlyC<TypeC<{ a: Type<number, string, unknown>; }>>
+type Readonly2TypeTest = Equals<t.TypeOf<typeof Readonly2>, { readonly a: number }> // $ExpectType "T"
+type Readonly2OutputTest = Equals<t.OutputOf<typeof Readonly2>, { readonly a: string }> // $ExpectType "T"
 
 //
 // readonlyArray
 //
 
-const ROA1 = t.readonlyArray(t.number)
-type Assert16 = t.TypeOf<typeof ROA1> // $ExpectType ReadonlyArray<number>
-// $ExpectError
-const x26: t.TypeOf<typeof ROA1> = ['s']
-const x27: t.TypeOf<typeof ROA1> = [1]
-// $ExpectError
-x27[0] = 2
-// $ExpectError
-x27.push(2)
+const ReadonlyArray1 = t.readonlyArray(t.number)
+type ReadonlyArray1TypeTest = t.TypeOf<typeof ReadonlyArray1> // $ExpectType ReadonlyArray<number>
+type ReadonlyArray1OutputTest = t.OutputOf<typeof ReadonlyArray1> // $ExpectType ReadonlyArray<number>
+
+const ReadonlyArray2 = t.readonlyArray(NumberFromString)
+type ReadonlyArray2TypeTest = t.TypeOf<typeof ReadonlyArray2> // $ExpectType ReadonlyArray<number>
+type ReadonlyArray2OutputTest = t.OutputOf<typeof ReadonlyArray2> // $ExpectType ReadonlyArray<string>
 
 //
 // strict
 //
 
-const S1 = t.strict({ name: t.string })
-type Assert17 = t.TypeOf<typeof S1> // $ExpectType TypeOfProps<{ name: StringC; }>
-type TS1 = t.TypeOf<typeof S1>
-const x32: TS1 = { name: 'Giulio' }
-const x33input = { name: 'foo', foo: 'foo' }
-const x33: TS1 = x33input
-// $ExpectError
-const S2 = t.strict(t.string)
+const Strict1 = t.strict({ a: t.string, b: t.number }) // $ExpectType StrictC<{ a: StringC; b: NumberC; }>
+type Strict1TypeTest = Equals<t.TypeOf<typeof Strict1>, { a: string; b: number }> // $ExpectType "T"
+type Strict1OutputTest = Equals<t.OutputOf<typeof Strict1>, { a: string; b: number }> // $ExpectType "T"
 
-//
-// object
-//
+const Strict2 = t.strict({ a: t.strict({ b: t.string }) }) // $ExpectType StrictC<{ a: StrictC<{ b: StringC; }>; }>
+type Strict2TypeTest = Equals<t.TypeOf<typeof Strict2>, { a: { b: string } }> // $ExpectType "T"
+type Strict2OutputTest = Equals<t.OutputOf<typeof Strict2>, { a: { b: string } }> // $ExpectType "T"
 
-const O1 = t.object
-type Assert18 = t.TypeOf<typeof O1> // $ExpectType object
+const Strict3 = t.strict({ a: NumberFromString }) // $ExpectType StrictC<{ a: Type<number, string, unknown>; }>
+type Strict3TypeTest = Equals<t.TypeOf<typeof Strict3>, { a: number }> // $ExpectType "T"
+type Strict3OutputTest = Equals<t.OutputOf<typeof Strict3>, { a: string }> // $ExpectType "T"
 
 //
 // tagged unions
 //
 
-const TU1 = t.taggedUnion('type', [t.type({ type: t.literal('a') }), t.type({ type: t.literal('b') })])
+const TaggedUnion1 = t.taggedUnion('type', [
+  t.type({ type: t.literal('a'), a: t.number }),
+  t.type({ type: t.literal('b') })
+])
+const TaggedUnion1Type = TaggedUnion1 // $ExpectType TaggedUnionC<"type", (TypeC<{ type: LiteralC<"a">; a: NumberC; }> | TypeC<{ type: LiteralC<"b">; }>)[]>
+type TaggedUnion1TypeTest = Equals<t.TypeOf<typeof TaggedUnion1>, { type: 'a'; a: number } | { type: 'b' }> // $ExpectType "T"
+type TaggedUnion1OutputTest = Equals<t.OutputOf<typeof TaggedUnion1>, { type: 'a'; a: number } | { type: 'b' }> // $ExpectType "T"
 
-interface TU2A1 {
-  type: 'TU2A1'
-  b: TU2B1 | undefined
+interface TaggedUnion2_A {
+  type: 'a'
+  b: TaggedUnion2_B | undefined
 }
 
-interface TU2B1 {
-  type: 'TU2B1'
-  a: TU2A1 | undefined
+interface TaggedUnion2_B {
+  type: 'b'
+  a: TaggedUnion2_A | undefined
 }
 
-const TU2A1: t.RecursiveType<any, TU2A1> = t.recursion<TU2A1>('TU2A1', _ =>
-  t.interface({
-    type: t.literal('TU2A1'),
-    b: t.union([TU2B1, t.undefined])
+const TaggedUnion2_A: t.RecursiveType<any, TaggedUnion2_A> = t.recursion<TaggedUnion2_A>('TaggedUnion2_A', _ =>
+  t.type({
+    type: t.literal('a'),
+    b: t.union([TaggedUnion2_B, t.undefined])
   })
 )
 
-const TU2B1: t.RecursiveType<any, TU2B1> = t.recursion<TU2B1>('TU2B1', _ =>
-  t.interface({
-    type: t.literal('TU2B1'),
-    a: t.union([TU2A1, t.undefined])
+const TaggedUnion2_B: t.RecursiveType<any, TaggedUnion2_B> = t.recursion<TaggedUnion2_B>('TaggedUnion2_B', _ =>
+  t.type({
+    type: t.literal('b'),
+    a: t.union([TaggedUnion2_A, t.undefined])
   })
 )
 
-const TU2 = t.taggedUnion('type', [TU2A1, TU2B1])
+const TaggedUnion2 = t.taggedUnion('type', [TaggedUnion2_A, TaggedUnion2_B])
+type TaggedUnion2TypeTest = Equals<t.TypeOf<typeof TaggedUnion2>, TaggedUnion2_A | TaggedUnion2_B> // $ExpectType "T"
+type TaggedUnion2OutputTest = Equals<t.OutputOf<typeof TaggedUnion2>, TaggedUnion2_A | TaggedUnion2_B> // $ExpectType "T"
 
 // $ExpectError
-const TU3 = t.taggedUnion('type', [t.type({ type: t.literal('a') }), t.type({ bad: t.literal('b') })])
-type Assert19 = t.TypeOf<typeof TU1> // $ExpectType TypeOfProps<{ type: LiteralC<"a">; }> | TypeOfProps<{ type: LiteralC<"b">; }>
-// $ExpectError
-const x36: t.TypeOf<typeof TU1> = true
-const x37: t.TypeOf<typeof TU1> = { type: 'a' }
-const x38: t.TypeOf<typeof TU1> = { type: 'b' }
+const TaggedUnion3 = t.taggedUnion('type', [t.type({ type: t.literal('a') }), t.type({ bad: t.literal('b') })])
 
 //
 // exact
 //
 
-declare const E1: t.TypeC<{ a: t.NumberC }>
-const E2 = t.exact(E1) // $ExpectType ExactC<TypeC<{ a: NumberC; }>>
+const Exact1 = t.exact(t.type({ a: t.number })) // $ExpectType ExactC<TypeC<{ a: NumberC; }>>
+type Exact1TypeTest = Equals<t.TypeOf<typeof Exact1>, { a: number }> // $ExpectType "T"
+type Exact1OutputTest = Equals<t.OutputOf<typeof Exact1>, { a: number }> // $ExpectType "T"
+
+const Exact2 = t.exact(t.type({ a: NumberFromString })) // $ExpectType ExactC<TypeC<{ a: Type<number, string, unknown>; }>>
+type Exact2TypeTest = Equals<t.TypeOf<typeof Exact2>, { a: number }> // $ExpectType "T"
+type Exact2OutputTest = Equals<t.OutputOf<typeof Exact2>, { a: string }> // $ExpectType "T"
 
 //
 // clean / alias
@@ -294,22 +373,23 @@ const C2 = t.clean<C1>(C1)
 // $ExpectError
 const C3 = t.clean<C1WithAdditionalProp, C1O>(C1)
 const C4 = t.clean<C1, C1O>(C1)
-type Assert21 = t.TypeOf<typeof C4> // $ExpectType C1
-type Assert22 = t.OutputOf<typeof C4> // $ExpectType C1O
+type CleanTest1 = t.TypeOf<typeof C4> // $ExpectType C1
+type CleanTest2 = t.OutputOf<typeof C4> // $ExpectType C1O
+
 const C5 = t.alias(C1)<C1>()
-type Assert23 = t.TypeOf<typeof C5> // $ExpectType C1
-type Assert24 = t.OutputOf<typeof C5>['a'] // $ExpectType string
-type Assert25 = t.OutputOf<typeof C5>['b'] // $ExpectType number
+type AliasTest1 = t.TypeOf<typeof C5> // $ExpectType C1
+type AliasTest2 = t.OutputOf<typeof C5>['a'] // $ExpectType string
+type AliasTest3 = t.OutputOf<typeof C5>['b'] // $ExpectType number
 // $ExpectError
 const C6 = t.alias(C1)<C1, C1>()
 // $ExpectError
 const C7 = t.alias(C1)<C1WithAdditionalProp, C1O>()
 const C8 = t.alias(C1)<C1, C1O>()
-type Assert26 = t.TypeOf<typeof C8> // $ExpectType C1
-type Assert27 = t.OutputOf<typeof C8> // $ExpectType C1O
+type AliasTest4 = t.TypeOf<typeof C8> // $ExpectType C1
+type AliasTest5 = t.OutputOf<typeof C8> // $ExpectType C1O
 
 //
-// combinators
+// miscellanea
 //
 
 interface GenerableProps {
@@ -390,7 +470,7 @@ function f(generable: Generable): string {
   }
 }
 
-const schema = t.interface({
+const schema = t.type({
   a: t.string,
   b: t.union([
     t.partial({
@@ -400,10 +480,10 @@ const schema = t.interface({
     t.boolean
   ]),
   e: t.intersection([
-    t.interface({
+    t.type({
       f: t.array(t.string)
     }),
-    t.interface({
+    t.type({
       g: t.union([t.literal('toto'), t.literal('tata')])
     })
   ])
@@ -417,13 +497,15 @@ interface Rec {
 }
 
 const Rec = t.recursion<Rec, Rec, t.mixed, GenerableInterface>('T', self =>
-  t.interface({
+  t.type({
     a: t.number,
     b: t.union([self, t.undefined])
   })
 )
 
 f(Rec) // OK!
+
+// ----------------
 
 export function interfaceWithOptionals<RequiredProps extends t.Props, OptionalProps extends t.Props>(
   required: RequiredProps,
@@ -436,8 +518,10 @@ export function interfaceWithOptionals<RequiredProps extends t.Props, OptionalPr
   ],
   t.TypeOfProps<RequiredProps> & t.TypeOfPartialProps<OptionalProps>
 > {
-  return t.intersection([t.interface(required), t.partial(optional)], name)
+  return t.intersection([t.type(required), t.partial(optional)], name)
 }
+
+// ----------------
 
 export function maybe<RT extends t.Any>(
   type: RT,
@@ -445,6 +529,8 @@ export function maybe<RT extends t.Any>(
 ): t.UnionType<[RT, t.NullType], t.TypeOf<RT> | null, t.OutputOf<RT> | null, t.InputOf<RT> | null> {
   return t.union<[RT, t.NullType]>([type, t.null], name)
 }
+
+// ----------------
 
 const pluck = <F extends string, U extends t.UnionType<Array<t.InterfaceType<{ [K in F]: t.Mixed }>>>>(
   union: U,
@@ -471,9 +557,7 @@ export const Action = t.union([
 const ActionType = pluck(Action, 'type')
 type Assert20 = t.TypeOf<typeof ActionType> // $ExpectType "Action1" | "Action2"
 
-//
-// void
-//
+// ----------------
 
 import { TaskEither } from 'fp-ts/lib/TaskEither'
 
