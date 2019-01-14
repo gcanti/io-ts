@@ -618,7 +618,9 @@ export interface KeyofC<D extends { [key: string]: unknown }> extends KeyofType<
  */
 export const keyof = <D extends { [key: string]: unknown }>(
   keys: D,
-  name: string = `(keyof ${JSON.stringify(Object.keys(keys))})`
+  name: string = Object.keys(keys)
+    .map(k => JSON.stringify(k))
+    .join(' | ')
 ): KeyofC<D> => {
   const is = (u: unknown): u is keyof D => string.is(u) && hasOwnProperty.call(keys, u)
   return new KeyofType(name, is, (u, c) => (is(u) ? success(u) : failure(u, c)), identity, keys)
@@ -897,7 +899,7 @@ export interface PartialC<P extends Props>
  */
 export const partial = <P extends Props>(
   props: P,
-  name: string = `PartialType<${getNameFromProps(props)}>`
+  name: string = `Partial<${getNameFromProps(props)}>`
 ): PartialC<P> => {
   const keys = Object.keys(props)
   const types = keys.map(key => props[key])
@@ -993,13 +995,17 @@ export type TypeOfDictionary<D extends Any, C extends Any> = { [K in TypeOf<D>]:
  */
 export type OutputOfDictionary<D extends Any, C extends Any> = { [K in OutputOf<D>]: OutputOf<C> }
 
-const refinedDictionary = refinement(Dictionary, d => Object.prototype.toString.call(d) === '[object Object]')
-
 /**
  * @since 1.5.3
  */
 export interface RecordC<D extends Mixed, C extends Mixed>
   extends DictionaryType<D, C, { [K in TypeOf<D>]: TypeOf<C> }, { [K in OutputOf<D>]: OutputOf<C> }, unknown> {}
+
+const isUnknownType = (type: Mixed): type is UnknownType => (type as any)._tag === 'UnknownType'
+
+const isAnyType = (type: Mixed): type is AnyType => (type as any)._tag === 'AnyType'
+
+const isObject = (r: Record<string, unknown>) => Object.prototype.toString.call(r) === '[object Object]'
 
 /**
  * @since 1.0.0
@@ -1009,18 +1015,26 @@ export const dictionary = <D extends Mixed, C extends Mixed>(
   codomain: C,
   name: string = `{ [K in ${domain.name}]: ${codomain.name} }`
 ): RecordC<D, C> => {
-  const isIndexSignatureRequired = (codomain as any) !== any
-  const D = isIndexSignatureRequired ? refinedDictionary : Dictionary
   return new DictionaryType(
     name,
-    (u): u is { [K in TypeOf<D>]: TypeOf<C> } =>
-      D.is(u) && Object.keys(u).every(k => domain.is(k) && codomain.is(u[k])),
+    (u): u is { [K in TypeOf<D>]: TypeOf<C> } => {
+      if (!Dictionary.is(u)) {
+        return false
+      }
+      if (!isUnknownType(codomain) && !isAnyType(codomain) && !isObject(u)) {
+        return false
+      }
+      return Object.keys(u).every(k => domain.is(k) && codomain.is(u[k]))
+    },
     (u, c) => {
-      const dictionaryValidation = D.validate(u, c)
+      const dictionaryValidation = Dictionary.validate(u, c)
       if (dictionaryValidation.isLeft()) {
         return dictionaryValidation
       } else {
         const o = dictionaryValidation.value
+        if (!isUnknownType(codomain) && !isAnyType(codomain) && !isObject(o)) {
+          return failure(u, c)
+        }
         const a: { [key: string]: any } = {}
         const errors: Errors = []
         const keys = Object.keys(o)
@@ -1647,8 +1661,8 @@ export const taggedUnion = <Tag extends string, CS extends [Tagged<Tag>, Tagged<
       const tagValue = v[tag]
       return TagValue.is(tagValue) && types[getIndex(tagValue)].is(v)
     },
-    (s, c) => {
-      const dictionaryValidation = Dictionary.validate(s, c)
+    (u, c) => {
+      const dictionaryValidation = Dictionary.validate(u, c)
       if (dictionaryValidation.isLeft()) {
         return dictionaryValidation
       } else {

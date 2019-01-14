@@ -61,6 +61,19 @@ describe('Type', () => {
       assert.strictEqual(BAI.asEncoder().encode(2), '2')
     })
   })
+
+  it.skip('decode may be used as a static function', () => {
+    const Person = t.type(
+      {
+        name: t.string,
+        age: t.number
+      },
+      'Person'
+    )
+    const decode = Person.decode
+    assertSuccess(decode({ name: 'name', age: 0 }))
+    assertFailure(decode(null), ['Invalid value null supplied to Person'])
+  })
 })
 
 describe('getContextEntry', () => {
