@@ -796,7 +796,7 @@ export const type = <P extends Props>(props: P, name: string = getNameFromProps(
   const len = keys.length
   return new InterfaceType(
     name,
-    (u): u is TypeOfProps<P> => {
+    (u): u is { [K in keyof P]: TypeOf<P[K]> } => {
       if (!Dictionary.is(u)) {
         return false
       }
@@ -908,7 +908,7 @@ export const partial = <P extends Props>(
   }
   return new PartialType(
     name,
-    (u): u is TypeOfPartialProps<P> => {
+    (u): u is { [K in keyof P]?: TypeOf<P[K]> } => {
       if (!Dictionary.is(u)) {
         return false
       }
@@ -1013,7 +1013,8 @@ export const dictionary = <D extends Mixed, C extends Mixed>(
   const D = isIndexSignatureRequired ? refinedDictionary : Dictionary
   return new DictionaryType(
     name,
-    (u): u is TypeOfDictionary<D, C> => D.is(u) && Object.keys(u).every(k => domain.is(k) && codomain.is(u[k])),
+    (u): u is { [K in TypeOf<D>]: TypeOf<C> } =>
+      D.is(u) && Object.keys(u).every(k => domain.is(k) && codomain.is(u[k])),
     (u, c) => {
       const dictionaryValidation = D.validate(u, c)
       if (dictionaryValidation.isLeft()) {
