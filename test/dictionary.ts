@@ -1,23 +1,170 @@
 import * as assert from 'assert'
 import * as t from '../src/index'
-import { assertSuccess, assertFailure, assertStrictEqual, assertDeepEqual, string2, DateFromNumber } from './helpers'
+import {
+  assertFailure,
+  assertStrictEqual,
+  assertStrictSuccess,
+  assertSuccess,
+  HyphenatedString,
+  NumberFromString
+} from './helpers'
 
 describe('dictionary', () => {
-  it('should succeed validating a valid value', () => {
-    const T1 = t.dictionary(t.string, t.number)
-    assertSuccess(T1.decode({}))
-    assertSuccess(T1.decode({ aa: 1 }))
-    const T2 = t.dictionary(t.refinement(t.string, s => s.length >= 2), t.number)
-    assertSuccess(T2.decode({}))
-    assertSuccess(T2.decode({ aa: 1 }))
-    const T3 = t.dictionary(string2, t.number)
-    assertSuccess(T3.decode({}))
-    assertSuccess(T3.decode({ aa: 1 }))
-    const T4 = t.dictionary(t.string, t.any)
-    assertSuccess(T4.decode([]))
-    assertSuccess(T4.decode([1]))
-    assertSuccess(T4.decode(new Number()))
-    assertSuccess(T4.decode(new Date()))
+  describe('name', () => {
+    it('should assign a default name', () => {
+      const T = t.dictionary(t.string, t.number)
+      assert.strictEqual(T.name, '{ [K in string]: number }')
+    })
+
+    it('should accept a name', () => {
+      const T = t.dictionary(t.string, t.number, 'T')
+      assert.strictEqual(T.name, 'T')
+    })
+  })
+
+  describe('is', () => {
+    it('should check a isomorphic value', () => {
+      const T = t.dictionary(t.string, t.number)
+      assert.strictEqual(T.is({}), true)
+      assert.strictEqual(T.is({ a: 1 }), true)
+      assert.strictEqual(T.is({ a: 'a' }), false)
+      assert.strictEqual(T.is(null), false)
+      assert.strictEqual(T.is([]), false)
+    })
+
+    it('should check a prismatic value', () => {
+      const T = t.dictionary(t.string, NumberFromString)
+      assert.strictEqual(T.is({}), true)
+      assert.strictEqual(T.is({ a: 1 }), true)
+      assert.strictEqual(T.is({ a: 'a' }), false)
+      assert.strictEqual(T.is(null), false)
+      assert.strictEqual(T.is([]), false)
+    })
+
+    it('should check a prismatic key', () => {
+      const T = t.dictionary(HyphenatedString, t.number)
+      assert.strictEqual(T.is({}), true)
+      assert.strictEqual(T.is({ 'a-a': 1 }), true)
+      assert.strictEqual(T.is({ aa: 1 }), false)
+    })
+
+    it('should accept an array if the codomain is `unknown`', () => {
+      const T = t.dictionary(t.string, t.unknown)
+      assert.strictEqual(T.is([]), true)
+    })
+
+    it('should accept an array if the codomain is `any`', () => {
+      const T = t.dictionary(t.string, t.any)
+      assert.strictEqual(T.is([]), true)
+    })
+  })
+
+  describe('decode', () => {
+    it('should decode a isomorphic value', () => {
+      const T = t.dictionary(t.string, t.number)
+      assertSuccess(T.decode({}))
+      assertSuccess(T.decode({ a: 1 }))
+    })
+
+    it('should return the same reference while decoding isomorphic values', () => {
+      const T = t.dictionary(t.string, t.number)
+      const value1 = { a: 1 }
+      assertStrictSuccess(T.decode(value1), value1)
+    })
+
+    it('should decode a prismatic value', () => {
+      const T = t.dictionary(t.string, NumberFromString)
+      assertSuccess(T.decode({ a: '1' }), { a: 1 })
+    })
+
+    it('should decode a prismatic key', () => {
+      const T = t.dictionary(HyphenatedString, t.number)
+      assertSuccess(T.decode({ ab: 1 }), { 'a-b': 1 })
+    })
+
+    it('should accept an array if the codomain is `unknown`', () => {
+      const T = t.dictionary(t.string, t.unknown)
+      assertSuccess(T.decode([1]))
+    })
+
+    it('should accept an array if the codomain is `any`', () => {
+      const T = t.dictionary(t.string, t.any)
+      assertSuccess(T.decode([1]))
+    })
+
+    it('should fail decoding an invalid value', () => {
+      const T = t.dictionary(t.string, t.number)
+      assertFailure(T.decode(1), ['Invalid value 1 supplied to : { [K in string]: number }'])
+      assertFailure(T.decode({ aa: 's' }), ['Invalid value "s" supplied to : { [K in string]: number }/aa: number'])
+      assertFailure(T.decode([]), ['Invalid value [] supplied to : { [K in string]: number }'])
+      assertFailure(T.decode([1]), ['Invalid value [1] supplied to : { [K in string]: number }'])
+      assertFailure(T.decode(new Number()), ['Invalid value 0 supplied to : { [K in string]: number }'])
+    })
+
+    it('should fail decoding an invalid value when the codec is array if the codomain is `unknown`', () => {
+      const T = t.dictionary(HyphenatedString, t.unknown)
+      assertFailure(T.decode([1]), [
+        'Invalid value "0" supplied to : { [K in HyphenatedString]: unknown }/0: HyphenatedString'
+      ])
+    })
+
+    it('should fail decoding an invalid value when the codec is array if the codomain is `any`', () => {
+      const T = t.dictionary(HyphenatedString, t.any)
+      assertFailure(T.decode([1]), [
+        'Invalid value "0" supplied to : { [K in HyphenatedString]: any }/0: HyphenatedString'
+      ])
+    })
+
+    it('should support literals as domain type', () => {
+      const T = t.dictionary(t.literal('foo'), t.string)
+      assertSuccess(T.decode({ foo: 'bar' }))
+      assertFailure(T.decode({ foo: 'bar', baz: 'bob' }), [
+        'Invalid value "baz" supplied to : { [K in "foo"]: string }/baz: "foo"'
+      ])
+    })
+
+    it('should support keyof as domain type', () => {
+      const T = t.dictionary(t.keyof({ foo: true, bar: true }), t.string)
+      assertSuccess(T.decode({ foo: 'bar' }))
+      assertFailure(T.decode({ foo: 'bar', baz: 'bob' }), [
+        'Invalid value "baz" supplied to : { [K in "foo" | "bar"]: string }/baz: "foo" | "bar"'
+      ])
+    })
+  })
+
+  describe('encode', () => {
+    it('should encode a isomorphic value', () => {
+      const T = t.dictionary(t.string, t.number)
+      assert.deepEqual(T.encode({ a: 1 }), { a: 1 })
+    })
+
+    it('should return the same reference while decoding a isomorphic value', () => {
+      const T = t.dictionary(t.string, t.number)
+      const a = { a: 1 }
+      assert.strictEqual(T.encode(a), a)
+    })
+
+    it('should encode a prismatic value', () => {
+      const T = t.dictionary(t.string, NumberFromString)
+      assert.deepEqual(T.encode({ a: 1 }), { a: '1' })
+    })
+
+    it('should encode a prismatic key', () => {
+      const T = t.dictionary(HyphenatedString, t.number)
+      assert.deepEqual(T.encode({ 'a-b': 1 }), { ab: 1 })
+    })
+
+    it('should accept an array if the codomain is `unknown`', () => {
+      const T = t.dictionary(t.string, t.unknown)
+      const a = [1]
+      assert.strictEqual(T.encode(a), a)
+    })
+
+    it('should accept an array if the codomain is `any`', () => {
+      const T = t.dictionary(t.string, t.any)
+      const a = [1]
+      assert.strictEqual(T.encode(a), a)
+    })
   })
 
   it('should return the same reference if validation succeeded if nothing changed', () => {
@@ -29,74 +176,10 @@ describe('dictionary', () => {
     assertStrictEqual(T2.decode(value2), value2)
   })
 
-  it('should return a new reference if validation succeeded and something changed', () => {
-    const T = t.dictionary(string2, t.number)
-    const value = { aa: 1 }
-    assertDeepEqual(T.decode(value), { 'a-a': 1 })
-  })
-
-  it('should fail validating an invalid value', () => {
-    const T1 = t.dictionary(t.string, t.number)
-    assertFailure(T1.decode(1), ['Invalid value 1 supplied to : { [K in string]: number }'])
-    assertFailure(T1.decode({ aa: 's' }), ['Invalid value "s" supplied to : { [K in string]: number }/aa: number'])
-    assertFailure(T1.decode([]), ['Invalid value [] supplied to : { [K in string]: number }'])
-    assertFailure(T1.decode([1]), ['Invalid value [1] supplied to : { [K in string]: number }'])
-    assertFailure(T1.decode(new Number()), ['Invalid value 0 supplied to : { [K in string]: number }'])
-    const d = new Date()
-    assertFailure(T1.decode(d), [`Invalid value ${JSON.stringify(d)} supplied to : { [K in string]: number }`])
-    const T2 = t.dictionary(string2, t.any)
-    assertFailure(T2.decode([1]), ['Invalid value "0" supplied to : { [K in string2]: any }/0: string2'])
-  })
-
-  it('should support literals as domain type', () => {
-    const T = t.dictionary(t.literal('foo'), t.string)
-    assertSuccess(T.decode({ foo: 'bar' }))
-    assertFailure(T.decode({ foo: 'bar', baz: 'bob' }), [
-      'Invalid value "baz" supplied to : { [K in "foo"]: string }/baz: "foo"'
-    ])
-  })
-
-  it('should support keyof as domain type', () => {
-    const T = t.dictionary(t.keyof({ foo: true, bar: true }), t.string)
-    assertSuccess(T.decode({ foo: 'bar' }))
-    assertFailure(T.decode({ foo: 'bar', baz: 'bob' }), [
-      'Invalid value "baz" supplied to : { [K in (keyof ["foo","bar"])]: string }/baz: (keyof ["foo","bar"])'
-    ])
-  })
-
-  it('should serialize a deserialized', () => {
-    const T1 = t.dictionary(t.string, DateFromNumber)
-    assert.deepEqual(T1.encode({ a: new Date(0), b: new Date(1) }), { a: 0, b: 1 })
-    const T2 = t.dictionary(string2, t.number)
-    assert.deepEqual(T2.encode({ 'a-a': 1, 'a-b': 2 }), { aa: 1, ab: 2 })
-  })
-
-  it('should return the same reference when serializing', () => {
+  it('should return the same reference while encoding', () => {
     const T1 = t.dictionary(t.string, t.number)
     assert.strictEqual(T1.encode, t.identity)
-    const T2 = t.dictionary(string2, t.number)
+    const T2 = t.dictionary(HyphenatedString, t.number)
     assert.strictEqual(T2.encode === t.identity, false)
-  })
-
-  it('should type guard', () => {
-    const T1 = t.dictionary(t.string, t.number)
-    assert.strictEqual(T1.is({}), true)
-    assert.strictEqual(T1.is({ a: 1 }), true)
-    assert.strictEqual(T1.is({ a: 'foo' }), false)
-    const T2 = t.dictionary(t.string, DateFromNumber)
-    assert.strictEqual(T2.is({}), true)
-    assert.strictEqual(T2.is({ a: new Date(0) }), true)
-    assert.strictEqual(T2.is({ a: 0 }), false)
-    const T3 = t.dictionary(string2, t.number)
-    assert.strictEqual(T3.is({}), true)
-    assert.strictEqual(T3.is({ 'a-a': 1 }), true)
-    assert.strictEqual(T3.is({ aa: 1 }), false)
-  })
-
-  it('should assign a default name', () => {
-    const T1 = t.dictionary(t.string, t.number)
-    assert.strictEqual(T1.name, '{ [K in string]: number }')
-    const T2 = t.dictionary(t.string, t.number, 'T2')
-    assert.strictEqual(T2.name, 'T2')
   })
 })

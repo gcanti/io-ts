@@ -1,27 +1,79 @@
 import * as assert from 'assert'
 import * as t from '../src/index'
-import { assertSuccess, assertFailure, assertStrictEqual, assertDeepEqual, DateFromNumber } from './helpers'
+import { assertFailure, assertStrictEqual, assertSuccess, NumberFromString } from './helpers'
 
 describe('interface', () => {
-  it('should succeed validating a valid value', () => {
-    const T = t.interface({ a: t.string })
-    assertSuccess(T.decode({ a: 's' }))
+  describe('name', () => {
+    it('should assign a default name', () => {
+      const T = t.type({ a: t.string })
+      assert.strictEqual(T.name, '{ a: string }')
+    })
+
+    it('should accept a name', () => {
+      const T = t.type({ a: t.string }, 'T')
+      assert.strictEqual(T.name, 'T')
+    })
   })
 
-  it('should emit expected keys while decoding (#214)', () => {
-    const T1 = t.type({ a: t.any })
-    assert.deepEqual(T1.decode({}).value, { a: undefined })
-    assert.deepEqual(T1.decode(Object.create(null)).value, { a: undefined })
+  describe('is', () => {
+    it('should check a isomorphic value', () => {
+      const T = t.type({ a: t.string })
+      assert.strictEqual(T.is({}), false)
+      assert.strictEqual(T.is({ a: 1 }), false)
+      assert.strictEqual(T.is({ a: 'a' }), true)
+    })
 
-    const T2 = t.type({ a: t.union([t.number, t.undefined]) })
-    const input = {}
-    assert.deepEqual(T2.decode(input).value, { a: undefined })
-    assert.deepEqual(input, {})
+    it('should allow additional properties', () => {
+      const T = t.type({ a: t.string })
+      assert.strictEqual(T.is({ a: 'a', b: 1 }), true)
+    })
+  })
 
-    const jsonTurnaround = <A>(type: t.Type<A>, a: A): t.Validation<A> => {
-      return type.decode(JSON.parse(JSON.stringify(type.encode(a))))
-    }
-    assert.deepEqual(jsonTurnaround(T2, { a: undefined }).value, { a: undefined })
+  describe('decode', () => {
+    it('should decode a isomorphic value', () => {
+      const T = t.type({ a: t.string })
+      assertSuccess(T.decode({ a: 'a' }))
+    })
+
+    it('should decode a prismatic value', () => {
+      const T = t.type({ a: NumberFromString })
+      assertSuccess(T.decode({ a: '1' }), { a: 1 })
+    })
+
+    it('should decode undefined properties as always present keys', () => {
+      const T1 = t.type({ a: t.undefined })
+      assertSuccess(T1.decode({ a: undefined }), { a: undefined })
+      assertSuccess(T1.decode({}), { a: undefined })
+
+      const T2 = t.type({ a: t.union([t.number, t.undefined]) })
+      assertSuccess(T2.decode({ a: undefined }), { a: undefined })
+      assertSuccess(T2.decode({ a: 1 }), { a: 1 })
+      assertSuccess(T2.decode({}), { a: undefined })
+    })
+
+    it('should fail decoding an invalid value', () => {
+      const T = t.type({ a: t.string })
+      assertFailure(T.decode(1), ['Invalid value 1 supplied to : { a: string }'])
+      assertFailure(T.decode({}), ['Invalid value undefined supplied to : { a: string }/a: string'])
+      assertFailure(T.decode({ a: 1 }), ['Invalid value 1 supplied to : { a: string }/a: string'])
+    })
+
+    it('should support the alias `interface`', () => {
+      const T = t.interface({ a: t.string })
+      assertSuccess(T.decode({ a: 'a' }))
+    })
+  })
+
+  describe('encode', () => {
+    it('should encode a isomorphic value', () => {
+      const T = t.type({ a: t.string })
+      assert.deepEqual(T.encode({ a: 'a' }), { a: 'a' })
+    })
+
+    it('should encode a prismatic value', () => {
+      const T = t.type({ a: NumberFromString })
+      assert.deepEqual(T.encode({ a: 1 }), { a: '1' })
+    })
   })
 
   it('should keep unknown properties', () => {
@@ -40,53 +92,8 @@ describe('interface', () => {
     assertStrictEqual(T.decode(value), value)
   })
 
-  it('should return the a new reference if validation succeeded and something changed', () => {
-    const T = t.interface({ a: DateFromNumber, b: t.number })
-    assertDeepEqual(T.decode({ a: 1, b: 2 }), { a: new Date(1), b: 2 })
-  })
-
-  it('should fail validating an invalid value', () => {
-    const T = t.interface({ a: t.string })
-    assertFailure(T.decode(1), ['Invalid value 1 supplied to : { a: string }'])
-    assertFailure(T.decode({}), ['Invalid value undefined supplied to : { a: string }/a: string'])
-    assertFailure(T.decode({ a: 1 }), ['Invalid value 1 supplied to : { a: string }/a: string'])
-  })
-
-  it('should support the alias `type`', () => {
-    const T = t.type({ a: t.string })
-    assertSuccess(T.decode({ a: 's' }))
-  })
-
-  it('should serialize a deserialized', () => {
-    const T = t.type({ a: DateFromNumber })
-    assert.deepEqual(T.encode({ a: new Date(0) }), { a: 0 })
-  })
-
-  it('should return the same reference when serializing', () => {
+  it('should return the same reference while encoding', () => {
     const T = t.type({ a: t.number })
     assert.strictEqual(T.encode, t.identity)
-  })
-
-  it('should type guard', () => {
-    const T1 = t.type({ a: t.number })
-    assert.strictEqual(T1.is({ a: 0 }), true)
-    assert.strictEqual(T1.is(undefined), false)
-
-    const T2 = t.type({ a: DateFromNumber })
-    assert.strictEqual(T2.is({ a: new Date(0) }), true)
-    assert.strictEqual(T2.is({ a: 0 }), false)
-    assert.strictEqual(T2.is(undefined), false)
-
-    const T3 = t.type({ a: t.union([t.number, t.undefined]) })
-    assert.strictEqual(T3.is({ a: 1 }), true)
-    assert.strictEqual(T3.is({ a: undefined }), true)
-    assert.strictEqual(T3.is({}), false)
-    assert.strictEqual(T3.is(Object.create(null)), false)
-  })
-
-  it('should preserve additional properties while encoding', () => {
-    const T = t.type({ a: DateFromNumber })
-    const x = { a: new Date(0), b: 'foo' }
-    assert.deepEqual(T.encode(x), { a: 0, b: 'foo' })
   })
 })

@@ -364,26 +364,22 @@ type Exact2OutputTest = Equals<t.OutputOf<typeof Exact2>, { a: string }> // $Exp
 // clean / alias
 //
 
-import { DateFromNumber } from '../test/helpers'
-
 const C1 = t.type({
   a: t.string,
-  b: DateFromNumber
+  b: NumberFromString
 })
 
 interface C1 {
   a: string
-  b: Date
+  b: number
 }
 
 interface C1O {
   a: string
-  b: number
+  b: string
 }
 
-interface C1WithAdditionalProp {
-  a: string
-  b: Date
+interface C1WithAdditionalProp extends C1 {
   c: boolean
 }
 
@@ -398,7 +394,7 @@ type CleanTest2 = t.OutputOf<typeof C4> // $ExpectType C1O
 const C5 = t.alias(C1)<C1>()
 type AliasTest1 = t.TypeOf<typeof C5> // $ExpectType C1
 type AliasTest2 = t.OutputOf<typeof C5>['a'] // $ExpectType string
-type AliasTest3 = t.OutputOf<typeof C5>['b'] // $ExpectType number
+type AliasTest3 = t.OutputOf<typeof C5>['b'] // $ExpectType string
 // $ExpectError
 const C6 = t.alias(C1)<C1, C1>()
 // $ExpectError

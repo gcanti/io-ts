@@ -1,201 +1,181 @@
 import * as assert from 'assert'
 import * as t from '../src/index'
-import { assertSuccess, assertFailure, assertStrictEqual, DateFromNumber } from './helpers'
+import { assertFailure, assertStrictEqual, assertSuccess, NumberFromString } from './helpers'
 
-const TUA = t.type(
-  {
-    type: t.literal('a'),
-    foo: t.string
-  },
-  'TUA'
+const OptionNumber = t.taggedUnion(
+  'type',
+  [t.type({ type: t.literal('None') }, 'None'), t.type({ type: t.literal('Some'), value: t.number }, 'Some')],
+  'OptionNumber'
 )
 
-const TUB = t.intersection(
-  [
-    t.type({
-      type: t.literal('b')
-    }),
-    t.type({
-      bar: t.number
-    })
-  ],
-  'TUB'
+const OptionNumberFromString = t.taggedUnion(
+  'type',
+  [t.type({ type: t.literal('None') }, 'None'), t.type({ type: t.literal('Some'), value: NumberFromString }, 'Some')],
+  'OptionNumberFromString'
 )
-
-const TUC = t.exact(
-  t.type({
-    type: t.literal('c'),
-    baz: DateFromNumber
-  }),
-  'TUC'
-)
-
-const TUD = t.intersection(
-  [
-    t.type({
-      bar: t.number
-    }),
-    t.type({
-      type: t.literal('d')
-    })
-  ],
-  'TUD'
-)
-
-const T = t.taggedUnion('type', [TUA, TUB, TUC, TUD])
 
 describe('taggedUnion', () => {
-  it('should succeed validating a valid value', () => {
-    assertSuccess(T.decode({ type: 'a', foo: 'foo' }))
-    assertSuccess(T.decode({ type: 'b', bar: 1 }))
-    assertSuccess(T.decode({ type: 'c', baz: 0 }))
+  describe('name', () => {
+    it('should assign a default name', () => {
+      const OptionNumber = t.taggedUnion('type', [
+        t.type({ type: t.literal('None') }),
+        t.type({ type: t.literal('Some'), value: t.number })
+      ])
+      assert.strictEqual(OptionNumber.name, '({ type: "None" } | { type: "Some", value: number })')
+    })
+
+    it('should accept a name', () => {
+      const T = t.taggedUnion('type', OptionNumber.types, 'T')
+      assert.strictEqual(T.name, 'T')
+    })
+  })
+
+  describe('is', () => {
+    it('should check a isomorphic value', () => {
+      assert.strictEqual(OptionNumber.is(null), false)
+      assert.strictEqual(OptionNumber.is({}), false)
+      assert.strictEqual(OptionNumber.is({ type: 'None' }), true)
+      assert.strictEqual(OptionNumber.is({ type: 'Some' }), false)
+      assert.strictEqual(OptionNumber.is({ type: 'Some', value: 'a' }), false)
+      assert.strictEqual(OptionNumber.is({ type: 'Some', value: 1 }), true)
+    })
+  })
+
+  describe('decode', () => {
+    it('should decode a isomorphic value', () => {
+      assertSuccess(OptionNumber.decode({ type: 'None' }))
+      assertSuccess(OptionNumber.decode({ type: 'Some', value: 1 }))
+    })
+
+    it('should handle multiple tag candidates', () => {
+      const A = t.type({ type: t.literal('A'), kind: t.literal('Kind') })
+      const B = t.type({ type: t.literal('B'), kind: t.literal('Kind') })
+      const TU = t.taggedUnion('type', [A, B])
+      assertSuccess(TU.decode({ type: 'A', kind: 'Kind' }))
+      assertSuccess(TU.decode({ type: 'B', kind: 'Kind' }))
+    })
+
+    it('should handle intersections', () => {
+      const A = t.intersection([t.type({ type: t.literal('A') }), t.partial({ a: t.string })])
+      const B = t.type({ type: t.literal('B') })
+      const T = t.taggedUnion('type', [A, B])
+      assertSuccess(T.decode({ type: 'A' }))
+      assertSuccess(T.decode({ type: 'B' }))
+    })
+
+    it.skip('should handle sub unions', () => {
+      const A = t.type({ type: t.literal('A') })
+      const B = t.type({ type: t.literal('B') })
+      const C = t.type({ type: t.literal('C') })
+      const SubUnion = t.union([A, B])
+      const T = t.taggedUnion('type', [SubUnion, C])
+      assertSuccess(T.decode({ type: 'A' }))
+      assertSuccess(T.decode({ type: 'B' }))
+      assertSuccess(T.decode({ type: 'C' }))
+    })
+
+    it.skip('should handle sub tagged unions', () => {
+      const A = t.type({ type: t.literal('A') })
+      const B = t.type({ type: t.literal('B') })
+      const C = t.type({ type: t.literal('C') })
+      const SubTaggedUnion = t.taggedUnion('type', [A, B])
+      const T = t.taggedUnion('type', [SubTaggedUnion, C])
+      assertSuccess(T.decode({ type: 'A' }))
+      assertSuccess(T.decode({ type: 'B' }))
+      assertSuccess(T.decode({ type: 'C' }))
+    })
+
+    it('should decode a prismatic value', () => {
+      assertSuccess(OptionNumberFromString.decode({ type: 'None' }))
+      assertSuccess(OptionNumberFromString.decode({ type: 'Some', value: '1' }), { type: 'Some', value: 1 })
+    })
+
+    it('should fail validating an invalid value', () => {
+      assertFailure(OptionNumber.decode(null), ['Invalid value null supplied to : OptionNumber'])
+      assertFailure(OptionNumber.decode({}), [
+        'Invalid value undefined supplied to : OptionNumber/type: "None" | "Some"'
+      ])
+      assertFailure(OptionNumber.decode({ type: 'Some' }), [
+        'Invalid value undefined supplied to : OptionNumber/1: Some/value: number'
+      ])
+    })
+
+    it('should work when tag values are numbers', () => {
+      const T = t.taggedUnion('type', [
+        t.type({ type: t.literal(1), a: t.string }),
+        t.type({ type: t.literal(2), b: t.number })
+      ])
+      assertSuccess(T.decode({ type: 1, a: 'a' }))
+      assertFailure(T.decode({ type: 1, a: 1 }), [
+        'Invalid value 1 supplied to : ({ type: 1, a: string } | { type: 2, b: number })/0: { type: 1, a: string }/a: string'
+      ])
+      assertFailure(T.decode({ type: 2 }), [
+        'Invalid value undefined supplied to : ({ type: 1, a: string } | { type: 2, b: number })/1: { type: 2, b: number }/b: number'
+      ])
+    })
+
+    it('should work when tag values are booleans', () => {
+      const T = t.taggedUnion('type', [
+        t.type({ type: t.literal(true), a: t.string }),
+        t.type({ type: t.literal(false), b: t.number })
+      ])
+      assertSuccess(T.decode({ type: true, a: 'a' }))
+      assertFailure(T.decode({ type: true, a: 1 }), [
+        'Invalid value 1 supplied to : ({ type: true, a: string } | { type: false, b: number })/0: { type: true, a: string }/a: string'
+      ])
+      assertFailure(T.decode({ type: false }), [
+        'Invalid value undefined supplied to : ({ type: true, a: string } | { type: false, b: number })/1: { type: false, b: number }/b: number'
+      ])
+    })
+
+    it('should work when tag values are booleans', () => {
+      const T = t.taggedUnion('type', [
+        t.type({ type: t.literal(true), a: t.string }),
+        t.type({ type: t.literal(false), b: t.number })
+      ])
+      assertSuccess(T.decode({ type: true, a: 'a' }))
+      assertFailure(T.decode({ type: true, a: 1 }), [
+        'Invalid value 1 supplied to : ({ type: true, a: string } | { type: false, b: number })/0: { type: true, a: string }/a: string'
+      ])
+      assertFailure(T.decode({ type: false }), [
+        'Invalid value undefined supplied to : ({ type: true, a: string } | { type: false, b: number })/1: { type: false, b: number }/b: number'
+      ])
+    })
+
+    it('should work when tag values are both strings and numbers with the same string representation', () => {
+      const T = t.taggedUnion('type', [
+        t.type({ type: t.literal(1), a: t.string }),
+        t.type({ type: t.literal('1'), b: t.number })
+      ])
+      assertSuccess(T.decode({ type: 1, a: 'a' }))
+      assertFailure(T.decode({ type: 1, a: 1 }), [
+        'Invalid value 1 supplied to : ({ type: 1, a: string } | { type: "1", b: number })/0: { type: 1, a: string }/a: string'
+      ])
+      assertSuccess(T.decode({ type: '1', b: 1 }))
+      assertFailure(T.decode({ type: '1' }), [
+        'Invalid value undefined supplied to : ({ type: 1, a: string } | { type: "1", b: number })/1: { type: "1", b: number }/b: number'
+      ])
+    })
+  })
+
+  describe('encode', () => {
+    it('should encode a isomorphic value', () => {
+      assert.deepEqual(OptionNumber.encode({ type: 'Some', value: 1 }), { type: 'Some', value: 1 })
+    })
+
+    it('should encode a prismatic value', () => {
+      assert.deepEqual(OptionNumberFromString.encode({ type: 'Some', value: 1 }), { type: 'Some', value: '1' })
+    })
   })
 
   it('should return the same reference if validation succeeded', () => {
-    const value = { type: 'a', foo: 'foo' }
-    assertStrictEqual(T.decode(value), value)
+    const value = { type: 'Some', value: 1 }
+    assertStrictEqual(OptionNumber.decode(value), value)
   })
 
-  it('should fail validating an invalid value', () => {
-    assertFailure(T.decode(true), ['Invalid value true supplied to : (TUA | TUB | TUC | TUD)'])
-    assertFailure(T.decode({ type: 'D' }), [
-      'Invalid value "D" supplied to : (TUA | TUB | TUC | TUD)/type: "a" | "b" | "c" | "d"'
-    ])
-    assertFailure(T.decode({ type: 'a' }), [
-      'Invalid value undefined supplied to : (TUA | TUB | TUC | TUD)/0: TUA/foo: string'
-    ])
-    assertFailure(T.decode({ type: 'b' }), [
-      'Invalid value undefined supplied to : (TUA | TUB | TUC | TUD)/1: TUB/1: { bar: number }/bar: number'
-    ])
-    assertFailure(T.decode({ type: 'c' }), [
-      'Invalid value undefined supplied to : (TUA | TUB | TUC | TUD)/2: TUC/baz: DateFromNumber'
-    ])
-  })
-
-  it('should serialize a deserialized', () => {
-    assert.deepEqual(T.encode({ type: 'a', foo: 'foo' }), { type: 'a', foo: 'foo' })
-    assert.deepEqual(T.encode({ type: 'b', bar: 1 }), { type: 'b', bar: 1 })
-    assert.deepEqual(T.encode({ type: 'c', baz: new Date(0) }), { type: 'c', baz: 0 })
-  })
-
-  it('should return the same reference when serializing', () => {
-    const T = t.taggedUnion('type', [TUA, TUB])
+  it('should return the same reference while decoding', () => {
+    const T = OptionNumber
     assert.strictEqual(T.encode, t.identity)
-  })
-
-  it('should type guard', () => {
-    assert.strictEqual(T.is({ type: 'a', foo: 'foo' }), true)
-    assert.strictEqual(T.is({ type: 'b', bar: 1 }), true)
-    assert.strictEqual(T.is({ type: 'c', baz: new Date(0) }), true)
-    assert.strictEqual(T.is(true), false)
-    assert.strictEqual(T.is({ type: 'a' }), false)
-  })
-
-  it('should work when tag values are numbers', () => {
-    const A = t.type(
-      {
-        type: t.literal(1),
-        foo: t.string
-      },
-      'A'
-    )
-
-    const B = t.type(
-      {
-        type: t.literal(2),
-        bar: t.number
-      },
-      'B'
-    )
-
-    const C = t.type(
-      {
-        type: t.literal(3),
-        baz: DateFromNumber
-      },
-      'C'
-    )
-
-    const U = t.taggedUnion('type', [A, B, C], 'U')
-
-    assert.strictEqual(U.is({ type: 1, foo: 'foo' }), true)
-    assert.strictEqual(U.is({ type: 1, foo: 0 }), false)
-    assert.strictEqual(U.is({ type: 2, bar: 0 }), true)
-    assert.strictEqual(U.is({ type: 2, bar: 'bar' }), false)
-    assert.strictEqual(U.is({ type: 4 }), false)
-    assert.strictEqual(U.is({ type: '1', foo: 'foo' }), false)
-
-    assertSuccess(U.decode({ type: 1, foo: 'foo' }))
-    assertFailure(U.decode({ type: 1, foo: 0 }), ['Invalid value 0 supplied to : U/0: A/foo: string'])
-    assertSuccess(U.decode({ type: 2, bar: 0 }))
-    assertFailure(U.decode({ type: 2, bar: 'bar' }), ['Invalid value "bar" supplied to : U/1: B/bar: number'])
-    assertFailure(U.decode({ type: 4 }), ['Invalid value 4 supplied to : U/type: 1 | 2 | 3'])
-
-    assert.deepEqual(U.encode({ type: 3, baz: new Date(0) }), { type: 3, baz: 0 })
-  })
-
-  it('should work when tag values are booleans', () => {
-    const A = t.type(
-      {
-        type: t.literal(true),
-        foo: t.string
-      },
-      'A'
-    )
-
-    const B = t.type(
-      {
-        type: t.literal(false),
-        bar: t.number
-      },
-      'B'
-    )
-
-    const U = t.taggedUnion('type', [A, B], 'U')
-
-    assert.strictEqual(U.is({ type: true, foo: 'foo' }), true)
-    assert.strictEqual(U.is({ type: true, foo: 0 }), false)
-    assert.strictEqual(U.is({ type: false, bar: 0 }), true)
-    assert.strictEqual(U.is({ type: false, bar: 'bar' }), false)
-    assert.strictEqual(U.is({ type: 3 }), false)
-
-    assertSuccess(U.decode({ type: true, foo: 'foo' }))
-    assertFailure(U.decode({ type: true, foo: 0 }), ['Invalid value 0 supplied to : U/0: A/foo: string'])
-    assertSuccess(U.decode({ type: false, bar: 0 }))
-    assertFailure(U.decode({ type: false, bar: 'bar' }), ['Invalid value "bar" supplied to : U/1: B/bar: number'])
-    assertFailure(U.decode({ type: 3 }), ['Invalid value 3 supplied to : U/type: true | false'])
-  })
-
-  it('should work when tag values are both strings and numbers with the same string representation', () => {
-    const A = t.type(
-      {
-        type: t.literal(1),
-        foo: t.string
-      },
-      'A'
-    )
-
-    const B = t.type(
-      {
-        type: t.literal('1'),
-        bar: t.number
-      },
-      'B'
-    )
-
-    const U = t.taggedUnion('type', [A, B], 'U')
-
-    assert.strictEqual(U.is({ type: 1, foo: 'foo' }), true)
-    assert.strictEqual(U.is({ type: 1, bar: 'bar' }), false)
-    assert.strictEqual(U.is({ type: '1', foo: 'foo' }), false)
-    assert.strictEqual(U.is({ type: '1', bar: 2 }), true)
-    assert.strictEqual(U.is({ type: 3 }), false)
-
-    assertSuccess(U.decode({ type: 1, foo: 'foo' }))
-    assertFailure(U.decode({ type: 1, bar: 'bar' }), ['Invalid value undefined supplied to : U/0: A/foo: string'])
-    assertSuccess(U.decode({ type: '1', bar: 2 }))
-    assertFailure(U.decode({ type: '1', foo: 'foo' }), ['Invalid value undefined supplied to : U/1: B/bar: number'])
-    assertFailure(U.decode({ type: 3 }), ['Invalid value 3 supplied to : U/type: 1 | "1"'])
   })
 })
 
@@ -226,6 +206,7 @@ describe('getTagValue', () => {
     assert.strictEqual(get(T2), 'b')
     assert.strictEqual(get(t.union([T1, T1])), 'a')
     assert.strictEqual(get(t.intersection([T1, t.type({ a: t.string })])), 'a')
+    assert.strictEqual(get(t.intersection([t.type({ a: t.string }), T1])), 'a')
     assert.strictEqual(get(t.refinement(T1, () => true)), 'a')
     assert.strictEqual(get(t.exact(T1)), 'a')
   })
