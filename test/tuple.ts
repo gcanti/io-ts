@@ -4,7 +4,7 @@ import { assertSuccess, assertFailure, assertStrictEqual, assertDeepEqual, DateF
 
 describe('tuple', () => {
   it('should succeed validating a valid value', () => {
-    const T0 = t.tuple([])
+    const T0 = t.tuple([] as any)
     assertSuccess(T0.decode([]))
     const T1 = t.tuple([t.number])
     assertSuccess(T1.decode([1]))
@@ -24,7 +24,7 @@ describe('tuple', () => {
   })
 
   it('should fail validating an invalid value', () => {
-    const T0 = t.tuple([])
+    const T0 = t.tuple([] as any)
     assertFailure(T0.decode(1), ['Invalid value 1 supplied to : []'])
     const T1 = t.tuple([t.number])
     assertFailure(T1.decode(1), ['Invalid value 1 supplied to : [number]'])

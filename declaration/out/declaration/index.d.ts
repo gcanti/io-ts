@@ -49,7 +49,7 @@ export declare const P5: t.PartialC<{
     }>;
 }>;
 export declare const D5: t.RecordC<t.StringC, t.RecordC<t.StringC, t.RecordC<t.StringC, t.RecordC<t.StringC, t.RecordC<t.StringC, t.NumberC>>>>>;
-export declare const U1: t.UnionC<(t.TypeC<{
+export declare const U1: t.UnionC<[t.TypeC<{
     e: t.TypeC<{
         d: t.TypeC<{
             c: t.TypeC<{
@@ -59,7 +59,7 @@ export declare const U1: t.UnionC<(t.TypeC<{
             }>;
         }>;
     }>;
-}> | t.RecordC<t.StringC, t.RecordC<t.StringC, t.RecordC<t.StringC, t.RecordC<t.StringC, t.RecordC<t.StringC, t.NumberC>>>>>)[]>;
+}>, t.RecordC<t.StringC, t.RecordC<t.StringC, t.RecordC<t.StringC, t.RecordC<t.StringC, t.RecordC<t.StringC, t.NumberC>>>>>]>;
 export declare const I1: t.IntersectionC<[t.TypeC<{
     e: t.TypeC<{
         d: t.TypeC<{
@@ -115,13 +115,13 @@ export declare const S5: t.StrictC<{
         }>;
     }>;
 }>;
-export declare const TU1: t.TaggedUnionC<"type", (t.TypeC<{
+export declare const TU1: t.TaggedUnionC<"type", [t.TypeC<{
     type: t.LiteralC<true>;
     foo: t.StringC;
-}> | t.TypeC<{
+}>, t.TypeC<{
     type: t.LiteralC<false>;
     bar: t.NumberC;
-}>)[]>;
+}>]>;
 export declare const E1: t.ExactC<t.TypeC<{
     e: t.TypeC<{
         d: t.TypeC<{

@@ -1083,13 +1083,13 @@ export class UnionType<RTS extends Array<Any>, A = any, O = A, I = mixed> extend
 /**
  * @since 1.5.3
  */
-export interface UnionC<CS extends Array<Mixed>>
+export interface UnionC<CS extends [Mixed, Mixed, ...Array<Mixed>]>
   extends UnionType<CS, TypeOf<CS[number]>, OutputOf<CS[number]>, unknown> {}
 
 /**
  * @since 1.0.0
  */
-export const union = <RTS extends Array<Mixed>>(
+export const union = <RTS extends [Mixed, Mixed, ...Array<Mixed>]>(
   types: RTS,
   name: string = `(${types.map(type => type.name).join(' | ')})`
 ): UnionC<RTS> => {
@@ -1152,14 +1152,10 @@ export type Compact<A> = { [K in keyof A]: A[K] }
 /**
  * @since 1.5.3
  */
-export interface IntersectionC<CS extends Array<Mixed>>
+export interface IntersectionC<CS extends [Mixed, Mixed, ...Array<Mixed>]>
   extends IntersectionType<
     CS,
-    CS extends []
-      ? never
-      : CS extends [Mixed]
-      ? TypeOf<CS['0']>
-      : CS extends [Mixed, Mixed]
+    CS extends [Mixed, Mixed]
       ? TypeOf<CS['0']> & TypeOf<CS['1']>
       : CS extends [Mixed, Mixed, Mixed]
       ? TypeOf<CS['0']> & TypeOf<CS['1']> & TypeOf<CS['2']>
@@ -1168,11 +1164,7 @@ export interface IntersectionC<CS extends Array<Mixed>>
       : CS extends [Mixed, Mixed, Mixed, Mixed, Mixed]
       ? TypeOf<CS['0']> & TypeOf<CS['1']> & TypeOf<CS['2']> & TypeOf<CS['3']> & TypeOf<CS['4']>
       : unknown,
-    CS extends []
-      ? never
-      : CS extends [Mixed]
-      ? OutputOf<CS['0']>
-      : CS extends [Mixed, Mixed]
+    CS extends [Mixed, Mixed]
       ? OutputOf<CS['0']> & OutputOf<CS['1']>
       : CS extends [Mixed, Mixed, Mixed]
       ? OutputOf<CS['0']> & OutputOf<CS['1']> & OutputOf<CS['2']>
@@ -1200,7 +1192,7 @@ export function intersection<A extends Mixed, B extends Mixed, C extends Mixed>(
   name?: string
 ): IntersectionC<[A, B, C]>
 export function intersection<A extends Mixed, B extends Mixed>(types: [A, B], name?: string): IntersectionC<[A, B]>
-export function intersection<RTS extends Array<Mixed>>(
+export function intersection<RTS extends [Mixed, Mixed, ...Array<Mixed>]>(
   types: RTS,
   name: string = `(${types.map(type => type.name).join(' & ')})`
 ): IntersectionC<RTS> {
@@ -1255,12 +1247,10 @@ export class TupleType<RTS extends Array<Any>, A = any, O = A, I = mixed> extend
 /**
  * @since 1.5.3
  */
-export interface TupleC<CS extends Array<Mixed>>
+export interface TupleC<CS extends [Mixed, ...Array<Mixed>]>
   extends TupleType<
     CS,
-    CS extends []
-      ? []
-      : CS extends [Mixed]
+    CS extends [Mixed]
       ? [TypeOf<CS['0']>]
       : CS extends [Mixed, Mixed]
       ? [TypeOf<CS['0']>, TypeOf<CS['1']>]
@@ -1271,9 +1261,7 @@ export interface TupleC<CS extends Array<Mixed>>
       : CS extends [Mixed, Mixed, Mixed, Mixed, Mixed]
       ? [TypeOf<CS['0']>, TypeOf<CS['1']>, TypeOf<CS['2']>, TypeOf<CS['3']>, TypeOf<CS['4']>]
       : unknown,
-    CS extends []
-      ? []
-      : CS extends [Mixed]
+    CS extends [Mixed]
       ? [OutputOf<CS['0']>]
       : CS extends [Mixed, Mixed]
       ? [OutputOf<CS['0']>, OutputOf<CS['1']>]
@@ -1304,8 +1292,7 @@ export function tuple<A extends Mixed, B extends Mixed, C extends Mixed>(
 ): TupleC<[A, B, C]>
 export function tuple<A extends Mixed, B extends Mixed>(types: [A, B], name?: string): TupleC<[A, B]>
 export function tuple<A extends Mixed>(types: [A], name?: string): TupleC<[A]>
-export function tuple(types: [], name?: string): TupleC<[]>
-export function tuple<RTS extends Array<Mixed>>(
+export function tuple<RTS extends [Mixed, ...Array<Mixed>]>(
   types: RTS,
   name: string = `[${types.map(type => type.name).join(', ')}]`
 ): TupleC<RTS> {
@@ -1601,13 +1588,13 @@ export class TaggedUnionType<
 /**
  * @since 1.5.3
  */
-export interface TaggedUnionC<Tag extends string, CS extends Array<Tagged<Tag>>>
+export interface TaggedUnionC<Tag extends string, CS extends [Tagged<Tag>, Tagged<Tag>, ...Array<Tagged<Tag>>]>
   extends TaggedUnionType<Tag, CS, TypeOf<CS[number]>, OutputOf<CS[number]>, unknown> {}
 
 /**
  * @since 1.3.0
  */
-export const taggedUnion = <Tag extends string, RTS extends Array<Tagged<Tag>>>(
+export const taggedUnion = <Tag extends string, RTS extends [Tagged<Tag>, Tagged<Tag>, ...Array<Tagged<Tag>>]>(
   tag: Tag,
   types: RTS,
   name: string = `(${types.map(type => type.name).join(' | ')})`
