@@ -1601,12 +1601,11 @@ const getCodecIndexRecord = (codec: Mixed, override: Mixed = codec): IndexRecord
 
 const isIndexableCodec = (codec: Mixed): boolean => {
   return (
-    isInterfaceCodec(codec) ||
-    isExactCodec(codec) ||
-    isIntersectionCodec(codec) ||
-    isUnionCodec(codec) ||
-    isStrictCodec(codec) ||
-    isRefinementCodec(codec) ||
+    ((isInterfaceCodec(codec) || isStrictCodec(codec)) &&
+      Object.keys(codec.props).some(key => isLiteralCodec(codec.props[key]))) ||
+    ((isExactCodec(codec) || isRefinementCodec(codec)) && isIndexableCodec(codec.type)) ||
+    (isIntersectionCodec(codec) && codec.types.some(isIndexableCodec)) ||
+    (isUnionCodec(codec) && codec.types.every(isIndexableCodec)) ||
     isRecursiveCodec(codec)
   )
 }

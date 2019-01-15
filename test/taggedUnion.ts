@@ -297,4 +297,24 @@ describe('getIndexRecord', () => {
       kind: [['C2', C], ['D2', D]]
     })
   })
+
+  it('should handle recursive types defined with a union containing a non indexable codec', () => {
+    // non indexable codec
+    const A = t.type({
+      a: t.string
+    })
+
+    type A = t.TypeOf<typeof A>
+
+    interface B {
+      modules: A | B
+    }
+
+    const B = t.recursion<B>('B', self =>
+      t.type({
+        modules: t.union([A, self])
+      })
+    )
+    assert.deepEqual(t.getIndexRecord([B]), {})
+  })
 })
