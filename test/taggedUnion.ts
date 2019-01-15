@@ -307,12 +307,14 @@ describe('getIndexRecord', () => {
     type A = t.TypeOf<typeof A>
 
     interface B {
-      modules: A | B
+      ab: A | B
+      ba: B | A
     }
 
     const B = t.recursion<B>('B', self =>
       t.type({
-        modules: t.union([A, self])
+        ab: t.union([A, self]),
+        ba: t.union([self, A])
       })
     )
     assert.deepEqual(t.getIndexRecord([B]), {})
