@@ -1102,13 +1102,28 @@ export class UnionType<CS extends Array<Any>, A = any, O = A, I = unknown> exten
 export interface UnionC<CS extends [Mixed, Mixed, ...Array<Mixed>]>
   extends UnionType<CS, TypeOf<CS[number]>, OutputOf<CS[number]>, unknown> {}
 
+const fst = <A>(r: Record<string, A>): [string, A] | undefined => {
+  for (let k in r) {
+    return [k, r[k]]
+  }
+  return undefined
+}
+
+const getUnionName = <CS extends [Mixed, Mixed, ...Array<Mixed>]>(types: CS): string => {
+  return '(' + types.map(type => type.name).join(' | ') + ')'
+}
+
 /**
  * @since 1.0.0
  */
 export const union = <CS extends [Mixed, Mixed, ...Array<Mixed>]>(
   types: CS,
-  name: string = `(${types.map(type => type.name).join(' | ')})`
+  name: string = getUnionName(types)
 ): UnionC<CS> => {
+  const index = fst(getIndexRecord(types))
+  if (index) {
+    return taggedUnionWithIndex(index[1], index[0], types as any, name)
+  }
   const len = types.length
   return new UnionType(
     name,
@@ -1530,59 +1545,156 @@ export type Tagged<Tag extends string, A = any, O = A> =
   | TaggedExact<Tag, A, O>
   | RecursiveType<any, A, O>
 
-/**
- * @since 1.3.0
- */
-export const isTagged = <Tag extends string>(tag: Tag): ((type: Mixed) => type is Tagged<Tag>) => {
-  const f = (type: Mixed): type is Tagged<Tag> => {
-    if (type instanceof InterfaceType || type instanceof StrictType) {
-      return hasOwnProperty.call(type.props, tag)
-    } else if (type instanceof IntersectionType) {
-      return type.types.some(f)
-    } else if (type instanceof UnionType) {
-      return type.types.every(f)
-    } else if (type instanceof RefinementType || type instanceof ExactType) {
-      return f(type.type)
-    } else {
-      return false
+type Index = Array<[unknown, Mixed]>
+
+interface IndexRecord extends Record<string, Index> {}
+
+const isLiteralCodec = (codec: Mixed): codec is LiteralType<any> => (codec as any)._tag === 'LiteralType'
+
+const isInterfaceCodec = (codec: Mixed): codec is InterfaceType<Props> => (codec as any)._tag === 'InterfaceType'
+
+const isStrictCodec = (codec: Mixed): codec is StrictType<Props> => (codec as any)._tag === 'StrictType'
+
+const isIntersectionCodec = (codec: Mixed): codec is IntersectionType<Array<Any>> =>
+  (codec as any)._tag === 'IntersectionType'
+
+const isUnionCodec = (codec: Mixed): codec is UnionType<Array<Any>> => (codec as any)._tag === 'UnionType'
+
+const isExactCodec = (codec: Mixed): codec is ExactType<Mixed> => (codec as any)._tag === 'ExactType'
+
+const isRefinementCodec = (codec: Mixed): codec is RefinementType<Mixed> => (codec as any)._tag === 'RefinementType'
+
+const isRecursiveCodec = (codec: Mixed): codec is RecursiveType<Mixed> => (codec as any)._tag === 'RecursiveType'
+
+const getCodecIndexRecord = (codec: Mixed, override: Mixed = codec): IndexRecord => {
+  let ir: IndexRecord = {}
+  if (isInterfaceCodec(codec) || isStrictCodec(codec)) {
+    for (let k in codec.props) {
+      const prop = codec.props[k]
+      if (isLiteralCodec(prop)) {
+        const value = prop.value
+        ir[k] = [[value, override]]
+      }
     }
+  } else if (isIntersectionCodec(codec)) {
+    const types = codec.types
+    ir = getCodecIndexRecord(types[0], codec)
+    for (let i = 1; i < types.length; i++) {
+      const cir = getCodecIndexRecord(types[i], codec)
+      for (const k in cir) {
+        if (ir.hasOwnProperty(k)) {
+          ir[k].push(...cir[k])
+        } else {
+          ir[k] = cir[k]
+        }
+      }
+    }
+  } else if (isUnionCodec(codec)) {
+    return getIndexRecord(codec.types)
+  } else if (isExactCodec(codec) || isRefinementCodec(codec)) {
+    return getCodecIndexRecord(codec.type, codec)
+  } else if (isRecursiveCodec(codec)) {
+    return getCodecIndexRecord(codec.type, codec)
   }
-  return f
+  return ir
 }
 
-const findTagged = <Tag extends string>(tag: Tag, types: TaggedIntersectionArgument<Tag>): Tagged<Tag> => {
+const isIndexableCodec = (codec: Mixed): boolean => {
+  return (
+    isInterfaceCodec(codec) ||
+    isExactCodec(codec) ||
+    isIntersectionCodec(codec) ||
+    isUnionCodec(codec) ||
+    isStrictCodec(codec) ||
+    isRefinementCodec(codec) ||
+    isRecursiveCodec(codec)
+  )
+}
+
+/**
+ * @internal
+ */
+export const getIndexRecord = (types: Array<Mixed>): IndexRecord => {
   const len = types.length
-  const is = isTagged(tag)
-  let i = 0
-  for (; i < len - 1; i++) {
-    const type = types[i]
-    if (is(type)) {
-      return type
+  if (len === 0 || !types.every(isIndexableCodec)) {
+    return {}
+  }
+  const ir: IndexRecord = getCodecIndexRecord(types[0])
+  for (let i = 1; i < len; i++) {
+    const cir = getCodecIndexRecord(types[i])
+    for (const k in ir) {
+      if (cir.hasOwnProperty(k)) {
+        const is = ir[k]
+        const cis = cir[k]
+        loop: for (let j = 0; j < cis.length; j++) {
+          const pair = cis[j]
+          const index = is.findIndex(([v]) => v === pair[0])
+          if (index === -1) {
+            is.push(pair)
+          } else if (cis[index][1] !== is[index][1]) {
+            delete ir[k]
+            break loop
+          }
+        }
+      } else {
+        delete ir[k]
+      }
     }
   }
-  return types[i] as any
+  return ir
 }
 
-/**
- * @since 1.3.0
- */
-export const getTagValue = <Tag extends string>(tag: Tag): ((type: Tagged<Tag>) => string | number | boolean) => {
-  const f = (type: Tagged<Tag>): string => {
-    switch (type._tag) {
-      case 'InterfaceType':
-      case 'StrictType':
-        return type.props[tag].value
-      case 'IntersectionType':
-        return f(findTagged(tag, type.types))
-      case 'UnionType':
-        return f(type.types[0])
-      case 'RefinementType':
-      case 'ExactType':
-      case 'RecursiveType':
-        return f(type.type)
+const taggedUnionWithIndex = <Tag extends string, CS extends [Tagged<Tag>, Tagged<Tag>, ...Array<Tagged<Tag>>]>(
+  index: Index,
+  tag: Tag,
+  types: CS,
+  name: string
+): TaggedUnionC<Tag, CS> => {
+  const len = types.length
+  const find = (tagValue: unknown): [number, Mixed] | undefined => {
+    for (let i = 0; i < index.length; i++) {
+      const pair = index[i]
+      if (pair[0] === tagValue) {
+        return [i, pair[1]]
+      }
     }
   }
-  return f
+  const isTagValue = (u: unknown): u is LiteralValue => find(u) !== undefined
+  const TagValue = new Type<LiteralValue, LiteralValue, unknown>(
+    index.map(([v]) => JSON.stringify(v)).join(' | '),
+    isTagValue,
+    (u, c) => (isTagValue(u) ? success(u) : failure(u, c)),
+    identity
+  )
+  return new TaggedUnionType(
+    name,
+    (u): u is TypeOf<CS[number]> => {
+      if (!Dictionary.is(u)) {
+        return false
+      }
+      const tagValue = u[tag]
+      const type = find(tagValue)
+      return type ? type[1].is(u) : false
+    },
+    (u, c) => {
+      const dictionaryResult = Dictionary.validate(u, c)
+      if (dictionaryResult.isLeft()) {
+        return dictionaryResult
+      } else {
+        const d = dictionaryResult.value
+        const tagValue = d[tag]
+        const tagValueValidation = TagValue.validate(d[tag], appendContext(c, tag, TagValue))
+        if (tagValueValidation.isLeft()) {
+          return tagValueValidation
+        }
+        const [typeIndex, type] = find(tagValue)!
+        return type.validate(d, appendContext(c, String(typeIndex), type))
+      }
+    },
+    useIdentity(types, len) ? identity : a => find(a[tag])![1].encode(a),
+    types,
+    tag
+  )
 }
 
 /**
@@ -1619,68 +1731,19 @@ export interface TaggedUnionC<Tag extends string, CS extends [Tagged<Tag>, Tagge
 export const taggedUnion = <Tag extends string, CS extends [Tagged<Tag>, Tagged<Tag>, ...Array<Tagged<Tag>>]>(
   tag: Tag,
   types: CS,
-  name: string = `(${types.map(type => type.name).join(' | ')})`
+  name: string = getUnionName(types)
 ): TaggedUnionC<Tag, CS> => {
-  const len = types.length
-  const values: Array<string | number | boolean> = new Array(len)
-  const hash: { [key: string]: number } = {}
-  let useHash = true
-  const get = getTagValue(tag)
-  for (let i = 0; i < len; i++) {
-    const value = get(types[i])
-    useHash = useHash && string.is(value)
-    values[i] = value
-    hash[String(value)] = i
+  const indexRecord = getIndexRecord(types)
+  if (!indexRecord.hasOwnProperty(tag)) {
+    let message = `Cannot create a tagged union: ${name} is not a tagged union with respect to "${tag}"`
+    const candidates = Object.keys(indexRecord)
+    if (candidates.length > 0) {
+      message += `. Possible alternative candidates: ${JSON.stringify(candidates)}`
+    }
+    throw new Error(message)
   }
-  const isTagValue = useHash
-    ? (u: unknown): u is string | number | boolean => string.is(u) && hasOwnProperty.call(hash, u)
-    : (u: unknown): u is string | number | boolean => values.indexOf(u as any) !== -1
-  const getIndex: (tag: string | number | boolean) => number = useHash
-    ? tag => hash[tag as any]
-    : tag => {
-        let i = 0
-        for (; i < len - 1; i++) {
-          if (values[i] === tag) {
-            break
-          }
-        }
-        return i
-      }
-  const TagValue = new Type(
-    values.map(l => JSON.stringify(l)).join(' | '),
-    isTagValue,
-    (u, c) => (isTagValue(u) ? success(u) : failure(u, c)),
-    identity
-  )
-  return new TaggedUnionType<Tag, CS, TypeOf<CS[number]>, OutputOf<CS[number]>, unknown>(
-    name,
-    (v): v is TypeOf<CS[number]> => {
-      if (!Dictionary.is(v)) {
-        return false
-      }
-      const tagValue = v[tag]
-      return TagValue.is(tagValue) && types[getIndex(tagValue)].is(v)
-    },
-    (u, c) => {
-      const dictionaryValidation = Dictionary.validate(u, c)
-      if (dictionaryValidation.isLeft()) {
-        return dictionaryValidation
-      } else {
-        const d = dictionaryValidation.value
-        const tagValueValidation = TagValue.validate(d[tag], appendContext(c, tag, TagValue))
-        if (tagValueValidation.isLeft()) {
-          return tagValueValidation
-        } else {
-          const i = getIndex(tagValueValidation.value)
-          const type = types[i]
-          return type.validate(d, appendContext(c, String(i), type))
-        }
-      }
-    },
-    useIdentity(types, len) ? identity : a => types[getIndex(a[tag] as any)].encode(a),
-    types,
-    tag
-  )
+  const index = indexRecord[tag]
+  return taggedUnionWithIndex(index, tag, types, name)
 }
 
 /**

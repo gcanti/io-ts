@@ -1,5 +1,5 @@
-var Benchmark = require('benchmark')
-var t = require('../lib/index')
+import * as Benchmark from 'benchmark'
+import * as t from '../src'
 
 const suite = new Benchmark.Suite()
 
@@ -23,9 +23,9 @@ const TUB = t.intersection(
   'TUB'
 )
 
-const DateFromNumber = new t.Type(
+const DateFromNumber = new t.Type<Date, number, unknown>(
   'DateFromNumber',
-  v => v instanceof Date,
+  (u): u is Date => u instanceof Date,
   (s, c) =>
     t.number.validate(s, c).chain(n => {
       const d = new Date(n)
@@ -51,10 +51,10 @@ suite
   .add('taggedUnion (invalid)', function() {
     T.decode({ type: 'D' })
   })
-  .on('cycle', function(event) {
+  .on('cycle', function(event: any) {
     console.log(String(event.target))
   })
-  .on('complete', function() {
+  .on('complete', function(this: any) {
     console.log('Fastest is ' + this.filter('fastest').map('name'))
   })
   .run({ async: true })
