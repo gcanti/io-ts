@@ -14,6 +14,13 @@
 **Note**: Gaps between patch versions are faulty/broken releases. **Note**: A feature tagged as Experimental is in a
 high state of flux, you're at risk of it changing without notice.
 
+# 1.6.1
+
+- **Bug Fix**
+  - `taggedUnion` should handle sub unions / tagged unions correctly, closes #257 (@gcanti)
+- **Experimental**
+  - optimize `union` with the same algorithm used in `taggedUnion` (@gcanti)
+
 # 1.6.0
 
 **Important**. This version requires `typescript@3.2.2+`

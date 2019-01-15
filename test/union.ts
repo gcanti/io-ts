@@ -51,6 +51,12 @@ describe('union', () => {
         'Invalid value true supplied to : (string | number)/1: number'
       ])
     })
+
+    it('should return the same reference if validation succeeded', () => {
+      const T = t.union([t.Dictionary, t.number])
+      const value = {}
+      assertStrictEqual(T.decode(value), value)
+    })
   })
 
   describe('encode', () => {
@@ -59,21 +65,22 @@ describe('union', () => {
       assert.deepEqual(T1.encode({ a: 1 }), { a: '1' })
       assert.strictEqual(T1.encode(1), 1)
     })
+
+    it('should encode a nullary union', () => {
+      const T0 = t.union([] as any)
+      assert.strictEqual(T0.encode(1 as never), 1)
+    })
+
+    it('should return the same reference while encoding', () => {
+      const T = t.union([t.type({ a: t.number }), t.string])
+      assert.strictEqual(T.encode, t.identity)
+    })
   })
 
-  it('should encode a nullary union', () => {
-    const T0 = t.union([] as any)
-    assert.strictEqual(T0.encode(1 as never), 1)
-  })
-
-  it('should return the same reference if validation succeeded', () => {
-    const T = t.union([t.Dictionary, t.number])
-    const value = {}
-    assertStrictEqual(T.decode(value), value)
-  })
-
-  it('should return the same reference while encoding', () => {
-    const T = t.union([t.type({ a: t.number }), t.string])
-    assert.strictEqual(T.encode, t.identity)
+  it('should optimize tagged unions', () => {
+    const A = t.type({ type: t.literal('A') })
+    const B = t.type({ type: t.literal('B') })
+    const T = t.union([A, B])
+    assert.strictEqual(T instanceof t.TaggedUnionType, true)
   })
 })

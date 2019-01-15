@@ -15,6 +15,34 @@ const OptionNumberFromString = t.taggedUnion(
 )
 
 describe('taggedUnion', () => {
+  it('should throw if the arguments are wrong', () => {
+    try {
+      t.taggedUnion('type', [t.type({ a: t.string }), t.type({ b: t.number })] as any)
+      assert.ok(false)
+    } catch (error) {
+      assert.deepEqual(
+        error,
+        new Error(
+          'Cannot create a tagged union: ({ a: string } | { b: number }) is not a tagged union with respect to "type"'
+        )
+      )
+    }
+  })
+
+  it('should suggest alternative tags', () => {
+    try {
+      t.taggedUnion('tag', OptionNumber.types as any)
+      assert.ok(false)
+    } catch (error) {
+      assert.deepEqual(
+        error,
+        new Error(
+          'Cannot create a tagged union: (None | Some) is not a tagged union with respect to "tag". Possible alternative candidates: ["type"]'
+        )
+      )
+    }
+  })
+
   describe('name', () => {
     it('should assign a default name', () => {
       const OptionNumber = t.taggedUnion('type', [
@@ -47,14 +75,6 @@ describe('taggedUnion', () => {
       assertSuccess(OptionNumber.decode({ type: 'Some', value: 1 }))
     })
 
-    it('should handle multiple tag candidates', () => {
-      const A = t.type({ type: t.literal('A'), kind: t.literal('Kind') })
-      const B = t.type({ type: t.literal('B'), kind: t.literal('Kind') })
-      const TU = t.taggedUnion('type', [A, B])
-      assertSuccess(TU.decode({ type: 'A', kind: 'Kind' }))
-      assertSuccess(TU.decode({ type: 'B', kind: 'Kind' }))
-    })
-
     it('should handle intersections', () => {
       const A = t.intersection([t.type({ type: t.literal('A') }), t.partial({ a: t.string })])
       const B = t.type({ type: t.literal('B') })
@@ -63,7 +83,25 @@ describe('taggedUnion', () => {
       assertSuccess(T.decode({ type: 'B' }))
     })
 
-    it.skip('should handle sub unions', () => {
+    it('should handle recursive types', () => {
+      const A = t.type({ type: t.literal('A') })
+      interface B {
+        type: 'B'
+        forest: Array<B>
+      }
+      const B = t.recursion<B>('B', Self =>
+        t.type({
+          type: t.literal('B'),
+          forest: t.array(Self)
+        })
+      )
+      const T = t.taggedUnion('type', [A, B])
+      assertSuccess(T.decode({ type: 'A' }))
+      assertSuccess(T.decode({ type: 'B', forest: [] }))
+      assertSuccess(T.decode({ type: 'B', forest: [{ type: 'B', forest: [] }] }))
+    })
+
+    it('should handle sub unions', () => {
       const A = t.type({ type: t.literal('A') })
       const B = t.type({ type: t.literal('B') })
       const C = t.type({ type: t.literal('C') })
@@ -74,7 +112,7 @@ describe('taggedUnion', () => {
       assertSuccess(T.decode({ type: 'C' }))
     })
 
-    it.skip('should handle sub tagged unions', () => {
+    it('should handle sub tagged unions', () => {
       const A = t.type({ type: t.literal('A') })
       const B = t.type({ type: t.literal('B') })
       const C = t.type({ type: t.literal('C') })
@@ -100,7 +138,7 @@ describe('taggedUnion', () => {
       ])
     })
 
-    it('should work when tag values are numbers', () => {
+    it('should support numeric tags', () => {
       const T = t.taggedUnion('type', [
         t.type({ type: t.literal(1), a: t.string }),
         t.type({ type: t.literal(2), b: t.number })
@@ -114,7 +152,7 @@ describe('taggedUnion', () => {
       ])
     })
 
-    it('should work when tag values are booleans', () => {
+    it('should support boolean tags', () => {
       const T = t.taggedUnion('type', [
         t.type({ type: t.literal(true), a: t.string }),
         t.type({ type: t.literal(false), b: t.number })
@@ -128,21 +166,7 @@ describe('taggedUnion', () => {
       ])
     })
 
-    it('should work when tag values are booleans', () => {
-      const T = t.taggedUnion('type', [
-        t.type({ type: t.literal(true), a: t.string }),
-        t.type({ type: t.literal(false), b: t.number })
-      ])
-      assertSuccess(T.decode({ type: true, a: 'a' }))
-      assertFailure(T.decode({ type: true, a: 1 }), [
-        'Invalid value 1 supplied to : ({ type: true, a: string } | { type: false, b: number })/0: { type: true, a: string }/a: string'
-      ])
-      assertFailure(T.decode({ type: false }), [
-        'Invalid value undefined supplied to : ({ type: true, a: string } | { type: false, b: number })/1: { type: false, b: number }/b: number'
-      ])
-    })
-
-    it('should work when tag values are both strings and numbers with the same string representation', () => {
+    it('should support mixed numeric and string tags', () => {
       const T = t.taggedUnion('type', [
         t.type({ type: t.literal(1), a: t.string }),
         t.type({ type: t.literal('1'), b: t.number })
@@ -179,35 +203,98 @@ describe('taggedUnion', () => {
   })
 })
 
-describe('isTagged', () => {
-  const is = t.isTagged('type')
-  it('should return true if the type is tagged', () => {
-    const T1 = t.type({ type: t.literal('a') })
-    const T2 = t.strict({ type: t.literal('b') })
-    assert.ok(is(T1))
-    assert.ok(is(T2))
-    assert.ok(is(t.union([T1, T2])))
-    assert.ok(is(t.intersection([T1, t.type({ a: t.string })])))
-    assert.ok(is(t.refinement(T1, () => true)))
-    assert.ok(is(t.exact(T1)))
+describe('getIndexRecord', () => {
+  it('should handle zero types', () => {
+    assert.deepEqual(t.getIndexRecord([]), {})
   })
 
-  it('should return false if the type is not tagged', () => {
-    assert.ok(!is(t.string))
+  it('should handle type codecs', () => {
+    const A = t.type({ type: t.literal('A'), a: t.string })
+    assert.deepEqual(t.getIndexRecord([A]), { type: [['A', A]] })
+    const B = t.type({ type: t.literal('B') })
+    assert.deepEqual(t.getIndexRecord([A, B]), { type: [['A', A], ['B', B]] })
   })
-})
 
-describe('getTagValue', () => {
-  const get = t.getTagValue('type')
-  it('should return the tag value', () => {
-    const T1 = t.type({ type: t.literal('a') })
-    const T2 = t.strict({ type: t.literal('b') })
-    assert.strictEqual(get(T1), 'a')
-    assert.strictEqual(get(T2), 'b')
-    assert.strictEqual(get(t.union([T1, T1])), 'a')
-    assert.strictEqual(get(t.intersection([T1, t.type({ a: t.string })])), 'a')
-    assert.strictEqual(get(t.intersection([t.type({ a: t.string }), T1])), 'a')
-    assert.strictEqual(get(t.refinement(T1, () => true)), 'a')
-    assert.strictEqual(get(t.exact(T1)), 'a')
+  it('should handle refinement codecs', () => {
+    const A = t.refinement(t.type({ type: t.literal('A'), a: t.string }), () => true)
+    assert.deepEqual(t.getIndexRecord([A]), { type: [['A', A]] })
+    const B = t.type({ type: t.literal('B') })
+    assert.deepEqual(t.getIndexRecord([A, B]), { type: [['A', A], ['B', B]] })
+  })
+
+  it('should handle strict codecs', () => {
+    const A = t.strict({ type: t.literal('A') })
+    assert.deepEqual(t.getIndexRecord([A]), { type: [['A', A]] })
+    const B = t.strict({ type: t.literal('B') })
+    assert.deepEqual(t.getIndexRecord([A, B]), { type: [['A', A], ['B', B]] })
+  })
+
+  it('should handle exact codecs', () => {
+    const A = t.exact(t.strict({ type: t.literal('A') }))
+    assert.deepEqual(t.getIndexRecord([A]), { type: [['A', A]] })
+    const B = t.exact(t.strict({ type: t.literal('B') }))
+    assert.deepEqual(t.getIndexRecord([A, B]), { type: [['A', A], ['B', B]] })
+  })
+
+  it('should handle unions', () => {
+    const A = t.type({ type: t.literal('A') })
+    const B = t.type({ type: t.literal('B') })
+    const C = t.type({ type: t.literal('C') })
+    const SubUnion = t.union([A, B])
+    assert.deepEqual(t.getIndexRecord([SubUnion, C]), { type: [['A', A], ['B', B], ['C', C]] })
+  })
+
+  it('should handle intersections', () => {
+    const A = t.intersection([t.partial({ a: t.string }), t.type({ type: t.literal('A') })])
+    assert.deepEqual(t.getIndexRecord([A]), { type: [['A', A]] })
+    const B = t.intersection([t.type({ type: t.literal('_') }), t.type({ type: t.literal('B') })])
+    assert.deepEqual(t.getIndexRecord([B]), { type: [['_', B], ['B', B]] })
+    const C = t.intersection([t.type({ type: t.literal('C') }), t.type({ type: t.literal('C') })])
+    assert.deepEqual(t.getIndexRecord([C]), { type: [['C', C], ['C', C]] })
+  })
+
+  it('should handle recursive codecs', () => {
+    interface A {
+      type: 'A'
+      forest: A | undefined
+    }
+    const A = t.recursion<A>('A', Self =>
+      t.type({
+        type: t.literal('A'),
+        forest: t.union([Self, t.undefined])
+      })
+    )
+    assert.deepEqual(t.getIndexRecord([A]), { type: [['A', A]] })
+  })
+
+  it('should handle duplicated tags', () => {
+    const A = t.type({ type: t.literal('A') })
+    assert.deepEqual(t.getIndexRecord([A, A]), { type: [['A', A]] })
+    const DuplicatedA = t.type({ type: t.literal('A') })
+    assert.deepEqual(t.getIndexRecord([A, DuplicatedA]), {})
+  })
+
+  it('should handle non indexable types', () => {
+    assert.deepEqual(t.getIndexRecord([t.string]), {})
+  })
+
+  it('should bail out when no tags are available', () => {
+    const A = t.type({ type: t.literal('A') })
+    const B = t.type({ kind: t.literal('B') })
+    assert.deepEqual(t.getIndexRecord([A, B]), {})
+  })
+
+  it('should handle multiple tag candidates', () => {
+    const A = t.type({ type: t.literal('A'), kind: t.literal('Kind') })
+    const B = t.type({ type: t.literal('B'), kind: t.literal('Kind') })
+    assert.deepEqual(t.getIndexRecord([A, B]), {
+      type: [['A', A], ['B', B]]
+    })
+    const C = t.type({ type: t.literal('C1'), kind: t.literal('C2') })
+    const D = t.type({ type: t.literal('D1'), kind: t.literal('D2') })
+    assert.deepEqual(t.getIndexRecord([C, D]), {
+      type: [['C1', C], ['D1', D]],
+      kind: [['C2', C], ['D2', D]]
+    })
   })
 })
