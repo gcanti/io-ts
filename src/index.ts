@@ -106,7 +106,7 @@ export class Type<A, O = A, I = unknown> implements Decoder<I, A>, Encoder<A, O>
   readonly _O!: O
   readonly _I!: I
   constructor(
-    /** a unique name for this runtime type */
+    /** a unique name for this codec */
     readonly name: string,
     /** a custom type guard */
     readonly is: Is<A>,
@@ -161,7 +161,7 @@ export const getFunctionName = (f: Function): string =>
 /**
  * @since 1.0.0
  */
-export const getContextEntry = (key: string, type: Decoder<any, any>): ContextEntry => ({ key, type })
+export const getContextEntry = (key: string, decoder: Decoder<any, any>): ContextEntry => ({ key, type: decoder })
 
 /**
  * @since 1.0.0
@@ -171,18 +171,18 @@ export const getValidationError = (value: unknown, context: Context): Validation
 /**
  * @since 1.0.0
  */
-export const getDefaultContext = (type: Decoder<any, any>): Context => [{ key: '', type }]
+export const getDefaultContext = (decoder: Decoder<any, any>): Context => [{ key: '', type: decoder }]
 
 /**
  * @since 1.0.0
  */
-export const appendContext = (c: Context, key: string, type: Decoder<any, any>): Context => {
+export const appendContext = (c: Context, key: string, decoder: Decoder<any, any>): Context => {
   const len = c.length
   const r = Array(len + 1)
   for (let i = 0; i < len; i++) {
     r[i] = c[i]
   }
-  r[len] = { key, type }
+  r[len] = { key, type: decoder }
   return r
 }
 
@@ -209,7 +209,7 @@ const pushAll = <A>(xs: Array<A>, ys: Array<A>): void => {
   }
 }
 
-const getIsCodec = <T extends Any>(tag: string) => (type: Any): type is T => (type as any)._tag === tag
+const getIsCodec = <T extends Any>(tag: string) => (codec: Any): codec is T => (codec as any)._tag === tag
 
 const isUnknownCodec = getIsCodec<UnknownType>('UnknownType')
 
@@ -556,15 +556,15 @@ export interface RefinementC<C extends Any> extends RefinementType<C, TypeOf<C>,
  * @since 1.0.0
  */
 export const refinement = <C extends Any>(
-  type: C,
+  codec: C,
   predicate: Predicate<TypeOf<C>>,
-  name: string = `(${type.name} | ${getFunctionName(predicate)})`
+  name: string = `(${codec.name} | ${getFunctionName(predicate)})`
 ): RefinementC<C> =>
   new RefinementType(
     name,
-    (u): u is TypeOf<C> => type.is(u) && predicate(u),
+    (u): u is TypeOf<C> => codec.is(u) && predicate(u),
     (i, c) => {
-      const validation = type.validate(i, c)
+      const validation = codec.validate(i, c)
       if (validation.isLeft()) {
         return validation
       } else {
@@ -572,8 +572,8 @@ export const refinement = <C extends Any>(
         return predicate(a) ? success(a) : failure(a, c)
       }
     },
-    type.encode,
-    type,
+    codec.encode,
+    codec,
     predicate
   )
 
@@ -727,10 +727,10 @@ export interface ArrayC<C extends Mixed> extends ArrayType<C, Array<TypeOf<C>>, 
 /**
  * @since 1.0.0
  */
-export const array = <C extends Mixed>(type: C, name: string = `Array<${type.name}>`): ArrayC<C> =>
+export const array = <C extends Mixed>(codec: C, name: string = `Array<${codec.name}>`): ArrayC<C> =>
   new ArrayType(
     name,
-    (u): u is Array<TypeOf<C>> => arrayType.is(u) && u.every(type.is),
+    (u): u is Array<TypeOf<C>> => arrayType.is(u) && u.every(codec.is),
     (u, c) => {
       const arrayValidation = arrayType.validate(u, c)
       if (arrayValidation.isLeft()) {
@@ -742,7 +742,7 @@ export const array = <C extends Mixed>(type: C, name: string = `Array<${type.nam
         const errors: Errors = []
         for (let i = 0; i < len; i++) {
           const x = xs[i]
-          const validation = type.validate(x, appendContext(c, String(i), type))
+          const validation = codec.validate(x, appendContext(c, String(i), codec))
           if (validation.isLeft()) {
             pushAll(errors, validation.value)
           } else {
@@ -758,8 +758,8 @@ export const array = <C extends Mixed>(type: C, name: string = `Array<${type.nam
         return errors.length ? failures(errors) : success(a)
       }
     },
-    type.encode === identity ? identity : a => a.map(type.encode),
-    type
+    codec.encode === identity ? identity : a => a.map(codec.encode),
+    codec
   )
 
 /**
@@ -1428,19 +1428,19 @@ export interface ReadonlyC<C extends Mixed>
 /**
  * @since 1.0.0
  */
-export const readonly = <C extends Mixed>(type: C, name: string = `Readonly<${type.name}>`): ReadonlyC<C> =>
+export const readonly = <C extends Mixed>(codec: C, name: string = `Readonly<${codec.name}>`): ReadonlyC<C> =>
   new ReadonlyType(
     name,
-    type.is,
+    codec.is,
     (u, c) =>
-      type.validate(u, c).map(x => {
+      codec.validate(u, c).map(x => {
         if (process.env.NODE_ENV !== 'production') {
           return Object.freeze(x)
         }
         return x
       }),
-    type.encode === identity ? identity : type.encode,
-    type
+    codec.encode === identity ? identity : codec.encode,
+    codec
   )
 
 /**
@@ -1469,10 +1469,10 @@ export interface ReadonlyArrayC<C extends Mixed>
  * @since 1.0.0
  */
 export const readonlyArray = <C extends Mixed>(
-  type: C,
-  name: string = `ReadonlyArray<${type.name}>`
+  codec: C,
+  name: string = `ReadonlyArray<${codec.name}>`
 ): ReadonlyArrayC<C> => {
-  const arrayType = array(type)
+  const arrayType = array(codec)
   return new ReadonlyArrayType(
     name,
     arrayType.is,
@@ -1485,7 +1485,7 @@ export const readonlyArray = <C extends Mixed>(
         }
       }),
     arrayType.encode as any,
-    type
+    codec
   )
 }
 
@@ -1820,17 +1820,17 @@ export type HasProps =
   | StrictType<any, any, any, any>
   | PartialType<any, any, any, any>
 
-const getProps = (type: HasProps): Props => {
-  switch (type._tag) {
+const getProps = (codec: HasProps): Props => {
+  switch (codec._tag) {
     case 'RefinementType':
     case 'ReadonlyType':
-      return getProps(type.type)
+      return getProps(codec.type)
     case 'InterfaceType':
     case 'StrictType':
     case 'PartialType':
-      return type.props
+      return codec.props
     case 'IntersectionType':
-      return type.types.reduce<Props>((props, type) => Object.assign(props, getProps(type)), {})
+      return codec.types.reduce<Props>((props, type) => Object.assign(props, getProps(type)), {})
   }
 }
 
@@ -1842,13 +1842,13 @@ export interface ExactC<C extends HasProps> extends ExactType<C, TypeOf<C>, Outp
 /**
  * @since 1.1.0
  */
-export function exact<C extends HasProps>(type: C, name: string = `ExactType<${type.name}>`): ExactC<C> {
-  const props: Props = getProps(type)
+export function exact<C extends HasProps>(codec: C, name: string = `ExactType<${codec.name}>`): ExactC<C> {
+  const props: Props = getProps(codec)
   return new ExactType(
     name,
-    (u): u is TypeOf<C> => type.is(u) && Object.getOwnPropertyNames(u).every(k => hasOwnProperty.call(props, k)),
+    (u): u is TypeOf<C> => codec.is(u) && Object.getOwnPropertyNames(u).every(k => hasOwnProperty.call(props, k)),
     (u, c) => {
-      const looseValidation = type.validate(u, c)
+      const looseValidation = codec.validate(u, c)
       if (looseValidation.isLeft()) {
         return looseValidation
       } else {
@@ -1865,18 +1865,18 @@ export function exact<C extends HasProps>(type: C, name: string = `ExactType<${t
         return errors.length ? failures(errors) : success(o)
       }
     },
-    type.encode,
-    type
+    codec.encode,
+    codec
   )
 }
 
 /**
- * Drops the runtime type "kind"
+ * Drops the codec "kind"
  * @since 1.1.0
  * @deprecated
  */
-export function clean<A, O = A, I = unknown>(type: Type<A, O, I>): Type<A, O, I> {
-  return type as any
+export function clean<A, O = A, I = unknown>(codec: Type<A, O, I>): Type<A, O, I> {
+  return codec as any
 }
 
 /**
@@ -1893,12 +1893,12 @@ export type Exact<T, X extends T> = T &
   { [K in ({ [K in keyof X]: K } & { [K in keyof T]: never } & { [key: string]: never })[keyof X]]?: never }
 
 /**
- * Keeps the runtime type "kind"
+ * Keeps the codec "kind"
  * @since 1.1.0
  * @deprecated
  */
 export function alias<A, O, P, I>(
-  type: PartialType<P, A, O, I>
+  codec: PartialType<P, A, O, I>
 ): <
   AA extends Exact<A, AA>,
   OO extends Exact<O, OO> = O,
@@ -1906,7 +1906,7 @@ export function alias<A, O, P, I>(
   II extends I = I
 >() => PartialType<PP, AA, OO, II>
 export function alias<A, O, P, I>(
-  type: StrictType<P, A, O, I>
+  codec: StrictType<P, A, O, I>
 ): <
   AA extends Exact<A, AA>,
   OO extends Exact<O, OO> = O,
@@ -1914,7 +1914,7 @@ export function alias<A, O, P, I>(
   II extends I = I
 >() => StrictType<PP, AA, OO, II>
 export function alias<A, O, P, I>(
-  type: InterfaceType<P, A, O, I>
+  codec: InterfaceType<P, A, O, I>
 ): <
   AA extends Exact<A, AA>,
   OO extends Exact<O, OO> = O,
@@ -1922,9 +1922,9 @@ export function alias<A, O, P, I>(
   II extends I = I
 >() => InterfaceType<PP, AA, OO, II>
 export function alias<A, O, I>(
-  type: Type<A, O, I>
+  codec: Type<A, O, I>
 ): <AA extends Exact<A, AA>, OO extends Exact<O, OO> = O>() => Type<AA, OO, I> {
-  return () => type as any
+  return () => codec as any
 }
 
 export { nullType as null, undefinedType as undefined, arrayType as Array, type as interface, voidType as void }
