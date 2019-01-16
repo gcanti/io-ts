@@ -7,9 +7,9 @@
 
 Blog post: ["Typescript and validations at runtime boundaries"](https://lorefnon.tech/2018/03/25/typescript-and-validations-at-runtime-boundaries/) by [@lorefnon](https://github.com/lorefnon)
 
-A value of type `Type<A, O, I>` (called "runtime type") is the runtime representation of the static type `A`.
+A value of type `Type<A, O, I>` (called "codec") is the runtime representation of the static type `A`.
 
-Also a runtime type can
+Also a codec can
 
 - decode inputs of type `I` (through `decode`)
 - encode outputs of type `O` (through `encode`)
@@ -23,7 +23,7 @@ class Type<A, O = A, I = mixed> {
   readonly _O: O
   readonly _I: I
   constructor(
-    /** a unique name for this runtime type */
+    /** a unique name for this codec */
     readonly name: string,
     /** a custom type guard */
     readonly is: (v: mixed) => v is A,
@@ -42,12 +42,12 @@ common algebraic types in TypeScript.
 
 **Example**
 
-A runtime type representing `string` can be defined as
+A codec representing `string` can be defined as
 
 ```ts
 import * as t from 'io-ts'
 
-// runtime type definition
+// codec definition
 export class StringType extends t.Type<string> {
   // equivalent to Type<string, string, mixed> as per type parameter defaults
   readonly _tag: 'StringType' = 'StringType'
@@ -61,11 +61,11 @@ export class StringType extends t.Type<string> {
   }
 }
 
-// runtime type instance: use this when building other runtime types instances
+// codec instance: use this when building other codecs instances
 export const string = new StringType()
 ```
 
-A runtime type can be used to validate an object in memory (for example an API payload)
+A codec can be used to validate an object in memory (for example an API payload)
 
 ```ts
 const Person = t.type({
@@ -149,17 +149,17 @@ console.log(getPaths(Person.decode({}))) // => [ '.name', '.age' ]
 
 # Community
 
-- [io-ts-types](https://github.com/gcanti/io-ts-types) - A collection of runtime types and combinators for use with
+- [io-ts-types](https://github.com/gcanti/io-ts-types) - A collection of codecs and combinators for use with
   io-ts
 - [io-ts-reporters](https://github.com/OliverJAsh/io-ts-reporters) - Error reporters for io-ts
-- [geojson-iots](https://github.com/pierremarc/geojson-iots) - Runtime types for GeoJSON as defined in rfc7946 made with
+- [geojson-iots](https://github.com/pierremarc/geojson-iots) - codecs for GeoJSON as defined in rfc7946 made with
   io-ts
 - [graphql-to-io-ts](https://github.com/micimize/graphql-to-io-ts) - Generate typescript and cooresponding io-ts types from a graphql
   schema
 
 # TypeScript integration
 
-Runtime types can be inspected
+codecs can be inspected
 
 ![instrospection](docs/images/introspection.png)
 
@@ -170,7 +170,7 @@ values
 
 Note that the type annotation isn't needed, TypeScript infers the type automatically based on a schema.
 
-Static types can be extracted from runtime types using the `TypeOf` operator
+Static types can be extracted from codecs using the `TypeOf` operator
 
 ```ts
 type Person = t.TypeOf<typeof Person>
@@ -188,7 +188,7 @@ type Person = {
 import * as t from 'io-ts'
 ```
 
-| Type                      | TypeScript                              | Runtime type / combinator                             |
+| Type                      | TypeScript                              | codec / combinator                                    |
 | ------------------------- | --------------------------------------- | ----------------------------------------------------- |
 | null                      | `null`                                  | `t.null` or `t.nullType`                              |
 | undefined                 | `undefined`                             | `t.undefined`                                         |
@@ -300,7 +300,7 @@ const Adult = t.refinement(Person, person => person.age >= 18, 'Adult')
 
 # Exact types
 
-You can make a runtime type alias exact (which means that only the given properties are allowed) using the `exact` combinator
+You can make a codec alias exact (which means that only the given properties are allowed) using the `exact` combinator
 
 ```ts
 const Person = t.type({
@@ -318,7 +318,7 @@ ExactPerson.decode({ name: 'Giulio', age: 43, surname: 'Canti' }) // fails
 
 **Note**. This combinator is deprecated, use `exact` instead.
 
-You can make a runtime type strict (which means that only the given properties are allowed) using the `strict` combinator
+You can make a codec strict (which means that only the given properties are allowed) using the `strict` combinator
 
 ```ts
 const Person = t.type({
@@ -357,7 +357,7 @@ type C = {
 }
 ```
 
-You can apply `partial` to an already defined runtime type via its `props` field
+You can apply `partial` to an already defined codec via its `props` field
 
 ```ts
 const Person = t.type({
@@ -408,7 +408,7 @@ Note that you can **deserialize** while validating.
 
 # Generic Types
 
-Polymorphic runtime types are represented using functions.
+Polymorphic codecs are represented using functions.
 For example, the following typescript:
 
 ```ts
@@ -449,7 +449,7 @@ functionThatRequiresRuntimeType(ResponseBody(t.array(UserModel)), ...params)
 
 # Piping
 
-You can pipe two runtime types if their type parameters do align
+You can pipe two codecs if their type parameters do align
 
 ```ts
 const NumberDecoder = new t.Type<number, string, string>(
