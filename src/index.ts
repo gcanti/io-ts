@@ -1,5 +1,6 @@
 import { Either, Left, Right } from 'fp-ts/lib/Either'
 import { Predicate } from 'fp-ts/lib/function'
+import { Monoid } from 'fp-ts/lib/Monoid'
 
 /**
  * @since 1.0.0
@@ -1566,37 +1567,63 @@ const isRefinementCodec = (codec: Mixed): codec is RefinementType<Mixed> => (cod
 
 const isRecursiveCodec = (codec: Mixed): codec is RecursiveType<Mixed> => (codec as any)._tag === 'RecursiveType'
 
+const monoidIndexRecord: Monoid<IndexRecord> = {
+  concat: (a, b) => {
+    if (a === monoidIndexRecord.empty) {
+      return b
+    } else if (b === monoidIndexRecord.empty) {
+      return a
+    } else {
+      const r = cloneIndexRecord(a)
+      for (const k in b) {
+        if (r.hasOwnProperty(k)) {
+          r[k].push(...b[k])
+        } else {
+          r[k] = b[k]
+        }
+      }
+      return r
+    }
+  },
+  empty: {}
+}
+
+const cloneIndexRecord = (a: IndexRecord): IndexRecord => {
+  if (a === monoidIndexRecord.empty) {
+    return a
+  }
+  const r: IndexRecord = {}
+  for (const k in a) {
+    r[k] = a[k].slice()
+  }
+  return r
+}
+
 const getCodecIndexRecord = (codec: Mixed, override: Mixed = codec): IndexRecord => {
-  let ir: IndexRecord = {}
   if (isInterfaceCodec(codec) || isStrictCodec(codec)) {
+    const interfaceIndex: IndexRecord = {}
     for (let k in codec.props) {
       const prop = codec.props[k]
       if (isLiteralCodec(prop)) {
         const value = prop.value
-        ir[k] = [[value, override]]
+        interfaceIndex[k] = [[value, override]]
       }
     }
+    return interfaceIndex
   } else if (isIntersectionCodec(codec)) {
-    const types = codec.types
-    ir = getCodecIndexRecord(types[0], codec)
-    for (let i = 1; i < types.length; i++) {
-      const cir = getCodecIndexRecord(types[i], codec)
-      for (const k in cir) {
-        if (ir.hasOwnProperty(k)) {
-          ir[k].push(...cir[k])
-        } else {
-          ir[k] = cir[k]
-        }
-      }
-    }
+    return codec.types.reduce(
+      (acc, type) => monoidIndexRecord.concat(acc, getCodecIndexRecord(type, codec)),
+      monoidIndexRecord.empty
+    )
   } else if (isUnionCodec(codec)) {
     return getIndexRecord(codec.types)
   } else if (isExactCodec(codec) || isRefinementCodec(codec)) {
     return getCodecIndexRecord(codec.type, codec)
   } else if (isRecursiveCodec(codec)) {
     return getCodecIndexRecord(codec.type, codec)
+  } else {
+    return {}
   }
-  return ir
 }
 
 const isIndexableCodec = (codec: Mixed): boolean => {
@@ -1618,7 +1645,7 @@ export const getIndexRecord = (types: Array<Mixed>): IndexRecord => {
   if (len === 0 || !types.every(isIndexableCodec)) {
     return {}
   }
-  const ir: IndexRecord = getCodecIndexRecord(types[0])
+  const ir: IndexRecord = cloneIndexRecord(getCodecIndexRecord(types[0]))
   for (let i = 1; i < len; i++) {
     const cir = getCodecIndexRecord(types[i])
     for (const k in ir) {
