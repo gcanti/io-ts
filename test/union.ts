@@ -33,23 +33,28 @@ describe('union', () => {
 
   describe('decode', () => {
     it('should decode a isomorphic value', () => {
-      const T1 = t.union([t.string] as any)
-      assertSuccess(T1.decode('s'))
-      const T2 = t.union([t.string, t.number])
-      assertSuccess(T2.decode('s'))
-      assertSuccess(T2.decode(1))
+      const T = t.union([t.string, t.number])
+      assertSuccess(T.decode('s'))
+      assertSuccess(T.decode(1))
     })
 
     it('should fail decoding an invalid value', () => {
-      const T0 = t.union([] as any)
-      assertFailure(T0.decode(true), ['Invalid value true supplied to : ()'])
-      const T1 = t.union([t.string] as any)
-      assertFailure(T1.decode(true), ['Invalid value true supplied to : (string)/0: string'])
-      const T2 = t.union([t.string, t.number])
-      assertFailure(T2.decode(true), [
+      const T = t.union([t.string, t.number])
+      assertFailure(T.decode(true), [
         'Invalid value true supplied to : (string | number)/0: string',
         'Invalid value true supplied to : (string | number)/1: number'
       ])
+    })
+
+    it('should handle zero codecs', () => {
+      const T = t.union([] as any)
+      assertFailure(T.decode(true), ['Invalid value true supplied to : ()'])
+    })
+
+    it('should handle one codec', () => {
+      const T = t.union([t.string] as any)
+      assertSuccess(T.decode('s'))
+      assertFailure(T.decode(true), ['Invalid value true supplied to : (string)/0: string'])
     })
 
     it('should return the same reference if validation succeeded', () => {

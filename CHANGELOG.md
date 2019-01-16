@@ -14,6 +14,11 @@
 **Note**: Gaps between patch versions are faulty/broken releases. **Note**: A feature tagged as Experimental is in a
 high state of flux, you're at risk of it changing without notice.
 
+# 1.6.3
+
+- **Bug Fix**
+  - prevent maximum call stack size exceeded when indexing recursive codecs, closes #259 (@gcanti)
+
 # 1.6.2
 
 - **Polish**

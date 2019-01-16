@@ -15,34 +15,6 @@ const OptionNumberFromString = t.taggedUnion(
 )
 
 describe('taggedUnion', () => {
-  it('should throw if the arguments are wrong', () => {
-    try {
-      t.taggedUnion('type', [t.type({ a: t.string }), t.type({ b: t.number })] as any)
-      assert.ok(false)
-    } catch (error) {
-      assert.deepEqual(
-        error,
-        new Error(
-          'Cannot create a tagged union: ({ a: string } | { b: number }) is not a tagged union with respect to "type"'
-        )
-      )
-    }
-  })
-
-  it('should suggest alternative tags', () => {
-    try {
-      t.taggedUnion('tag', OptionNumber.types as any)
-      assert.ok(false)
-    } catch (error) {
-      assert.deepEqual(
-        error,
-        new Error(
-          'Cannot create a tagged union: (None | Some) is not a tagged union with respect to "tag". Possible alternative candidates: ["type"]'
-        )
-      )
-    }
-  })
-
   describe('name', () => {
     it('should assign a default name', () => {
       const OptionNumber = t.taggedUnion('type', [
@@ -83,7 +55,7 @@ describe('taggedUnion', () => {
       assertSuccess(T.decode({ type: 'B' }))
     })
 
-    it('should handle recursive types', () => {
+    it('should handle recursive codecs', () => {
       const A = t.type({ type: t.literal('A') })
       interface B {
         type: 'B'
@@ -136,6 +108,17 @@ describe('taggedUnion', () => {
       assertFailure(OptionNumber.decode({ type: 'Some' }), [
         'Invalid value undefined supplied to : OptionNumber/1: Some/value: number'
       ])
+    })
+
+    it('should handle zero codecs', () => {
+      const T = t.taggedUnion('type', [] as any)
+      assertFailure(T.decode(true), ['Invalid value true supplied to : ()'])
+    })
+
+    it('should handle one codec', () => {
+      const T = t.taggedUnion('type', [t.type({ type: t.literal('A') })] as any)
+      assertSuccess(T.decode({ type: 'A' }))
+      assertFailure(T.decode(null), ['Invalid value null supplied to : ({ type: "A" })'])
     })
 
     it('should support numeric tags', () => {
@@ -201,6 +184,11 @@ describe('taggedUnion', () => {
     const T = OptionNumber
     assert.strictEqual(T.encode, t.identity)
   })
+
+  it('should return a simple union if the arguments are somehow wrong', () => {
+    const T = t.taggedUnion('type', [t.type({ a: t.string }), t.type({ b: t.number })] as any)
+    assert.strictEqual(T instanceof t.TaggedUnionType, true)
+  })
 })
 
 describe('getIndexRecord', () => {
@@ -251,20 +239,8 @@ describe('getIndexRecord', () => {
     assert.deepEqual(t.getIndexRecord([B]), { type: [['_', B], ['B', B]] })
     const C = t.intersection([t.type({ type: t.literal('C') }), t.type({ type: t.literal('C') })])
     assert.deepEqual(t.getIndexRecord([C]), { type: [['C', C], ['C', C]] })
-  })
-
-  it('should handle recursive codecs', () => {
-    interface A {
-      type: 'A'
-      forest: A | undefined
-    }
-    const A = t.recursion<A>('A', Self =>
-      t.type({
-        type: t.literal('A'),
-        forest: t.union([Self, t.undefined])
-      })
-    )
-    assert.deepEqual(t.getIndexRecord([A]), { type: [['A', A]] })
+    const D = t.intersection([t.type({ type: t.literal('D1') }), t.type({ kind: t.literal('D2') })])
+    assert.deepEqual(t.getIndexRecord([D]), { type: [['D1', D]], kind: [['D2', D]] })
   })
 
   it('should handle duplicated tags', () => {
@@ -298,25 +274,131 @@ describe('getIndexRecord', () => {
     })
   })
 
-  it('should handle recursive types defined with a union containing a non indexable codec', () => {
-    // non indexable codec
-    const A = t.type({
-      a: t.string
+  it('should handle wrong arguments', () => {
+    const T = t.taggedUnion('type', [t.type({ a: t.string }), t.type({ b: t.number })] as any)
+    assert.deepEqual(t.getIndexRecord(T.types), {})
+  })
+
+  describe('recursive codecs', () => {
+    it('non tagged + union with non indexable codec', () => {
+      interface R {
+        ru: R | undefined
+        ur: undefined | R
+      }
+      const R = t.recursion<R>('R', Self =>
+        t.type({
+          ru: t.union([Self, t.undefined]),
+          ur: t.union([t.undefined, Self])
+        })
+      )
+      assert.deepEqual(t.getIndexRecord([R]), {})
     })
 
-    type A = t.TypeOf<typeof A>
+    it('tagged + union with non indexable codec', () => {
+      interface R {
+        type: 'R'
+        ru: R | undefined
+        ur: undefined | R
+      }
+      const R = t.recursion<R>('R', Self =>
+        t.type({
+          type: t.literal('R'),
+          ru: t.union([Self, t.undefined]),
+          ur: t.union([t.undefined, Self])
+        })
+      )
+      assert.deepEqual(t.getIndexRecord([R]), { type: [['R', R]] })
+    })
 
-    interface B {
-      ab: A | B
-      ba: B | A
-    }
-
-    const B = t.recursion<B>('B', self =>
-      t.type({
-        ab: t.union([A, self]),
-        ba: t.union([self, A])
+    it('non tagged + union with indexable codec', () => {
+      const A = t.type({
+        type: t.literal('A')
       })
-    )
-    assert.deepEqual(t.getIndexRecord([B]), {})
+      type A = t.TypeOf<typeof A>
+      interface R {
+        ra: R | A
+        ar: A | R
+      }
+      const R = t.recursion<R>('R', Self =>
+        t.type({
+          ra: t.union([Self, A]),
+          ar: t.union([A, Self])
+        })
+      )
+      assert.deepEqual(t.getIndexRecord([R]), {})
+      assert.deepEqual(t.getIndexRecord([A, R]), {})
+    })
+
+    it('tagged + union with indexable codec', () => {
+      const A = t.type({
+        type: t.literal('A')
+      })
+      type A = t.TypeOf<typeof A>
+      interface R {
+        type: 'R'
+        ra: R | A
+        ar: A | R
+      }
+      const R = t.recursion<R>('R', Self =>
+        t.type({
+          type: t.literal('R'),
+          ra: t.union([Self, A]),
+          ar: t.union([A, Self])
+        })
+      )
+      assert.deepEqual(t.getIndexRecord([R]), { type: [['R', R]] })
+      assert.deepEqual(t.getIndexRecord([A, R]), { type: [['A', A], ['R', R]] })
+    })
+
+    it('tagged + tagged union with indexable codec', () => {
+      const A = t.type({
+        type: t.literal('A')
+      })
+      type A = t.TypeOf<typeof A>
+      interface R {
+        type: 'R'
+        ar: A | R
+        ra: R | A
+      }
+      const R = t.recursion<R>('R', self =>
+        t.type({
+          type: t.literal('R'),
+          ar: t.taggedUnion('type', [A, self as any]),
+          ra: t.taggedUnion('type', [self as any, A])
+        })
+      )
+      assert.deepEqual(t.getIndexRecord([R]), { type: [['R', R]] })
+      assert.deepEqual(t.getIndexRecord([A, R]), { type: [['A', A], ['R', R]] })
+    })
+
+    it('mutually recursive codecs', () => {
+      interface A {
+        type: 'A'
+        bu: B | undefined
+        ub: undefined | B
+      }
+      const A: t.RecursiveType<t.Type<A>, A> = t.recursion('A', () =>
+        t.type({
+          type: t.literal('A'),
+          bu: t.union([B, t.undefined]),
+          ub: t.union([t.undefined, B])
+        })
+      )
+      interface B {
+        type: 'B'
+        au: A | undefined
+        ua: undefined | A
+      }
+      const B = t.recursion<B>('B', () =>
+        t.type({
+          type: t.literal('B'),
+          au: t.union([A, t.undefined]),
+          ua: t.union([t.undefined, A])
+        })
+      )
+      assert.deepEqual(t.getIndexRecord([A]), { type: [['A', A]] })
+      assert.deepEqual(t.getIndexRecord([B]), { type: [['B', B]] })
+      assert.deepEqual(t.getIndexRecord([A, B]), { type: [['A', A], ['B', B]] })
+    })
   })
 })
