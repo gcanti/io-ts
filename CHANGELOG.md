@@ -14,6 +14,14 @@
 **Note**: Gaps between patch versions are faulty/broken releases. **Note**: A feature tagged as Experimental is in a
 high state of flux, you're at risk of it changing without notice.
 
+# 1.6.4
+
+- **Bug Fix**
+  - `getIndexRecord`: getIndexRecord: handle conflicting tags in different positions, ref #263 (@gcanti)
+- **Experimental**
+  - added a warning to the console if a tagged union cannot be created (@gcanti)
+  - revert `union` optimization, needs more work to make it happen (@gcanti)
+
 # 1.6.3
 
 - **Bug Fix**

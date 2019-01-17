@@ -46,21 +46,30 @@ describe('union', () => {
       ])
     })
 
-    it('should handle zero codecs', () => {
-      const T = t.union([] as any)
-      assertFailure(T.decode(true), ['Invalid value true supplied to : ()'])
-    })
-
-    it('should handle one codec', () => {
-      const T = t.union([t.string] as any)
-      assertSuccess(T.decode('s'))
-      assertFailure(T.decode(true), ['Invalid value true supplied to : (string)/0: string'])
+    it('should handle refinements', () => {
+      const A = t.type({ type: t.literal('A'), a: t.number })
+      const B = t.refinement(A, x => x.a > 0)
+      const T = t.union([B, A])
+      assertSuccess(T.decode({ type: 'A', a: -1 }))
     })
 
     it('should return the same reference if validation succeeded', () => {
       const T = t.union([t.Dictionary, t.number])
       const value = {}
       assertStrictEqual(T.decode(value), value)
+    })
+
+    describe('robustness', () => {
+      it('should handle zero codecs', () => {
+        const T = t.union([] as any)
+        assertFailure(T.decode(true), ['Invalid value true supplied to : ()'])
+      })
+
+      it('should handle one codec', () => {
+        const T = t.union([t.string] as any)
+        assertSuccess(T.decode('s'))
+        assertFailure(T.decode(true), ['Invalid value true supplied to : (string)/0: string'])
+      })
     })
   })
 
@@ -82,7 +91,7 @@ describe('union', () => {
     })
   })
 
-  it('should optimize tagged unions', () => {
+  it.skip('should optimize tagged unions', () => {
     const A = t.type({ type: t.literal('A') })
     const B = t.type({ type: t.literal('B') })
     const T = t.union([A, B])

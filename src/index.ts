@@ -695,7 +695,7 @@ export const recursion = <A, O = A, I = unknown, C extends Type<A, O, I> = Type<
   Self.getIndexRecord = () => {
     if (!indexRecordCache) {
       isRecursiveCodecIndexable = false
-      indexRecordCache = getCodecIndexRecord(definition(Self), Self)
+      indexRecordCache = getCodecIndexRecord(definition(Self), Self, Self)
       isRecursiveCodecIndexable = true
     }
     return indexRecordCache
@@ -790,9 +790,9 @@ const getNameFromProps = (props: Props): string =>
     .map(k => `${k}: ${props[k].name}`)
     .join(', ')} }`
 
-const useIdentity = (types: Array<Any>, len: number): boolean => {
+const useIdentity = (codecs: Array<Any>, len: number): boolean => {
   for (let i = 0; i < len; i++) {
-    if (types[i].encode !== identity) {
+    if (codecs[i].encode !== identity) {
       return false
     }
   }
@@ -1132,60 +1132,48 @@ export class UnionType<CS extends Array<Any>, A = any, O = A, I = unknown> exten
 export interface UnionC<CS extends [Mixed, Mixed, ...Array<Mixed>]>
   extends UnionType<CS, TypeOf<CS[number]>, OutputOf<CS[number]>, unknown> {}
 
-const fst = <A>(r: Record<string, A>): [string, A] | undefined => {
-  for (let k in r) {
-    return [k, r[k]]
-  }
-  return undefined
-}
-
-const getUnionName = <CS extends [Mixed, Mixed, ...Array<Mixed>]>(types: CS): string => {
-  return '(' + types.map(type => type.name).join(' | ') + ')'
+const getUnionName = <CS extends [Mixed, Mixed, ...Array<Mixed>]>(codecs: CS): string => {
+  return '(' + codecs.map(type => type.name).join(' | ') + ')'
 }
 
 /**
  * @since 1.0.0
  */
 export const union = <CS extends [Mixed, Mixed, ...Array<Mixed>]>(
-  types: CS,
-  name: string = getUnionName(types)
+  codecs: CS,
+  name: string = getUnionName(codecs)
 ): UnionC<CS> => {
-  const index = fst(getIndexRecord(types))
-  if (index) {
-    return taggedUnionWithIndex(index[1], index[0], types as any, name)
-  } else {
-    const len = types.length
-    return new UnionType(
-      name,
-      (u): u is TypeOf<CS[number]> => types.some(type => type.is(u)),
-      (u, c) => {
-        const errors: Errors = []
-        for (let i = 0; i < len; i++) {
-          const type = types[i]
-          const validation = type.validate(u, appendContext(c, String(i), type))
-          if (validation.isRight()) {
-            return validation
-          } else {
-            pushAll(errors, validation.value)
-          }
+  const len = codecs.length
+  return new UnionType(
+    name,
+    (u): u is TypeOf<CS[number]> => codecs.some(type => type.is(u)),
+    (u, c) => {
+      const errors: Errors = []
+      for (let i = 0; i < len; i++) {
+        const type = codecs[i]
+        const validation = type.validate(u, appendContext(c, String(i), type))
+        if (validation.isRight()) {
+          return validation
+        } else {
+          pushAll(errors, validation.value)
         }
-        return errors.length ? failures(errors) : failure(u, c)
-      },
-      useIdentity(types, len)
-        ? identity
-        : a => {
-            let i = 0
-            for (; i < len - 1; i++) {
-              const type = types[i]
-              if (type.is(a)) {
-                return type.encode(a)
-              }
+      }
+      return errors.length ? failures(errors) : failure(u, c)
+    },
+    useIdentity(codecs, len)
+      ? identity
+      : a => {
+          let i = 0
+          for (; i < len - 1; i++) {
+            const type = codecs[i]
+            if (type.is(a)) {
+              return type.encode(a)
             }
-            return types[i].encode(a)
-          },
-      types
-    )
-  }
+          }
+          return codecs[i].encode(a)
+        },
+    codecs
+  )
 }
 
 /**
@@ -1242,31 +1230,31 @@ export interface IntersectionC<CS extends [Mixed, Mixed, ...Array<Mixed>]>
  * @since 1.0.0
  */
 export function intersection<A extends Mixed, B extends Mixed, C extends Mixed, D extends Mixed, E extends Mixed>(
-  types: [A, B, C, D, E],
+  codecs: [A, B, C, D, E],
   name?: string
 ): IntersectionC<[A, B, C, D, E]>
 export function intersection<A extends Mixed, B extends Mixed, C extends Mixed, D extends Mixed>(
-  types: [A, B, C, D],
+  codecs: [A, B, C, D],
   name?: string
 ): IntersectionC<[A, B, C, D]>
 export function intersection<A extends Mixed, B extends Mixed, C extends Mixed>(
-  types: [A, B, C],
+  codecs: [A, B, C],
   name?: string
 ): IntersectionC<[A, B, C]>
-export function intersection<A extends Mixed, B extends Mixed>(types: [A, B], name?: string): IntersectionC<[A, B]>
+export function intersection<A extends Mixed, B extends Mixed>(codecs: [A, B], name?: string): IntersectionC<[A, B]>
 export function intersection<CS extends [Mixed, Mixed, ...Array<Mixed>]>(
-  types: CS,
-  name: string = `(${types.map(type => type.name).join(' & ')})`
+  codecs: CS,
+  name: string = `(${codecs.map(type => type.name).join(' & ')})`
 ): IntersectionC<CS> {
-  const len = types.length
+  const len = codecs.length
   return new IntersectionType(
     name,
-    (u): u is any => (len === 0 ? false : types.every(type => type.is(u))),
+    (u): u is any => (len === 0 ? false : codecs.every(type => type.is(u))),
     (u, c) => {
       let a = u
       const errors: Errors = []
       for (let i = 0; i < len; i++) {
-        const type = types[i]
+        const type = codecs[i]
         const validation = type.validate(a, appendContext(c, String(i), type))
         if (validation.isLeft()) {
           pushAll(errors, validation.value)
@@ -1276,17 +1264,17 @@ export function intersection<CS extends [Mixed, Mixed, ...Array<Mixed>]>(
       }
       return errors.length ? failures(errors) : len === 0 ? failure(u, c) : success(a)
     },
-    useIdentity(types, len)
+    useIdentity(codecs, len)
       ? identity
       : a => {
           let s = a
           for (let i = 0; i < len; i++) {
-            const type = types[i]
+            const type = codecs[i]
             s = type.encode(s)
           }
           return s
         },
-    types
+    codecs
   )
 }
 
@@ -1341,27 +1329,27 @@ export interface TupleC<CS extends [Mixed, ...Array<Mixed>]>
  * @since 1.0.0
  */
 export function tuple<A extends Mixed, B extends Mixed, C extends Mixed, D extends Mixed, E extends Mixed>(
-  types: [A, B, C, D, E],
+  codecs: [A, B, C, D, E],
   name?: string
 ): TupleC<[A, B, C, D, E]>
 export function tuple<A extends Mixed, B extends Mixed, C extends Mixed, D extends Mixed>(
-  types: [A, B, C, D],
+  codecs: [A, B, C, D],
   name?: string
 ): TupleC<[A, B, C, D]>
 export function tuple<A extends Mixed, B extends Mixed, C extends Mixed>(
-  types: [A, B, C],
+  codecs: [A, B, C],
   name?: string
 ): TupleC<[A, B, C]>
-export function tuple<A extends Mixed, B extends Mixed>(types: [A, B], name?: string): TupleC<[A, B]>
-export function tuple<A extends Mixed>(types: [A], name?: string): TupleC<[A]>
+export function tuple<A extends Mixed, B extends Mixed>(codecs: [A, B], name?: string): TupleC<[A, B]>
+export function tuple<A extends Mixed>(codecs: [A], name?: string): TupleC<[A]>
 export function tuple<CS extends [Mixed, ...Array<Mixed>]>(
-  types: CS,
-  name: string = `[${types.map(type => type.name).join(', ')}]`
+  codecs: CS,
+  name: string = `[${codecs.map(type => type.name).join(', ')}]`
 ): TupleC<CS> {
-  const len = types.length
+  const len = codecs.length
   return new TupleType(
     name,
-    (u): u is any => arrayType.is(u) && u.length === len && types.every((type, i) => type.is(u[i])),
+    (u): u is any => arrayType.is(u) && u.length === len && codecs.every((type, i) => type.is(u[i])),
     (u, c) => {
       const arrayValidation = arrayType.validate(u, c)
       if (arrayValidation.isLeft()) {
@@ -1372,7 +1360,7 @@ export function tuple<CS extends [Mixed, ...Array<Mixed>]>(
         const errors: Errors = []
         for (let i = 0; i < len; i++) {
           const a = as[i]
-          const type = types[i]
+          const type = codecs[i]
           const validation = type.validate(a, appendContext(c, String(i), type))
           if (validation.isLeft()) {
             pushAll(errors, validation.value)
@@ -1393,8 +1381,8 @@ export function tuple<CS extends [Mixed, ...Array<Mixed>]>(
         return errors.length ? failures(errors) : success(t)
       }
     },
-    useIdentity(types, len) ? identity : a => types.map((type, i) => type.encode(a[i])),
-    types
+    useIdentity(codecs, len) ? identity : a => codecs.map((type, i) => type.encode(a[i])),
+    codecs
   )
 }
 
@@ -1576,9 +1564,14 @@ export type Tagged<Tag extends string, A = any, O = A> =
   | TaggedExact<Tag, A, O>
   | RecursiveType<any, A, O>
 
-interface Index extends Array<[unknown, Mixed]> {}
+type IndexItem = [unknown, Any, Any]
+
+interface Index extends Array<IndexItem> {}
 
 interface IndexRecord extends Record<string, Index> {}
+
+/** @internal */
+export const emptyIndexRecord: IndexRecord = {}
 
 const monoidIndexRecord: Monoid<IndexRecord> = {
   concat: (a, b) => {
@@ -1598,7 +1591,14 @@ const monoidIndexRecord: Monoid<IndexRecord> = {
       return r
     }
   },
-  empty: {}
+  empty: emptyIndexRecord
+}
+
+const isIndexRecordEmpty = (a: IndexRecord): boolean => {
+  for (const _ in a) {
+    return false
+  }
+  return true
 }
 
 const foldMapIndexRecord = <A>(as: Array<A>, f: (a: A) => IndexRecord): IndexRecord => {
@@ -1613,25 +1613,37 @@ const cloneIndexRecord = (a: IndexRecord): IndexRecord => {
   return r
 }
 
-const getCodecIndexRecord = (codec: Any, override: Any = codec): IndexRecord => {
+const updateindexRecordOrigin = (origin: Any, indexRecord: IndexRecord): IndexRecord => {
+  const r: IndexRecord = {}
+  for (const k in indexRecord) {
+    r[k] = indexRecord[k].map<IndexItem>(([v, _, id]) => [v, origin, id])
+  }
+  return r
+}
+
+const getCodecIndexRecord = (codec: Any, origin: Any, id: Any): IndexRecord => {
   if (isInterfaceCodec(codec) || isStrictCodec(codec)) {
     const interfaceIndex: IndexRecord = {}
     for (let k in codec.props) {
       const prop = codec.props[k]
       if (isLiteralCodec(prop)) {
         const value = prop.value
-        interfaceIndex[k] = [[value, override]]
+        interfaceIndex[k] = [[value, origin, id]]
       }
     }
     return interfaceIndex
   } else if (isIntersectionCodec(codec)) {
-    return foldMapIndexRecord(codec.types, type => getCodecIndexRecord(type, codec))
+    return foldMapIndexRecord(codec.types, type => getCodecIndexRecord(type, origin, codec))
   } else if (isUnionCodec(codec)) {
-    return getIndexRecord(codec.types)
+    return foldMapIndexRecord(codec.types, type => getCodecIndexRecord(type, origin, type))
   } else if (isExactCodec(codec) || isRefinementCodec(codec)) {
-    return getCodecIndexRecord(codec.type, codec)
+    return getCodecIndexRecord(codec.type, origin, codec)
   } else if (isRecursiveCodec(codec)) {
-    return codec.getIndexRecord()
+    const indexRecord = codec.getIndexRecord()
+    if (codec !== origin) {
+      return updateindexRecordOrigin(origin, indexRecord)
+    }
+    return indexRecord
   } else {
     return monoidIndexRecord.empty
   }
@@ -1653,24 +1665,26 @@ const isIndexableCodec = (codec: Any): boolean => {
 /**
  * @internal
  */
-export const getIndexRecord = (types: Array<Mixed>): IndexRecord => {
-  const len = types.length
-  if (len === 0 || !types.every(isIndexableCodec)) {
-    return {}
+export const getIndexRecord = (codecs: Array<Mixed>): IndexRecord => {
+  const len = codecs.length
+  if (len === 0 || !codecs.every(isIndexableCodec)) {
+    return monoidIndexRecord.empty
   }
-  const ir: IndexRecord = cloneIndexRecord(getCodecIndexRecord(types[0]))
+  const firstCodec = codecs[0]
+  const ir: IndexRecord = cloneIndexRecord(getCodecIndexRecord(firstCodec, firstCodec, firstCodec))
   for (let i = 1; i < len; i++) {
-    const cir = getCodecIndexRecord(types[i])
+    const codec = codecs[i]
+    const cir = getCodecIndexRecord(codec, codec, codec)
     for (const k in ir) {
       if (cir.hasOwnProperty(k)) {
         const is = ir[k]
         const cis = cir[k]
         loop: for (let j = 0; j < cis.length; j++) {
-          const pair = cis[j]
-          const index = is.findIndex(([v]) => v === pair[0])
+          const indexItem = cis[j]
+          const index = is.findIndex(([v]) => v === indexItem[0])
           if (index === -1) {
-            is.push(pair)
-          } else if (cis[index][1] !== is[index][1]) {
+            is.push(indexItem)
+          } else if (indexItem[2] !== is[index][2]) {
             delete ir[k]
             break loop
           }
@@ -1680,21 +1694,25 @@ export const getIndexRecord = (types: Array<Mixed>): IndexRecord => {
       }
     }
   }
-  return ir
+  return isIndexRecordEmpty(ir) ? monoidIndexRecord.empty : ir
 }
 
-const taggedUnionWithIndex = <Tag extends string, CS extends [Tagged<Tag>, Tagged<Tag>, ...Array<Tagged<Tag>>]>(
+const getTaggedUnion = <Tag extends string, CS extends [Tagged<Tag>, Tagged<Tag>, ...Array<Tagged<Tag>>]>(
   index: Index,
   tag: Tag,
-  types: CS,
+  codecs: CS,
   name: string
 ): TaggedUnionC<Tag, CS> => {
-  const len = types.length
+  const len = codecs.length
+  const indexWithPosition: Array<[unknown, number]> = index.map<[unknown, number]>(([v, origin]) => [
+    v,
+    codecs.findIndex(codec => codec === origin)
+  ])
   const find = (tagValue: unknown): [number, Mixed] | undefined => {
-    for (let i = 0; i < index.length; i++) {
-      const pair = index[i]
-      if (pair[0] === tagValue) {
-        return [i, pair[1]]
+    for (let i = 0; i < indexWithPosition.length; i++) {
+      const [value, position] = indexWithPosition[i]
+      if (value === tagValue) {
+        return [i, codecs[position]]
       }
     }
   }
@@ -1726,12 +1744,12 @@ const taggedUnionWithIndex = <Tag extends string, CS extends [Tagged<Tag>, Tagge
         if (tagValueValidation.isLeft()) {
           return tagValueValidation
         }
-        const [typeIndex, type] = find(tagValue)!
-        return type.validate(d, appendContext(c, String(typeIndex), type))
+        const [i, type] = find(tagValue)!
+        return type.validate(d, appendContext(c, String(i), type))
       }
     },
-    useIdentity(types, len) ? identity : a => find(a[tag])![1].encode(a),
-    types,
+    useIdentity(codecs, len) ? identity : a => find(a[tag])![1].encode(a),
+    codecs,
     tag
   )
 }
@@ -1751,10 +1769,10 @@ export class TaggedUnionType<
     is: TaggedUnionType<Tag, CS, A, O, I>['is'],
     validate: TaggedUnionType<Tag, CS, A, O, I>['validate'],
     encode: TaggedUnionType<Tag, CS, A, O, I>['encode'],
-    types: CS,
+    codecs: CS,
     readonly tag: Tag
   ) {
-    super(name, is, validate, encode, types) /* istanbul ignore next */ // <= workaround for https://github.com/Microsoft/TypeScript/issues/13455
+    super(name, is, validate, encode, codecs) /* istanbul ignore next */ // <= workaround for https://github.com/Microsoft/TypeScript/issues/13455
   }
 }
 
@@ -1769,15 +1787,18 @@ export interface TaggedUnionC<Tag extends string, CS extends [Tagged<Tag>, Tagge
  */
 export const taggedUnion = <Tag extends string, CS extends [Tagged<Tag>, Tagged<Tag>, ...Array<Tagged<Tag>>]>(
   tag: Tag,
-  types: CS,
-  name: string = getUnionName(types)
+  codecs: CS,
+  name: string = getUnionName(codecs)
 ): TaggedUnionC<Tag, CS> => {
-  const indexRecord = getIndexRecord(types)
+  const indexRecord = getIndexRecord(codecs)
   if (!indexRecord.hasOwnProperty(tag)) {
-    const U = union(types, name)
-    return new TaggedUnionType(name, U.is, U.validate, U.encode, types, tag)
+    if (isRecursiveCodecIndexable && codecs.length > 0) {
+      console.warn(`[io-ts] Cannot build a tagged union for (B | A), returning a de-optimized union`)
+    }
+    const U = union(codecs, name)
+    return new TaggedUnionType(name, U.is, U.validate, U.encode, codecs, tag)
   } else {
-    return taggedUnionWithIndex(indexRecord[tag], tag, types, name)
+    return getTaggedUnion(indexRecord[tag], tag, codecs, name)
   }
 }
 

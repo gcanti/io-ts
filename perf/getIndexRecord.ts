@@ -11,15 +11,12 @@ const A = t.intersection([
     bar: t.number
   })
 ])
-const U1 = t.union([A, t.undefined])
-const U2 = t.union([t.undefined, A])
+const B = t.type({ type: t.literal('B') })
+const U = t.union([A, B])
 
 suite
-  .add('getIndexRecord (U1)', function() {
-    t.getIndexRecord(U1.types)
-  })
-  .add('getIndexRecord (U2)', function() {
-    t.getIndexRecord(U2.types)
+  .add('getIndexRecord', function() {
+    t.getIndexRecord(U.types)
   })
   .on('cycle', function(event: any) {
     console.log(String(event.target))
