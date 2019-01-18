@@ -25,6 +25,7 @@ export interface Context extends ReadonlyArray<ContextEntry> {}
 export interface ValidationError {
   readonly value: unknown
   readonly context: Context
+  readonly message?: string
 }
 
 /**
@@ -194,8 +195,8 @@ export const failures = <T>(errors: Errors): Validation<T> => new Left(errors)
 /**
  * @since 1.0.0
  */
-export const failure = <T>(value: unknown, context: Context): Validation<T> =>
-  failures([getValidationError(value, context)])
+export const failure = <T>(value: unknown, context: Context, message?: string): Validation<T> =>
+  failures([{ value, context, message }])
 
 /**
  * @since 1.0.0

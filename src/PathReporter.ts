@@ -9,15 +9,17 @@ function getContextPath(context: Context): string {
   return context.map(({ key, type }) => `${key}: ${type.name}`).join('/')
 }
 
-function getMessage(v: any, context: Context): string {
-  return `Invalid value ${stringify(v)} supplied to ${getContextPath(context)}`
+function getMessage(e: ValidationError): string {
+  return e.message !== undefined
+    ? e.message
+    : `Invalid value ${stringify(e.value)} supplied to ${getContextPath(e.context)}`
 }
 
 /**
  * @since 1.0.0
  */
 export function failure(es: Array<ValidationError>): Array<string> {
-  return es.map(e => getMessage(e.value, e.context))
+  return es.map(getMessage)
 }
 
 /**
