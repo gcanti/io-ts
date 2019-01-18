@@ -149,6 +149,28 @@ const Person = t.type({
 console.log(getPaths(Person.decode({}))) // => [ '.name', '.age' ]
 ```
 
+# Custom error messages
+
+You can set your own error message by providing a `message` argument to `failure`
+
+Example
+
+```ts
+const NumberFromString = new t.Type<number, string, unknown>(
+  'NumberFromString',
+  t.number.is,
+  (u, c) =>
+    t.string.validate(u, c).chain(s => {
+      const n = +s
+      return isNaN(n) ? t.failure(u, c, 'cannot parse to a number') : t.success(n)
+    }),
+  String
+)
+
+console.log(PathReporter.report(NumberFromString.decode('a')))
+// => ['cannot parse to a number']
+```
+
 # Community
 
 - [io-ts-types](https://github.com/gcanti/io-ts-types) - A collection of codecs and combinators for use with
