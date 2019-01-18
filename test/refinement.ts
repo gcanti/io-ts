@@ -52,7 +52,7 @@ describe('refinement', () => {
 
     it('should fail with the last deserialized value', () => {
       const T = IntegerFromString
-      assertFailure(T.decode('a'), ['Invalid value "a" supplied to : IntegerFromString'])
+      assertFailure(T.decode('a'), ['cannot parse to a number'])
       assertFailure(T.decode('1.2'), ['Invalid value 1.2 supplied to : IntegerFromString'])
     })
   })

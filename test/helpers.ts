@@ -39,23 +39,16 @@ export function assertFailure<T>(result: t.Validation<T>, errors: Array<string>)
   }
 }
 
-class NumberFromStringType extends t.Type<number, string, unknown> {
-  readonly _tag: 'NumberFromStringType' = 'NumberFromStringType'
-  constructor() {
-    super(
-      'NumberFromString',
-      t.number.is,
-      (u, c) =>
-        t.string.validate(u, c).chain(s => {
-          const n = +s
-          return isNaN(n) ? t.failure(u, c) : t.success(n)
-        }),
-      String
-    )
-  }
-}
-
-export const NumberFromString = new NumberFromStringType()
+export const NumberFromString = new t.Type<number, string, unknown>(
+  'NumberFromString',
+  t.number.is,
+  (u, c) =>
+    t.string.validate(u, c).chain(s => {
+      const n = +s
+      return isNaN(n) ? t.failure(u, c, 'cannot parse to a number') : t.success(n)
+    }),
+  String
+)
 
 export const HyphenatedString = new t.Type<string, string, unknown>(
   'HyphenatedString',
