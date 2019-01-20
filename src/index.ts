@@ -1679,14 +1679,14 @@ export const getIndexRecord = (codecs: Array<Mixed>): IndexRecord => {
       if (cir.hasOwnProperty(k)) {
         const is = ir[k]
         const cis = cir[k]
-        loop: for (let j = 0; j < cis.length; j++) {
+        for (let j = 0; j < cis.length; j++) {
           const indexItem = cis[j]
           const index = is.findIndex(([v]) => v === indexItem[0])
           if (index === -1) {
             is.push(indexItem)
           } else if (indexItem[2] !== is[index][2]) {
             delete ir[k]
-            break loop
+            break
           }
         }
       } else {
