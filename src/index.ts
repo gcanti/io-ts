@@ -820,13 +820,53 @@ export interface Props {
  * @since 1.5.3
  */
 export interface TypeC<P extends Props>
-  extends InterfaceType<P, { [K in keyof P]: TypeOf<P[K]> }, { [K in keyof P]: OutputOf<P[K]> }, unknown> {}
+extends InterfaceType<P, { [K in keyof P]: TypeOf<P[K]> }, { [K in keyof P]: OutputOf<P[K]> }, unknown> {}
+
+interface Optional {
+  optional: true
+}
+
+export const optional = <T>(rt: Type<T>, name?: string) => {
+  const unionType = union([rt, nullType, undefinedType], name)
+  return Object.assign(unionType, { optional: true } as Optional)
+}
+
+type OptionalPropsKeys<P extends Props> = { [K in keyof P]: P[K] extends Optional ? K : never }[keyof P]
+type OptionalPropsTypes<P extends Props> = { [K in OptionalPropsKeys<P>]?: P[K] extends Optional ? P[K]['_A'] : never }
+type OptionalPropsOutputs<P extends Props> = {
+  [K in OptionalPropsKeys<P>]?: P[K] extends Optional ? P[K]['_O'] : never
+}
+type RequiredPropsKeys<P extends Props> = { [K in keyof P]: P[K] extends Optional ? never : K }[keyof P]
+type RequiredPropsTypes<P extends Props> = { [K in RequiredPropsKeys<P>]: P[K] extends Optional ? never : P[K]['_A'] }
+type RequiredPropsOutputs<P extends Props> = { [K in RequiredPropsKeys<P>]: P[K] extends Optional ? never : P[K]['_O'] }
+
+export const partialPartial = <P extends Props>(
+  props: P,
+  name?: string
+): Type<OptionalPropsTypes<P> & RequiredPropsTypes<P>, OptionalPropsOutputs<P> & RequiredPropsOutputs<P>, mixed> => {
+  let someOptional = false
+  const [optionalProps, requiredProps] = [{}, {}] as Props[]
+  for (const key of Object.keys(props)) {
+    const val: any = props[key]
+    if (val.optional) {
+      someOptional = true
+      optionalProps[key] = val
+    } else {
+      requiredProps[key] = val
+    }
+  }
+  if (someOptional) {
+    return intersection([type(requiredProps), partial(optionalProps)], name) as any
+  } else {
+    return type(props, name) as any
+  }
+}
 
 /**
  * @alias `interface`
  * @since 1.0.0
  */
-export const type =<P extends Props>(props: P, name: string = getNameFromProps(props)): TypeC<P> => {
+export const type = <P extends Props>(props: P, name: string = getNameFromProps(props)): TypeC<P> => {
   const keys = Object.keys(props)
   const types = keys.map(key => props[key])
   const len = keys.length

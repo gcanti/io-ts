@@ -587,3 +587,14 @@ declare function withValidation<L, A>(
 declare const fa: TaskEither<string, void>
 
 withValidation(t.void, () => 'validation error', fa)
+
+const Person = t.partialPartial({
+  name: t.string,
+  age: t.optional(t.number),
+})
+type Person = t.TypeOf<typeof Person>
+
+const bob: Person = { name: 'Bob' }
+const bob30: Person = { name: 'Bob', age: 30 }
+// $ExpectError
+const nobody: Person = {}
