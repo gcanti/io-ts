@@ -826,7 +826,7 @@ export interface TypeC<P extends Props>
  * @alias `interface`
  * @since 1.0.0
  */
-export const type = <P extends Props>(props: P, name: string = getNameFromProps(props)): TypeC<P> => {
+export const type =<P extends Props>(props: P, name: string = getNameFromProps(props)): TypeC<P> => {
   const keys = Object.keys(props)
   const types = keys.map(key => props[key])
   const len = keys.length
