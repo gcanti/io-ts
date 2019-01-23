@@ -820,7 +820,7 @@ export interface Props {
  * @since 1.5.3
  */
 export interface TypeC<P extends Props>
-extends InterfaceType<P, { [K in keyof P]: TypeOf<P[K]> }, { [K in keyof P]: OutputOf<P[K]> }, unknown> {}
+  extends InterfaceType<P, { [K in keyof P]: TypeOf<P[K]> }, { [K in keyof P]: OutputOf<P[K]> }, unknown> {}
 
 interface Optional {
   optional: true
