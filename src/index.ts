@@ -13,6 +13,8 @@ export type mixed = unknown
 export interface ContextEntry {
   readonly key: string
   readonly type: Decoder<any, any>
+  /** the input data */
+  readonly actual?: unknown
 }
 /**
  * @since 1.0.0
@@ -23,8 +25,11 @@ export interface Context extends ReadonlyArray<ContextEntry> {}
  * @since 1.0.0
  */
 export interface ValidationError {
+  /** the offending (sub)value */
   readonly value: unknown
+  /** where the error originated */
   readonly context: Context
+  /** optional custom error message */
   readonly message?: string
 }
 
@@ -144,7 +149,7 @@ export class Type<A, O = A, I = unknown> implements Decoder<I, A>, Encoder<A, O>
   }
   /** a version of `validate` with a default context */
   decode(i: I): Validation<A> {
-    return this.validate(i, getDefaultContext(this))
+    return this.validate(i, [{ key: '', type: this, actual: i }])
   }
 }
 
@@ -166,13 +171,20 @@ export const getContextEntry = (key: string, decoder: Decoder<any, any>): Contex
 
 /**
  * @since 1.0.0
+ * @deprecated
  */
-export const getValidationError = (value: unknown, context: Context): ValidationError => ({ value, context })
+export const getValidationError /* istanbul ignore next */ = (value: unknown, context: Context): ValidationError => ({
+  value,
+  context
+})
 
 /**
  * @since 1.0.0
+ * @deprecated
  */
-export const getDefaultContext = (decoder: Decoder<any, any>): Context => [{ key: '', type: decoder }]
+export const getDefaultContext /* istanbul ignore next */ = (decoder: Decoder<any, any>): Context => [
+  { key: '', type: decoder }
+]
 
 /**
  * @since 1.0.0
@@ -1377,7 +1389,7 @@ export function tuple<CS extends [Mixed, ...Array<Mixed>]>(
           }
         }
         if (as.length > len) {
-          errors.push(getValidationError(as[len], appendContext(c, String(len), never)))
+          errors.push({ value: as[len], context: appendContext(c, String(len), never) })
         }
         return errors.length ? failures(errors) : success(t)
       }
@@ -1881,7 +1893,7 @@ export function exact<C extends HasProps>(codec: C, name: string = `ExactType<${
         for (let i = 0; i < len; i++) {
           const key = keys[i]
           if (!hasOwnProperty.call(props, key)) {
-            errors.push(getValidationError(o[key], appendContext(c, key, never)))
+            errors.push({ value: o[key], context: appendContext(c, key, never) })
           }
         }
         return errors.length ? failures(errors) : success(o)
