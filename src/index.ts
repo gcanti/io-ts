@@ -831,9 +831,8 @@ export const optional = <T>(rt: Type<T>, name?: string) => {
   return Object.assign(unionType, { optional: true } as Optional)
 }
 
-type OptionalPropsKeys<P extends Props> = { [K in keyof P]: P[K] extends Optional ? K : never }[keyof P]
-type OptionalPropsTypes<P extends Props> = { [K in OptionalPropsKeys<P>]?: P[K]['_A'] }
-type OptionalPropsOutputs<P extends Props> = { [K in OptionalPropsKeys<P>]?: P[K]['_O'] }
+type OptionalPropsTypes<P extends Props> = { [K in keyof P]?: P[K]['_A'] }
+type OptionalPropsOutputs<P extends Props> = { [K in keyof P]?: P[K]['_O'] }
 type RequiredPropsKeys<P extends Props> = { [K in keyof P]: P[K] extends Optional ? never : K }[keyof P]
 type RequiredPropsTypes<P extends Props> = { [K in RequiredPropsKeys<P>]: P[K]['_A'] }
 type RequiredPropsOutputs<P extends Props> = { [K in RequiredPropsKeys<P>]: P[K]['_O'] }
