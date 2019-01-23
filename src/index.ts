@@ -832,13 +832,11 @@ export const optional = <T>(rt: Type<T>, name?: string) => {
 }
 
 type OptionalPropsKeys<P extends Props> = { [K in keyof P]: P[K] extends Optional ? K : never }[keyof P]
-type OptionalPropsTypes<P extends Props> = { [K in OptionalPropsKeys<P>]?: P[K] extends Optional ? P[K]['_A'] : never }
-type OptionalPropsOutputs<P extends Props> = {
-  [K in OptionalPropsKeys<P>]?: P[K] extends Optional ? P[K]['_O'] : never
-}
+type OptionalPropsTypes<P extends Props> = { [K in OptionalPropsKeys<P>]?: P[K]['_A'] }
+type OptionalPropsOutputs<P extends Props> = { [K in OptionalPropsKeys<P>]?: P[K]['_O'] }
 type RequiredPropsKeys<P extends Props> = { [K in keyof P]: P[K] extends Optional ? never : K }[keyof P]
-type RequiredPropsTypes<P extends Props> = { [K in RequiredPropsKeys<P>]: P[K] extends Optional ? never : P[K]['_A'] }
-type RequiredPropsOutputs<P extends Props> = { [K in RequiredPropsKeys<P>]: P[K] extends Optional ? never : P[K]['_O'] }
+type RequiredPropsTypes<P extends Props> = { [K in RequiredPropsKeys<P>]: P[K]['_A'] }
+type RequiredPropsOutputs<P extends Props> = { [K in RequiredPropsKeys<P>]: P[K]['_O'] }
 
 export const partialPartial = <P extends Props>(
   props: P,
