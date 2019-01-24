@@ -597,6 +597,8 @@ type Person = t.TypeOf<typeof Person>
 const bob: Person = { name: 'Bob' }
 const bob30: Person = { name: 'Bob', age: 30 }
 // $ExpectError
+const bobThirty: Person = { name: 'Bob', age: 'thirty' }
+// $ExpectError
 const nobody: Person = {}
 
 /**
