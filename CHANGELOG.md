@@ -14,6 +14,18 @@
 **Note**: Gaps between patch versions are faulty/broken releases. **Note**: A feature tagged as Experimental is in a
 high state of flux, you're at risk of it changing without notice.
 
+# 1.7.0
+
+- **New Feature**
+  - better support for custom messages, closes #148 (@gcanti)
+    - add optional message field to `ValidationError`
+    - add `message` argument to `failure`
+    - `PathReporter` should account for the new field
+  - add `actual` optional field to `ContextEntry`, closes #194 (@gcanti)
+- **Deprecation**
+  - deprecate `getValidationError` (@gcanti)
+  - deprecate `getDefaultContext` (@gcanti)
+
 # 1.6.4
 
 - **Bug Fix**
