@@ -842,18 +842,23 @@ export const partialPartial = <P extends Props>(
   name?: string
 ): Type<OptionalPropsTypes<P> & RequiredPropsTypes<P>, OptionalPropsOutputs<P> & RequiredPropsOutputs<P>, mixed> => {
   let someOptional = false
-  const [optionalProps, requiredProps] = [{}, {}] as Props[]
+  let someRequired = false
+  const optionalProps: Props = {}
+  const requiredProps: Props = {}
   for (const key of Object.keys(props)) {
     const val: any = props[key]
     if (val.optional) {
       someOptional = true
       optionalProps[key] = val
     } else {
+      someRequired = true
       requiredProps[key] = val
     }
   }
-  if (someOptional) {
+  if (someOptional && someRequired) {
     return intersection([type(requiredProps), partial(optionalProps)], name) as any
+  } else if (someOptional) {
+    return partial(props, name) as any
   } else {
     return type(props, name) as any
   }
