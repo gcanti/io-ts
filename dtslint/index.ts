@@ -107,16 +107,16 @@ type Type3TypeTest = Equals<t.TypeOf<typeof Type3>, { a: number }> // $ExpectTyp
 type Type3OutputTest = Equals<t.OutputOf<typeof Type3>, { a: string }> // $ExpectType "T"
 
 //
-// dictionary
+// record
 //
 
-const Dictionary1 = t.dictionary(t.keyof({ a: true }), t.number) // $ExpectType RecordC<KeyofC<{ a: boolean; }>, NumberC>
-type Dictionary1TypeTest = Equals<t.TypeOf<typeof Dictionary1>, { [K in 'a']: number }> // $ExpectType "T"
-type Dictionary1OutputTest = Equals<t.OutputOf<typeof Dictionary1>, { [K in 'a']: number }> // $ExpectType "T"
+const Record1 = t.record(t.keyof({ a: true }), t.number) // $ExpectType RecordC<KeyofC<{ a: boolean; }>, NumberC>
+type Record1TypeTest = Equals<t.TypeOf<typeof Record1>, { [K in 'a']: number }> // $ExpectType "T"
+type Record1OutputTest = Equals<t.OutputOf<typeof Record1>, { [K in 'a']: number }> // $ExpectType "T"
 
-const Dictionary2 = t.dictionary(t.string, NumberFromString) // $ExpectType RecordC<StringC, Type<number, string, unknown>>
-type Dictionary2TypeTest = Equals<t.TypeOf<typeof Dictionary2>, { [K in string]: number }> // $ExpectType "T"
-type Dictionary2OutputTest = Equals<t.OutputOf<typeof Dictionary2>, { [K in string]: string }> // $ExpectType "T"
+const Record2 = t.record(t.string, NumberFromString) // $ExpectType RecordC<StringC, Type<number, string, unknown>>
+type Record2TypeTest = Equals<t.TypeOf<typeof Record2>, { [K in string]: number }> // $ExpectType "T"
+type Record2OutputTest = Equals<t.OutputOf<typeof Record2>, { [K in string]: string }> // $ExpectType "T"
 
 //
 // union
@@ -413,7 +413,7 @@ interface GenerableProps {
 type GenerableInterface = t.InterfaceType<GenerableProps>
 type GenerableStrict = t.StrictType<GenerableProps>
 type GenerablePartials = t.PartialType<GenerableProps>
-interface GenerableDictionary extends t.DictionaryType<Generable, Generable> {}
+interface GenerableRecord extends t.DictionaryType<Generable, Generable> {}
 interface GenerableRefinement extends t.RefinementType<Generable> {}
 interface GenerableArray extends t.ArrayType<Generable> {}
 interface GenerableUnion extends t.UnionType<Array<Generable>> {}
@@ -431,7 +431,7 @@ type Generable =
   | GenerableArray
   | GenerableStrict
   | GenerablePartials
-  | GenerableDictionary
+  | GenerableRecord
   | GenerableUnion
   | GenerableIntersection
   | GenerableTuple

@@ -16,9 +16,7 @@ Also a codec can
 - be used as a custom type guard (through `is`)
 
 ```ts
-export type mixed = unknown
-
-class Type<A, O = A, I = mixed> {
+class Type<A, O, I> {
   readonly _A: A
   readonly _O: O
   readonly _I: I
@@ -26,7 +24,7 @@ class Type<A, O = A, I = mixed> {
     /** a unique name for this codec */
     readonly name: string,
     /** a custom type guard */
-    readonly is: (v: mixed) => v is A,
+    readonly is: (u: unknown) => u is A,
     /** succeeds if a value of type I can be decoded to a value of type A */
     readonly validate: (input: I, context: Context) => Either<Errors, A>,
     /** converts a value of type A to a value of type O */
@@ -47,22 +45,14 @@ A codec representing `string` can be defined as
 ```ts
 import * as t from 'io-ts'
 
-// codec definition
-export class StringType extends t.Type<string> {
-  // equivalent to Type<string, string, mixed> as per type parameter defaults
-  readonly _tag: 'StringType' = 'StringType'
-  constructor() {
-    super(
-      'string',
-      (m): m is string => typeof m === 'string',
-      (m, c) => (this.is(m) ? t.success(m) : t.failure(m, c)),
-      t.identity
-    )
-  }
-}
+const isString = (u: unknown): u is string => typeof u === 'string'
 
-// codec instance: use this when building other codecs instances
-export const string = new StringType()
+const string = new t.Type<string, string, unknown>(
+  'string',
+  isString,
+  (u, c) => (isString(u) ? t.success(u) : t.failure(u, c)),
+  t.identity
+)
 ```
 
 A codec can be used to validate an object in memory (for example an API payload)
@@ -124,11 +114,14 @@ interface ContextEntry {
   readonly key: string
   readonly type: Decoder<any, any>
 }
+
 interface Context extends ReadonlyArray<ContextEntry> {}
+
 interface ValidationError {
-  readonly value: mixed
+  readonly value: unknown
   readonly context: Context
 }
+
 interface Errors extends Array<ValidationError> {}
 ```
 
@@ -212,49 +205,47 @@ type Person = {
 import * as t from 'io-ts'
 ```
 
-| Type                      | TypeScript                              | codec / combinator                                    |
-| ------------------------- | --------------------------------------- | ----------------------------------------------------- |
-| null                      | `null`                                  | `t.null` or `t.nullType`                              |
-| undefined                 | `undefined`                             | `t.undefined`                                         |
-| void                      | `void`                                  | `t.void` or `t.voidType`                              |
-| string                    | `string`                                | `t.string`                                            |
-| number                    | `number`                                | `t.number`                                            |
-| boolean                   | `boolean`                               | `t.boolean`                                           |
-| any                       | `any`                                   | `t.any`                                               |
-| never                     | `never`                                 | `t.never`                                             |
-| object                    | `object`                                | `t.object`                                            |
-| integer                   | ✘                                       | `t.Integer`                                           |
-| array of any              | `Array<mixed>`                          | `t.Array`                                             |
-| array of type             | `Array<A>`                              | `t.array(A)`                                          |
-| dictionary of any         | `{ [key: string]: mixed }`              | `t.Dictionary`                                        |
-| dictionary of type        | `{ [K in A]: B }`                       | `t.dictionary(A, B)`                                  |
-| function                  | `Function`                              | `t.Function`                                          |
-| literal                   | `'s'`                                   | `t.literal('s')`                                      |
-| partial                   | `Partial<{ name: string }>`             | `t.partial({ name: t.string })`                       |
-| readonly                  | `Readonly<T>`                           | `t.readonly(T)`                                       |
-| readonly array            | `ReadonlyArray<number>`                 | `t.readonlyArray(t.number)`                           |
-| type alias                | `type A = { name: string }`             | `t.type({ name: t.string })`                          |
-| tuple                     | `[ A, B ]`                              | `t.tuple([ A, B ])`                                   |
-| union                     | `A \| B`                                | `t.union([ A, B ])` or `t.taggedUnion(tag, [ A, B ])` |
-| intersection              | `A & B`                                 | `t.intersection([ A, B ])`                            |
-| keyof                     | `keyof M`                               | `t.keyof(M)`                                          |
-| recursive types           | see [Recursive types](#recursive-types) | `t.recursion(name, definition)`                       |
-| refinement                | ✘                                       | `t.refinement(A, predicate)`                          |
-| exact types               | ✘                                       | `t.exact(type)`                                       |
-| strict types (deprecated) | ✘                                       | `t.strict({ name: t.string })`                        |
+| Type              | TypeScript                              | codec / combinator                                    |
+| ----------------- | --------------------------------------- | ----------------------------------------------------- |
+| null              | `null`                                  | `t.null` or `t.nullType`                              |
+| undefined         | `undefined`                             | `t.undefined`                                         |
+| void              | `void`                                  | `t.void` or `t.voidType`                              |
+| string            | `string`                                | `t.string`                                            |
+| number            | `number`                                | `t.number`                                            |
+| boolean           | `boolean`                               | `t.boolean`                                           |
+| unknown           | `unknown`                               | t.unknown                                             |
+| never             | `never`                                 | `t.never`                                             |
+| object            | `object`                                | `t.object`                                            |
+| integer           | ✘                                       | `t.Integer`                                           |
+| array of unknown  | `Array<unknown>`                        | `t.UnknownArray`                                      |
+| array of type     | `Array<A>`                              | `t.array(A)`                                          |
+| record of unknown | `Record<string, unknown>`               | `t.UnknownRecord`                                     |
+| record of type    | `Record<K, A>`                          | `t.record(K, A)`                                      |
+| function          | `Function`                              | `t.Function`                                          |
+| literal           | `'s'`                                   | `t.literal('s')`                                      |
+| partial           | `Partial<{ name: string }>`             | `t.partial({ name: t.string })`                       |
+| readonly          | `Readonly<T>`                           | `t.readonly(T)`                                       |
+| readonly array    | `ReadonlyArray<number>`                 | `t.readonlyArray(t.number)`                           |
+| type alias        | `type A = { name: string }`             | `t.type({ name: t.string })`                          |
+| tuple             | `[ A, B ]`                              | `t.tuple([ A, B ])`                                   |
+| union             | `A \| B`                                | `t.union([ A, B ])` or `t.taggedUnion(tag, [ A, B ])` |
+| intersection      | `A & B`                                 | `t.intersection([ A, B ])`                            |
+| keyof             | `keyof M`                               | `t.keyof(M)`                                          |
+| recursive types   | see [Recursive types](#recursive-types) | `t.recursion(name, definition)`                       |
+| refinement        | ✘                                       | `t.refinement(A, predicate)`                          |
+| exact types       | ✘                                       | `t.exact(type)`                                       |
 
 # Recursive types
 
 Recursive types can't be inferred by TypeScript so you must provide the static type as a hint
 
 ```ts
-// helper type
-interface ICategory {
+interface Category {
   name: string
-  categories: Array<ICategory>
+  categories: Array<Category>
 }
 
-const Category = t.recursion<ICategory>('Category', Category =>
+const Category: t.RecursiveType<t.Type<Category>> = t.recursion('Category', () =>
   t.type({
     name: t.string,
     categories: t.array(Category)
@@ -265,24 +256,24 @@ const Category = t.recursion<ICategory>('Category', Category =>
 ## Mutually recursive types
 
 ```ts
-interface IFoo {
+interface Foo {
   type: 'Foo'
-  b: IBar | undefined
+  b: Bar | undefined
 }
 
-interface IBar {
+interface Bar {
   type: 'Bar'
-  a: IFoo | undefined
+  a: Foo | undefined
 }
 
-const Foo: t.RecursiveType<t.Type<IFoo>, IFoo> = t.recursion<IFoo>('Foo', _ =>
+const Foo: t.RecursiveType<t.Type<Foo>> = t.recursion('Foo', () =>
   t.interface({
     type: t.literal('Foo'),
     b: t.union([Bar, t.undefined])
   })
 )
 
-const Bar: t.RecursiveType<t.Type<IBar>, IBar> = t.recursion<IBar>('Bar', _ =>
+const Bar: t.RecursiveType<t.Type<Bar>> = t.recursion('Bar', () =>
   t.interface({
     type: t.literal('Bar'),
     a: t.union([Foo, t.undefined])
@@ -450,6 +441,8 @@ Would be:
 
 ```ts
 import * as t from 'io-ts'
+
+// t.Mixed = t.Type<any, any, unknown>
 const ResponseBody = <RT extends t.Mixed>(type: RT) =>
   t.interface({
     result: type,
