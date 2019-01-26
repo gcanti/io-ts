@@ -14,6 +14,15 @@
 **Note**: Gaps between patch versions are faulty/broken releases. **Note**: A feature tagged as Experimental is in a
 high state of flux, you're at risk of it changing without notice.
 
+# 1.7.1
+
+- **Deprecation**
+  - deprecate `any` (@gcanti)
+  - deprecate `object` (@gcanti)
+  - deprecate `Dictionary` in favour of `UnknownRecord` (@gcanti)
+  - deprecate `Array` in favour of `UnknownArray` (@gcanti)
+  - deprecate `dictionary` in favour of `record` (@gcanti)
+
 # 1.7.0
 
 - **New Feature**

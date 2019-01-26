@@ -328,7 +328,9 @@ export class AnyType extends Type<any> {
 export interface AnyC extends AnyType {}
 
 /**
+ * Use `unknown` instead
  * @since 1.0.0
+ * @deprecated
  */
 export const any: AnyC = new AnyType()
 
@@ -461,7 +463,7 @@ export const boolean: BooleanC = new BooleanType()
 export class AnyArrayType extends Type<Array<unknown>> {
   readonly _tag: 'AnyArrayType' = 'AnyArrayType'
   constructor() {
-    super('Array', Array.isArray, (u, c) => (this.is(u) ? success(u) : failure(u, c)), identity)
+    super('UnknownArray', Array.isArray, (u, c) => (this.is(u) ? success(u) : failure(u, c)), identity)
   }
 }
 
@@ -470,7 +472,10 @@ export class AnyArrayType extends Type<Array<unknown>> {
  */
 export interface UnknownArrayC extends AnyArrayType {}
 
-const arrayType: UnknownArrayC = new AnyArrayType()
+/**
+ * @since 1.7.1
+ */
+export const UnknownArray: UnknownArrayC = new AnyArrayType()
 
 /**
  * @since 1.0.0
@@ -479,7 +484,7 @@ export class AnyDictionaryType extends Type<{ [key: string]: unknown }> {
   readonly _tag: 'AnyDictionaryType' = 'AnyDictionaryType'
   constructor() {
     super(
-      'Dictionary',
+      'UnknownRecord',
       (u): u is { [key: string]: unknown } => u !== null && typeof u === 'object',
       (u, c) => (this.is(u) ? success(u) : failure(u, c)),
       identity
@@ -488,14 +493,21 @@ export class AnyDictionaryType extends Type<{ [key: string]: unknown }> {
 }
 
 /**
+ * @since 1.7.1
+ */
+export const UnknownRecord: UnknownRecordC = new AnyDictionaryType()
+
+/**
  * @since 1.5.3
  */
 export interface UnknownRecordC extends AnyDictionaryType {}
 
 /**
+ * Use `UnknownRecord` instead
  * @since 1.0.0
+ * @deprecated
  */
-export const Dictionary: UnknownRecordC = new AnyDictionaryType()
+export const Dictionary: UnknownRecordC = UnknownRecord
 
 /**
  * @since 1.0.0
@@ -503,7 +515,7 @@ export const Dictionary: UnknownRecordC = new AnyDictionaryType()
 export class ObjectType extends Type<object> {
   readonly _tag: 'ObjectType' = 'ObjectType'
   constructor() {
-    super('object', Dictionary.is, Dictionary.validate, identity)
+    super('object', UnknownRecord.is, UnknownRecord.validate, identity)
   }
 }
 
@@ -513,7 +525,9 @@ export class ObjectType extends Type<object> {
 export interface ObjectC extends ObjectType {}
 
 /**
+ * Use `UnknownRecord` instead
  * @since 1.0.0
+ * @deprecated
  */
 export const object: ObjectC = new ObjectType()
 
@@ -743,9 +757,9 @@ export interface ArrayC<C extends Mixed> extends ArrayType<C, Array<TypeOf<C>>, 
 export const array = <C extends Mixed>(codec: C, name: string = `Array<${codec.name}>`): ArrayC<C> =>
   new ArrayType(
     name,
-    (u): u is Array<TypeOf<C>> => arrayType.is(u) && u.every(codec.is),
+    (u): u is Array<TypeOf<C>> => UnknownArray.is(u) && u.every(codec.is),
     (u, c) => {
-      const arrayValidation = arrayType.validate(u, c)
+      const arrayValidation = UnknownArray.validate(u, c)
       if (arrayValidation.isLeft()) {
         return arrayValidation
       } else {
@@ -846,7 +860,7 @@ export const type = <P extends Props>(props: P, name: string = getNameFromProps(
   return new InterfaceType(
     name,
     (u): u is { [K in keyof P]: TypeOf<P[K]> } => {
-      if (!Dictionary.is(u)) {
+      if (!UnknownRecord.is(u)) {
         return false
       }
       for (let i = 0; i < len; i++) {
@@ -858,7 +872,7 @@ export const type = <P extends Props>(props: P, name: string = getNameFromProps(
       return true
     },
     (u, c) => {
-      const dictionaryValidation = Dictionary.validate(u, c)
+      const dictionaryValidation = UnknownRecord.validate(u, c)
       if (dictionaryValidation.isLeft()) {
         return dictionaryValidation
       } else {
@@ -958,7 +972,7 @@ export const partial = <P extends Props>(
   return new PartialType(
     name,
     (u): u is { [K in keyof P]?: TypeOf<P[K]> } => {
-      if (!Dictionary.is(u)) {
+      if (!UnknownRecord.is(u)) {
         return false
       }
       for (let i = 0; i < len; i++) {
@@ -970,7 +984,7 @@ export const partial = <P extends Props>(
       return true
     },
     (u, c) => {
-      const dictionaryValidation = Dictionary.validate(u, c)
+      const dictionaryValidation = UnknownRecord.validate(u, c)
       if (dictionaryValidation.isLeft()) {
         return dictionaryValidation
       } else {
@@ -1051,9 +1065,9 @@ export interface RecordC<D extends Mixed, C extends Mixed>
 const isObject = (r: Record<string, unknown>) => Object.prototype.toString.call(r) === '[object Object]'
 
 /**
- * @since 1.0.0
+ * @since 1.7.1
  */
-export const dictionary = <D extends Mixed, C extends Mixed>(
+export const record = <D extends Mixed, C extends Mixed>(
   domain: D,
   codomain: C,
   name: string = `{ [K in ${domain.name}]: ${codomain.name} }`
@@ -1061,7 +1075,7 @@ export const dictionary = <D extends Mixed, C extends Mixed>(
   return new DictionaryType(
     name,
     (u): u is { [K in TypeOf<D>]: TypeOf<C> } => {
-      if (!Dictionary.is(u)) {
+      if (!UnknownRecord.is(u)) {
         return false
       }
       if (!isUnknownCodec(codomain) && !isAnyCodec(codomain) && !isObject(u)) {
@@ -1070,7 +1084,7 @@ export const dictionary = <D extends Mixed, C extends Mixed>(
       return Object.keys(u).every(k => domain.is(k) && codomain.is(u[k]))
     },
     (u, c) => {
-      const dictionaryValidation = Dictionary.validate(u, c)
+      const dictionaryValidation = UnknownRecord.validate(u, c)
       if (dictionaryValidation.isLeft()) {
         return dictionaryValidation
       } else {
@@ -1122,6 +1136,13 @@ export const dictionary = <D extends Mixed, C extends Mixed>(
     codomain
   )
 }
+
+/**
+ * Use `record` instead
+ * @since 1.0.0
+ * @deprecated
+ */
+export const dictionary: typeof record = record
 
 /**
  * @since 1.0.0
@@ -1362,9 +1383,9 @@ export function tuple<CS extends [Mixed, ...Array<Mixed>]>(
   const len = codecs.length
   return new TupleType(
     name,
-    (u): u is any => arrayType.is(u) && u.length === len && codecs.every((type, i) => type.is(u[i])),
+    (u): u is any => UnknownArray.is(u) && u.length === len && codecs.every((type, i) => type.is(u[i])),
     (u, c) => {
-      const arrayValidation = arrayType.validate(u, c)
+      const arrayValidation = UnknownArray.validate(u, c)
       if (arrayValidation.isLeft()) {
         return arrayValidation
       } else {
@@ -1739,7 +1760,7 @@ const getTaggedUnion = <Tag extends string, CS extends [Tagged<Tag>, Tagged<Tag>
   return new TaggedUnionType(
     name,
     (u): u is TypeOf<CS[number]> => {
-      if (!Dictionary.is(u)) {
+      if (!UnknownRecord.is(u)) {
         return false
       }
       const tagValue = u[tag]
@@ -1747,7 +1768,7 @@ const getTaggedUnion = <Tag extends string, CS extends [Tagged<Tag>, Tagged<Tag>
       return type ? type[1].is(u) : false
     },
     (u, c) => {
-      const dictionaryResult = Dictionary.validate(u, c)
+      const dictionaryResult = UnknownRecord.validate(u, c)
       if (dictionaryResult.isLeft()) {
         return dictionaryResult
       } else {
@@ -1961,4 +1982,4 @@ export function alias<A, O, I>(
   return () => codec as any
 }
 
-export { nullType as null, undefinedType as undefined, arrayType as Array, type as interface, voidType as void }
+export { nullType as null, undefinedType as undefined, UnknownArray as Array, type as interface, voidType as void }
