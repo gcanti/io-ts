@@ -329,24 +329,6 @@ Person.decode({ name: 'Giulio', age: 43, surname: 'Canti' }) // ok
 ExactPerson.decode({ name: 'Giulio', age: 43, surname: 'Canti' }) // fails
 ```
 
-# Strict types (deprecated)
-
-**Note**. This combinator is deprecated, use `exact` instead.
-
-You can make a codec strict (which means that only the given properties are allowed) using the `strict` combinator
-
-```ts
-const Person = t.type({
-  name: t.string,
-  age: t.number
-})
-
-const StrictPerson = t.strict(Person.props)
-
-Person.decode({ name: 'Giulio', age: 43, surname: 'Canti' }) // ok
-StrictPerson.decode({ name: 'Giulio', age: 43, surname: 'Canti' }) // fails
-```
-
 # Mixing required and optional props
 
 You can mix required and optional props using an intersection
@@ -399,13 +381,13 @@ You can define your own types. Let's see an example
 import * as t from 'io-ts'
 
 // represents a Date from an ISO string
-const DateFromString = new t.Type<Date, string>(
+const DateFromString = new t.Type<Date, string, unknown>(
   'DateFromString',
-  (m): m is Date => m instanceof Date,
-  (m, c) =>
-    t.string.validate(m, c).chain(s => {
+  (u): u is Date => u instanceof Date,
+  (u, c) =>
+    t.string.validate(u, c).chain(s => {
       const d = new Date(s)
-      return isNaN(d.getTime()) ? t.failure(s, c) : t.success(d)
+      return isNaN(d.getTime()) ? t.failure(u, c) : t.success(d)
     }),
   a => a.toISOString()
 )
