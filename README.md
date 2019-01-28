@@ -205,35 +205,35 @@ type Person = {
 import * as t from 'io-ts'
 ```
 
-| Type              | TypeScript                              | codec / combinator                                    |
-| ----------------- | --------------------------------------- | ----------------------------------------------------- |
-| null              | `null`                                  | `t.null` or `t.nullType`                              |
-| undefined         | `undefined`                             | `t.undefined`                                         |
-| void              | `void`                                  | `t.void` or `t.voidType`                              |
-| string            | `string`                                | `t.string`                                            |
-| number            | `number`                                | `t.number`                                            |
-| boolean           | `boolean`                               | `t.boolean`                                           |
-| unknown           | `unknown`                               | t.unknown                                             |
-| never             | `never`                                 | `t.never`                                             |
-| object            | `object`                                | `t.object`                                            |
-| integer           | ✘                                       | `t.Integer`                                           |
-| array of unknown  | `Array<unknown>`                        | `t.UnknownArray`                                      |
-| array of type     | `Array<A>`                              | `t.array(A)`                                          |
-| record of unknown | `Record<string, unknown>`               | `t.UnknownRecord`                                     |
-| record of type    | `Record<K, A>`                          | `t.record(K, A)`                                      |
-| function          | `Function`                              | `t.Function`                                          |
-| literal           | `'s'`                                   | `t.literal('s')`                                      |
-| partial           | `Partial<{ name: string }>`             | `t.partial({ name: t.string })`                       |
-| readonly          | `Readonly<T>`                           | `t.readonly(T)`                                       |
-| readonly array    | `ReadonlyArray<number>`                 | `t.readonlyArray(t.number)`                           |
-| type alias        | `type A = { name: string }`             | `t.type({ name: t.string })`                          |
-| tuple             | `[ A, B ]`                              | `t.tuple([ A, B ])`                                   |
-| union             | `A \| B`                                | `t.union([ A, B ])` or `t.taggedUnion(tag, [ A, B ])` |
-| intersection      | `A & B`                                 | `t.intersection([ A, B ])`                            |
-| keyof             | `keyof M`                               | `t.keyof(M)`                                          |
-| recursive types   | see [Recursive types](#recursive-types) | `t.recursion(name, definition)`                       |
-| refinement        | ✘                                       | `t.refinement(A, predicate)`                          |
-| exact types       | ✘                                       | `t.exact(type)`                                       |
+| Type              | TypeScript                  | codec / combinator                                    |
+| ----------------- | --------------------------- | ----------------------------------------------------- |
+| null              | `null`                      | `t.null` or `t.nullType`                              |
+| undefined         | `undefined`                 | `t.undefined`                                         |
+| void              | `void`                      | `t.void` or `t.voidType`                              |
+| string            | `string`                    | `t.string`                                            |
+| number            | `number`                    | `t.number`                                            |
+| boolean           | `boolean`                   | `t.boolean`                                           |
+| unknown           | `unknown`                   | `t.unknown`                                           |
+| never             | `never`                     | `t.never`                                             |
+| object            | `object`                    | `t.object`                                            |
+| array of unknown  | `Array<unknown>`            | `t.UnknownArray`                                      |
+| array of type     | `Array<A>`                  | `t.array(A)`                                          |
+| record of unknown | `Record<string, unknown>`   | `t.UnknownRecord`                                     |
+| record of type    | `Record<K, A>`              | `t.record(K, A)`                                      |
+| function          | `Function`                  | `t.Function`                                          |
+| literal           | `'s'`                       | `t.literal('s')`                                      |
+| partial           | `Partial<{ name: string }>` | `t.partial({ name: t.string })`                       |
+| readonly          | `Readonly<A>`               | `t.readonly(A)`                                       |
+| readonly array    | `ReadonlyArray<A>`          | `t.readonlyArray(A)`                                  |
+| type alias        | `type T = { name: A }`      | `t.type({ name: A })`                                 |
+| tuple             | `[ A, B ]`                  | `t.tuple([ A, B ])`                                   |
+| union             | `A \| B`                    | `t.union([ A, B ])` or `t.taggedUnion(tag, [ A, B ])` |
+| intersection      | `A & B`                     | `t.intersection([ A, B ])`                            |
+| keyof             | `keyof M`                   | `t.keyof(M)`                                          |
+| integer           | ✘                           | `t.Integer`                                           |
+| recursive types   | ✘                           | `t.recursion(name, definition)`                       |
+| refinement        | ✘                           | `t.refinement(A, predicate)`                          |
+| exact types       | ✘                           | `t.exact(type)`                                       |
 
 # Recursive types
 
