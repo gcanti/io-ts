@@ -527,5 +527,4 @@ const Good = t.keyof({
 Benefits
 
 - unique check for free
-- better performance (O(1) vs O(n))
-- quick info stays responsive
+- better performance, `O(log(n))` vs `O(n)`
