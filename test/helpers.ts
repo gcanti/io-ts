@@ -82,3 +82,75 @@ export function withDefault<T extends t.Mixed>(
     type.encode
   )
 }
+
+/*
+
+  `strip` combinator, useful to test the new internal `intersection` algorithm
+
+*/
+
+interface StripC<P extends t.Props>
+  extends t.InterfaceType<P, { [K in keyof P]: t.TypeOf<P[K]> }, { [K in keyof P]: t.OutputOf<P[K]> }, unknown> {}
+
+const getNameFromProps = (props: t.Props): string =>
+  `{ ${Object.keys(props)
+    .map(k => `${k}: ${props[k].name}`)
+    .join(', ')} }`
+
+const pushAll = <A>(xs: Array<A>, ys: Array<A>): void => {
+  const l = ys.length
+  for (let i = 0; i < l; i++) {
+    xs.push(ys[i])
+  }
+}
+
+export const strip = <P extends t.Props>(props: P, name: string = getNameFromProps(props)): StripC<P> => {
+  const keys = Object.keys(props)
+  const types = keys.map(key => props[key])
+  const len = keys.length
+  return new t.InterfaceType(
+    name,
+    (u): u is { [K in keyof P]: t.TypeOf<P[K]> } => {
+      if (!t.UnknownRecord.is(u)) {
+        return false
+      }
+      for (let i = 0; i < len; i++) {
+        const k = keys[i]
+        if (!t.hasOwnProperty.call(u, k) || !types[i].is(u[k])) {
+          return false
+        }
+      }
+      return true
+    },
+    (u, c) => {
+      const dictionaryValidation = t.UnknownRecord.validate(u, c)
+      if (dictionaryValidation.isLeft()) {
+        return dictionaryValidation
+      } else {
+        const o = dictionaryValidation.value
+        let a: any = {}
+        const errors: t.Errors = []
+        for (let i = 0; i < len; i++) {
+          const k = keys[i]
+          const type = types[i]
+          const result = type.validate(o[k], t.appendContext(c, k, type))
+          if (result.isLeft()) {
+            pushAll(errors, result.value)
+          } else {
+            a[k] = result.value
+          }
+        }
+        return errors.length ? t.failures(errors) : t.success(a)
+      }
+    },
+    a => {
+      const s: any = {}
+      for (let i = 0; i < len; i++) {
+        const k = keys[i]
+        s[k] = types[i].encode(a[k])
+      }
+      return s
+    },
+    props
+  )
+}

@@ -1260,6 +1260,17 @@ export interface IntersectionC<CS extends [Mixed, Mixed, ...Array<Mixed>]>
     unknown
   > {}
 
+const mergeAll = (us: Array<unknown>): any => {
+  let r: unknown = us[0]
+  for (let i = 1; i < us.length; i++) {
+    const u = us[i]
+    if (u !== r) {
+      r = Object.assign(r, u)
+    }
+  }
+  return r
+}
+
 /**
  * @since 1.0.0
  */
@@ -1281,33 +1292,27 @@ export function intersection<CS extends [Mixed, Mixed, ...Array<Mixed>]>(
   name: string = `(${codecs.map(type => type.name).join(' & ')})`
 ): IntersectionC<CS> {
   const len = codecs.length
+  const is = (u: unknown): u is any => codecs.every(type => type.is(u))
   return new IntersectionType(
     name,
-    (u): u is any => (len === 0 ? false : codecs.every(type => type.is(u))),
-    (u, c) => {
-      let a = u
-      const errors: Errors = []
-      for (let i = 0; i < len; i++) {
-        const type = codecs[i]
-        const validation = type.validate(a, appendContext(c, String(i), type))
-        if (validation.isLeft()) {
-          pushAll(errors, validation.value)
-        } else {
-          a = validation.value
-        }
-      }
-      return errors.length ? failures(errors) : len === 0 ? failure(u, c) : success(a)
-    },
-    useIdentity(codecs, len)
-      ? identity
-      : a => {
-          let s = a
+    is,
+    codecs.length === 0
+      ? success
+      : (u, c) => {
+          const us: Array<unknown> = []
+          const errors: Errors = []
           for (let i = 0; i < len; i++) {
-            const type = codecs[i]
-            s = type.encode(s)
+            const codec = codecs[i]
+            const validation = codec.validate(u, appendContext(c, String(i), codec))
+            if (validation.isLeft()) {
+              pushAll(errors, validation.value)
+            } else {
+              us.push(validation.value)
+            }
           }
-          return s
+          return errors.length ? failures(errors) : success(mergeAll(us))
         },
+    codecs.length === 0 ? identity : a => mergeAll(codecs.map(codec => codec.encode(a))),
     codecs
   )
 }

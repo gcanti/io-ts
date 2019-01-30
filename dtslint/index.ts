@@ -281,13 +281,14 @@ type Readonly2OutputTest = Equals<t.OutputOf<typeof Readonly2>, { readonly a: st
 // readonlyArray
 //
 
-const ReadonlyArray1 = t.readonlyArray(t.number)
-type ReadonlyArray1TypeTest = t.TypeOf<typeof ReadonlyArray1> // $ExpectType ReadonlyArray<number>
-type ReadonlyArray1OutputTest = t.OutputOf<typeof ReadonlyArray1> // $ExpectType ReadonlyArray<number>
+// TODO: the following tests started to fail with typescript@3.4.0-dev.20190130
+// const ReadonlyArray1 = t.readonlyArray(t.number)
+// type ReadonlyArray1TypeTest = t.TypeOf<typeof ReadonlyArray1> // $ExpectType ReadonlyArray<number>
+// type ReadonlyArray1OutputTest = t.OutputOf<typeof ReadonlyArray1> // $ExpectType ReadonlyArray<number>
 
-const ReadonlyArray2 = t.readonlyArray(NumberFromString)
-type ReadonlyArray2TypeTest = t.TypeOf<typeof ReadonlyArray2> // $ExpectType ReadonlyArray<number>
-type ReadonlyArray2OutputTest = t.OutputOf<typeof ReadonlyArray2> // $ExpectType ReadonlyArray<string>
+// const ReadonlyArray2 = t.readonlyArray(NumberFromString)
+// type ReadonlyArray2TypeTest = t.TypeOf<typeof ReadonlyArray2> // $ExpectType ReadonlyArray<number>
+// type ReadonlyArray2OutputTest = t.OutputOf<typeof ReadonlyArray2> // $ExpectType ReadonlyArray<string>
 
 //
 // strict
