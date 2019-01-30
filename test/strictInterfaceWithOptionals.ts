@@ -28,7 +28,8 @@ describe('strictInterfaceWithOptionals', () => {
 
   it('should return the same reference when serializing', () => {
     const T = strictInterfaceWithOptionals({ foo: t.string }, { bar: t.string }, 'T')
-    assert.strictEqual(T.encode, t.identity)
+    const x = { foo: 'foo' }
+    assert.strictEqual(T.encode(x), x)
   })
 
   it('should return the a new reference if validation succeeded and something changed', () => {
