@@ -40,7 +40,7 @@ describe('union', () => {
 
     it('should fail decoding an invalid value', () => {
       const T = t.union([t.string, t.number])
-      assertFailure(T.decode(true), [
+      assertFailure(T, true, [
         'Invalid value true supplied to : (string | number)/0: string',
         'Invalid value true supplied to : (string | number)/1: number'
       ])
@@ -62,13 +62,13 @@ describe('union', () => {
     describe('robustness', () => {
       it('should handle zero codecs', () => {
         const T = t.union([] as any)
-        assertFailure(T.decode(true), ['Invalid value true supplied to : ()'])
+        assertFailure(T, true, ['Invalid value true supplied to : ()'])
       })
 
       it('should handle one codec', () => {
         const T = t.union([t.string] as any)
         assertSuccess(T.decode('s'))
-        assertFailure(T.decode(true), ['Invalid value true supplied to : (string)/0: string'])
+        assertFailure(T, true, ['Invalid value true supplied to : (string)/0: string'])
       })
     })
   })

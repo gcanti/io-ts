@@ -55,9 +55,9 @@ describe('strip', () => {
 
     it('should fail decoding an invalid value', () => {
       const T = strip({ a: t.string })
-      assertFailure(T.decode(1), ['Invalid value 1 supplied to : { a: string }'])
-      assertFailure(T.decode({}), ['Invalid value undefined supplied to : { a: string }/a: string'])
-      assertFailure(T.decode({ a: 1 }), ['Invalid value 1 supplied to : { a: string }/a: string'])
+      assertFailure(T, 1, ['Invalid value 1 supplied to : { a: string }'])
+      assertFailure(T, {}, ['Invalid value undefined supplied to : { a: string }/a: string'])
+      assertFailure(T, { a: 1 }, ['Invalid value 1 supplied to : { a: string }/a: string'])
     })
 
     it('should support the alias `interface`', () => {

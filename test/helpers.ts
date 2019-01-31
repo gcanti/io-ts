@@ -31,7 +31,8 @@ export function assertStrictSuccess<T>(result: t.Validation<T>, expected: T): vo
   }
 }
 
-export function assertFailure<T>(result: t.Validation<T>, errors: Array<string>): void {
+export function assertFailure(codec: t.Any, value: unknown, errors: Array<string>): void {
+  const result = codec.decode(value)
   if (result.isLeft()) {
     assert.deepEqual(PathReporter.report(result), errors)
   } else {

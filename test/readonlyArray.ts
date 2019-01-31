@@ -41,7 +41,7 @@ describe('readonlyArray', () => {
 
     it('should fail validating an invalid value', () => {
       const T = t.readonlyArray(t.number)
-      assertFailure(T.decode(['s']), ['Invalid value "s" supplied to : ReadonlyArray<number>/0: number'])
+      assertFailure(T, ['s'], ['Invalid value "s" supplied to : ReadonlyArray<number>/0: number'])
     })
 
     it('should freeze the value', () => {

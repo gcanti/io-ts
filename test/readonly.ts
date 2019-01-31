@@ -39,7 +39,7 @@ describe('readonly', () => {
 
     it('should fail validating an invalid value', () => {
       const T = t.readonly(t.interface({ a: t.number }))
-      assertFailure(T.decode({}), ['Invalid value undefined supplied to : Readonly<{ a: number }>/a: number'])
+      assertFailure(T, {}, ['Invalid value undefined supplied to : Readonly<{ a: number }>/a: number'])
     })
 
     it('should freeze the value', () => {

@@ -1,100 +1,99 @@
 import * as assert from 'assert'
 import * as t from '../src/index'
-import { assertSuccess, assertFailure } from './helpers'
-import { right } from 'fp-ts/lib/Either'
+import { assertFailure, assertStrictEqual, assertSuccess, NumberFromString } from './helpers'
 
-const BAA = new t.Type<number, string, string>(
-  'BAA',
-  t.number.is,
-  (s, c) => {
-    const n = parseFloat(s)
-    return isNaN(n) ? t.failure(s, c) : t.success(n)
-  },
-  n => String(n)
-)
-
-const BAI = t.string.pipe(
-  BAA,
-  'T'
-)
-
-describe('Type', () => {
-  describe('pipe', () => {
+describe('type', () => {
+  describe('name', () => {
     it('should assign a default name', () => {
-      const AOI = t.string
-      const T = AOI.pipe(BAA)
-      assert.strictEqual(T.name, 'pipe(string, BAA)')
+      const T = t.type({ a: t.string })
+      assert.strictEqual(T.name, '{ a: string }')
     })
 
-    it('should combine two types', () => {
-      assertSuccess(BAI.decode('1'))
-      assertFailure(BAI.decode(1), ['Invalid value 1 supplied to : T'])
-      assertFailure(BAI.decode('a'), ['Invalid value "a" supplied to : T'])
-      assert.strictEqual(BAI.encode(2), '2')
-    })
-
-    it('should ude identity as decoder function', () => {
-      assert.strictEqual(t.string.pipe(t.string as t.Type<string, string, string>).encode, t.identity)
-    })
-
-    it('accept to pipe a type with a wider input', () => {
-      const T = t.string.pipe(t.string)
-      assert.deepEqual(T.decode('a'), right('a'))
-      assert.strictEqual(T.encode('a'), 'a')
-    })
-
-    it('accept to pipe a type with a narrower output', () => {
-      const T = t.string.pipe(t.literal('foo'))
-      assert.deepEqual(T.decode('foo'), right('foo'))
-      assert.strictEqual(T.encode('foo'), 'foo')
+    it('should accept a name', () => {
+      const T = t.type({ a: t.string }, 'T')
+      assert.strictEqual(T.name, 'T')
     })
   })
 
-  describe('asDecoder', () => {
-    it('should return a decoder', () => {
-      assertSuccess(t.string.asDecoder().decode('1'))
+  describe('is', () => {
+    it('should check a isomorphic value', () => {
+      const T = t.type({ a: t.string })
+      assert.strictEqual(T.is({}), false)
+      assert.strictEqual(T.is({ a: 1 }), false)
+      assert.strictEqual(T.is({ a: 'a' }), true)
+    })
+
+    it('should allow additional properties', () => {
+      const T = t.type({ a: t.string })
+      assert.strictEqual(T.is({ a: 'a', b: 1 }), true)
     })
   })
 
-  describe('asEncoder', () => {
-    it('should return an encoder', () => {
-      assert.strictEqual(BAI.asEncoder().encode(2), '2')
+  describe('decode', () => {
+    it('should decode a isomorphic value', () => {
+      const T = t.type({ a: t.string })
+      assertSuccess(T.decode({ a: 'a' }))
+    })
+
+    it('should decode a prismatic value', () => {
+      const T = t.type({ a: NumberFromString })
+      assertSuccess(T.decode({ a: '1' }), { a: 1 })
+    })
+
+    it('should decode undefined properties as always present keys', () => {
+      const T1 = t.type({ a: t.undefined })
+      assertSuccess(T1.decode({ a: undefined }), { a: undefined })
+      assertSuccess(T1.decode({}), { a: undefined })
+
+      const T2 = t.type({ a: t.union([t.number, t.undefined]) })
+      assertSuccess(T2.decode({ a: undefined }), { a: undefined })
+      assertSuccess(T2.decode({ a: 1 }), { a: 1 })
+      assertSuccess(T2.decode({}), { a: undefined })
+    })
+
+    it('should fail decoding an invalid value', () => {
+      const T = t.type({ a: t.string })
+      assertFailure(T, 1, ['Invalid value 1 supplied to : { a: string }'])
+      assertFailure(T, {}, ['Invalid value undefined supplied to : { a: string }/a: string'])
+      assertFailure(T, { a: 1 }, ['Invalid value 1 supplied to : { a: string }/a: string'])
+    })
+
+    it('should support the alias `interface`', () => {
+      const T = t.interface({ a: t.string })
+      assertSuccess(T.decode({ a: 'a' }))
     })
   })
 
-  it.skip('decode may be used as a static function', () => {
-    const Person = t.type(
-      {
-        name: t.string,
-        age: t.number
-      },
-      'Person'
-    )
-    const decode = Person.decode
-    assertSuccess(decode({ name: 'name', age: 0 }))
-    assertFailure(decode(null), ['Invalid value null supplied to Person'])
-  })
-})
+  describe('encode', () => {
+    it('should encode a isomorphic value', () => {
+      const T = t.type({ a: t.string })
+      assert.deepEqual(T.encode({ a: 'a' }), { a: 'a' })
+    })
 
-describe('getContextEntry', () => {
-  it('should return a ContextEntry', () => {
-    assert.deepEqual(t.getContextEntry('key', t.string), {
-      key: 'key',
-      type: t.string
+    it('should encode a prismatic value', () => {
+      const T = t.type({ a: NumberFromString })
+      assert.deepEqual(T.encode({ a: 1 }), { a: '1' })
     })
   })
-})
 
-describe('clean', () => {
-  it('should return the same type', () => {
-    const T = t.type({ a: t.string })
-    assert.strictEqual(t.clean(T), T)
+  it('should keep unknown properties', () => {
+    const T = t.interface({ a: t.string })
+    const validation = T.decode({ a: 's', b: 1 })
+    if (validation.isRight()) {
+      assert.deepEqual(validation.value, { a: 's', b: 1 })
+    } else {
+      assert.ok(false)
+    }
   })
-})
 
-describe('alias', () => {
-  it('should return the same type', () => {
-    const T = t.type({ a: t.string })
-    assert.strictEqual(t.alias(T)(), T)
+  it('should return the same reference if validation succeeded and nothing changed', () => {
+    const T = t.interface({ a: t.string })
+    const value = { a: 's' }
+    assertStrictEqual(T.decode(value), value)
+  })
+
+  it('should return the same reference while encoding', () => {
+    const T = t.type({ a: t.number })
+    assert.strictEqual(T.encode, t.identity)
   })
 })
