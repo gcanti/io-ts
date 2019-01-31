@@ -115,7 +115,7 @@ describe('recursion', () => {
       })
     )
     assert.strictEqual(T.type instanceof t.Type, true)
-    assert.strictEqual(T.type.name, '{ a: number, b: (T | null) }')
+    assert.strictEqual(T.type.name, 'T')
     assert.strictEqual((T.type as any).props.a._tag, 'NumberType')
   })
 
