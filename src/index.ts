@@ -1101,20 +1101,20 @@ export const record = <D extends Mixed, C extends Mixed>(
           let k = keys[i]
           const ok = o[k]
           const domainValidation = domain.validate(k, appendContext(c, k, domain))
-          const codomainValidation = codomain.validate(ok, appendContext(c, k, codomain))
           if (domainValidation.isLeft()) {
             pushAll(errors, domainValidation.value)
           } else {
             const vk = domainValidation.value
             changed = changed || vk !== k
             k = vk
-          }
-          if (codomainValidation.isLeft()) {
-            pushAll(errors, codomainValidation.value)
-          } else {
-            const vok = codomainValidation.value
-            changed = changed || vok !== ok
-            a[k] = vok
+            const codomainValidation = codomain.validate(ok, appendContext(c, k, codomain))
+            if (codomainValidation.isLeft()) {
+              pushAll(errors, codomainValidation.value)
+            } else {
+              const vok = codomainValidation.value
+              changed = changed || vok !== ok
+              a[k] = vok
+            }
           }
         }
         return errors.length ? failures(errors) : success((changed ? a : o) as any)
