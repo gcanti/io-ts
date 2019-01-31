@@ -1415,7 +1415,7 @@ export function tuple<CS extends [Mixed, ...Array<Mixed>]>(
           }
         }
         if (as.length > len) {
-          errors.push({ value: as[len], context: appendContext(c, String(len), never) })
+          errors.push({ value: as[len], context: appendContext(c, String(len), never), message: undefined })
         }
         return errors.length ? failures(errors) : success(t)
       }
@@ -1919,7 +1919,7 @@ export function exact<C extends HasProps>(codec: C, name: string = `ExactType<${
         for (let i = 0; i < len; i++) {
           const key = keys[i]
           if (!hasOwnProperty.call(props, key)) {
-            errors.push({ value: o[key], context: appendContext(c, key, never) })
+            errors.push({ value: o[key], context: appendContext(c, key, never), message: undefined })
           }
         }
         return errors.length ? failures(errors) : success(o)
