@@ -77,6 +77,12 @@ describe('strip', () => {
       assert.deepEqual(T.encode({ a: 'a' }), { a: 'a' })
     })
 
+    it('should strip additional properties', () => {
+      const T = strip({ a: t.string })
+      const x = { a: 'a', b: 1 }
+      assert.deepEqual(T.encode(x), { a: 'a' })
+    })
+
     it('should encode a prismatic value', () => {
       const T = strip({ a: NumberFromString })
       assert.deepEqual(T.encode({ a: 1 }), { a: '1' })
