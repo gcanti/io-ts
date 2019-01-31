@@ -708,6 +708,7 @@ export const recursion = <A, O = A, I = unknown, C extends Type<A, O, I> = Type<
   const runDefinition = (): C => {
     if (!cache) {
       cache = definition(Self)
+      ;(cache as any).name = name
     }
     return cache
   }
