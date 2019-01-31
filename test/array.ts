@@ -45,8 +45,8 @@ describe('array', () => {
 
     it('should fail decoding an invalid value', () => {
       const T = t.array(t.number)
-      assertFailure(T.decode(1), ['Invalid value 1 supplied to : Array<number>'])
-      assertFailure(T.decode([1, 's', 3]), ['Invalid value "s" supplied to : Array<number>/1: number'])
+      assertFailure(T, 1, ['Invalid value 1 supplied to : Array<number>'])
+      assertFailure(T, [1, 's', 3], ['Invalid value "s" supplied to : Array<number>/1: number'])
     })
   })
 

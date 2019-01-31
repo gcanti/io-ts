@@ -31,7 +31,7 @@ describe('literal', () => {
 
     it('should fail validating an invalid value', () => {
       const T = t.literal('a')
-      assertFailure(T.decode(1), ['Invalid value 1 supplied to : "a"'])
+      assertFailure(T, 1, ['Invalid value 1 supplied to : "a"'])
     })
   })
 

@@ -50,7 +50,7 @@ describe('strict', () => {
 
     it('should fail validating an invalid value', () => {
       const T = t.strict({ foo: t.string })
-      assertFailure(T.decode({ foo: 'foo', bar: 1, baz: true }), [
+      assertFailure(T, { foo: 'foo', bar: 1, baz: true }, [
         'Invalid value 1 supplied to : StrictType<{ foo: string }>/bar: never',
         'Invalid value true supplied to : StrictType<{ foo: string }>/baz: never'
       ])

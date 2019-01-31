@@ -94,31 +94,31 @@ describe('record', () => {
 
     it('should fail decoding an invalid value', () => {
       const T = t.record(t.string, t.number)
-      assertFailure(T.decode(1), ['Invalid value 1 supplied to : { [K in string]: number }'])
-      assertFailure(T.decode({ aa: 's' }), ['Invalid value "s" supplied to : { [K in string]: number }/aa: number'])
-      assertFailure(T.decode([]), ['Invalid value [] supplied to : { [K in string]: number }'])
-      assertFailure(T.decode([1]), ['Invalid value [1] supplied to : { [K in string]: number }'])
-      assertFailure(T.decode(new Number()), ['Invalid value 0 supplied to : { [K in string]: number }'])
+      assertFailure(T, 1, ['Invalid value 1 supplied to : { [K in string]: number }'])
+      assertFailure(T, { aa: 's' }, ['Invalid value "s" supplied to : { [K in string]: number }/aa: number'])
+      assertFailure(T, [], ['Invalid value [] supplied to : { [K in string]: number }'])
+      assertFailure(T, [1], ['Invalid value [1] supplied to : { [K in string]: number }'])
+      assertFailure(T, new Number(), ['Invalid value 0 supplied to : { [K in string]: number }'])
     })
 
     it('should fail decoding an invalid value when the codec is array if the codomain is `unknown`', () => {
       const T = t.record(HyphenatedString, t.unknown)
-      assertFailure(T.decode([1]), [
-        'Invalid value "0" supplied to : { [K in HyphenatedString]: unknown }/0: HyphenatedString'
-      ])
+      assertFailure(
+        T,
+        [1],
+        ['Invalid value "0" supplied to : { [K in HyphenatedString]: unknown }/0: HyphenatedString']
+      )
     })
 
     it('should fail decoding an invalid value when the codec is array if the codomain is `any`', () => {
       const T = t.record(HyphenatedString, t.any)
-      assertFailure(T.decode([1]), [
-        'Invalid value "0" supplied to : { [K in HyphenatedString]: any }/0: HyphenatedString'
-      ])
+      assertFailure(T, [1], ['Invalid value "0" supplied to : { [K in HyphenatedString]: any }/0: HyphenatedString'])
     })
 
     it('should support literals as domain type', () => {
       const T = t.record(t.literal('foo'), t.string)
       assertSuccess(T.decode({ foo: 'bar' }))
-      assertFailure(T.decode({ foo: 'bar', baz: 'bob' }), [
+      assertFailure(T, { foo: 'bar', baz: 'bob' }, [
         'Invalid value "baz" supplied to : { [K in "foo"]: string }/baz: "foo"'
       ])
     })
@@ -126,7 +126,7 @@ describe('record', () => {
     it('should support keyof as domain type', () => {
       const T = t.record(t.keyof({ foo: true, bar: true }), t.string)
       assertSuccess(T.decode({ foo: 'bar' }))
-      assertFailure(T.decode({ foo: 'bar', baz: 'bob' }), [
+      assertFailure(T, { foo: 'bar', baz: 'bob' }, [
         'Invalid value "baz" supplied to : { [K in "foo" | "bar"]: string }/baz: "foo" | "bar"'
       ])
     })

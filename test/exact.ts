@@ -74,7 +74,7 @@ describe('exact', () => {
 
     it('should fail validating an invalid value (type)', () => {
       const T = t.exact(t.type({ foo: t.string }))
-      assertFailure(T.decode({ foo: 'foo', bar: 1, baz: true }), [
+      assertFailure(T, { foo: 'foo', bar: 1, baz: true }, [
         'Invalid value 1 supplied to : ExactType<{ foo: string }>/bar: never',
         'Invalid value true supplied to : ExactType<{ foo: string }>/baz: never'
       ])
@@ -82,28 +82,26 @@ describe('exact', () => {
 
     it('should fail validating an invalid value (partial)', () => {
       const T = t.exact(t.intersection([t.type({ foo: t.string }), t.partial({ bar: t.number })]))
-      assertFailure(T.decode({ foo: 'foo', baz: true }), [
+      assertFailure(T, { foo: 'foo', baz: true }, [
         'Invalid value true supplied to : ExactType<({ foo: string } & Partial<{ bar: number }>)>/baz: never'
       ])
     })
 
     it('should fail validating an invalid value (intersection)', () => {
       const T = t.exact(t.partial({ foo: t.string }))
-      assertFailure(T.decode({ bar: 1 }), [
-        'Invalid value 1 supplied to : ExactType<Partial<{ foo: string }>>/bar: never'
-      ])
+      assertFailure(T, { bar: 1 }, ['Invalid value 1 supplied to : ExactType<Partial<{ foo: string }>>/bar: never'])
     })
 
     it('should fail validating an invalid value (refinement)', () => {
       const T = t.exact(t.refinement(t.type({ foo: t.string }), p => p.foo.length > 2))
-      assertFailure(T.decode({ foo: 'foo', bar: 1 }), [
+      assertFailure(T, { foo: 'foo', bar: 1 }, [
         'Invalid value 1 supplied to : ExactType<({ foo: string } | <function1>)>/bar: never'
       ])
     })
 
     it('should fail validating an invalid value (readonly)', () => {
       const T = t.exact(t.readonly(t.type({ foo: t.string })))
-      assertFailure(T.decode({ foo: 'foo', bar: 1 }), [
+      assertFailure(T, { foo: 'foo', bar: 1 }, [
         'Invalid value 1 supplied to : ExactType<Readonly<{ foo: string }>>/bar: never'
       ])
     })

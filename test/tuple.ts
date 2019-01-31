@@ -55,18 +55,22 @@ describe('tuple', () => {
 
     it('should fail validating an invalid value', () => {
       const T = t.tuple([t.number, t.string])
-      assertFailure(T.decode(1), ['Invalid value 1 supplied to : [number, string]'])
-      assertFailure(T.decode([]), [
-        'Invalid value undefined supplied to : [number, string]/0: number',
-        'Invalid value undefined supplied to : [number, string]/1: string'
-      ])
-      assertFailure(T.decode([1]), ['Invalid value undefined supplied to : [number, string]/1: string'])
-      assertFailure(T.decode([1, 1]), ['Invalid value 1 supplied to : [number, string]/1: string'])
+      assertFailure(T, 1, ['Invalid value 1 supplied to : [number, string]'])
+      assertFailure(
+        T,
+        [],
+        [
+          'Invalid value undefined supplied to : [number, string]/0: number',
+          'Invalid value undefined supplied to : [number, string]/1: string'
+        ]
+      )
+      assertFailure(T, [1], ['Invalid value undefined supplied to : [number, string]/1: string'])
+      assertFailure(T, [1, 1], ['Invalid value 1 supplied to : [number, string]/1: string'])
     })
 
     it('should fail while validating a tuple with additional components', () => {
       const T = t.tuple([t.number, t.string])
-      assertFailure(T.decode([1, 'foo', true]), ['Invalid value true supplied to : [number, string]/2: never'])
+      assertFailure(T, [1, 'foo', true], ['Invalid value true supplied to : [number, string]/2: never'])
     })
   })
 
