@@ -134,7 +134,8 @@ export const strip = <P extends t.Props>(props: P, name: string = getNameFromPro
         for (let i = 0; i < len; i++) {
           const k = keys[i]
           const type = types[i]
-          const result = type.validate(o[k], t.appendContext(c, k, type))
+          const ok = o[k]
+          const result = type.validate(ok, t.appendContext(c, k, type, ok))
           if (result.isLeft()) {
             pushAll(errors, result.value)
           } else {
