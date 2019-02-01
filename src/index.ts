@@ -966,10 +966,6 @@ export const partial = <P extends Props>(
   const keys = Object.keys(props)
   const types = keys.map(key => props[key])
   const len = keys.length
-  const partials: Props = {}
-  for (let i = 0; i < len; i++) {
-    partials[keys[i]] = union([types[i], undefinedType])
-  }
   return new PartialType(
     name,
     (u): u is { [K in keyof P]?: TypeOf<P[K]> } => {
@@ -978,7 +974,8 @@ export const partial = <P extends Props>(
       }
       for (let i = 0; i < len; i++) {
         const k = keys[i]
-        if (!partials[k].is(u[k])) {
+        const uk = u[k]
+        if (uk !== undefined && !props[k].is(uk)) {
           return false
         }
       }
@@ -995,11 +992,11 @@ export const partial = <P extends Props>(
         for (let i = 0; i < len; i++) {
           const k = keys[i]
           const ak = a[k]
-          const type = partials[k]
+          const type = props[k]
           const validation = type.validate(ak, appendContext(c, k, type))
-          if (validation.isLeft()) {
+          if (validation.isLeft() && ak !== undefined) {
             pushAll(errors, validation.value)
-          } else {
+          } else if (validation.isRight()) {
             const vak = validation.value
             if (vak !== ak) {
               /* istanbul ignore next */
