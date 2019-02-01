@@ -189,13 +189,13 @@ export const getDefaultContext /* istanbul ignore next */ = (decoder: Decoder<an
 /**
  * @since 1.0.0
  */
-export const appendContext = (c: Context, key: string, decoder: Decoder<any, any>): Context => {
+export const appendContext = (c: Context, key: string, decoder: Decoder<any, any>, actual?: unknown): Context => {
   const len = c.length
   const r = Array(len + 1)
   for (let i = 0; i < len; i++) {
     r[i] = c[i]
   }
-  r[len] = { key, type: decoder }
+  r[len] = { key, type: decoder, actual }
   return r
 }
 
@@ -770,7 +770,7 @@ export const array = <C extends Mixed>(codec: C, name: string = `Array<${codec.n
         const errors: Errors = []
         for (let i = 0; i < len; i++) {
           const x = xs[i]
-          const validation = codec.validate(x, appendContext(c, String(i), codec))
+          const validation = codec.validate(x, appendContext(c, String(i), codec, x))
           if (validation.isLeft()) {
             pushAll(errors, validation.value)
           } else {
@@ -890,7 +890,7 @@ export const type = <P extends Props>(props: P, name: string = getNameFromProps(
           }
           const ak = a[k]
           const type = types[i]
-          const validation = type.validate(ak, appendContext(c, k, type))
+          const validation = type.validate(ak, appendContext(c, k, type, ak))
           if (validation.isLeft()) {
             pushAll(errors, validation.value)
           } else {
@@ -993,7 +993,7 @@ export const partial = <P extends Props>(
           const k = keys[i]
           const ak = a[k]
           const type = props[k]
-          const validation = type.validate(ak, appendContext(c, k, type))
+          const validation = type.validate(ak, appendContext(c, k, type, ak))
           if (validation.isLeft() && ak !== undefined) {
             pushAll(errors, validation.value)
           } else if (validation.isRight()) {
@@ -1098,14 +1098,14 @@ export const record = <D extends Mixed, C extends Mixed>(
         for (let i = 0; i < len; i++) {
           let k = keys[i]
           const ok = o[k]
-          const domainValidation = domain.validate(k, appendContext(c, k, domain))
+          const domainValidation = domain.validate(k, appendContext(c, k, domain, k))
           if (domainValidation.isLeft()) {
             pushAll(errors, domainValidation.value)
           } else {
             const vk = domainValidation.value
             changed = changed || vk !== k
             k = vk
-            const codomainValidation = codomain.validate(ok, appendContext(c, k, codomain))
+            const codomainValidation = codomain.validate(ok, appendContext(c, k, codomain, ok))
             if (codomainValidation.isLeft()) {
               pushAll(errors, codomainValidation.value)
             } else {
@@ -1183,7 +1183,7 @@ export const union = <CS extends [Mixed, Mixed, ...Array<Mixed>]>(
       const errors: Errors = []
       for (let i = 0; i < len; i++) {
         const type = codecs[i]
-        const validation = type.validate(u, appendContext(c, String(i), type))
+        const validation = type.validate(u, appendContext(c, String(i), type, u))
         if (validation.isRight()) {
           return validation
         } else {
@@ -1301,7 +1301,7 @@ export function intersection<CS extends [Mixed, Mixed, ...Array<Mixed>]>(
           const errors: Errors = []
           for (let i = 0; i < len; i++) {
             const codec = codecs[i]
-            const validation = codec.validate(u, appendContext(c, String(i), codec))
+            const validation = codec.validate(u, appendContext(c, String(i), codec, u))
             if (validation.isLeft()) {
               pushAll(errors, validation.value)
             } else {
@@ -1398,7 +1398,7 @@ export function tuple<CS extends [Mixed, ...Array<Mixed>]>(
         for (let i = 0; i < len; i++) {
           const a = as[i]
           const type = codecs[i]
-          const validation = type.validate(a, appendContext(c, String(i), type))
+          const validation = type.validate(a, appendContext(c, String(i), type, a))
           if (validation.isLeft()) {
             pushAll(errors, validation.value)
           } else {
@@ -1415,9 +1415,11 @@ export function tuple<CS extends [Mixed, ...Array<Mixed>]>(
         const aslen = as.length
         if (aslen > len) {
           errors.push(
-            ...as
-              .slice(len)
-              .map((value, i) => ({ value, context: appendContext(c, String(i + len), never), message: undefined }))
+            ...as.slice(len).map((value, i) => ({
+              value,
+              context: appendContext(c, String(i + len), never, value),
+              message: undefined
+            }))
           )
         }
         return errors.length ? failures(errors) : success(t)
@@ -1780,7 +1782,7 @@ const getTaggedUnion = <Tag extends string, CS extends [Tagged<Tag>, Tagged<Tag>
           return failure(u, c)
         }
         const [i, type] = find(tagValue)!
-        return type.validate(d, appendContext(c, String(i), type))
+        return type.validate(d, appendContext(c, String(i), type, d))
       }
     },
     useIdentity(codecs, len) ? identity : a => find(a[tag])![1].encode(a),
@@ -1915,7 +1917,8 @@ export const exact = <C extends HasProps>(codec: C, name: string = `ExactType<${
         for (let i = 0; i < len; i++) {
           const key = keys[i]
           if (!hasOwnProperty.call(props, key)) {
-            errors.push({ value: o[key], context: appendContext(c, key, never), message: undefined })
+            const value = o[key]
+            errors.push({ value, context: appendContext(c, key, never, value), message: undefined })
           }
         }
         return errors.length ? failures(errors) : success(o)
