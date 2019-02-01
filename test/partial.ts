@@ -1,13 +1,6 @@
 import * as assert from 'assert'
 import * as t from '../src/index'
-import {
-  assertSuccess,
-  assertFailure,
-  assertStrictEqual,
-  assertDeepEqual,
-  withDefault,
-  NumberFromString
-} from './helpers'
+import { assertSuccess, assertFailure, assertStrictEqual, withDefault, NumberFromString } from './helpers'
 
 describe('partial', () => {
   describe('name', () => {
@@ -97,7 +90,7 @@ describe('partial', () => {
     const T = t.partial({
       name: withDefault(t.string, 'foo')
     })
-    assertDeepEqual(T.decode({}), { name: 'foo' })
+    assertSuccess(T.decode({}), { name: 'foo' })
   })
 
   it('should preserve additional properties while encoding', () => {
