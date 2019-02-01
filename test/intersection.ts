@@ -54,6 +54,10 @@ describe('intersection', () => {
 
     it('should fail decoding an invalid value', () => {
       const T = t.intersection([t.type({ a: t.string }), t.type({ b: t.number })])
+      assertFailure(T, null, [
+        'Invalid value null supplied to : ({ a: string } & { b: number })/0: { a: string }',
+        'Invalid value null supplied to : ({ a: string } & { b: number })/1: { b: number }'
+      ])
       assertFailure(T, { a: 1 }, [
         'Invalid value 1 supplied to : ({ a: string } & { b: number })/0: { a: string }/a: string',
         'Invalid value undefined supplied to : ({ a: string } & { b: number })/1: { b: number }/b: number'
