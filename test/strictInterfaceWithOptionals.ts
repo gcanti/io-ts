@@ -1,5 +1,5 @@
 import * as t from '../src/index'
-import { assertSuccess, assertFailure, assertDeepEqual, NumberFromString } from './helpers'
+import { assertSuccess, assertFailure, NumberFromString } from './helpers'
 import * as assert from 'assert'
 
 export function strictInterfaceWithOptionals<R extends t.Props, O extends t.Props>(
@@ -33,7 +33,7 @@ describe('strictInterfaceWithOptionals', () => {
 
   it('should return the a new reference if validation succeeded and something changed', () => {
     const T = strictInterfaceWithOptionals({ foo: NumberFromString }, { bar: t.string }, 'T')
-    assertDeepEqual(T.decode({ foo: '1' }), { foo: 1 })
+    assertSuccess(T.decode({ foo: '1' }), { foo: 1 })
   })
 
   it('should serialize a deserialized', () => {

@@ -3,12 +3,12 @@ import { right } from 'fp-ts/lib/Either'
 import * as t from '../src/index'
 import { PathReporter } from '../src/PathReporter'
 
-export function assertStrictEqual<T>(validation: t.Validation<T>, value: any): void {
-  assert.strictEqual(validation.fold<any>(t.identity, t.identity), value)
-}
-
-export function assertDeepEqual<T>(validation: t.Validation<T>, value: any): void {
-  assert.deepEqual(validation.fold<any>(t.identity, t.identity), value)
+export function assertStrictEqual<T>(result: t.Validation<T>, expected: any): void {
+  if (result.isRight()) {
+    assert.deepEqual(result.value, expected)
+  } else {
+    throw new Error(`${result} is not a right`)
+  }
 }
 
 export function assertSuccess<T>(result: t.Validation<T>, expected?: T): void {
