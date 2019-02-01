@@ -1754,12 +1754,6 @@ const getTaggedUnion = <Tag extends string, CS extends [Tagged<Tag>, Tagged<Tag>
     }
   }
   const isTagValue = (u: unknown): u is LiteralValue => find(u) !== undefined
-  const TagValue = new Type<LiteralValue, LiteralValue, unknown>(
-    index.map(([v]) => JSON.stringify(v)).join(' | '),
-    isTagValue,
-    (u, c) => (isTagValue(u) ? success(u) : failure(u, c)),
-    identity
-  )
   return new TaggedUnionType(
     name,
     (u): u is TypeOf<CS[number]> => {
@@ -1777,9 +1771,8 @@ const getTaggedUnion = <Tag extends string, CS extends [Tagged<Tag>, Tagged<Tag>
       } else {
         const d = dictionaryResult.value
         const tagValue = d[tag]
-        const tagValueValidation = TagValue.validate(d[tag], appendContext(c, tag, TagValue))
-        if (tagValueValidation.isLeft()) {
-          return tagValueValidation
+        if (!isTagValue(tagValue)) {
+          return failure(u, c)
         }
         const [i, type] = find(tagValue)!
         return type.validate(d, appendContext(c, String(i), type))
@@ -1900,7 +1893,7 @@ export interface ExactC<C extends HasProps> extends ExactType<C, TypeOf<C>, Outp
 /**
  * @since 1.1.0
  */
-export function exact<C extends HasProps>(codec: C, name: string = `ExactType<${codec.name}>`): ExactC<C> {
+export const exact = <C extends HasProps>(codec: C, name: string = `ExactType<${codec.name}>`): ExactC<C> => {
   const props: Props = getProps(codec)
   return new ExactType(
     name,
