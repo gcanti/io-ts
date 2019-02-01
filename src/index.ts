@@ -1412,8 +1412,13 @@ export function tuple<CS extends [Mixed, ...Array<Mixed>]>(
             }
           }
         }
-        if (as.length > len) {
-          errors.push({ value: as[len], context: appendContext(c, String(len), never), message: undefined })
+        const aslen = as.length
+        if (aslen > len) {
+          errors.push(
+            ...as
+              .slice(len)
+              .map((value, i) => ({ value, context: appendContext(c, String(i + len), never), message: undefined }))
+          )
         }
         return errors.length ? failures(errors) : success(t)
       }
