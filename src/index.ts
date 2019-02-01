@@ -1906,6 +1906,10 @@ export const exact = <C extends HasProps>(codec: C, name: string = `ExactType<${
     name,
     (u): u is TypeOf<C> => codec.is(u) && Object.getOwnPropertyNames(u).every(k => hasOwnProperty.call(props, k)),
     (u, c) => {
+      const dictionaryValidation = UnknownRecord.validate(u, c)
+      if (dictionaryValidation.isLeft()) {
+        return dictionaryValidation
+      }
       const looseValidation = codec.validate(u, c)
       if (looseValidation.isLeft()) {
         return looseValidation
