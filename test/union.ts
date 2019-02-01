@@ -75,7 +75,7 @@ describe('union', () => {
 
   describe('encode', () => {
     it('should encode a prismatic value', () => {
-      const T1 = t.union([t.interface({ a: NumberFromString }), t.number])
+      const T1 = t.union([t.type({ a: NumberFromString }), t.number])
       assert.deepEqual(T1.encode({ a: 1 }), { a: '1' })
       assert.strictEqual(T1.encode(1), 1)
     })

@@ -7,7 +7,7 @@ type T = {
   b: T | undefined | null
 }
 const T = t.recursion<T>('T', self =>
-  t.interface({
+  t.type({
     a: t.number,
     b: t.union([self, t.undefined, t.null])
   })
@@ -21,7 +21,7 @@ describe('recursion', () => {
         b: A | null
       }
       const T = t.recursion<A>('T', self =>
-        t.interface({
+        t.type({
           a: t.number,
           b: t.union([self, t.null])
         })
@@ -40,7 +40,7 @@ describe('recursion', () => {
         b: O | null
       }
       const T = t.recursion<A, O>('T', self =>
-        t.interface({
+        t.type({
           a: NumberFromString,
           b: t.union([self, t.null])
         })
@@ -62,7 +62,7 @@ describe('recursion', () => {
         b: T | null | undefined
       }
       const T = t.recursion<T>('T', self =>
-        t.interface({
+        t.type({
           a: t.number,
           b: t.union([self, t.undefined, t.null])
         })
@@ -93,7 +93,7 @@ describe('recursion', () => {
         b: O | null
       }
       const T = t.recursion<A, O>('T', self =>
-        t.interface({
+        t.type({
           a: NumberFromString,
           b: t.union([self, t.null])
         })
@@ -109,7 +109,7 @@ describe('recursion', () => {
       b: T | null
     }
     const T = t.recursion<T>('T', self =>
-      t.interface({
+      t.type({
         a: t.number,
         b: t.union([self, t.null])
       })
@@ -127,12 +127,12 @@ describe('recursion', () => {
       a: A | null
     }
     const A: t.RecursiveType<t.Mixed, A> = t.recursion<A>('A', self =>
-      t.interface({
+      t.type({
         b: t.union([self, B, t.null])
       })
     )
     const B = t.recursion<B>('B', () =>
-      t.interface({
+      t.type({
         a: t.union([A, t.null])
       })
     )

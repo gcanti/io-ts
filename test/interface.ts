@@ -59,7 +59,7 @@ describe('type', () => {
     })
 
     it('should support the alias `interface`', () => {
-      const T = t.interface({ a: t.string })
+      const T = t.type({ a: t.string })
       assertSuccess(T.decode({ a: 'a' }))
     })
   })
@@ -77,7 +77,7 @@ describe('type', () => {
   })
 
   it('should keep unknown properties', () => {
-    const T = t.interface({ a: t.string })
+    const T = t.type({ a: t.string })
     const validation = T.decode({ a: 's', b: 1 })
     if (validation.isRight()) {
       assert.deepEqual(validation.value, { a: 's', b: 1 })
@@ -87,7 +87,7 @@ describe('type', () => {
   })
 
   it('should return the same reference if validation succeeded and nothing changed', () => {
-    const T = t.interface({ a: t.string })
+    const T = t.type({ a: t.string })
     const value = { a: 's' }
     assertStrictEqual(T.decode(value), value)
   })

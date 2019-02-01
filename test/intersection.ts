@@ -5,19 +5,19 @@ import { assertFailure, assertStrictEqual, assertSuccess, NumberFromString, stri
 describe('intersection', () => {
   describe('name', () => {
     it('should assign a default name', () => {
-      const T = t.intersection([t.interface({ a: t.string }), t.interface({ b: t.number })])
+      const T = t.intersection([t.type({ a: t.string }), t.type({ b: t.number })])
       assert.strictEqual(T.name, '({ a: string } & { b: number })')
     })
 
     it('should accept a name', () => {
-      const T = t.intersection([t.interface({ a: t.string }), t.interface({ b: t.number })], 'T')
+      const T = t.intersection([t.type({ a: t.string }), t.type({ b: t.number })], 'T')
       assert.strictEqual(T.name, 'T')
     })
   })
 
   describe('is', () => {
     it('should check a isomorphic value', () => {
-      const T = t.intersection([t.interface({ a: t.string }), t.interface({ b: t.number })])
+      const T = t.intersection([t.type({ a: t.string }), t.type({ b: t.number })])
       assert.strictEqual(T.is({}), false)
       assert.strictEqual(T.is({ a: 'a' }), false)
       assert.strictEqual(T.is({ b: 1 }), false)
@@ -25,7 +25,7 @@ describe('intersection', () => {
     })
 
     it('should check a prismatic value', () => {
-      const T = t.intersection([t.interface({ a: t.string }), t.interface({ b: NumberFromString })])
+      const T = t.intersection([t.type({ a: t.string }), t.type({ b: NumberFromString })])
       assert.strictEqual(T.is({}), false)
       assert.strictEqual(T.is({ a: 'a' }), false)
       assert.strictEqual(T.is({ b: 1 }), false)
@@ -43,17 +43,17 @@ describe('intersection', () => {
 
   describe('decode', () => {
     it('should decode a isomorphic value', () => {
-      const T = t.intersection([t.interface({ a: t.string }), t.interface({ b: t.number })])
+      const T = t.intersection([t.type({ a: t.string }), t.type({ b: t.number })])
       assertSuccess(T.decode({ a: 'a', b: 1 }))
     })
 
     it('should decode a prismatic value', () => {
-      const T = t.intersection([t.interface({ a: t.string }), t.interface({ b: NumberFromString })])
+      const T = t.intersection([t.type({ a: t.string }), t.type({ b: NumberFromString })])
       assertSuccess(T.decode({ a: 'a', b: '1' }), { a: 'a', b: 1 })
     })
 
     it('should fail decoding an invalid value', () => {
-      const T = t.intersection([t.interface({ a: t.string }), t.interface({ b: t.number })])
+      const T = t.intersection([t.type({ a: t.string }), t.type({ b: t.number })])
       assertFailure(T, { a: 1 }, [
         'Invalid value 1 supplied to : ({ a: string } & { b: number })/0: { a: string }/a: string',
         'Invalid value undefined supplied to : ({ a: string } & { b: number })/1: { b: number }/b: number'
@@ -68,13 +68,13 @@ describe('intersection', () => {
     })
 
     it('should keep unknown properties', () => {
-      const T = t.intersection([t.interface({ a: t.number }), t.interface({ b: t.number })])
+      const T = t.intersection([t.type({ a: t.number }), t.type({ b: t.number })])
       const x = { a: 1, b: 1, c: true }
       assertSuccess(T.decode({ a: 1, b: 1, c: true }), x)
     })
 
     it('should return the same reference while decoding', () => {
-      const T = t.intersection([t.interface({ a: t.number }), t.interface({ b: t.number })])
+      const T = t.intersection([t.type({ a: t.number }), t.type({ b: t.number })])
       const value = { a: 1, b: 2 }
       assertStrictEqual(T.decode(value), value)
     })
@@ -93,17 +93,17 @@ describe('intersection', () => {
 
   describe('encode', () => {
     it('should encode a isomorphic value', () => {
-      const T = t.intersection([t.interface({ a: t.string }), t.interface({ b: t.number })])
+      const T = t.intersection([t.type({ a: t.string }), t.type({ b: t.number })])
       assert.deepEqual(T.encode({ a: 'a', b: 1 }), { a: 'a', b: 1 })
     })
 
     it('should encode a prismatic value', () => {
-      const T = t.intersection([t.interface({ a: t.string }), t.interface({ b: NumberFromString })])
+      const T = t.intersection([t.type({ a: t.string }), t.type({ b: NumberFromString })])
       assert.deepEqual(T.encode({ a: 'a', b: 1 }), { a: 'a', b: '1' })
     })
 
     it('should return the same reference while encoding', () => {
-      const T = t.intersection([t.interface({ a: t.number }), t.interface({ b: t.number })])
+      const T = t.intersection([t.type({ a: t.number }), t.type({ b: t.number })])
       const x = { a: 1, b: 2 }
       assert.strictEqual(T.encode(x), x)
     })
