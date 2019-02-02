@@ -758,30 +758,30 @@ export const array = <C extends Mixed>(codec: C, name: string = `Array<${codec.n
     name,
     (u): u is Array<TypeOf<C>> => UnknownArray.is(u) && u.every(codec.is),
     (u, c) => {
-      const arrayValidation = UnknownArray.validate(u, c)
-      if (arrayValidation.isLeft()) {
-        return arrayValidation
+      const unknownArrayValidation = UnknownArray.validate(u, c)
+      if (unknownArrayValidation.isLeft()) {
+        return unknownArrayValidation
       }
-      const xs = arrayValidation.value
-      const len = xs.length
-      let a: Array<TypeOf<C>> = xs
+      const us = unknownArrayValidation.value
+      const len = us.length
+      let as: Array<TypeOf<C>> = us
       const errors: Errors = []
       for (let i = 0; i < len; i++) {
-        const x = xs[i]
-        const validation = codec.validate(x, appendContext(c, String(i), codec, x))
+        const ui = us[i]
+        const validation = codec.validate(ui, appendContext(c, String(i), codec, ui))
         if (validation.isLeft()) {
           pushAll(errors, validation.value)
         } else {
-          const vx = validation.value
-          if (vx !== x) {
-            if (a === xs) {
-              a = xs.slice()
+          const ai = validation.value
+          if (ai !== ui) {
+            if (as === us) {
+              as = us.slice()
             }
-            a[i] = vx
+            as[i] = ai
           }
         }
       }
-      return errors.length ? failures(errors) : success(a)
+      return errors.length > 0 ? failures(errors) : success(as)
     },
     codec.encode === identity ? identity : a => a.map(codec.encode),
     codec
@@ -901,7 +901,7 @@ export const type = <P extends Props>(props: P, name: string = getNameFromProps(
           }
         }
       }
-      return errors.length ? failures(errors) : success(a as any)
+      return errors.length > 0 ? failures(errors) : success(a as any)
     },
     useIdentity(types, len)
       ? identity
@@ -1003,7 +1003,7 @@ export const partial = <P extends Props>(
           }
         }
       }
-      return errors.length ? failures(errors) : success(a as any)
+      return errors.length > 0 ? failures(errors) : success(a as any)
     },
     useIdentity(types, len)
       ? identity
@@ -1110,7 +1110,7 @@ export const record = <D extends Mixed, C extends Mixed>(
           }
         }
       }
-      return errors.length ? failures(errors) : success((changed ? a : o) as any)
+      return errors.length > 0 ? failures(errors) : success((changed ? a : o) as any)
     },
     domain.encode === identity && codomain.encode === identity
       ? identity
@@ -1183,7 +1183,7 @@ export const union = <CS extends [Mixed, Mixed, ...Array<Mixed>]>(
         }
         pushAll(errors, validation.value)
       }
-      return errors.length ? failures(errors) : failure(u, c)
+      return errors.length > 0 ? failures(errors) : failure(u, c)
     },
     useIdentity(codecs, len)
       ? identity
@@ -1301,7 +1301,7 @@ export function intersection<CS extends [Mixed, Mixed, ...Array<Mixed>]>(
               us.push(validation.value)
             }
           }
-          return errors.length ? failures(errors) : success(mergeAll(us))
+          return errors.length > 0 ? failures(errors) : success(mergeAll(us))
         },
     codecs.length === 0 ? identity : a => mergeAll(codecs.map(codec => codec.encode(a))),
     codecs
@@ -1381,11 +1381,11 @@ export function tuple<CS extends [Mixed, ...Array<Mixed>]>(
     name,
     (u): u is any => UnknownArray.is(u) && u.length === len && codecs.every((type, i) => type.is(u[i])),
     (u, c) => {
-      const arrayValidation = UnknownArray.validate(u, c)
-      if (arrayValidation.isLeft()) {
-        return arrayValidation
+      const unknownArrayValidation = UnknownArray.validate(u, c)
+      if (unknownArrayValidation.isLeft()) {
+        return unknownArrayValidation
       }
-      const us = arrayValidation.value
+      const us = unknownArrayValidation.value
       let as: Array<any> = us.length > len ? us.slice(0, len) : us // strip additional components
       const errors: Errors = []
       for (let i = 0; i < len; i++) {
@@ -1405,7 +1405,7 @@ export function tuple<CS extends [Mixed, ...Array<Mixed>]>(
           }
         }
       }
-      return errors.length ? failures(errors) : success(as)
+      return errors.length > 0 ? failures(errors) : success(as)
     },
     useIdentity(codecs, len) ? identity : a => codecs.map((type, i) => type.encode(a[i])),
     codecs
@@ -1907,7 +1907,7 @@ export const exact = <C extends HasProps>(codec: C, name: string = `ExactType<${
           errors.push({ value, context: appendContext(c, key, never, value), message: undefined })
         }
       }
-      return errors.length ? failures(errors) : success(o)
+      return errors.length > 0 ? failures(errors) : success(o)
     },
     codec.encode,
     codec
