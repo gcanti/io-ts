@@ -1741,15 +1741,15 @@ const getTaggedUnion = <Tag extends string, CS extends [Tagged<Tag>, Tagged<Tag>
     v,
     codecs.findIndex(codec => codec === origin)
   ])
-  const find = (tagValue: unknown): [number, Mixed] | undefined => {
+  const findIndex = (tagValue: unknown): number | undefined => {
     for (let i = 0; i < indexWithPosition.length; i++) {
       const [value, position] = indexWithPosition[i]
       if (value === tagValue) {
-        return [i, codecs[position]]
+        return position
       }
     }
   }
-  const isTagValue = (u: unknown): u is LiteralValue => find(u) !== undefined
+  const isTagValue = (u: unknown): u is LiteralValue => findIndex(u) !== undefined
   return new TaggedUnionType(
     name,
     (u): u is TypeOf<CS[number]> => {
@@ -1757,8 +1757,8 @@ const getTaggedUnion = <Tag extends string, CS extends [Tagged<Tag>, Tagged<Tag>
         return false
       }
       const tagValue = u[tag]
-      const type = find(tagValue)
-      return type ? type[1].is(u) : false
+      const index = findIndex(tagValue)
+      return index !== undefined ? codecs[index].is(u) : false
     },
     (u, c) => {
       const dictionaryResult = UnknownRecord.validate(u, c)
@@ -1770,10 +1770,11 @@ const getTaggedUnion = <Tag extends string, CS extends [Tagged<Tag>, Tagged<Tag>
       if (!isTagValue(tagValue)) {
         return failure(u, c)
       }
-      const [i, type] = find(tagValue)!
-      return type.validate(d, appendContext(c, String(i), type, d))
+      const index = findIndex(tagValue)!
+      const codec = codecs[index]
+      return codec.validate(d, appendContext(c, String(index), codec, d))
     },
-    useIdentity(codecs, len) ? identity : a => find(a[tag])![1].encode(a),
+    useIdentity(codecs, len) ? identity : a => codecs[findIndex(a[tag])!].encode(a),
     codecs,
     tag
   )
