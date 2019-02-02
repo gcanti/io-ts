@@ -6,7 +6,7 @@ describe('strict', () => {
   describe('name', () => {
     it('should assign a default name', () => {
       const T = t.strict({ foo: t.string })
-      assert.strictEqual(T.name, 'StrictType<{ foo: string }>')
+      assert.strictEqual(T.name, 'ExactType<{ foo: string }>')
     })
 
     it('should accept a name', () => {
@@ -50,7 +50,7 @@ describe('strict', () => {
 
     it('should fail validating an invalid value', () => {
       const T = t.strict({ foo: t.string })
-      assertFailure(T, { foo: 1 }, ['Invalid value 1 supplied to : StrictType<{ foo: string }>/foo: string'])
+      assertFailure(T, { foo: 1 }, ['Invalid value 1 supplied to : ExactType<{ foo: string }>/foo: string'])
     })
 
     it('should strip additional properties', () => {
@@ -70,5 +70,16 @@ describe('strict', () => {
       const x = { a: 'a' }
       assert.strictEqual(T.encode(x), x)
     })
+  })
+
+  it('should export a StrictType class', () => {
+    const T = new t.StrictType<{}, {}, {}, unknown>(
+      'name',
+      (_): _ is {} => true,
+      (u, c) => t.failure(u, c),
+      t.identity,
+      {}
+    )
+    assert.strictEqual(T.name, 'name')
   })
 })

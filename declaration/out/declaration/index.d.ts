@@ -104,17 +104,17 @@ export declare const RA1: t.ReadonlyArrayC<t.TypeC<{
         }>;
     }>;
 }>>;
-export declare const S5: t.StrictC<{
-    e: t.StrictC<{
-        d: t.StrictC<{
-            c: t.StrictC<{
-                b: t.StrictC<{
+export declare const S5: t.ExactC<t.TypeC<{
+    e: t.ExactC<t.TypeC<{
+        d: t.ExactC<t.TypeC<{
+            c: t.ExactC<t.TypeC<{
+                b: t.ExactC<t.TypeC<{
                     a: t.StringC;
-                }>;
-            }>;
-        }>;
-    }>;
-}>;
+                }>>;
+            }>>;
+        }>>;
+    }>>;
+}>>;
 export declare const TU1: t.TaggedUnionC<"type", [t.TypeC<{
     type: t.LiteralC<true>;
     foo: t.StringC;
