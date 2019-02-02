@@ -605,7 +605,7 @@ export const refinement = <C extends Any>(
 /**
  * @since 1.0.0
  */
-export const Integer = refinement(number, n => n % 1 === 0, 'Integer')
+export const Integer = refinement(number, Number.isInteger, 'Integer')
 
 type LiteralValue = string | number | boolean
 
