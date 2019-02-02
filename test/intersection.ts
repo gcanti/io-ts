@@ -89,7 +89,7 @@ describe('intersection', () => {
       assertSuccess(T.decode({ a: 'a', b: 1 }))
       assertSuccess(T.decode({ a: 'a', b: 1, c: true }), { a: 'a', b: 1 })
       assertFailure(T, { a: 'a' }, [
-        'Invalid value undefined supplied to : (ExactType<{ a: string }> & ExactType<{ b: number }>)/1: ExactType<{ b: number }>/b: number'
+        'Invalid value undefined supplied to : ({| a: string |} & {| b: number |})/1: {| b: number |}/b: number'
       ])
     })
   })

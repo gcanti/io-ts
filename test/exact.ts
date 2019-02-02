@@ -6,7 +6,7 @@ describe('exact', () => {
   describe('name', () => {
     it('should assign a default name', () => {
       const T = t.exact(t.type({ foo: t.string }))
-      assert.strictEqual(T.name, 'ExactType<{ foo: string }>')
+      assert.strictEqual(T.name, '{| foo: string |}')
     })
 
     it('should accept a name', () => {
@@ -74,10 +74,10 @@ describe('exact', () => {
 
     it('should fail validating an invalid value (type)', () => {
       const T = t.exact(t.type({ foo: t.string }))
-      assertFailure(T, null, ['Invalid value null supplied to : ExactType<{ foo: string }>'])
-      assertFailure(T, undefined, ['Invalid value undefined supplied to : ExactType<{ foo: string }>'])
-      assertFailure(T, 1, ['Invalid value 1 supplied to : ExactType<{ foo: string }>'])
-      assertFailure(T, {}, ['Invalid value undefined supplied to : ExactType<{ foo: string }>/foo: string'])
+      assertFailure(T, null, ['Invalid value null supplied to : {| foo: string |}'])
+      assertFailure(T, undefined, ['Invalid value undefined supplied to : {| foo: string |}'])
+      assertFailure(T, 1, ['Invalid value 1 supplied to : {| foo: string |}'])
+      assertFailure(T, {}, ['Invalid value undefined supplied to : {| foo: string |}/foo: string'])
     })
 
     it('should strip additional properties (type)', () => {
@@ -87,7 +87,7 @@ describe('exact', () => {
 
     it('should fail validating an invalid value (partial)', () => {
       const T = t.exact(t.partial({ foo: t.string }))
-      assertFailure(T, null, ['Invalid value null supplied to : ExactType<Partial<{ foo: string }>>'])
+      assertFailure(T, null, ['Invalid value null supplied to : Partial<{| foo: string |}>'])
     })
 
     it('should strip additional properties (partial)', () => {
@@ -97,9 +97,7 @@ describe('exact', () => {
 
     it('should fail validating an invalid value (intersection)', () => {
       const T = t.exact(t.intersection([t.type({ foo: t.string }), t.partial({ bar: t.number })]))
-      assertFailure(T, null, [
-        'Invalid value null supplied to : ExactType<({ foo: string } & Partial<{ bar: number }>)>'
-      ])
+      assertFailure(T, null, ['Invalid value null supplied to : Exact<({ foo: string } & Partial<{ bar: number }>)>'])
     })
 
     it('should strip additional properties (intersection)', () => {
@@ -109,10 +107,8 @@ describe('exact', () => {
 
     it('should fail validating an invalid value (refinement)', () => {
       const T = t.exact(t.refinement(t.type({ foo: t.string }), p => p.foo.length > 2))
-      assertFailure(T, null, ['Invalid value null supplied to : ExactType<({ foo: string } | <function1>)>'])
-      assertFailure(T, { foo: 'a' }, [
-        'Invalid value {"foo":"a"} supplied to : ExactType<({ foo: string } | <function1>)>'
-      ])
+      assertFailure(T, null, ['Invalid value null supplied to : Exact<({ foo: string } | <function1>)>'])
+      assertFailure(T, { foo: 'a' }, ['Invalid value {"foo":"a"} supplied to : Exact<({ foo: string } | <function1>)>'])
     })
 
     it('should strip additional properties (refinement)', () => {
@@ -122,7 +118,7 @@ describe('exact', () => {
 
     it('should fail validating an invalid value (readonly)', () => {
       const T = t.exact(t.readonly(t.type({ foo: t.string })))
-      assertFailure(T, null, ['Invalid value null supplied to : ExactType<Readonly<{ foo: string }>>'])
+      assertFailure(T, null, ['Invalid value null supplied to : Exact<Readonly<{ foo: string }>>'])
     })
 
     it('should strip additional properties (readonly)', () => {
