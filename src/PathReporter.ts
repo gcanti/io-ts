@@ -2,7 +2,13 @@ import { Reporter } from './Reporter'
 import { Context, getFunctionName, ValidationError } from './index'
 
 function stringify(v: any): string {
-  return typeof v === 'function' ? getFunctionName(v) : JSON.stringify(v)
+  if (typeof v === 'function') {
+    return getFunctionName(v)
+  }
+  if (typeof v === 'number' && !isFinite(v)) {
+    return v > 0 ? 'Infinity' : '-Infinity'
+  }
+  return JSON.stringify(v)
 }
 
 function getContextPath(context: Context): string {

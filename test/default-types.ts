@@ -102,6 +102,8 @@ describe('Integer', () => {
     assertSuccess(T.decode(1))
     assertFailure(T, 0.5, ['Invalid value 0.5 supplied to : Integer'])
     assertFailure(T, 'foo', ['Invalid value "foo" supplied to : Integer'])
+    assertFailure(T, Infinity, ['Invalid value Infinity supplied to : Integer'])
+    assertFailure(T, -Infinity, ['Invalid value -Infinity supplied to : Integer'])
   })
 })
 
