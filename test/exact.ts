@@ -138,8 +138,15 @@ describe('exact', () => {
     })
 
     it('should return the same reference while encoding', () => {
-      const T = t.exact(t.type({ a: t.number }))
-      assert.strictEqual(T.encode, t.identity)
+      const T = t.exact(t.type({ a: t.string }))
+      const x = { a: 'a' }
+      assert.strictEqual(T.encode(x), x)
+    })
+
+    it('should strip additional properties', () => {
+      const T = t.exact(t.type({ a: t.string }))
+      const x = { a: 'a', b: 1 }
+      assert.deepEqual(T.encode(x), { a: 'a' })
     })
   })
 })

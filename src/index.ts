@@ -1913,7 +1913,7 @@ export const exact = <C extends HasProps>(codec: C, name: string = `ExactType<${
       }
       return success(stripKeys(validation.value, props))
     },
-    codec.encode,
+    a => codec.encode(stripKeys(a, props)),
     codec
   )
 }
