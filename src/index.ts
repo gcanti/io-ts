@@ -231,6 +231,8 @@ const isLiteralCodec = getIsCodec<LiteralType<LiteralValue>>('LiteralType')
 
 const isInterfaceCodec = getIsCodec<InterfaceType<Props>>('InterfaceType')
 
+const isPartialCodec = getIsCodec<PartialType<Props>>('PartialType')
+
 const isStrictCodec = getIsCodec<StrictType<Props>>('StrictType')
 
 const isIntersectionCodec = getIsCodec<IntersectionType<Array<Any>>>('IntersectionType')
@@ -811,9 +813,9 @@ export interface AnyProps {
 }
 
 const getNameFromProps = (props: Props): string =>
-  `{ ${Object.keys(props)
+  Object.keys(props)
     .map(k => `${k}: ${props[k].name}`)
-    .join(', ')} }`
+    .join(', ')
 
 const useIdentity = (codecs: Array<Any>, len: number): boolean => {
   for (let i = 0; i < len; i++) {
@@ -847,11 +849,15 @@ export interface Props {
 export interface TypeC<P extends Props>
   extends InterfaceType<P, { [K in keyof P]: TypeOf<P[K]> }, { [K in keyof P]: OutputOf<P[K]> }, unknown> {}
 
+const getInterfaceTypeName = (props: Props): string => {
+  return `{ ${getNameFromProps(props)} }`
+}
+
 /**
  * @alias `interface`
  * @since 1.0.0
  */
-export const type = <P extends Props>(props: P, name: string = getNameFromProps(props)): TypeC<P> => {
+export const type = <P extends Props>(props: P, name: string = getInterfaceTypeName(props)): TypeC<P> => {
   const keys = Object.keys(props)
   const types = keys.map(key => props[key])
   const len = keys.length
@@ -952,12 +958,16 @@ export type OutputOfPartialProps<P extends AnyProps> = { [K in keyof P]?: Output
 export interface PartialC<P extends Props>
   extends PartialType<P, { [K in keyof P]?: TypeOf<P[K]> }, { [K in keyof P]?: OutputOf<P[K]> }, unknown> {}
 
+const getPartialTypeName = (inner: string): string => {
+  return `Partial<${inner}>`
+}
+
 /**
  * @since 1.0.0
  */
 export const partial = <P extends Props>(
   props: P,
-  name: string = `Partial<${getNameFromProps(props)}>`
+  name: string = getPartialTypeName(getInterfaceTypeName(props))
 ): PartialC<P> => {
   const keys = Object.keys(props)
   const types = keys.map(key => props[key])
@@ -1890,11 +1900,20 @@ const stripKeys = (o: any, props: Props): unknown => {
   return shouldStrip ? r : o
 }
 
+const getExactTypeName = (codec: Any): string => {
+  if (isInterfaceCodec(codec)) {
+    return `{| ${getNameFromProps(codec.props)} |}`
+  } else if (isPartialCodec(codec)) {
+    return getPartialTypeName(`{| ${getNameFromProps(codec.props)} |}`)
+  }
+  return `Exact<${codec.name}>`
+}
+
 /**
  * Strips additional properties
  * @since 1.1.0
  */
-export const exact = <C extends HasProps>(codec: C, name: string = `ExactType<${codec.name}>`): ExactC<C> => {
+export const exact = <C extends HasProps>(codec: C, name: string = getExactTypeName(codec)): ExactC<C> => {
   const props: Props = getProps(codec)
   return new ExactType(
     name,

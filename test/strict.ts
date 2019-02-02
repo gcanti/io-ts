@@ -6,7 +6,7 @@ describe('strict', () => {
   describe('name', () => {
     it('should assign a default name', () => {
       const T = t.strict({ foo: t.string })
-      assert.strictEqual(T.name, 'ExactType<{ foo: string }>')
+      assert.strictEqual(T.name, '{| foo: string |}')
     })
 
     it('should accept a name', () => {
@@ -50,7 +50,7 @@ describe('strict', () => {
 
     it('should fail validating an invalid value', () => {
       const T = t.strict({ foo: t.string })
-      assertFailure(T, { foo: 1 }, ['Invalid value 1 supplied to : ExactType<{ foo: string }>/foo: string'])
+      assertFailure(T, { foo: 1 }, ['Invalid value 1 supplied to : {| foo: string |}/foo: string'])
     })
 
     it('should strip additional properties', () => {
