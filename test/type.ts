@@ -49,6 +49,9 @@ describe('type', () => {
       assertSuccess(T2.decode({ a: undefined }), { a: undefined })
       assertSuccess(T2.decode({ a: 1 }), { a: 1 })
       assertSuccess(T2.decode({}), { a: undefined })
+
+      const T3 = t.type({ a: t.any })
+      assert.deepEqual(T3.decode({}).value, { a: undefined })
     })
 
     it('should fail decoding an invalid value', () => {

@@ -587,3 +587,19 @@ declare function withValidation<L, A>(
 declare const fa: TaskEither<string, void>
 
 withValidation(t.void, () => 'validation error', fa)
+
+//
+// brand
+//
+
+const PositiveInt = t.brand(t.Int, n => n > 0, 'PositiveInt')
+
+const Person = t.type({
+  name: t.string,
+  age: PositiveInt
+})
+
+type Person = t.TypeOf<typeof Person> // $ExpectType { name: string; age: number & Brand<"Int"> & Brand<"PositiveInt">; }
+
+// $ExpectError
+const person: Person = { name: 'name', age: -1.2 }
