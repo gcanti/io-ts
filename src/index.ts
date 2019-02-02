@@ -576,12 +576,16 @@ export class RefinementType<C extends Any, A = any, O = A, I = unknown> extends 
 }
 
 /**
+ * Use `BrandC` instead
  * @since 1.5.3
+ * @deprecated
  */
 export interface RefinementC<C extends Any> extends RefinementType<C, TypeOf<C>, OutputOf<C>, InputOf<C>> {}
 
 /**
+ * Use `brand` instead
  * @since 1.0.0
+ * @deprecated
  */
 export const refinement = <C extends Any>(
   codec: C,
@@ -605,9 +609,41 @@ export const refinement = <C extends Any>(
   )
 
 /**
+ * Use `Int` instead
  * @since 1.0.0
+ * @deprecated
  */
 export const Integer = refinement(number, Number.isInteger, 'Integer')
+
+declare const _brand: unique symbol
+
+/**
+ * @since 1.8.0
+ */
+export interface Brand<B> {
+  readonly [_brand]: B
+}
+
+/**
+ * @since 1.8.0
+ */
+export interface BrandC<C extends Any, B> extends RefinementType<C, TypeOf<C> & Brand<B>, OutputOf<C>, InputOf<C>> {}
+
+/**
+ * @since 1.8.0
+ */
+export const brand = <C extends Any, B extends string>(
+  codec: C,
+  predicate: Predicate<TypeOf<C>>,
+  name: B
+): BrandC<C, B> => {
+  return refinement(codec, predicate, name)
+}
+
+/**
+ * @since 1.8.0
+ */
+export const Int = brand(number, n => n % 1 === 0, 'Int')
 
 type LiteralValue = string | number | boolean
 

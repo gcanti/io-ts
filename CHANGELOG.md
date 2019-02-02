@@ -14,6 +14,15 @@
 **Note**: Gaps between patch versions are faulty/broken releases. **Note**: A feature tagged as Experimental is in a
 high state of flux, you're at risk of it changing without notice.
 
+# 1.8.0
+
+- **New Feature**
+  - add `brand` combinator (@gcanti)
+  - add `Int` codec (@gcanti)
+- **Deprecation**
+  - deprecate `refinement` combinator in favour of `brand` (@gcanti)
+  - deprecate `Integer` codec in favour of `Int` (@gcanti)
+
 # 1.7.1
 
 - **Deprecation**
