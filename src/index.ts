@@ -1879,6 +1879,21 @@ const getProps = (codec: HasProps): Props => {
  */
 export interface ExactC<C extends HasProps> extends ExactType<C, TypeOf<C>, OutputOf<C>, InputOf<C>> {}
 
+const stripKeys = (o: any, props: Props): unknown => {
+  const keys = Object.getOwnPropertyNames(o)
+  let shouldStrip = false
+  const r: any = {}
+  for (let i = 0; i < keys.length; i++) {
+    const key = keys[i]
+    if (!hasOwnProperty.call(props, key)) {
+      shouldStrip = true
+    } else {
+      r[key] = o[key]
+    }
+  }
+  return shouldStrip ? r : o
+}
+
 /**
  * @since 1.1.0
  */
@@ -1892,22 +1907,11 @@ export const exact = <C extends HasProps>(codec: C, name: string = `ExactType<${
       if (unknownRecordValidation.isLeft()) {
         return unknownRecordValidation
       }
-      const looseValidation = codec.validate(u, c)
-      if (looseValidation.isLeft()) {
-        return looseValidation
+      const validation = codec.validate(u, c)
+      if (validation.isLeft()) {
+        return validation
       }
-      const o = looseValidation.value
-      const keys = Object.getOwnPropertyNames(o)
-      const len = keys.length
-      const errors: Errors = []
-      for (let i = 0; i < len; i++) {
-        const key = keys[i]
-        if (!hasOwnProperty.call(props, key)) {
-          const value = o[key]
-          errors.push({ value, context: appendContext(c, key, never, value), message: undefined })
-        }
-      }
-      return errors.length > 0 ? failures(errors) : success(o)
+      return success(stripKeys(validation.value, props))
     },
     codec.encode,
     codec
