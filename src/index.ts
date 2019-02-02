@@ -1283,10 +1283,9 @@ export function intersection<CS extends [Mixed, Mixed, ...Array<Mixed>]>(
   name: string = `(${codecs.map(type => type.name).join(' & ')})`
 ): IntersectionC<CS> {
   const len = codecs.length
-  const is = (u: unknown): u is any => codecs.every(type => type.is(u))
   return new IntersectionType(
     name,
-    is,
+    (u: unknown): u is any => codecs.every(type => type.is(u)),
     codecs.length === 0
       ? success
       : (u, c) => {
