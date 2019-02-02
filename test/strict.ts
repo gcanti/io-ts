@@ -66,8 +66,9 @@ describe('strict', () => {
     })
 
     it('should return the same reference while encoding', () => {
-      const T = t.strict({ a: t.number })
-      assert.strictEqual(T.encode, t.identity)
+      const T = t.strict({ a: t.string })
+      const x = { a: 'a' }
+      assert.strictEqual(T.encode(x), x)
     })
   })
 })
