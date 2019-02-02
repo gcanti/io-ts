@@ -73,6 +73,12 @@ describe('tuple', () => {
       assertSuccess(T.decode([1, 'foo', true]), [1, 'foo'])
       assertSuccess(T.decode([1, 'foo', true, 'a']), [1, 'foo'])
     })
+
+    it('should return the same reference if validation succeeded and nothing changed', () => {
+      const T = t.tuple([t.number, t.string])
+      const value = [1, 'a']
+      assertStrictEqual(T.decode(value), value)
+    })
   })
 
   describe('encode', () => {
@@ -85,16 +91,11 @@ describe('tuple', () => {
       const T = t.tuple([NumberFromString, t.string])
       assert.deepEqual(T.encode([1, 'a']), ['1', 'a'])
     })
-  })
 
-  it('should return the same reference if validation succeeded and nothing changed', () => {
-    const T = t.tuple([t.number, t.string])
-    const value = [1, 'a']
-    assertStrictEqual(T.decode(value), value)
-  })
-
-  it('should return the same reference while encoding', () => {
-    const T = t.tuple([t.number, t.string])
-    assert.strictEqual(T.encode, t.identity)
+    it('should return the same reference while encoding', () => {
+      const T = t.tuple([t.number, t.string])
+      const x: [number, string] = [1, 'a']
+      assert.strictEqual(T.encode(x), x)
+    })
   })
 })
