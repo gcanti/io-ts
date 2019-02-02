@@ -293,15 +293,15 @@ type ReadonlyArray2OutputTest = t.OutputOf<typeof ReadonlyArray2> // $ExpectType
 // strict
 //
 
-const Strict1 = t.strict({ a: t.string, b: t.number }) // $ExpectType StrictC<{ a: StringC; b: NumberC; }>
+const Strict1 = t.strict({ a: t.string, b: t.number }) // $ExpectType ExactC<TypeC<{ a: StringC; b: NumberC; }>>
 type Strict1TypeTest = Equals<t.TypeOf<typeof Strict1>, { a: string; b: number }> // $ExpectType "T"
 type Strict1OutputTest = Equals<t.OutputOf<typeof Strict1>, { a: string; b: number }> // $ExpectType "T"
 
-const Strict2 = t.strict({ a: t.strict({ b: t.string }) }) // $ExpectType StrictC<{ a: StrictC<{ b: StringC; }>; }>
+const Strict2 = t.strict({ a: t.strict({ b: t.string }) }) // $ExpectType ExactC<TypeC<{ a: ExactC<TypeC<{ b: StringC; }>>; }>>
 type Strict2TypeTest = Equals<t.TypeOf<typeof Strict2>, { a: { b: string } }> // $ExpectType "T"
 type Strict2OutputTest = Equals<t.OutputOf<typeof Strict2>, { a: { b: string } }> // $ExpectType "T"
 
-const Strict3 = t.strict({ a: NumberFromString }) // $ExpectType StrictC<{ a: Type<number, string, unknown>; }>
+const Strict3 = t.strict({ a: NumberFromString }) // $ExpectType ExactC<TypeC<{ a: Type<number, string, unknown>; }>>
 type Strict3TypeTest = Equals<t.TypeOf<typeof Strict3>, { a: number }> // $ExpectType "T"
 type Strict3OutputTest = Equals<t.OutputOf<typeof Strict3>, { a: string }> // $ExpectType "T"
 

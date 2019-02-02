@@ -57,13 +57,13 @@ describe('getIndexRecord', () => {
   })
 
   it('should handle exact codecs', () => {
-    const A = t.exact(t.strict({ type: t.literal('A') }))
+    const A = t.exact(t.type({ type: t.literal('A') }))
     assertEqualIndexRecord([A], { type: [['A', A, A]] })
-    const B = t.exact(t.strict({ type: t.literal('B') }))
+    const B = t.exact(t.type({ type: t.literal('B') }))
     assertEqualIndexRecord([A, B], { type: [['A', A, A], ['B', B, B]] })
-    const C = t.exact(t.strict({ kind: t.literal('A') }))
+    const C = t.exact(t.type({ kind: t.literal('A') }))
     assertEmptyIndexRecord([A, C])
-    const D = t.exact(t.strict({ type: t.literal('A') }))
+    const D = t.exact(t.type({ type: t.literal('A') }))
     assertEmptyIndexRecord([A, D])
   })
 

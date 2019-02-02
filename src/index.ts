@@ -1503,6 +1503,7 @@ export const readonlyArray = <C extends Mixed>(
 
 /**
  * @since 1.0.0
+ * @deprecated
  */
 export class StrictType<P, A = any, O = A, I = unknown> extends Type<A, O, I> {
   readonly _tag: 'StrictType' = 'StrictType'
@@ -1519,21 +1520,17 @@ export class StrictType<P, A = any, O = A, I = unknown> extends Type<A, O, I> {
 
 /**
  * @since 1.5.3
+ * @deprecated
  */
 export interface StrictC<P extends Props>
   extends StrictType<P, { [K in keyof P]: TypeOf<P[K]> }, { [K in keyof P]: OutputOf<P[K]> }, unknown> {}
 
 /**
- * Specifies that only the given properties are allowed
- * @deprecated use `exact` instead
+ * Strips additional properties
  * @since 1.0.0
  */
-export const strict = <P extends Props>(
-  props: P,
-  name: string = `StrictType<${getNameFromProps(props)}>`
-): StrictC<P> => {
-  const exactType = exact(type(props))
-  return new StrictType(name, exactType.is, exactType.validate, exactType.encode, props)
+export const strict = <P extends Props>(props: P, name?: string): ExactC<TypeC<P>> => {
+  return exact(type(props), name)
 }
 
 /**
@@ -1894,6 +1891,7 @@ const stripKeys = (o: any, props: Props): unknown => {
 }
 
 /**
+ * Strips additional properties
  * @since 1.1.0
  */
 export const exact = <C extends HasProps>(codec: C, name: string = `ExactType<${codec.name}>`): ExactC<C> => {
