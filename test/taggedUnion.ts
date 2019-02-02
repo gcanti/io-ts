@@ -93,8 +93,8 @@ describe('taggedUnion', () => {
       assertSuccess(T.decode({ type: 'B', b: 'b' }))
       assertSuccess(T.decode({ type: 'C' }))
       assertFailure(T, { type: 'B' }, [
-        'Invalid value "B" supplied to : T/1: Subunion/0: A/type: "A"',
-        'Invalid value undefined supplied to : T/1: Subunion/1: B/b: string'
+        'Invalid value "B" supplied to : T/0: Subunion/0: A/type: "A"',
+        'Invalid value undefined supplied to : T/0: Subunion/1: B/b: string'
       ])
     })
 
