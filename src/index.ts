@@ -1385,11 +1385,11 @@ export function tuple<CS extends [Mixed, ...Array<Mixed>]>(
       if (arrayValidation.isLeft()) {
         return arrayValidation
       }
-      const as = arrayValidation.value
-      let t: Array<any> = as
+      const us = arrayValidation.value
+      let as: Array<any> = us.length > len ? us.slice(0, len) : us // strip additional components
       const errors: Errors = []
       for (let i = 0; i < len; i++) {
-        const a = as[i]
+        const a = us[i]
         const type = codecs[i]
         const validation = type.validate(a, appendContext(c, String(i), type, a))
         if (validation.isLeft()) {
@@ -1398,24 +1398,14 @@ export function tuple<CS extends [Mixed, ...Array<Mixed>]>(
           const va = validation.value
           if (va !== a) {
             /* istanbul ignore next */
-            if (t === as) {
-              t = as.slice()
+            if (as === us) {
+              as = us.slice()
             }
-            t[i] = va
+            as[i] = va
           }
         }
       }
-      const aslen = as.length
-      if (aslen > len) {
-        errors.push(
-          ...as.slice(len).map((value, i) => ({
-            value,
-            context: appendContext(c, String(i + len), never, value),
-            message: undefined
-          }))
-        )
-      }
-      return errors.length ? failures(errors) : success(t)
+      return errors.length ? failures(errors) : success(as)
     },
     useIdentity(codecs, len) ? identity : a => codecs.map((type, i) => type.encode(a[i])),
     codecs

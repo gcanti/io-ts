@@ -68,17 +68,10 @@ describe('tuple', () => {
       assertFailure(T, [1, 1], ['Invalid value 1 supplied to : [number, string]/1: string'])
     })
 
-    it('should fail while validating a tuple with additional components', () => {
+    it('should strip additional components', () => {
       const T = t.tuple([t.number, t.string])
-      assertFailure(T, [1, 'foo', true], ['Invalid value true supplied to : [number, string]/2: never'])
-      assertFailure(
-        T,
-        [1, 'foo', true, 'a'],
-        [
-          'Invalid value true supplied to : [number, string]/2: never',
-          'Invalid value "a" supplied to : [number, string]/3: never'
-        ]
-      )
+      assertSuccess(T.decode([1, 'foo', true]), [1, 'foo'])
+      assertSuccess(T.decode([1, 'foo', true, 'a']), [1, 'foo'])
     })
   })
 
