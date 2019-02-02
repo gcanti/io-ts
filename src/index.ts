@@ -1198,14 +1198,13 @@ export const union = <CS extends [Mixed, Mixed, ...Array<Mixed>]>(
     useIdentity(codecs, len)
       ? identity
       : a => {
-          let i = 0
-          for (; i < len - 1; i++) {
+          for (let i = 0; i < len - 1; i++) {
             const type = codecs[i]
             if (type.is(a)) {
               return type.encode(a)
             }
           }
-          return codecs[i].encode(a)
+          return a
         },
     codecs
   )
