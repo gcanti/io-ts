@@ -32,12 +32,11 @@ describe('intersection', () => {
       assert.strictEqual(T.is({ a: 'a', b: 1 }), true)
     })
 
-    it.skip('should play well with stripping combinators', () => {
+    it('should fail when exact codecs are involved', () => {
       const A = t.exact(t.type({ a: t.string }))
       const B = t.exact(t.type({ b: t.number }))
       const T = t.intersection([A, B])
-      assert.strictEqual(T.is({ a: 'a', b: 1 }), true)
-      assert.strictEqual(T.is({ a: 'a', b: 1, c: true }), true)
+      assert.strictEqual(T.is({ a: 'a', b: 1 }), false)
     })
   })
 
