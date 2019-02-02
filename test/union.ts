@@ -89,6 +89,12 @@ describe('union', () => {
       const T = t.union([t.type({ a: t.number }), t.string])
       assert.strictEqual(T.encode, t.identity)
     })
+
+    it('should play well with stripping combinators', () => {
+      const T = t.union([t.strict({ a: t.number }), t.type({ b: NumberFromString })])
+      const x = { a: 1, c: true }
+      assert.deepEqual(T.encode(x), x)
+    })
   })
 
   it.skip('should optimize tagged unions', () => {
