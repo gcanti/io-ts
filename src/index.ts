@@ -643,7 +643,7 @@ export const brand = <C extends Any, B extends string>(
 /**
  * @since 1.8.0
  */
-export const Int = brand(number, n => n % 1 === 0, 'Int')
+export const Int = brand(number, Number.isInteger, 'Int')
 
 type LiteralValue = string | number | boolean
 
