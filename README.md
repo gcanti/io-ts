@@ -205,35 +205,36 @@ type Person = {
 import * as t from 'io-ts'
 ```
 
-| Type              | TypeScript                  | codec / combinator                                    |
-| ----------------- | --------------------------- | ----------------------------------------------------- |
-| null              | `null`                      | `t.null` or `t.nullType`                              |
-| undefined         | `undefined`                 | `t.undefined`                                         |
-| void              | `void`                      | `t.void` or `t.voidType`                              |
-| string            | `string`                    | `t.string`                                            |
-| number            | `number`                    | `t.number`                                            |
-| boolean           | `boolean`                   | `t.boolean`                                           |
-| unknown           | `unknown`                   | `t.unknown`                                           |
-| never             | `never`                     | `t.never`                                             |
-| object            | `object`                    | `t.object`                                            |
-| array of unknown  | `Array<unknown>`            | `t.UnknownArray`                                      |
-| array of type     | `Array<A>`                  | `t.array(A)`                                          |
-| record of unknown | `Record<string, unknown>`   | `t.UnknownRecord`                                     |
-| record of type    | `Record<K, A>`              | `t.record(K, A)`                                      |
-| function          | `Function`                  | `t.Function`                                          |
-| literal           | `'s'`                       | `t.literal('s')`                                      |
-| partial           | `Partial<{ name: string }>` | `t.partial({ name: t.string })`                       |
-| readonly          | `Readonly<A>`               | `t.readonly(A)`                                       |
-| readonly array    | `ReadonlyArray<A>`          | `t.readonlyArray(A)`                                  |
-| type alias        | `type T = { name: A }`      | `t.type({ name: A })`                                 |
-| tuple             | `[ A, B ]`                  | `t.tuple([ A, B ])`                                   |
-| union             | `A \| B`                    | `t.union([ A, B ])` or `t.taggedUnion(tag, [ A, B ])` |
-| intersection      | `A & B`                     | `t.intersection([ A, B ])`                            |
-| keyof             | `keyof M`                   | `t.keyof(M)`                                          |
-| integer           | ✘                           | `t.Integer`                                           |
-| recursive types   | ✘                           | `t.recursion(name, definition)`                       |
-| refinement        | ✘                           | `t.refinement(A, predicate)`                          |
-| exact types       | ✘                           | `t.exact(type)`                                       |
+| Type                        | TypeScript                  | codec / combinator                                                   |
+| --------------------------- | --------------------------- | -------------------------------------------------------------------- |
+| null                        | `null`                      | `t.null` or `t.nullType`                                             |
+| undefined                   | `undefined`                 | `t.undefined`                                                        |
+| void                        | `void`                      | `t.void` or `t.voidType`                                             |
+| string                      | `string`                    | `t.string`                                                           |
+| number                      | `number`                    | `t.number`                                                           |
+| boolean                     | `boolean`                   | `t.boolean`                                                          |
+| unknown                     | `unknown`                   | `t.unknown`                                                          |
+| never                       | `never`                     | `t.never`                                                            |
+| object                      | `object`                    | `t.object`                                                           |
+| array of unknown            | `Array<unknown>`            | `t.UnknownArray`                                                     |
+| array of type               | `Array<A>`                  | `t.array(A)`                                                         |
+| record of unknown           | `Record<string, unknown>`   | `t.UnknownRecord`                                                    |
+| record of type              | `Record<K, A>`              | `t.record(K, A)`                                                     |
+| function                    | `Function`                  | `t.Function`                                                         |
+| literal                     | `'s'`                       | `t.literal('s')`                                                     |
+| partial                     | `Partial<{ name: string }>` | `t.partial({ name: t.string })`                                      |
+| readonly                    | `Readonly<A>`               | `t.readonly(A)`                                                      |
+| readonly array              | `ReadonlyArray<A>`          | `t.readonlyArray(A)`                                                 |
+| type alias                  | `type T = { name: A }`      | `t.type({ name: A })`                                                |
+| tuple                       | `[ A, B ]`                  | `t.tuple([ A, B ])`                                                  |
+| union                       | `A \| B`                    | `t.union([ A, B ])` or `t.taggedUnion(tag, [ A, B ])`                |
+| intersection                | `A & B`                     | `t.intersection([ A, B ])`                                           |
+| keyof                       | `keyof M`                   | `t.keyof(M)`                                                         |
+| recursive types             | ✘                           | `t.recursion(name, definition)`                                      |
+| branded types / refinements | ✘                           | `t.brand(A, predicate, brand)`                                       |
+| integer                     | ✘                           | `t.Int` (built-in branded codec)                                     |
+| exact types                 | ✘                           | `t.exact(type)`                                                      |
+| strict                      | ✘                           | `t.strict({ name: A })` (an alias of `t.exact(t.type({ name: A })))` |
 
 # Recursive types
 
@@ -303,19 +304,47 @@ const B = t.type({
 const U = t.taggedUnion('tag', [A, B])
 ```
 
-# Refinements
+# Branded types / Refinements
 
-You can refine a type (_any_ type) using the `refinement` combinator
+You can refine a codec (_any_ codec) using the `brand` combinator
 
 ```ts
-const Positive = t.refinement(t.number, n => n >= 0, 'Positive')
+const Positive = t.brand(t.number, n => n >= 0, 'Positive')
 
-const Adult = t.refinement(Person, person => person.age >= 18, 'Adult')
+type Positive = t.TypeOf<typeof Positive>
+/*
+same as
+type Positive = number & t.Brand<"Positive">
+*/
+
+const PositiveInt = t.intersection([t.Int, Positive])
+
+type PositiveInt = t.TypeOf<typeof PositiveInt>
+/*
+same as
+type PositiveInt = number & t.Brand<"Int"> & t.Brand<"Positive">
+*/
+
+const Person = t.type({
+  name: t.string,
+  age: PositiveInt
+})
+
+const Adult = t.brand(Person, person => person.age >= 18, 'Adult')
+
+type Adult = t.TypeOf<typeof Adult>
+/*
+same as
+type Adult = {
+    name: string;
+    age: number & t.Brand<"Int"> & t.Brand<"Positive">;
+} & t.Brand<"Adult">
+*/
 ```
 
 # Exact types
 
-You can make a codec alias exact (which means that only the given properties are allowed) using the `exact` combinator
+You can make a codec exact (which means that additional properties are stripped) using the `exact` combinator
 
 ```ts
 const Person = t.type({
@@ -325,8 +354,8 @@ const Person = t.type({
 
 const ExactPerson = t.exact(Person)
 
-Person.decode({ name: 'Giulio', age: 43, surname: 'Canti' }) // ok
-ExactPerson.decode({ name: 'Giulio', age: 43, surname: 'Canti' }) // fails
+Person.decode({ name: 'Giulio', age: 43, surname: 'Canti' }) // ok, result is right({ name: 'Giulio', age: 43, surname: 'Canti' })
+ExactPerson.decode({ name: 'Giulio', age: 43, surname: 'Canti' }) // ok but result is right({ name: 'Giulio', age: 43 })
 ```
 
 # Mixing required and optional props
@@ -430,6 +459,7 @@ const ResponseBody = <RT extends t.Mixed>(type: RT) =>
     result: type,
     _links: Links
   })
+
 const Links = t.interface({
   previous: t.string,
   next: t.string
