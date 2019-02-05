@@ -165,11 +165,11 @@ describe('taggedUnion', () => {
 
   describe('encode', () => {
     it('should encode a isomorphic value', () => {
-      assert.deepEqual(OptionNumber.encode({ type: 'Some', value: 1 }), { type: 'Some', value: 1 })
+      assert.deepStrictEqual(OptionNumber.encode({ type: 'Some', value: 1 }), { type: 'Some', value: 1 })
     })
 
     it('should encode a prismatic value', () => {
-      assert.deepEqual(OptionNumberFromString.encode({ type: 'Some', value: 1 }), { type: 'Some', value: '1' })
+      assert.deepStrictEqual(OptionNumberFromString.encode({ type: 'Some', value: 1 }), { type: 'Some', value: '1' })
     })
   })
 
@@ -209,7 +209,7 @@ describe('taggedUnion', () => {
 
       console.warn = warn
 
-      assert.deepEqual(log, ['[io-ts] Cannot build a tagged union for (B | A), returning a de-optimized union'])
+      assert.deepStrictEqual(log, ['[io-ts] Cannot build a tagged union for (B | A), returning a de-optimized union'])
     })
   })
 
@@ -219,7 +219,7 @@ describe('taggedUnion', () => {
     console.warn = (message: string) => log.push(message)
     t.taggedUnion('type', [t.type({ type: t.literal('a') }), t.type({ bad: t.literal('b') })])
     console.warn = original
-    assert.deepEqual(log, [
+    assert.deepStrictEqual(log, [
       '[io-ts] Cannot build a tagged union for ({ type: "a" } | { bad: "b" }), returning a de-optimized union'
     ])
   })

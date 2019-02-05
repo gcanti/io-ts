@@ -84,12 +84,12 @@ describe('tuple', () => {
   describe('encode', () => {
     it('should encode a isomorphic value', () => {
       const T = t.tuple([t.number, t.string])
-      assert.deepEqual(T.encode([1, 'a']), [1, 'a'])
+      assert.deepStrictEqual(T.encode([1, 'a']), [1, 'a'])
     })
 
     it('should encode a prismatic value', () => {
       const T = t.tuple([NumberFromString, t.string])
-      assert.deepEqual(T.encode([1, 'a']), ['1', 'a'])
+      assert.deepStrictEqual(T.encode([1, 'a']), ['1', 'a'])
     })
 
     it('should return the same reference while encoding', () => {

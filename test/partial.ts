@@ -51,16 +51,16 @@ describe('partial', () => {
   describe('encode', () => {
     it('should encode a isomorphic value', () => {
       const T = t.partial({ a: t.number })
-      assert.deepEqual(T.encode({}), {})
-      assert.deepEqual(T.encode({ a: undefined }), { a: undefined })
-      assert.deepEqual(T.encode({ a: 1 }), { a: 1 })
+      assert.deepStrictEqual(T.encode({}), {})
+      assert.deepStrictEqual(T.encode({ a: undefined }), { a: undefined })
+      assert.deepStrictEqual(T.encode({ a: 1 }), { a: 1 })
     })
 
     it('should encode a prismatic value', () => {
       const T = t.partial({ a: NumberFromString })
-      assert.deepEqual(T.encode({}), {})
-      assert.deepEqual(T.encode({ a: undefined }), { a: undefined })
-      assert.deepEqual(T.encode({ a: 1 }), { a: '1' })
+      assert.deepStrictEqual(T.encode({}), {})
+      assert.deepStrictEqual(T.encode({ a: undefined }), { a: undefined })
+      assert.deepStrictEqual(T.encode({ a: 1 }), { a: '1' })
     })
   })
 
@@ -70,7 +70,7 @@ describe('partial', () => {
     assertStrictEqual(T.decode(input1), input1)
     const input2 = { a: undefined }
     assertStrictEqual(T.decode(input2), input2)
-    assert.deepEqual(T.decode({ b: 1 }).value, { b: 1 })
+    assert.deepStrictEqual(T.decode({ b: 1 }).value, { b: 1 })
     const input3 = { a: undefined, b: 1 }
     assertStrictEqual(T.decode(input3), input3)
   })
@@ -96,6 +96,6 @@ describe('partial', () => {
   it('should preserve additional properties while encoding', () => {
     const T = t.partial({ a: NumberFromString })
     const x = { a: 1, b: 'foo' }
-    assert.deepEqual(T.encode(x), { a: '1', b: 'foo' })
+    assert.deepStrictEqual(T.encode(x), { a: '1', b: 'foo' })
   })
 })

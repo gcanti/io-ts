@@ -42,7 +42,7 @@ describe('strictInterfaceWithOptionals', () => {
 
   it('should serialize a deserialized', () => {
     const T = strictInterfaceWithOptionals({ foo: NumberFromString }, { bar: t.string }, 'T')
-    assert.deepEqual(T.encode({ foo: 1 }), { foo: '1' })
+    assert.deepStrictEqual(T.encode({ foo: 1 }), { foo: '1' })
   })
 
   it('should type guard', () => {

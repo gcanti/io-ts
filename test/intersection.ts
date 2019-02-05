@@ -97,12 +97,12 @@ describe('intersection', () => {
   describe('encode', () => {
     it('should encode a isomorphic value', () => {
       const T = t.intersection([t.type({ a: t.string }), t.type({ b: t.number })])
-      assert.deepEqual(T.encode({ a: 'a', b: 1 }), { a: 'a', b: 1 })
+      assert.deepStrictEqual(T.encode({ a: 'a', b: 1 }), { a: 'a', b: 1 })
     })
 
     it('should encode a prismatic value', () => {
       const T = t.intersection([t.type({ a: t.string }), t.type({ b: NumberFromString })])
-      assert.deepEqual(T.encode({ a: 'a', b: 1 }), { a: 'a', b: '1' })
+      assert.deepStrictEqual(T.encode({ a: 'a', b: 1 }), { a: 'a', b: '1' })
     })
 
     it('should return the same reference while encoding', () => {
@@ -115,9 +115,9 @@ describe('intersection', () => {
       const A = t.exact(t.type({ a: t.string }))
       const B = t.exact(t.type({ b: t.number }))
       const T = t.intersection([A, B])
-      assert.deepEqual(T.encode({ a: 'a', b: 1 }), { a: 'a', b: 1 })
+      assert.deepStrictEqual(T.encode({ a: 'a', b: 1 }), { a: 'a', b: 1 })
       const x = { a: 'a', b: 1, c: true }
-      assert.deepEqual(T.encode(x), { a: 'a', b: 1 })
+      assert.deepStrictEqual(T.encode(x), { a: 'a', b: 1 })
     })
   })
 

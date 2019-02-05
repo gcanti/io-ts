@@ -135,7 +135,7 @@ describe('record', () => {
   describe('encode', () => {
     it('should encode a isomorphic value', () => {
       const T = t.record(t.string, t.number)
-      assert.deepEqual(T.encode({ a: 1 }), { a: 1 })
+      assert.deepStrictEqual(T.encode({ a: 1 }), { a: 1 })
     })
 
     it('should return the same reference while decoding a isomorphic value', () => {
@@ -146,12 +146,12 @@ describe('record', () => {
 
     it('should encode a prismatic value', () => {
       const T = t.record(t.string, NumberFromString)
-      assert.deepEqual(T.encode({ a: 1 }), { a: '1' })
+      assert.deepStrictEqual(T.encode({ a: 1 }), { a: '1' })
     })
 
     it('should encode a prismatic key', () => {
       const T = t.record(HyphenatedString, t.number)
-      assert.deepEqual(T.encode({ 'a-b': 1 }), { ab: 1 })
+      assert.deepStrictEqual(T.encode({ 'a-b': 1 }), { ab: 1 })
     })
 
     it('should accept an array if the codomain is `unknown`', () => {
