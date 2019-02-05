@@ -53,7 +53,7 @@ describe('array', () => {
   describe('encode', () => {
     it('should encode a isomorphic value', () => {
       const T = t.array(t.number)
-      assert.deepEqual(T.encode([1, 2, 3]), [1, 2, 3])
+      assert.deepStrictEqual(T.encode([1, 2, 3]), [1, 2, 3])
     })
 
     it('should return the same reference while encoding isomorphic values', () => {
@@ -64,7 +64,7 @@ describe('array', () => {
 
     it('should encode a prismatic value', () => {
       const T = t.array(NumberFromString)
-      assert.deepEqual(T.encode([1, 2, 3]), ['1', '2', '3'])
+      assert.deepStrictEqual(T.encode([1, 2, 3]), ['1', '2', '3'])
     })
   })
 

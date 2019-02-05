@@ -39,13 +39,13 @@ describe('Type', () => {
 
     it('accept to pipe a type with a wider input', () => {
       const T = t.string.pipe(t.string)
-      assert.deepEqual(T.decode('a'), right('a'))
+      assert.deepStrictEqual(T.decode('a'), right('a'))
       assert.strictEqual(T.encode('a'), 'a')
     })
 
     it('accept to pipe a type with a narrower output', () => {
       const T = t.string.pipe(t.literal('foo'))
-      assert.deepEqual(T.decode('foo'), right('foo'))
+      assert.deepStrictEqual(T.decode('foo'), right('foo'))
       assert.strictEqual(T.encode('foo'), 'foo')
     })
   })
@@ -65,7 +65,7 @@ describe('Type', () => {
 
 describe('getContextEntry', () => {
   it('should return a ContextEntry', () => {
-    assert.deepEqual(t.getContextEntry('key', t.string), {
+    assert.deepStrictEqual(t.getContextEntry('key', t.string), {
       key: 'key',
       type: t.string
     })

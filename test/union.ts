@@ -76,7 +76,7 @@ describe('union', () => {
   describe('encode', () => {
     it('should encode a prismatic value', () => {
       const T1 = t.union([t.type({ a: NumberFromString }), t.number])
-      assert.deepEqual(T1.encode({ a: 1 }), { a: '1' })
+      assert.deepStrictEqual(T1.encode({ a: 1 }), { a: '1' })
       assert.strictEqual(T1.encode(1), 1)
     })
 
@@ -93,7 +93,7 @@ describe('union', () => {
     it('should play well with stripping combinators', () => {
       const T = t.union([t.strict({ a: t.number }), t.type({ b: NumberFromString })])
       const x = { a: 1, c: true }
-      assert.deepEqual(T.encode(x), x)
+      assert.deepStrictEqual(T.encode(x), x)
     })
   })
 

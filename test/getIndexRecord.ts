@@ -9,7 +9,7 @@ describe('getIndexRecord', () => {
   interface IndexRecord extends Record<string, Array<[unknown, t.Any, t.Any]>> {}
 
   const assertEqualIndexRecord = (codecs: Array<t.Mixed>, expected: IndexRecord) => {
-    assert.deepEqual(t.getIndexRecord(codecs), expected)
+    assert.deepStrictEqual(t.getIndexRecord(codecs), expected)
   }
 
   it('should handle zero types', () => {

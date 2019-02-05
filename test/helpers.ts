@@ -5,7 +5,7 @@ import { PathReporter } from '../src/PathReporter'
 
 export function assertStrictEqual<T>(result: t.Validation<T>, expected: any): void {
   if (result.isRight()) {
-    assert.deepEqual(result.value, expected)
+    assert.deepStrictEqual(result.value, expected)
   } else {
     throw new Error(`${result} is not a right`)
   }
@@ -14,7 +14,7 @@ export function assertStrictEqual<T>(result: t.Validation<T>, expected: any): vo
 export function assertSuccess<T>(result: t.Validation<T>, expected?: T): void {
   if (result.isRight()) {
     if (expected !== undefined) {
-      assert.deepEqual(result.value, expected)
+      assert.deepStrictEqual(result.value, expected)
     }
   } else {
     throw new Error(`${result} is not a right`)
@@ -34,7 +34,7 @@ export function assertStrictSuccess<T>(result: t.Validation<T>, expected: T): vo
 export function assertFailure(codec: t.Any, value: unknown, errors: Array<string>): void {
   const result = codec.decode(value)
   if (result.isLeft()) {
-    assert.deepEqual(PathReporter.report(result), errors)
+    assert.deepStrictEqual(PathReporter.report(result), errors)
   } else {
     throw new Error(`${result} is not a left`)
   }

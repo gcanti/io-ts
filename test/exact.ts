@@ -130,7 +130,7 @@ describe('exact', () => {
   describe('encode', () => {
     it('should encode a prismatic value', () => {
       const T = t.exact(t.type({ a: NumberFromString }))
-      assert.deepEqual(T.encode({ a: 1 }), { a: '1' })
+      assert.deepStrictEqual(T.encode({ a: 1 }), { a: '1' })
     })
 
     it('should return the same reference while encoding', () => {
@@ -142,7 +142,7 @@ describe('exact', () => {
     it('should strip additional properties', () => {
       const T = t.exact(t.type({ a: t.string }))
       const x = { a: 'a', b: 1 }
-      assert.deepEqual(T.encode(x), { a: 'a' })
+      assert.deepStrictEqual(T.encode(x), { a: 'a' })
     })
   })
 })
