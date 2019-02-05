@@ -170,23 +170,6 @@ export const getContextEntry = (key: string, decoder: Decoder<any, any>): Contex
 
 /**
  * @since 1.0.0
- * @deprecated
- */
-export const getValidationError /* istanbul ignore next */ = (value: unknown, context: Context): ValidationError => ({
-  value,
-  context
-})
-
-/**
- * @since 1.0.0
- * @deprecated
- */
-export const getDefaultContext /* istanbul ignore next */ = (decoder: Decoder<any, any>): Context => [
-  { key: '', type: decoder }
-]
-
-/**
- * @since 1.0.0
  */
 export const appendContext = (c: Context, key: string, decoder: Decoder<any, any>, actual?: unknown): Context => {
   const len = c.length
@@ -312,28 +295,6 @@ export interface VoidC extends VoidType {}
  * @since 1.2.0
  */
 export const voidType: VoidC = new VoidType()
-
-/**
- * @since 1.0.0
- */
-export class AnyType extends Type<any> {
-  readonly _tag: 'AnyType' = 'AnyType'
-  constructor() {
-    super('any', (_): _ is any => true, success, identity)
-  }
-}
-
-/**
- * @since 1.5.3
- */
-export interface AnyC extends AnyType {}
-
-/**
- * Use `unknown` instead
- * @since 1.0.0
- * @deprecated
- */
-export const any: AnyC = new AnyType()
 
 /**
  * @since 1.5.0
@@ -504,35 +465,6 @@ export const UnknownRecord: UnknownRecordC = new AnyDictionaryType()
 export interface UnknownRecordC extends AnyDictionaryType {}
 
 /**
- * Use `UnknownRecord` instead
- * @since 1.0.0
- * @deprecated
- */
-export const Dictionary: UnknownRecordC = UnknownRecord
-
-/**
- * @since 1.0.0
- */
-export class ObjectType extends Type<object> {
-  readonly _tag: 'ObjectType' = 'ObjectType'
-  constructor() {
-    super('object', UnknownRecord.is, UnknownRecord.validate, identity)
-  }
-}
-
-/**
- * @since 1.5.3
- */
-export interface ObjectC extends ObjectType {}
-
-/**
- * Use `UnknownRecord` instead
- * @since 1.0.0
- * @deprecated
- */
-export const object: ObjectC = new ObjectType()
-
-/**
  * @since 1.0.0
  */
 export class FunctionType extends Type<Function> {
@@ -574,46 +506,6 @@ export class RefinementType<C extends Any, A = any, O = A, I = unknown> extends 
     super(name, is, validate, encode)
   }
 }
-
-/**
- * Use `BrandC` instead
- * @since 1.5.3
- * @deprecated
- */
-export interface RefinementC<C extends Any> extends RefinementType<C, TypeOf<C>, OutputOf<C>, InputOf<C>> {}
-
-/**
- * Use `brand` instead
- * @since 1.0.0
- * @deprecated
- */
-export const refinement = <C extends Any>(
-  codec: C,
-  predicate: Predicate<TypeOf<C>>,
-  name: string = `(${codec.name} | ${getFunctionName(predicate)})`
-): RefinementC<C> =>
-  new RefinementType(
-    name,
-    (u): u is TypeOf<C> => codec.is(u) && predicate(u),
-    (i, c) => {
-      const validation = codec.validate(i, c)
-      if (validation.isLeft()) {
-        return validation
-      }
-      const a = validation.value
-      return predicate(a) ? success(a) : failure(a, c)
-    },
-    codec.encode,
-    codec,
-    predicate
-  )
-
-/**
- * Use `Int` instead
- * @since 1.0.0
- * @deprecated
- */
-export const Integer = refinement(number, Number.isInteger, 'Integer')
 
 declare const _brand: unique symbol
 
@@ -1176,13 +1068,6 @@ export const record = <D extends Mixed, C extends Mixed>(
 }
 
 /**
- * Use `record` instead
- * @since 1.0.0
- * @deprecated
- */
-export const dictionary: typeof record = record
-
-/**
  * @since 1.0.0
  */
 export class UnionType<CS extends Array<Any>, A = any, O = A, I = unknown> extends Type<A, O, I> {
@@ -1261,13 +1146,6 @@ export class IntersectionType<CS extends Array<Any>, A = any, O = A, I = unknown
     super(name, is, validate, encode)
   }
 }
-
-/**
- * used in `intersection` as a workaround for #234
- * @since 1.4.2
- * @deprecated
- */
-export type Compact<A> = { [K in keyof A]: A[K] }
 
 /**
  * @since 1.5.3
@@ -1547,95 +1425,12 @@ export const readonlyArray = <C extends Mixed>(
 }
 
 /**
- * @since 1.0.0
- * @deprecated
- */
-export class StrictType<P, A = any, O = A, I = unknown> extends Type<A, O, I> {
-  readonly _tag: 'StrictType' = 'StrictType'
-  constructor(
-    name: string,
-    is: StrictType<P, A, O, I>['is'],
-    validate: StrictType<P, A, O, I>['validate'],
-    encode: StrictType<P, A, O, I>['encode'],
-    readonly props: P
-  ) {
-    super(name, is, validate, encode)
-  }
-}
-
-/**
- * @since 1.5.3
- * @deprecated
- */
-export interface StrictC<P extends Props>
-  extends StrictType<P, { [K in keyof P]: TypeOf<P[K]> }, { [K in keyof P]: OutputOf<P[K]> }, unknown> {}
-
-/**
  * Strips additional properties
  * @since 1.0.0
  */
 export const strict = <P extends Props>(props: P, name?: string): ExactC<TypeC<P>> => {
   return exact(type(props), name)
 }
-
-/**
- * @since 1.3.0
- * @deprecated
- */
-export type TaggedProps<Tag extends string> = { [K in Tag]: LiteralType<any> }
-/**
- * @since 1.3.0
- * @deprecated
- */
-export interface TaggedRefinement<Tag extends string, A, O = A> extends RefinementType<Tagged<Tag>, A, O> {}
-/**
- * @since 1.3.0
- * @deprecated
- */
-export interface TaggedUnion<Tag extends string, A, O = A> extends UnionType<Array<Tagged<Tag>>, A, O> {}
-/**
- * @since 1.3.0
- * @deprecated
- */
-export type TaggedIntersectionArgument<Tag extends string> =
-  | [Tagged<Tag>]
-  | [Tagged<Tag>, Mixed]
-  | [Mixed, Tagged<Tag>]
-  | [Tagged<Tag>, Mixed, Mixed]
-  | [Mixed, Tagged<Tag>, Mixed]
-  | [Mixed, Mixed, Tagged<Tag>]
-  | [Tagged<Tag>, Mixed, Mixed, Mixed]
-  | [Mixed, Tagged<Tag>, Mixed, Mixed]
-  | [Mixed, Mixed, Tagged<Tag>, Mixed]
-  | [Mixed, Mixed, Mixed, Tagged<Tag>]
-  | [Tagged<Tag>, Mixed, Mixed, Mixed, Mixed]
-  | [Mixed, Tagged<Tag>, Mixed, Mixed, Mixed]
-  | [Mixed, Mixed, Tagged<Tag>, Mixed, Mixed]
-  | [Mixed, Mixed, Mixed, Tagged<Tag>, Mixed]
-  | [Mixed, Mixed, Mixed, Mixed, Tagged<Tag>]
-/**
- * @since 1.3.0
- * @deprecated
- */
-export interface TaggedIntersection<Tag extends string, A, O = A>
-  extends IntersectionType<TaggedIntersectionArgument<Tag>, A, O> {}
-/**
- * @since 1.3.0
- * @deprecated
- */
-export interface TaggedExact<Tag extends string, A, O = A> extends ExactType<Tagged<Tag>, A, O> {}
-/**
- * @since 1.3.0
- * @deprecated
- */
-export type Tagged<Tag extends string, A = any, O = A> =
-  | InterfaceType<TaggedProps<Tag>, A, O>
-  | StrictType<TaggedProps<Tag>, A, O>
-  | TaggedRefinement<Tag, A, O>
-  | TaggedUnion<Tag, A, O>
-  | TaggedIntersection<Tag, A, O>
-  | TaggedExact<Tag, A, O>
-  | RecursiveType<any, A, O>
 
 type IndexItem = [unknown, Any, Any]
 
@@ -1977,6 +1772,222 @@ export const exact = <C extends HasProps>(codec: C, name: string = getExactTypeN
   )
 }
 
+export { nullType as null, undefinedType as undefined, UnknownArray as Array, type as interface, voidType as void }
+
+//
+// deprecations
+//
+
+/**
+ * @since 1.0.0
+ * @deprecated
+ */
+export const getValidationError /* istanbul ignore next */ = (value: unknown, context: Context): ValidationError => ({
+  value,
+  context
+})
+
+/**
+ * @since 1.0.0
+ * @deprecated
+ */
+export const getDefaultContext /* istanbul ignore next */ = (decoder: Decoder<any, any>): Context => [
+  { key: '', type: decoder }
+]
+
+/**
+ * @since 1.0.0
+ * @deprecated
+ */
+export class AnyType extends Type<any> {
+  readonly _tag: 'AnyType' = 'AnyType'
+  constructor() {
+    super('any', (_): _ is any => true, success, identity)
+  }
+}
+
+/**
+ * @since 1.5.3
+ * @deprecated
+ */
+export interface AnyC extends AnyType {}
+
+/**
+ * Use `unknown` instead
+ * @since 1.0.0
+ * @deprecated
+ */
+export const any: AnyC = new AnyType()
+
+/**
+ * Use `UnknownRecord` instead
+ * @since 1.0.0
+ * @deprecated
+ */
+export const Dictionary: UnknownRecordC = UnknownRecord
+
+/**
+ * @since 1.0.0
+ * @deprecated
+ */
+export class ObjectType extends Type<object> {
+  readonly _tag: 'ObjectType' = 'ObjectType'
+  constructor() {
+    super('object', UnknownRecord.is, UnknownRecord.validate, identity)
+  }
+}
+
+/**
+ * @since 1.5.3
+ * @deprecated
+ */
+export interface ObjectC extends ObjectType {}
+
+/**
+ * Use `UnknownRecord` instead
+ * @since 1.0.0
+ * @deprecated
+ */
+export const object: ObjectC = new ObjectType()
+
+/**
+ * Use `BrandC` instead
+ * @since 1.5.3
+ * @deprecated
+ */
+export interface RefinementC<C extends Any> extends RefinementType<C, TypeOf<C>, OutputOf<C>, InputOf<C>> {}
+
+/**
+ * Use `brand` instead
+ * @since 1.0.0
+ * @deprecated
+ */
+export function refinement<C extends Any>(
+  codec: C,
+  predicate: Predicate<TypeOf<C>>,
+  name: string = `(${codec.name} | ${getFunctionName(predicate)})`
+): RefinementC<C> {
+  return new RefinementType(
+    name,
+    (u): u is TypeOf<C> => codec.is(u) && predicate(u),
+    (i, c) => {
+      const validation = codec.validate(i, c)
+      if (validation.isLeft()) {
+        return validation
+      }
+      const a = validation.value
+      return predicate(a) ? success(a) : failure(a, c)
+    },
+    codec.encode,
+    codec,
+    predicate
+  )
+}
+
+/**
+ * Use `Int` instead
+ * @since 1.0.0
+ * @deprecated
+ */
+export const Integer = refinement(number, Number.isInteger, 'Integer')
+
+/**
+ * Use `record` instead
+ * @since 1.0.0
+ * @deprecated
+ */
+export const dictionary: typeof record = record
+
+/**
+ * used in `intersection` as a workaround for #234
+ * @since 1.4.2
+ * @deprecated
+ */
+export type Compact<A> = { [K in keyof A]: A[K] }
+
+/**
+ * @since 1.0.0
+ * @deprecated
+ */
+export class StrictType<P, A = any, O = A, I = unknown> extends Type<A, O, I> {
+  readonly _tag: 'StrictType' = 'StrictType'
+  constructor(
+    name: string,
+    is: StrictType<P, A, O, I>['is'],
+    validate: StrictType<P, A, O, I>['validate'],
+    encode: StrictType<P, A, O, I>['encode'],
+    readonly props: P
+  ) {
+    super(name, is, validate, encode)
+  }
+}
+
+/**
+ * @since 1.5.3
+ * @deprecated
+ */
+export interface StrictC<P extends Props>
+  extends StrictType<P, { [K in keyof P]: TypeOf<P[K]> }, { [K in keyof P]: OutputOf<P[K]> }, unknown> {}
+
+/**
+ * @since 1.3.0
+ * @deprecated
+ */
+export type TaggedProps<Tag extends string> = { [K in Tag]: LiteralType<any> }
+/**
+ * @since 1.3.0
+ * @deprecated
+ */
+export interface TaggedRefinement<Tag extends string, A, O = A> extends RefinementType<Tagged<Tag>, A, O> {}
+/**
+ * @since 1.3.0
+ * @deprecated
+ */
+export interface TaggedUnion<Tag extends string, A, O = A> extends UnionType<Array<Tagged<Tag>>, A, O> {}
+/**
+ * @since 1.3.0
+ * @deprecated
+ */
+export type TaggedIntersectionArgument<Tag extends string> =
+  | [Tagged<Tag>]
+  | [Tagged<Tag>, Mixed]
+  | [Mixed, Tagged<Tag>]
+  | [Tagged<Tag>, Mixed, Mixed]
+  | [Mixed, Tagged<Tag>, Mixed]
+  | [Mixed, Mixed, Tagged<Tag>]
+  | [Tagged<Tag>, Mixed, Mixed, Mixed]
+  | [Mixed, Tagged<Tag>, Mixed, Mixed]
+  | [Mixed, Mixed, Tagged<Tag>, Mixed]
+  | [Mixed, Mixed, Mixed, Tagged<Tag>]
+  | [Tagged<Tag>, Mixed, Mixed, Mixed, Mixed]
+  | [Mixed, Tagged<Tag>, Mixed, Mixed, Mixed]
+  | [Mixed, Mixed, Tagged<Tag>, Mixed, Mixed]
+  | [Mixed, Mixed, Mixed, Tagged<Tag>, Mixed]
+  | [Mixed, Mixed, Mixed, Mixed, Tagged<Tag>]
+/**
+ * @since 1.3.0
+ * @deprecated
+ */
+export interface TaggedIntersection<Tag extends string, A, O = A>
+  extends IntersectionType<TaggedIntersectionArgument<Tag>, A, O> {}
+/**
+ * @since 1.3.0
+ * @deprecated
+ */
+export interface TaggedExact<Tag extends string, A, O = A> extends ExactType<Tagged<Tag>, A, O> {}
+/**
+ * @since 1.3.0
+ * @deprecated
+ */
+export type Tagged<Tag extends string, A = any, O = A> =
+  | InterfaceType<TaggedProps<Tag>, A, O>
+  | StrictType<TaggedProps<Tag>, A, O>
+  | TaggedRefinement<Tag, A, O>
+  | TaggedUnion<Tag, A, O>
+  | TaggedIntersection<Tag, A, O>
+  | TaggedExact<Tag, A, O>
+  | RecursiveType<any, A, O>
+
 /**
  * Drops the codec "kind"
  * @since 1.1.0
@@ -2033,5 +2044,3 @@ export function alias<A, O, I>(
 ): <AA extends Exact<A, AA>, OO extends Exact<O, OO> = O>() => Type<AA, OO, I> {
   return () => codec as any
 }
-
-export { nullType as null, undefinedType as undefined, UnknownArray as Array, type as interface, voidType as void }
