@@ -800,7 +800,7 @@ interface Optional {
 }
 
 export const optional = <T>(rt: Type<T>, name?: string) => {
-  const unionType = union([rt, nullType, undefinedType], name)
+  const unionType = union([rt, nullType, undefinedType], name || rt.name + '?')
   return Object.assign(unionType, { optional: true } as Optional)
 }
 
@@ -828,12 +828,13 @@ export const partialPartial = <P extends Props>(
       requiredProps[key] = val
     }
   }
+  const computedName = name || getInterfaceTypeName(props)
   if (someOptional && someRequired) {
-    return intersection([type(requiredProps), partial(optionalProps)], name) as any
+    return intersection([type(requiredProps), partial(optionalProps)], computedName) as any
   } else if (someOptional) {
-    return partial(props, name) as any
+    return partial(props, computedName) as any
   } else {
-    return type(props, name) as any
+    return type(props, computedName) as any
   }
 }
 
