@@ -77,18 +77,18 @@ export const P5 = t.partial({
 })
 
 //
-// dictionary
+// record
 //
 
-const D1 = t.dictionary(t.string, t.number)
+const D1 = t.record(t.string, t.number)
 
-const D2 = t.dictionary(t.string, D1)
+const D2 = t.record(t.string, D1)
 
-const D3 = t.dictionary(t.string, D2)
+const D3 = t.record(t.string, D2)
 
-const D4 = t.dictionary(t.string, D3)
+const D4 = t.record(t.string, D3)
 
-export const D5 = t.dictionary(t.string, D4)
+export const D5 = t.record(t.string, D4)
 
 //
 // union
@@ -168,3 +168,12 @@ export const TU1 = t.taggedUnion('type', [TUMA, TUMB])
 //
 
 export const E1 = t.exact(T5)
+
+//
+// brand
+//
+
+export const B1 = t.type({
+  name: t.string,
+  age: t.Int
+})

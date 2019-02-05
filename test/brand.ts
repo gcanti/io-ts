@@ -2,12 +2,51 @@ import * as assert from 'assert'
 import * as t from '../src/index'
 import { assertSuccess, assertFailure, assertStrictEqual, NumberFromString } from './helpers'
 
-const IntFromString = t.brand(NumberFromString, n => n % 1 === 0, 'IntFromString')
+interface PositiveBrand {
+  readonly Positive: unique symbol
+}
+
+const Positive = t.brand(t.number, (n): n is t.Branded<number, PositiveBrand> => n >= 0, 'Positive')
+
+interface MyDictionaryBrand {
+  readonly MyDictionary: unique symbol
+}
+
+const MyDictionary = t.brand(
+  t.UnknownRecord,
+  (_): _ is t.Branded<t.TypeOf<typeof t.UnknownRecord>, MyDictionaryBrand> => true,
+  'MyDictionary'
+)
+
+interface MyNumberArrayBrand {
+  readonly MyNumberArray: unique symbol
+}
+
+const MyNumberArray = t.brand(
+  t.array(t.number),
+  (_): _ is t.Branded<Array<number>, MyNumberArrayBrand> => true,
+  'MyNumberArray'
+)
+
+interface MyNumberFromStringArrayBrand {
+  readonly MyNumberFromStringArray: unique symbol
+}
+
+const MyNumberFromStringArray = t.brand(
+  t.array(t.number),
+  (_): _ is t.Branded<Array<number>, MyNumberFromStringArrayBrand> => true,
+  'MyNumberFromStringArray'
+)
+
+const IntFromString = NumberFromString.pipe(
+  t.Int,
+  'IntFromString'
+)
 
 describe('brand', () => {
   describe('name', () => {
     it('should accept a name', () => {
-      const T = t.brand(t.number, n => n >= 0, 'Positive')
+      const T = Positive
       assert.strictEqual(T.name, 'Positive')
     })
   })
@@ -30,13 +69,13 @@ describe('brand', () => {
 
   describe('decode', () => {
     it('should succeed validating a valid value', () => {
-      const T = t.brand(t.number, n => n >= 0, 'Positive')
+      const T = Positive
       assertSuccess(T.decode(0))
       assertSuccess(T.decode(1))
     })
 
     it('should return the same reference if validation succeeded', () => {
-      const T = t.brand(t.Dictionary, () => true, 'MyDictionary')
+      const T = MyDictionary
       const value = {}
       assertStrictEqual(T.decode(value), value)
     })
@@ -56,12 +95,12 @@ describe('brand', () => {
 
   describe('encode', () => {
     it('should encode a prismatic value', () => {
-      const T = t.brand(t.array(NumberFromString), () => true, 'MyArray')
+      const T = MyNumberFromStringArray
       assert.deepEqual(T.encode([1] as any), ['1'])
     })
 
     it('should return the same reference while encoding', () => {
-      const T = t.brand(t.array(t.number), () => true, 'MyArray')
+      const T = MyNumberArray
       assert.strictEqual(T.encode, t.identity)
     })
   })
