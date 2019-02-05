@@ -600,7 +600,7 @@ const PositiveBad = t.brand(
   'Bad' // name doesn't match
 )
 
-const Positive = t.brand(t.number, (n): n is t.Branded<number, PositiveBrand> => n > 0, 'Positive')
+const Positive = t.brand(t.number, (n): n is t.Branded<number, PositiveBrand> => n > 0, 'Positive') // $ExpectType BrandC<NumberC, PositiveBrand>
 
 const PositiveInt = t.intersection([t.Int, Positive])
 
@@ -620,6 +620,9 @@ interface IntBrand2 {
 
 const Int2 = t.brand(t.number, (n): n is t.Branded<number, IntBrand2> => Number.isInteger(n), 'Int')
 type Int2 = t.TypeOf<typeof Int2> // $ExpectType Branded<number, IntBrand2>
+
+// should be possible to convert a branded type to its carrier type
+const toNumber = (n: t.Int): number => n
 
 // $ExpectError
 const intToInt2 = (int: t.Int): Int2 => int
