@@ -51,7 +51,7 @@ describe('type', () => {
       assertSuccess(T2.decode({}), { a: undefined })
 
       const T3 = t.type({ a: t.any })
-      assert.deepEqual(T3.decode({}).value, { a: undefined })
+      assert.deepStrictEqual(T3.decode({}).value, { a: undefined })
     })
 
     it('should fail decoding an invalid value', () => {
@@ -70,12 +70,12 @@ describe('type', () => {
   describe('encode', () => {
     it('should encode a isomorphic value', () => {
       const T = t.type({ a: t.string })
-      assert.deepEqual(T.encode({ a: 'a' }), { a: 'a' })
+      assert.deepStrictEqual(T.encode({ a: 'a' }), { a: 'a' })
     })
 
     it('should encode a prismatic value', () => {
       const T = t.type({ a: NumberFromString })
-      assert.deepEqual(T.encode({ a: 1 }), { a: '1' })
+      assert.deepStrictEqual(T.encode({ a: 1 }), { a: '1' })
     })
   })
 
@@ -83,7 +83,7 @@ describe('type', () => {
     const T = t.type({ a: t.string })
     const validation = T.decode({ a: 's', b: 1 })
     if (validation.isRight()) {
-      assert.deepEqual(validation.value, { a: 's', b: 1 })
+      assert.deepStrictEqual(validation.value, { a: 's', b: 1 })
     } else {
       assert.ok(false)
     }

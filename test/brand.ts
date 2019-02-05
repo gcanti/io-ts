@@ -33,7 +33,7 @@ interface MyNumberFromStringArrayBrand {
 }
 
 const MyNumberFromStringArray = t.brand(
-  t.array(t.number),
+  t.array(NumberFromString),
   (_): _ is t.Branded<Array<number>, MyNumberFromStringArrayBrand> => true,
   'MyNumberFromStringArray'
 )
@@ -96,7 +96,7 @@ describe('brand', () => {
   describe('encode', () => {
     it('should encode a prismatic value', () => {
       const T = MyNumberFromStringArray
-      assert.deepEqual(T.encode([1] as any), ['1'])
+      assert.deepStrictEqual(T.encode([1] as any), ['1'])
     })
 
     it('should return the same reference while encoding', () => {

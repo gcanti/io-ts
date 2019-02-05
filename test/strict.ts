@@ -62,7 +62,7 @@ describe('strict', () => {
   describe('encode', () => {
     it('should encode a prismatic value', () => {
       const T = t.strict({ a: NumberFromString })
-      assert.deepEqual(T.encode({ a: 1 }), { a: '1' })
+      assert.deepStrictEqual(T.encode({ a: 1 }), { a: '1' })
     })
 
     it('should return the same reference while encoding', () => {

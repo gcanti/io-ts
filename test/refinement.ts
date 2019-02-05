@@ -60,7 +60,7 @@ describe('refinement', () => {
   describe('encode', () => {
     it('should encode a prismatic value', () => {
       const T = t.refinement(t.array(NumberFromString), () => true)
-      assert.deepEqual(T.encode([1]), ['1'])
+      assert.deepStrictEqual(T.encode([1]), ['1'])
     })
 
     it('should return the same reference while encoding', () => {

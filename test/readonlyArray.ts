@@ -61,7 +61,7 @@ describe('readonlyArray', () => {
   describe('encode', () => {
     it('should encode a prismatic value', () => {
       const T = t.readonlyArray(NumberFromString)
-      assert.deepEqual(T.encode([0, 1]), ['0', '1'])
+      assert.deepStrictEqual(T.encode([0, 1]), ['0', '1'])
     })
 
     it('should return the same reference when serializing', () => {

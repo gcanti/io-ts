@@ -98,8 +98,8 @@ describe('recursion', () => {
           b: t.union([self, t.null])
         })
       )
-      assert.deepEqual(T.encode({ a: 0, b: null }), { a: '0', b: null })
-      assert.deepEqual(T.encode({ a: 0, b: { a: 1, b: null } }), { a: '0', b: { a: '1', b: null } })
+      assert.deepStrictEqual(T.encode({ a: 0, b: null }), { a: '0', b: null })
+      assert.deepStrictEqual(T.encode({ a: 0, b: { a: 1, b: null } }), { a: '0', b: { a: '1', b: null } })
     })
   })
 
