@@ -1580,18 +1580,22 @@ export const strict = <P extends Props>(props: P, name?: string): ExactC<TypeC<P
 
 /**
  * @since 1.3.0
+ * @deprecated
  */
 export type TaggedProps<Tag extends string> = { [K in Tag]: LiteralType<any> }
 /**
  * @since 1.3.0
+ * @deprecated
  */
 export interface TaggedRefinement<Tag extends string, A, O = A> extends RefinementType<Tagged<Tag>, A, O> {}
 /**
  * @since 1.3.0
+ * @deprecated
  */
 export interface TaggedUnion<Tag extends string, A, O = A> extends UnionType<Array<Tagged<Tag>>, A, O> {}
 /**
  * @since 1.3.0
+ * @deprecated
  */
 export type TaggedIntersectionArgument<Tag extends string> =
   | [Tagged<Tag>]
@@ -1611,15 +1615,18 @@ export type TaggedIntersectionArgument<Tag extends string> =
   | [Mixed, Mixed, Mixed, Mixed, Tagged<Tag>]
 /**
  * @since 1.3.0
+ * @deprecated
  */
 export interface TaggedIntersection<Tag extends string, A, O = A>
   extends IntersectionType<TaggedIntersectionArgument<Tag>, A, O> {}
 /**
  * @since 1.3.0
+ * @deprecated
  */
 export interface TaggedExact<Tag extends string, A, O = A> extends ExactType<Tagged<Tag>, A, O> {}
 /**
  * @since 1.3.0
+ * @deprecated
  */
 export type Tagged<Tag extends string, A = any, O = A> =
   | InterfaceType<TaggedProps<Tag>, A, O>
@@ -1766,7 +1773,7 @@ export const getIndexRecord = (codecs: Array<Mixed>): IndexRecord => {
   return isIndexRecordEmpty(ir) ? monoidIndexRecord.empty : ir
 }
 
-const getTaggedUnion = <Tag extends string, CS extends [Tagged<Tag>, Tagged<Tag>, ...Array<Tagged<Tag>>]>(
+const getTaggedUnion = <Tag extends string, CS extends [Mixed, Mixed, ...Array<Mixed>]>(
   index: Index,
   tag: Tag,
   codecs: CS,
@@ -1821,7 +1828,7 @@ const getTaggedUnion = <Tag extends string, CS extends [Tagged<Tag>, Tagged<Tag>
  */
 export class TaggedUnionType<
   Tag extends string,
-  CS extends Array<Tagged<Tag>>,
+  CS extends Array<Mixed>,
   A = any,
   O = A,
   I = unknown
@@ -1841,13 +1848,13 @@ export class TaggedUnionType<
 /**
  * @since 1.5.3
  */
-export interface TaggedUnionC<Tag extends string, CS extends [Tagged<Tag>, Tagged<Tag>, ...Array<Tagged<Tag>>]>
+export interface TaggedUnionC<Tag extends string, CS extends [Mixed, Mixed, ...Array<Mixed>]>
   extends TaggedUnionType<Tag, CS, TypeOf<CS[number]>, OutputOf<CS[number]>, unknown> {}
 
 /**
  * @since 1.3.0
  */
-export const taggedUnion = <Tag extends string, CS extends [Tagged<Tag>, Tagged<Tag>, ...Array<Tagged<Tag>>]>(
+export const taggedUnion = <Tag extends string, CS extends [Mixed, Mixed, ...Array<Mixed>]>(
   tag: Tag,
   codecs: CS,
   name: string = getUnionName(codecs)
@@ -1855,7 +1862,7 @@ export const taggedUnion = <Tag extends string, CS extends [Tagged<Tag>, Tagged<
   const indexRecord = getIndexRecord(codecs)
   if (!indexRecord.hasOwnProperty(tag)) {
     if (isRecursiveCodecIndexable && codecs.length > 0) {
-      console.warn(`[io-ts] Cannot build a tagged union for (B | A), returning a de-optimized union`)
+      console.warn(`[io-ts] Cannot build a tagged union for ${name}, returning a de-optimized union`)
     }
     const U = union(codecs, name)
     return new TaggedUnionType(name, U.is, U.validate, U.encode, codecs, tag)

@@ -345,9 +345,6 @@ const TaggedUnion2 = t.taggedUnion('type', [TaggedUnion2_A, TaggedUnion2_B])
 type TaggedUnion2TypeTest = Equals<t.TypeOf<typeof TaggedUnion2>, TaggedUnion2_A | TaggedUnion2_B> // $ExpectType "T"
 type TaggedUnion2OutputTest = Equals<t.OutputOf<typeof TaggedUnion2>, TaggedUnion2_A | TaggedUnion2_B> // $ExpectType "T"
 
-// $ExpectError
-const TaggedUnion3 = t.taggedUnion('type', [t.type({ type: t.literal('a') }), t.type({ bad: t.literal('b') })])
-
 //
 // exact
 //
