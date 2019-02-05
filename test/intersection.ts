@@ -113,8 +113,20 @@ describe('intersection', () => {
     })
 
     it('should encode a prismatic value', () => {
-      const T = t.intersection([t.type({ a: t.string }), t.type({ b: NumberFromString })])
-      assert.deepStrictEqual(T.encode({ a: 'a', b: 1 }), { a: 'a', b: '1' })
+      const T1 = t.intersection([t.type({ a: t.string }), t.type({ b: NumberFromString })])
+      assert.deepStrictEqual(T1.encode({ a: 'a', b: 1 }), { a: 'a', b: '1' })
+      const T2 = t.intersection([t.type({ b: NumberFromString }), t.type({ a: t.string })])
+      assert.deepStrictEqual(T2.encode({ a: 'a', b: 1 }), { a: 'a', b: '1' })
+      const T3 = t.intersection([t.type({ b: NumberFromString }), t.type({ a: t.string }), t.type({ c: t.string })])
+      assert.deepStrictEqual(T3.encode({ a: 'a', b: 1, c: 'c' }), { a: 'a', b: '1', c: 'c' })
+      const T4 = t.intersection([
+        t.type({ b: NumberFromString }),
+        t.type({ a: t.string }),
+        t.type({ c: NumberFromString })
+      ])
+      assert.deepStrictEqual(T4.encode({ a: 'a', b: 1, c: 2 }), { a: 'a', b: '1', c: '2' })
+      const T5 = t.intersection([t.type({ b: NumberFromString }), t.type({})])
+      assert.deepStrictEqual(T5.encode({ b: 1 }), { b: '1' })
     })
 
     it('should return the same reference while encoding', () => {
