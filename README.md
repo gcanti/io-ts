@@ -306,39 +306,37 @@ const U = t.taggedUnion('tag', [A, B])
 
 # Branded types / Refinements
 
-You can refine a codec (_any_ codec) using the `brand` combinator
+You can brand / refine a codec (_any_ codec) using the `brand` combinator
 
 ```ts
-const Positive = t.brand(t.number, n => n >= 0, 'Positive')
+// a unique brand for positive numbers
+interface PositiveBrand {
+  readonly Positive: unique symbol // use `unique symbol` here to ensure uniqueness across modules / packages
+}
+
+const Positive = t.brand(
+  t.number, // a codec representing the type to be refined
+  (n): n is t.Branded<number, PositiveBrand> => n >= 0, // a custom type guard using the build-in helper `Branded`
+  'Positive' // the name must match the readonly field in the brand
+)
 
 type Positive = t.TypeOf<typeof Positive>
 /*
 same as
-type Positive = number & t.Brand<"Positive">
+type Positive = number & t.Brand<PositiveBrand>
 */
+```
 
+Branded codecs can be merged with `t.intersection`
+
+```ts
+// t.Int is a built-in branded codec
 const PositiveInt = t.intersection([t.Int, Positive])
 
 type PositiveInt = t.TypeOf<typeof PositiveInt>
 /*
 same as
-type PositiveInt = number & t.Brand<"Int"> & t.Brand<"Positive">
-*/
-
-const Person = t.type({
-  name: t.string,
-  age: PositiveInt
-})
-
-const Adult = t.brand(Person, person => person.age >= 18, 'Adult')
-
-type Adult = t.TypeOf<typeof Adult>
-/*
-same as
-type Adult = {
-    name: string;
-    age: number & t.Brand<"Int"> & t.Brand<"Positive">;
-} & t.Brand<"Adult">
+type PositiveInt = number & t.Brand<t.IntBrand> & t.Brand<PositiveBrand>
 */
 ```
 

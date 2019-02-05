@@ -14,10 +14,10 @@
 **Note**: Gaps between patch versions are faulty/broken releases. **Note**: A feature tagged as Experimental is in a
 high state of flux, you're at risk of it changing without notice.
 
-# 1.8.0
+# 1.8.1
 
 - **New Feature**
-  - add `brand` combinator (@gcanti)
+  - add `brand` combinator (@gcanti, @lostintime)
   - add `Int` codec (@gcanti)
   - `exact` strips additional properties while decoding / encoding (@gcanti)
   - un-deprecate `strict` combinator, is now an alias of `exact(type(...))` (@gcanti)

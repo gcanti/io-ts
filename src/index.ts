@@ -1,5 +1,5 @@
 import { Either, Left, Right } from 'fp-ts/lib/Either'
-import { Predicate } from 'fp-ts/lib/function'
+import { Predicate, Refinement } from 'fp-ts/lib/function'
 import { Monoid } from 'fp-ts/lib/Monoid'
 
 /**
@@ -510,32 +510,50 @@ export class RefinementType<C extends Any, A = any, O = A, I = unknown> extends 
 declare const _brand: unique symbol
 
 /**
- * @since 1.8.0
+ * @since 1.8.1
  */
 export interface Brand<B> {
   readonly [_brand]: B
 }
 
 /**
- * @since 1.8.0
+ * @since 1.8.1
  */
-export interface BrandC<C extends Any, B> extends RefinementType<C, TypeOf<C> & Brand<B>, OutputOf<C>, InputOf<C>> {}
+export type Branded<A, B> = A & Brand<B>
 
 /**
- * @since 1.8.0
+ * @since 1.8.1
  */
-export const brand = <C extends Any, B extends string>(
+export interface BrandC<C extends Any, B> extends RefinementType<C, Branded<TypeOf<C>, B>, OutputOf<C>, InputOf<C>> {}
+
+/**
+ * @since 1.8.1
+ */
+export const brand = <C extends Any, N extends string, B extends { readonly [K in N]: symbol }>(
   codec: C,
-  predicate: Predicate<TypeOf<C>>,
-  name: B
+  predicate: Refinement<TypeOf<C>, Branded<TypeOf<C>, B>>,
+  name: N
 ): BrandC<C, B> => {
   return refinement(codec, predicate, name)
 }
 
 /**
- * @since 1.8.0
+ * @since 1.8.1
  */
-export const Int = brand(number, Number.isInteger, 'Int')
+export interface IntBrand {
+  readonly Int: unique symbol
+}
+
+/**
+ * A branded codec representing an integer
+ * @since 1.8.1
+ */
+export const Int = brand(number, (n): n is Branded<number, IntBrand> => Number.isInteger(n), 'Int')
+
+/**
+ * @since 1.8.1
+ */
+export type Int = Branded<number, IntBrand>
 
 type LiteralValue = string | number | boolean
 

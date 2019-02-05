@@ -589,14 +589,37 @@ withValidation(t.void, () => 'validation error', fa)
 // brand
 //
 
-const PositiveInt = t.brand(t.Int, n => n > 0, 'PositiveInt')
+interface PositiveBrand {
+  readonly Positive: unique symbol
+}
+
+const PositiveBad = t.brand(
+  t.number,
+  // $ExpectError
+  (n): n is t.Branded<number, PositiveBrand> => n > 0,
+  'Bad' // name doesn't match
+)
+
+const Positive = t.brand(t.number, (n): n is t.Branded<number, PositiveBrand> => n > 0, 'Positive')
+
+const PositiveInt = t.intersection([t.Int, Positive])
 
 const Person = t.type({
   name: t.string,
   age: PositiveInt
 })
 
-type Person = t.TypeOf<typeof Person> // $ExpectType { name: string; age: number & Brand<"Int"> & Brand<"PositiveInt">; }
+type Person = t.TypeOf<typeof Person> // $ExpectType { name: string; age: number & Brand<IntBrand> & Brand<PositiveBrand>; }
 
 // $ExpectError
 const person: Person = { name: 'name', age: -1.2 }
+
+interface IntBrand2 {
+  readonly Int: unique symbol
+}
+
+const Int2 = t.brand(t.number, (n): n is t.Branded<number, IntBrand2> => Number.isInteger(n), 'Int')
+type Int2 = t.TypeOf<typeof Int2> // $ExpectType Branded<number, IntBrand2>
+
+// $ExpectError
+const intToInt2 = (int: t.Int): Int2 => int

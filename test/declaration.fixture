@@ -133,4 +133,8 @@ export declare const E1: t.ExactC<t.TypeC<{
         }>;
     }>;
 }>>;
+export declare const B1: t.TypeC<{
+    name: t.StringC;
+    age: t.BrandC<t.NumberC, t.IntBrand>;
+}>;
 export {};
