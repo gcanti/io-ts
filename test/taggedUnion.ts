@@ -212,4 +212,15 @@ describe('taggedUnion', () => {
       assert.deepEqual(log, ['[io-ts] Cannot build a tagged union for (B | A), returning a de-optimized union'])
     })
   })
+
+  it('should warn for un-optimized unions', () => {
+    const log: Array<string> = []
+    const original = console.warn
+    console.warn = (message: string) => log.push(message)
+    t.taggedUnion('type', [t.type({ type: t.literal('a') }), t.type({ bad: t.literal('b') })])
+    console.warn = original
+    assert.deepEqual(log, [
+      '[io-ts] Cannot build a tagged union for ({ type: "a" } | { bad: "b" }), returning a de-optimized union'
+    ])
+  })
 })
