@@ -1192,12 +1192,21 @@ export interface IntersectionC<CS extends [Mixed, Mixed, ...Array<Mixed>]>
     unknown
   > {}
 
-const mergeAll = (us: Array<unknown>): any => {
-  let r: unknown = us[0]
-  for (let i = 1; i < us.length; i++) {
+const mergeAll = (base: any, us: Array<any>): any => {
+  let r: any = base
+  for (let i = 0; i < us.length; i++) {
     const u = us[i]
-    if (u !== r) {
-      r = Object.assign(r, u)
+    if (u !== base) {
+      // `u` contains a prismatic value or is the result of a stripping combinator
+      if (r === base) {
+        r = Object.assign({}, u)
+        continue
+      }
+      for (const k in u) {
+        if (u[k] !== base[k] || !r.hasOwnProperty(k)) {
+          r[k] = u[k]
+        }
+      }
     }
   }
   return r
@@ -1241,9 +1250,9 @@ export function intersection<CS extends [Mixed, Mixed, ...Array<Mixed>]>(
               us.push(validation.value)
             }
           }
-          return errors.length > 0 ? failures(errors) : success(mergeAll(us))
+          return errors.length > 0 ? failures(errors) : success(mergeAll(u, us))
         },
-    codecs.length === 0 ? identity : a => mergeAll(codecs.map(codec => codec.encode(a))),
+    codecs.length === 0 ? identity : a => mergeAll(a, codecs.map(codec => codec.encode(a))),
     codecs
   )
 }

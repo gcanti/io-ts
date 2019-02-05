@@ -8,7 +8,9 @@ describe('PathReporter', () => {
     assert.deepStrictEqual(PathReporter.report(t.number.decode(function() {})), [
       'Invalid value <function0> supplied to : number'
     ])
-    assert.deepStrictEqual(PathReporter.report(t.number.decode(function f() {})), ['Invalid value f supplied to : number'])
+    assert.deepStrictEqual(PathReporter.report(t.number.decode(function f() {})), [
+      'Invalid value f supplied to : number'
+    ])
   })
 
   it('should say something whene there are no errors', () => {
