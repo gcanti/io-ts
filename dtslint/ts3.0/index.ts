@@ -1,4 +1,4 @@
-import * as t from '../src'
+import * as t from '../../src'
 
 //
 // helpers
@@ -107,16 +107,16 @@ type Type3TypeTest = Equals<t.TypeOf<typeof Type3>, { a: number }> // $ExpectTyp
 type Type3OutputTest = Equals<t.OutputOf<typeof Type3>, { a: string }> // $ExpectType "T"
 
 //
-// dictionary
+// record
 //
 
-const Dictionary1 = t.dictionary(t.keyof({ a: true }), t.number) // $ExpectType RecordC<KeyofC<{ a: boolean; }>, NumberC>
-type Dictionary1TypeTest = Equals<t.TypeOf<typeof Dictionary1>, { [K in 'a']: number }> // $ExpectType "T"
-type Dictionary1OutputTest = Equals<t.OutputOf<typeof Dictionary1>, { [K in 'a']: number }> // $ExpectType "T"
+const Record1 = t.record(t.keyof({ a: true }), t.number) // $ExpectType RecordC<KeyofC<{ a: boolean; }>, NumberC>
+type Record1TypeTest = Equals<t.TypeOf<typeof Record1>, { [K in 'a']: number }> // $ExpectType "T"
+type Record1OutputTest = Equals<t.OutputOf<typeof Record1>, { [K in 'a']: number }> // $ExpectType "T"
 
-const Dictionary2 = t.dictionary(t.string, NumberFromString) // $ExpectType RecordC<StringC, Type<number, string, unknown>>
-type Dictionary2TypeTest = Equals<t.TypeOf<typeof Dictionary2>, { [K in string]: number }> // $ExpectType "T"
-type Dictionary2OutputTest = Equals<t.OutputOf<typeof Dictionary2>, { [K in string]: string }> // $ExpectType "T"
+const Record2 = t.record(t.string, NumberFromString) // $ExpectType RecordC<StringC, Type<number, string, unknown>>
+type Record2TypeTest = Equals<t.TypeOf<typeof Record2>, { [K in string]: number }> // $ExpectType "T"
+type Record2OutputTest = Equals<t.OutputOf<typeof Record2>, { [K in string]: string }> // $ExpectType "T"
 
 //
 // union
@@ -293,15 +293,15 @@ type ReadonlyArray2OutputTest = t.OutputOf<typeof ReadonlyArray2> // $ExpectType
 // strict
 //
 
-const Strict1 = t.strict({ a: t.string, b: t.number }) // $ExpectType StrictC<{ a: StringC; b: NumberC; }>
+const Strict1 = t.strict({ a: t.string, b: t.number }) // $ExpectType ExactC<TypeC<{ a: StringC; b: NumberC; }>>
 type Strict1TypeTest = Equals<t.TypeOf<typeof Strict1>, { a: string; b: number }> // $ExpectType "T"
 type Strict1OutputTest = Equals<t.OutputOf<typeof Strict1>, { a: string; b: number }> // $ExpectType "T"
 
-const Strict2 = t.strict({ a: t.strict({ b: t.string }) }) // $ExpectType StrictC<{ a: StrictC<{ b: StringC; }>; }>
+const Strict2 = t.strict({ a: t.strict({ b: t.string }) }) // $ExpectType ExactC<TypeC<{ a: ExactC<TypeC<{ b: StringC; }>>; }>>
 type Strict2TypeTest = Equals<t.TypeOf<typeof Strict2>, { a: { b: string } }> // $ExpectType "T"
 type Strict2OutputTest = Equals<t.OutputOf<typeof Strict2>, { a: { b: string } }> // $ExpectType "T"
 
-const Strict3 = t.strict({ a: NumberFromString }) // $ExpectType StrictC<{ a: Type<number, string, unknown>; }>
+const Strict3 = t.strict({ a: NumberFromString }) // $ExpectType ExactC<TypeC<{ a: Type<number, string, unknown>; }>>
 type Strict3TypeTest = Equals<t.TypeOf<typeof Strict3>, { a: number }> // $ExpectType "T"
 type Strict3OutputTest = Equals<t.OutputOf<typeof Strict3>, { a: string }> // $ExpectType "T"
 
@@ -344,9 +344,6 @@ const TaggedUnion2_B: t.RecursiveType<any, TaggedUnion2_B> = t.recursion<TaggedU
 const TaggedUnion2 = t.taggedUnion('type', [TaggedUnion2_A, TaggedUnion2_B])
 type TaggedUnion2TypeTest = Equals<t.TypeOf<typeof TaggedUnion2>, TaggedUnion2_A | TaggedUnion2_B> // $ExpectType "T"
 type TaggedUnion2OutputTest = Equals<t.OutputOf<typeof TaggedUnion2>, TaggedUnion2_A | TaggedUnion2_B> // $ExpectType "T"
-
-// $ExpectError
-const TaggedUnion3 = t.taggedUnion('type', [t.type({ type: t.literal('a') }), t.type({ bad: t.literal('b') })])
 
 //
 // exact
@@ -413,7 +410,7 @@ interface GenerableProps {
 type GenerableInterface = t.InterfaceType<GenerableProps>
 type GenerableStrict = t.StrictType<GenerableProps>
 type GenerablePartials = t.PartialType<GenerableProps>
-interface GenerableDictionary extends t.DictionaryType<Generable, Generable> {}
+interface GenerableRecord extends t.DictionaryType<Generable, Generable> {}
 interface GenerableRefinement extends t.RefinementType<Generable> {}
 interface GenerableArray extends t.ArrayType<Generable> {}
 interface GenerableUnion extends t.UnionType<Array<Generable>> {}
@@ -431,7 +428,7 @@ type Generable =
   | GenerableArray
   | GenerableStrict
   | GenerablePartials
-  | GenerableDictionary
+  | GenerableRecord
   | GenerableUnion
   | GenerableIntersection
   | GenerableTuple
@@ -588,18 +585,64 @@ declare const fa: TaskEither<string, void>
 
 withValidation(t.void, () => 'validation error', fa)
 
-const Person = t.partialPartial({
+//
+// brand
+//
+
+interface PositiveBrand {
+  readonly Positive: unique symbol
+}
+
+const PositiveBad = t.brand(
+  t.number,
+  // $ExpectError
+  (n): n is t.Branded<number, PositiveBrand> => n > 0,
+  'Bad' // name doesn't match
+)
+
+const Positive = t.brand(t.number, (n): n is t.Branded<number, PositiveBrand> => n > 0, 'Positive') // $ExpectType BrandC<NumberC, PositiveBrand>
+
+const PositiveInt = t.intersection([t.Int, Positive])
+
+const Person = t.type({
+  name: t.string,
+  age: PositiveInt
+})
+
+type Person = t.TypeOf<typeof Person> // $ExpectType { name: string; age: number & Brand<IntBrand> & Brand<PositiveBrand>; }
+
+// $ExpectError
+const person: Person = { name: 'name', age: -1.2 }
+
+interface IntBrand2 {
+  readonly Int: unique symbol
+}
+
+const Int2 = t.brand(t.number, (n): n is t.Branded<number, IntBrand2> => Number.isInteger(n), 'Int')
+type Int2 = t.TypeOf<typeof Int2> // $ExpectType Branded<number, IntBrand2>
+
+// should be possible to convert a branded type to its carrier type
+const toNumber = (n: t.Int): number => n
+
+// $ExpectError
+const intToInt2 = (int: t.Int): Int2 => int
+
+//
+// partialPartial
+//
+
+const Human = t.partialPartial({
   name: t.string,
   age: t.optional(t.number),
 })
-type Person = t.TypeOf<typeof Person>
+type Human = t.TypeOf<typeof Human>
 
-const bob: Person = { name: 'Bob' }
-const bob30: Person = { name: 'Bob', age: 30 }
+const bob: Human = { name: 'Bob' }
+const bob30: Human = { name: 'Bob', age: 30 }
 // $ExpectError
-const bobThirty: Person = { name: 'Bob', age: 'thirty' }
+const bobThirty: Human = { name: 'Bob', age: 'thirty' }
 // $ExpectError
-const nobody: Person = {}
+const nobody: Human = {}
 
 /**
  * if a generic type is passed into a method which uses partialPartial, it could either

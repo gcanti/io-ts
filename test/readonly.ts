@@ -33,24 +33,24 @@ describe('readonly', () => {
 
   describe('decode', () => {
     it('should succeed validating a valid value', () => {
-      const T = t.readonly(t.interface({ a: t.number }))
+      const T = t.readonly(t.type({ a: t.number }))
       assertSuccess(T.decode({ a: 1 }))
     })
 
     it('should fail validating an invalid value', () => {
-      const T = t.readonly(t.interface({ a: t.number }))
-      assertFailure(T.decode({}), ['Invalid value undefined supplied to : Readonly<{ a: number }>/a: number'])
+      const T = t.readonly(t.type({ a: t.number }))
+      assertFailure(T, {}, ['Invalid value undefined supplied to : Readonly<{ a: number }>/a: number'])
     })
 
     it('should freeze the value', () => {
-      const T = t.readonly(t.interface({ a: t.number }))
+      const T = t.readonly(t.type({ a: t.number }))
       T.decode({ a: 1 }).map(x => assert.ok(Object.isFrozen(x)))
     })
 
     it('should not freeze in production', () => {
       const env = process.env.NODE_ENV
       process.env.NODE_ENV = 'production'
-      const T = t.readonly(t.interface({ a: t.number }))
+      const T = t.readonly(t.type({ a: t.number }))
       T.decode({ a: 1 }).map(x => assert.ok(!Object.isFrozen(x)))
       process.env.NODE_ENV = env
     })
@@ -58,7 +58,7 @@ describe('readonly', () => {
 
   describe('encode', () => {
     it('should encode a prismatic value', () => {
-      const T = t.readonly(t.interface({ a: NumberFromString }))
+      const T = t.readonly(t.type({ a: NumberFromString }))
       assert.deepEqual(T.encode({ a: 1 }), { a: '1' })
     })
 

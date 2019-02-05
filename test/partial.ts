@@ -1,13 +1,6 @@
 import * as assert from 'assert'
 import * as t from '../src/index'
-import {
-  assertSuccess,
-  assertFailure,
-  assertStrictEqual,
-  assertDeepEqual,
-  withDefault,
-  NumberFromString
-} from './helpers'
+import { assertSuccess, assertFailure, assertStrictEqual, withDefault, NumberFromString } from './helpers'
 
 describe('partial', () => {
   describe('name', () => {
@@ -50,11 +43,8 @@ describe('partial', () => {
 
     it('should fail validating an invalid value', () => {
       const T = t.partial({ a: t.number })
-      assertFailure(T.decode(null), ['Invalid value null supplied to : Partial<{ a: number }>'])
-      assertFailure(T.decode({ a: 's' }), [
-        'Invalid value "s" supplied to : Partial<{ a: number }>/a: (number | undefined)/0: number',
-        'Invalid value "s" supplied to : Partial<{ a: number }>/a: (number | undefined)/1: undefined'
-      ])
+      assertFailure(T, null, ['Invalid value null supplied to : Partial<{ a: number }>'])
+      assertFailure(T, { a: 's' }, ['Invalid value "s" supplied to : Partial<{ a: number }>/a: number'])
     })
   })
 
@@ -100,7 +90,7 @@ describe('partial', () => {
     const T = t.partial({
       name: withDefault(t.string, 'foo')
     })
-    assertDeepEqual(T.decode({}), { name: 'foo' })
+    assertSuccess(T.decode({}), { name: 'foo' })
   })
 
   it('should preserve additional properties while encoding', () => {

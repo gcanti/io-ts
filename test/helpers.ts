@@ -3,12 +3,12 @@ import { right } from 'fp-ts/lib/Either'
 import * as t from '../src/index'
 import { PathReporter } from '../src/PathReporter'
 
-export function assertStrictEqual<T>(validation: t.Validation<T>, value: any): void {
-  assert.strictEqual(validation.fold<any>(t.identity, t.identity), value)
-}
-
-export function assertDeepEqual<T>(validation: t.Validation<T>, value: any): void {
-  assert.deepEqual(validation.fold<any>(t.identity, t.identity), value)
+export function assertStrictEqual<T>(result: t.Validation<T>, expected: any): void {
+  if (result.isRight()) {
+    assert.deepEqual(result.value, expected)
+  } else {
+    throw new Error(`${result} is not a right`)
+  }
 }
 
 export function assertSuccess<T>(result: t.Validation<T>, expected?: T): void {
@@ -31,7 +31,8 @@ export function assertStrictSuccess<T>(result: t.Validation<T>, expected: T): vo
   }
 }
 
-export function assertFailure<T>(result: t.Validation<T>, errors: Array<string>): void {
+export function assertFailure(codec: t.Any, value: unknown, errors: Array<string>): void {
+  const result = codec.decode(value)
   if (result.isLeft()) {
     assert.deepEqual(PathReporter.report(result), errors)
   } else {
@@ -39,23 +40,16 @@ export function assertFailure<T>(result: t.Validation<T>, errors: Array<string>)
   }
 }
 
-class NumberFromStringType extends t.Type<number, string, unknown> {
-  readonly _tag: 'NumberFromStringType' = 'NumberFromStringType'
-  constructor() {
-    super(
-      'NumberFromString',
-      t.number.is,
-      (u, c) =>
-        t.string.validate(u, c).chain(s => {
-          const n = +s
-          return isNaN(n) ? t.failure(u, c) : t.success(n)
-        }),
-      String
-    )
-  }
-}
-
-export const NumberFromString = new NumberFromStringType()
+export const NumberFromString = new t.Type<number, string, unknown>(
+  'NumberFromString',
+  t.number.is,
+  (u, c) =>
+    t.string.validate(u, c).chain(s => {
+      const n = +s
+      return isNaN(n) ? t.failure(u, c, 'cannot parse to a number') : t.success(n)
+    }),
+  String
+)
 
 export const HyphenatedString = new t.Type<string, string, unknown>(
   'HyphenatedString',

@@ -1,6 +1,6 @@
 {
   "name": "io-ts",
-  "version": "1.6.4",
+  "version": "1.8.1",
   "description": "TypeScript compatible runtime type system for IO validation",
   "files": [
     "lib"
@@ -39,7 +39,7 @@
     "@types/jest": "^23.3.8",
     "@types/node": "7.0.4",
     "benchmark": "2.1.4",
-    "dtslint": "^0.4.2",
+    "dtslint": "github:gcanti/dtslint",
     "jest": "^23.6.0",
     "mocha": "^5.2.0",
     "prettier": "^1.15.3",

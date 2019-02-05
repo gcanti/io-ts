@@ -2,22 +2,30 @@ import { Reporter } from './Reporter'
 import { Context, getFunctionName, ValidationError } from './index'
 
 function stringify(v: any): string {
-  return typeof v === 'function' ? getFunctionName(v) : JSON.stringify(v)
+  if (typeof v === 'function') {
+    return getFunctionName(v)
+  }
+  if (typeof v === 'number' && !isFinite(v)) {
+    return v > 0 ? 'Infinity' : '-Infinity'
+  }
+  return JSON.stringify(v)
 }
 
 function getContextPath(context: Context): string {
   return context.map(({ key, type }) => `${key}: ${type.name}`).join('/')
 }
 
-function getMessage(v: any, context: Context): string {
-  return `Invalid value ${stringify(v)} supplied to ${getContextPath(context)}`
+function getMessage(e: ValidationError): string {
+  return e.message !== undefined
+    ? e.message
+    : `Invalid value ${stringify(e.value)} supplied to ${getContextPath(e.context)}`
 }
 
 /**
  * @since 1.0.0
  */
 export function failure(es: Array<ValidationError>): Array<string> {
-  return es.map(e => getMessage(e.value, e.context))
+  return es.map(getMessage)
 }
 
 /**

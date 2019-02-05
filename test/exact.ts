@@ -6,7 +6,7 @@ describe('exact', () => {
   describe('name', () => {
     it('should assign a default name', () => {
       const T = t.exact(t.type({ foo: t.string }))
-      assert.strictEqual(T.name, 'ExactType<{ foo: string }>')
+      assert.strictEqual(T.name, '{| foo: string |}')
     })
 
     it('should accept a name', () => {
@@ -74,38 +74,56 @@ describe('exact', () => {
 
     it('should fail validating an invalid value (type)', () => {
       const T = t.exact(t.type({ foo: t.string }))
-      assertFailure(T.decode({ foo: 'foo', bar: 1, baz: true }), [
-        'Invalid value 1 supplied to : ExactType<{ foo: string }>/bar: never',
-        'Invalid value true supplied to : ExactType<{ foo: string }>/baz: never'
-      ])
+      assertFailure(T, null, ['Invalid value null supplied to : {| foo: string |}'])
+      assertFailure(T, undefined, ['Invalid value undefined supplied to : {| foo: string |}'])
+      assertFailure(T, 1, ['Invalid value 1 supplied to : {| foo: string |}'])
+      assertFailure(T, {}, ['Invalid value undefined supplied to : {| foo: string |}/foo: string'])
+    })
+
+    it('should strip additional properties (type)', () => {
+      const T = t.exact(t.type({ foo: t.string }))
+      assertSuccess(T.decode({ foo: 'foo', bar: 1, baz: true }), { foo: 'foo' })
     })
 
     it('should fail validating an invalid value (partial)', () => {
-      const T = t.exact(t.intersection([t.type({ foo: t.string }), t.partial({ bar: t.number })]))
-      assertFailure(T.decode({ foo: 'foo', baz: true }), [
-        'Invalid value true supplied to : ExactType<({ foo: string } & Partial<{ bar: number }>)>/baz: never'
-      ])
+      const T = t.exact(t.partial({ foo: t.string }))
+      assertFailure(T, null, ['Invalid value null supplied to : Partial<{| foo: string |}>'])
+    })
+
+    it('should strip additional properties (partial)', () => {
+      const T = t.exact(t.partial({ foo: t.string }))
+      assertSuccess(T.decode({ bar: 1 }), {})
     })
 
     it('should fail validating an invalid value (intersection)', () => {
-      const T = t.exact(t.partial({ foo: t.string }))
-      assertFailure(T.decode({ bar: 1 }), [
-        'Invalid value 1 supplied to : ExactType<Partial<{ foo: string }>>/bar: never'
-      ])
+      const T = t.exact(t.intersection([t.type({ foo: t.string }), t.partial({ bar: t.number })]))
+      assertFailure(T, null, ['Invalid value null supplied to : Exact<({ foo: string } & Partial<{ bar: number }>)>'])
+    })
+
+    it('should strip additional properties (intersection)', () => {
+      const T = t.exact(t.intersection([t.type({ foo: t.string }), t.partial({ bar: t.number })]))
+      assertSuccess(T.decode({ foo: 'foo', baz: true }), { foo: 'foo' })
     })
 
     it('should fail validating an invalid value (refinement)', () => {
       const T = t.exact(t.refinement(t.type({ foo: t.string }), p => p.foo.length > 2))
-      assertFailure(T.decode({ foo: 'foo', bar: 1 }), [
-        'Invalid value 1 supplied to : ExactType<({ foo: string } | <function1>)>/bar: never'
-      ])
+      assertFailure(T, null, ['Invalid value null supplied to : Exact<({ foo: string } | <function1>)>'])
+      assertFailure(T, { foo: 'a' }, ['Invalid value {"foo":"a"} supplied to : Exact<({ foo: string } | <function1>)>'])
+    })
+
+    it('should strip additional properties (refinement)', () => {
+      const T = t.exact(t.refinement(t.type({ foo: t.string }), p => p.foo.length > 2))
+      assertSuccess(T.decode({ foo: 'foo', bar: 1 }), { foo: 'foo' })
     })
 
     it('should fail validating an invalid value (readonly)', () => {
       const T = t.exact(t.readonly(t.type({ foo: t.string })))
-      assertFailure(T.decode({ foo: 'foo', bar: 1 }), [
-        'Invalid value 1 supplied to : ExactType<Readonly<{ foo: string }>>/bar: never'
-      ])
+      assertFailure(T, null, ['Invalid value null supplied to : Exact<Readonly<{ foo: string }>>'])
+    })
+
+    it('should strip additional properties (readonly)', () => {
+      const T = t.exact(t.readonly(t.type({ foo: t.string })))
+      assertSuccess(T.decode({ foo: 'foo', bar: 1 }), { foo: 'foo' })
     })
   })
 
@@ -116,8 +134,15 @@ describe('exact', () => {
     })
 
     it('should return the same reference while encoding', () => {
-      const T = t.exact(t.type({ a: t.number }))
-      assert.strictEqual(T.encode, t.identity)
+      const T = t.exact(t.type({ a: t.string }))
+      const x = { a: 'a' }
+      assert.strictEqual(T.encode(x), x)
+    })
+
+    it('should strip additional properties', () => {
+      const T = t.exact(t.type({ a: t.string }))
+      const x = { a: 'a', b: 1 }
+      assert.deepEqual(T.encode(x), { a: 'a' })
     })
   })
 })

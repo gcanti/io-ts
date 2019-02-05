@@ -55,18 +55,29 @@ describe('tuple', () => {
 
     it('should fail validating an invalid value', () => {
       const T = t.tuple([t.number, t.string])
-      assertFailure(T.decode(1), ['Invalid value 1 supplied to : [number, string]'])
-      assertFailure(T.decode([]), [
-        'Invalid value undefined supplied to : [number, string]/0: number',
-        'Invalid value undefined supplied to : [number, string]/1: string'
-      ])
-      assertFailure(T.decode([1]), ['Invalid value undefined supplied to : [number, string]/1: string'])
-      assertFailure(T.decode([1, 1]), ['Invalid value 1 supplied to : [number, string]/1: string'])
+      assertFailure(T, 1, ['Invalid value 1 supplied to : [number, string]'])
+      assertFailure(
+        T,
+        [],
+        [
+          'Invalid value undefined supplied to : [number, string]/0: number',
+          'Invalid value undefined supplied to : [number, string]/1: string'
+        ]
+      )
+      assertFailure(T, [1], ['Invalid value undefined supplied to : [number, string]/1: string'])
+      assertFailure(T, [1, 1], ['Invalid value 1 supplied to : [number, string]/1: string'])
     })
 
-    it('should fail while validating a tuple with additional components', () => {
+    it('should strip additional components', () => {
       const T = t.tuple([t.number, t.string])
-      assertFailure(T.decode([1, 'foo', true]), ['Invalid value true supplied to : [number, string]/2: never'])
+      assertSuccess(T.decode([1, 'foo', true]), [1, 'foo'])
+      assertSuccess(T.decode([1, 'foo', true, 'a']), [1, 'foo'])
+    })
+
+    it('should return the same reference if validation succeeded and nothing changed', () => {
+      const T = t.tuple([t.number, t.string])
+      const value = [1, 'a']
+      assertStrictEqual(T.decode(value), value)
     })
   })
 
@@ -80,16 +91,11 @@ describe('tuple', () => {
       const T = t.tuple([NumberFromString, t.string])
       assert.deepEqual(T.encode([1, 'a']), ['1', 'a'])
     })
-  })
 
-  it('should return the same reference if validation succeeded and nothing changed', () => {
-    const T = t.tuple([t.number, t.string])
-    const value = [1, 'a']
-    assertStrictEqual(T.decode(value), value)
-  })
-
-  it('should return the same reference while encoding', () => {
-    const T = t.tuple([t.number, t.string])
-    assert.strictEqual(T.encode, t.identity)
+    it('should return the same reference while encoding', () => {
+      const T = t.tuple([t.number, t.string])
+      const x: [number, string] = [1, 'a']
+      assert.strictEqual(T.encode(x), x)
+    })
   })
 })

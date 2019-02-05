@@ -1,5 +1,5 @@
 import { Either, Left, Right } from 'fp-ts/lib/Either'
-import { Predicate } from 'fp-ts/lib/function'
+import { Predicate, Refinement } from 'fp-ts/lib/function'
 import { Monoid } from 'fp-ts/lib/Monoid'
 
 /**
@@ -13,6 +13,8 @@ export type mixed = unknown
 export interface ContextEntry {
   readonly key: string
   readonly type: Decoder<any, any>
+  /** the input data */
+  readonly actual?: unknown
 }
 /**
  * @since 1.0.0
@@ -23,8 +25,12 @@ export interface Context extends ReadonlyArray<ContextEntry> {}
  * @since 1.0.0
  */
 export interface ValidationError {
+  /** the offending (sub)value */
   readonly value: unknown
+  /** where the error originated */
   readonly context: Context
+  /** optional custom error message */
+  readonly message?: string
 }
 
 /**
@@ -128,9 +134,8 @@ export class Type<A, O = A, I = unknown> implements Decoder<I, A>, Encoder<A, O>
         const validation = this.validate(i, c)
         if (validation.isLeft()) {
           return validation as any
-        } else {
-          return ab.validate(validation.value, c)
         }
+        return ab.validate(validation.value, c)
       },
       this.encode === identity && ab.encode === identity ? (identity as any) : b => this.encode(ab.encode(b))
     )
@@ -143,7 +148,7 @@ export class Type<A, O = A, I = unknown> implements Decoder<I, A>, Encoder<A, O>
   }
   /** a version of `validate` with a default context */
   decode(i: I): Validation<A> {
-    return this.validate(i, getDefaultContext(this))
+    return this.validate(i, [{ key: '', type: this, actual: i }])
   }
 }
 
@@ -166,23 +171,13 @@ export const getContextEntry = (key: string, decoder: Decoder<any, any>): Contex
 /**
  * @since 1.0.0
  */
-export const getValidationError = (value: unknown, context: Context): ValidationError => ({ value, context })
-
-/**
- * @since 1.0.0
- */
-export const getDefaultContext = (decoder: Decoder<any, any>): Context => [{ key: '', type: decoder }]
-
-/**
- * @since 1.0.0
- */
-export const appendContext = (c: Context, key: string, decoder: Decoder<any, any>): Context => {
+export const appendContext = (c: Context, key: string, decoder: Decoder<any, any>, actual?: unknown): Context => {
   const len = c.length
   const r = Array(len + 1)
   for (let i = 0; i < len; i++) {
     r[i] = c[i]
   }
-  r[len] = { key, type: decoder }
+  r[len] = { key, type: decoder, actual }
   return r
 }
 
@@ -194,8 +189,8 @@ export const failures = <T>(errors: Errors): Validation<T> => new Left(errors)
 /**
  * @since 1.0.0
  */
-export const failure = <T>(value: unknown, context: Context): Validation<T> =>
-  failures([getValidationError(value, context)])
+export const failure = <T>(value: unknown, context: Context, message?: string): Validation<T> =>
+  failures([{ value, context, message }])
 
 /**
  * @since 1.0.0
@@ -218,6 +213,8 @@ const isAnyCodec = getIsCodec<AnyType>('AnyType')
 const isLiteralCodec = getIsCodec<LiteralType<LiteralValue>>('LiteralType')
 
 const isInterfaceCodec = getIsCodec<InterfaceType<Props>>('InterfaceType')
+
+const isPartialCodec = getIsCodec<PartialType<Props>>('PartialType')
 
 const isStrictCodec = getIsCodec<StrictType<Props>>('StrictType')
 
@@ -298,26 +295,6 @@ export interface VoidC extends VoidType {}
  * @since 1.2.0
  */
 export const voidType: VoidC = new VoidType()
-
-/**
- * @since 1.0.0
- */
-export class AnyType extends Type<any> {
-  readonly _tag: 'AnyType' = 'AnyType'
-  constructor() {
-    super('any', (_): _ is any => true, success, identity)
-  }
-}
-
-/**
- * @since 1.5.3
- */
-export interface AnyC extends AnyType {}
-
-/**
- * @since 1.0.0
- */
-export const any: AnyC = new AnyType()
 
 /**
  * @since 1.5.0
@@ -448,7 +425,7 @@ export const boolean: BooleanC = new BooleanType()
 export class AnyArrayType extends Type<Array<unknown>> {
   readonly _tag: 'AnyArrayType' = 'AnyArrayType'
   constructor() {
-    super('Array', Array.isArray, (u, c) => (this.is(u) ? success(u) : failure(u, c)), identity)
+    super('UnknownArray', Array.isArray, (u, c) => (this.is(u) ? success(u) : failure(u, c)), identity)
   }
 }
 
@@ -457,7 +434,10 @@ export class AnyArrayType extends Type<Array<unknown>> {
  */
 export interface UnknownArrayC extends AnyArrayType {}
 
-const arrayType: UnknownArrayC = new AnyArrayType()
+/**
+ * @since 1.7.1
+ */
+export const UnknownArray: UnknownArrayC = new AnyArrayType()
 
 /**
  * @since 1.0.0
@@ -466,7 +446,7 @@ export class AnyDictionaryType extends Type<{ [key: string]: unknown }> {
   readonly _tag: 'AnyDictionaryType' = 'AnyDictionaryType'
   constructor() {
     super(
-      'Dictionary',
+      'UnknownRecord',
       (u): u is { [key: string]: unknown } => u !== null && typeof u === 'object',
       (u, c) => (this.is(u) ? success(u) : failure(u, c)),
       identity
@@ -475,34 +455,14 @@ export class AnyDictionaryType extends Type<{ [key: string]: unknown }> {
 }
 
 /**
+ * @since 1.7.1
+ */
+export const UnknownRecord: UnknownRecordC = new AnyDictionaryType()
+
+/**
  * @since 1.5.3
  */
 export interface UnknownRecordC extends AnyDictionaryType {}
-
-/**
- * @since 1.0.0
- */
-export const Dictionary: UnknownRecordC = new AnyDictionaryType()
-
-/**
- * @since 1.0.0
- */
-export class ObjectType extends Type<object> {
-  readonly _tag: 'ObjectType' = 'ObjectType'
-  constructor() {
-    super('object', Dictionary.is, Dictionary.validate, identity)
-  }
-}
-
-/**
- * @since 1.5.3
- */
-export interface ObjectC extends ObjectType {}
-
-/**
- * @since 1.0.0
- */
-export const object: ObjectC = new ObjectType()
 
 /**
  * @since 1.0.0
@@ -547,40 +507,53 @@ export class RefinementType<C extends Any, A = any, O = A, I = unknown> extends 
   }
 }
 
-/**
- * @since 1.5.3
- */
-export interface RefinementC<C extends Any> extends RefinementType<C, TypeOf<C>, OutputOf<C>, InputOf<C>> {}
+declare const _brand: unique symbol
 
 /**
- * @since 1.0.0
+ * @since 1.8.1
  */
-export const refinement = <C extends Any>(
+export interface Brand<B> {
+  readonly [_brand]: B
+}
+
+/**
+ * @since 1.8.1
+ */
+export type Branded<A, B> = A & Brand<B>
+
+/**
+ * @since 1.8.1
+ */
+export interface BrandC<C extends Any, B> extends RefinementType<C, Branded<TypeOf<C>, B>, OutputOf<C>, InputOf<C>> {}
+
+/**
+ * @since 1.8.1
+ */
+export const brand = <C extends Any, N extends string, B extends { readonly [K in N]: symbol }>(
   codec: C,
-  predicate: Predicate<TypeOf<C>>,
-  name: string = `(${codec.name} | ${getFunctionName(predicate)})`
-): RefinementC<C> =>
-  new RefinementType(
-    name,
-    (u): u is TypeOf<C> => codec.is(u) && predicate(u),
-    (i, c) => {
-      const validation = codec.validate(i, c)
-      if (validation.isLeft()) {
-        return validation
-      } else {
-        const a = validation.value
-        return predicate(a) ? success(a) : failure(a, c)
-      }
-    },
-    codec.encode,
-    codec,
-    predicate
-  )
+  predicate: Refinement<TypeOf<C>, Branded<TypeOf<C>, B>>,
+  name: N
+): BrandC<C, B> => {
+  return refinement(codec, predicate, name)
+}
 
 /**
- * @since 1.0.0
+ * @since 1.8.1
  */
-export const Integer = refinement(number, n => n % 1 === 0, 'Integer')
+export interface IntBrand {
+  readonly Int: unique symbol
+}
+
+/**
+ * A branded codec representing an integer
+ * @since 1.8.1
+ */
+export const Int = brand(number, (n): n is Branded<number, IntBrand> => Number.isInteger(n), 'Int')
+
+/**
+ * @since 1.8.1
+ */
+export type Int = Branded<number, IntBrand>
 
 type LiteralValue = string | number | boolean
 
@@ -681,6 +654,7 @@ export const recursion = <A, O = A, I = unknown, C extends Type<A, O, I> = Type<
   const runDefinition = (): C => {
     if (!cache) {
       cache = definition(Self)
+      ;(cache as any).name = name
     }
     return cache
   }
@@ -730,33 +704,32 @@ export interface ArrayC<C extends Mixed> extends ArrayType<C, Array<TypeOf<C>>, 
 export const array = <C extends Mixed>(codec: C, name: string = `Array<${codec.name}>`): ArrayC<C> =>
   new ArrayType(
     name,
-    (u): u is Array<TypeOf<C>> => arrayType.is(u) && u.every(codec.is),
+    (u): u is Array<TypeOf<C>> => UnknownArray.is(u) && u.every(codec.is),
     (u, c) => {
-      const arrayValidation = arrayType.validate(u, c)
-      if (arrayValidation.isLeft()) {
-        return arrayValidation
-      } else {
-        const xs = arrayValidation.value
-        const len = xs.length
-        let a: Array<TypeOf<C>> = xs
-        const errors: Errors = []
-        for (let i = 0; i < len; i++) {
-          const x = xs[i]
-          const validation = codec.validate(x, appendContext(c, String(i), codec))
-          if (validation.isLeft()) {
-            pushAll(errors, validation.value)
-          } else {
-            const vx = validation.value
-            if (vx !== x) {
-              if (a === xs) {
-                a = xs.slice()
-              }
-              a[i] = vx
+      const unknownArrayValidation = UnknownArray.validate(u, c)
+      if (unknownArrayValidation.isLeft()) {
+        return unknownArrayValidation
+      }
+      const us = unknownArrayValidation.value
+      const len = us.length
+      let as: Array<TypeOf<C>> = us
+      const errors: Errors = []
+      for (let i = 0; i < len; i++) {
+        const ui = us[i]
+        const validation = codec.validate(ui, appendContext(c, String(i), codec, ui))
+        if (validation.isLeft()) {
+          pushAll(errors, validation.value)
+        } else {
+          const ai = validation.value
+          if (ai !== ui) {
+            if (as === us) {
+              as = us.slice()
             }
+            as[i] = ai
           }
         }
-        return errors.length ? failures(errors) : success(a)
       }
+      return errors.length > 0 ? failures(errors) : success(as)
     },
     codec.encode === identity ? identity : a => a.map(codec.encode),
     codec
@@ -786,9 +759,9 @@ export interface AnyProps {
 }
 
 const getNameFromProps = (props: Props): string =>
-  `{ ${Object.keys(props)
+  Object.keys(props)
     .map(k => `${k}: ${props[k].name}`)
-    .join(', ')} }`
+    .join(', ')
 
 const useIdentity = (codecs: Array<Any>, len: number): boolean => {
   for (let i = 0; i < len; i++) {
@@ -864,18 +837,22 @@ export const partialPartial = <P extends Props>(
   }
 }
 
+const getInterfaceTypeName = (props: Props): string => {
+  return `{ ${getNameFromProps(props)} }`
+}
+
 /**
  * @alias `interface`
  * @since 1.0.0
  */
-export const type = <P extends Props>(props: P, name: string = getNameFromProps(props)): TypeC<P> => {
+export const type = <P extends Props>(props: P, name: string = getInterfaceTypeName(props)): TypeC<P> => {
   const keys = Object.keys(props)
   const types = keys.map(key => props[key])
   const len = keys.length
   return new InterfaceType(
     name,
     (u): u is { [K in keyof P]: TypeOf<P[K]> } => {
-      if (!Dictionary.is(u)) {
+      if (!UnknownRecord.is(u)) {
         return false
       }
       for (let i = 0; i < len; i++) {
@@ -887,39 +864,38 @@ export const type = <P extends Props>(props: P, name: string = getNameFromProps(
       return true
     },
     (u, c) => {
-      const dictionaryValidation = Dictionary.validate(u, c)
-      if (dictionaryValidation.isLeft()) {
-        return dictionaryValidation
-      } else {
-        const o = dictionaryValidation.value
-        let a = o
-        const errors: Errors = []
-        for (let i = 0; i < len; i++) {
-          const k = keys[i]
-          if (!hasOwnProperty.call(a, k)) {
+      const unknownRecordValidation = UnknownRecord.validate(u, c)
+      if (unknownRecordValidation.isLeft()) {
+        return unknownRecordValidation
+      }
+      const o = unknownRecordValidation.value
+      let a = o
+      const errors: Errors = []
+      for (let i = 0; i < len; i++) {
+        const k = keys[i]
+        if (!hasOwnProperty.call(a, k)) {
+          if (a === o) {
+            a = { ...o }
+          }
+          a[k] = a[k]
+        }
+        const ak = a[k]
+        const type = types[i]
+        const validation = type.validate(ak, appendContext(c, k, type, ak))
+        if (validation.isLeft()) {
+          pushAll(errors, validation.value)
+        } else {
+          const vak = validation.value
+          if (vak !== ak) {
+            /* istanbul ignore next */
             if (a === o) {
               a = { ...o }
             }
-            a[k] = a[k]
-          }
-          const ak = a[k]
-          const type = types[i]
-          const validation = type.validate(ak, appendContext(c, k, type))
-          if (validation.isLeft()) {
-            pushAll(errors, validation.value)
-          } else {
-            const vak = validation.value
-            if (vak !== ak) {
-              /* istanbul ignore next */
-              if (a === o) {
-                a = { ...o }
-              }
-              a[k] = vak
-            }
+            a[k] = vak
           }
         }
-        return errors.length ? failures(errors) : success(a as any)
       }
+      return errors.length > 0 ? failures(errors) : success(a as any)
     },
     useIdentity(types, len)
       ? identity
@@ -970,62 +946,62 @@ export type OutputOfPartialProps<P extends AnyProps> = { [K in keyof P]?: Output
 export interface PartialC<P extends Props>
   extends PartialType<P, { [K in keyof P]?: TypeOf<P[K]> }, { [K in keyof P]?: OutputOf<P[K]> }, unknown> {}
 
+const getPartialTypeName = (inner: string): string => {
+  return `Partial<${inner}>`
+}
+
 /**
  * @since 1.0.0
  */
 export const partial = <P extends Props>(
   props: P,
-  name: string = `Partial<${getNameFromProps(props)}>`
+  name: string = getPartialTypeName(getInterfaceTypeName(props))
 ): PartialC<P> => {
   const keys = Object.keys(props)
   const types = keys.map(key => props[key])
   const len = keys.length
-  const partials: Props = {}
-  for (let i = 0; i < len; i++) {
-    partials[keys[i]] = union([types[i], undefinedType])
-  }
   return new PartialType(
     name,
     (u): u is { [K in keyof P]?: TypeOf<P[K]> } => {
-      if (!Dictionary.is(u)) {
+      if (!UnknownRecord.is(u)) {
         return false
       }
       for (let i = 0; i < len; i++) {
         const k = keys[i]
-        if (!partials[k].is(u[k])) {
+        const uk = u[k]
+        if (uk !== undefined && !props[k].is(uk)) {
           return false
         }
       }
       return true
     },
     (u, c) => {
-      const dictionaryValidation = Dictionary.validate(u, c)
-      if (dictionaryValidation.isLeft()) {
-        return dictionaryValidation
-      } else {
-        const o = dictionaryValidation.value
-        let a = o
-        const errors: Errors = []
-        for (let i = 0; i < len; i++) {
-          const k = keys[i]
-          const ak = a[k]
-          const type = partials[k]
-          const validation = type.validate(ak, appendContext(c, k, type))
-          if (validation.isLeft()) {
-            pushAll(errors, validation.value)
-          } else {
-            const vak = validation.value
-            if (vak !== ak) {
-              /* istanbul ignore next */
-              if (a === o) {
-                a = { ...o }
-              }
-              a[k] = vak
+      const unknownRecordValidation = UnknownRecord.validate(u, c)
+      if (unknownRecordValidation.isLeft()) {
+        return unknownRecordValidation
+      }
+      const o = unknownRecordValidation.value
+      let a = o
+      const errors: Errors = []
+      for (let i = 0; i < len; i++) {
+        const k = keys[i]
+        const ak = a[k]
+        const type = props[k]
+        const validation = type.validate(ak, appendContext(c, k, type, ak))
+        if (validation.isLeft() && ak !== undefined) {
+          pushAll(errors, validation.value)
+        } else if (validation.isRight()) {
+          const vak = validation.value
+          if (vak !== ak) {
+            /* istanbul ignore next */
+            if (a === o) {
+              a = { ...o }
             }
+            a[k] = vak
           }
         }
-        return errors.length ? failures(errors) : success(a as any)
       }
+      return errors.length > 0 ? failures(errors) : success(a as any)
     },
     useIdentity(types, len)
       ? identity
@@ -1080,9 +1056,9 @@ export interface RecordC<D extends Mixed, C extends Mixed>
 const isObject = (r: Record<string, unknown>) => Object.prototype.toString.call(r) === '[object Object]'
 
 /**
- * @since 1.0.0
+ * @since 1.7.1
  */
-export const dictionary = <D extends Mixed, C extends Mixed>(
+export const record = <D extends Mixed, C extends Mixed>(
   domain: D,
   codomain: C,
   name: string = `{ [K in ${domain.name}]: ${codomain.name} }`
@@ -1090,7 +1066,7 @@ export const dictionary = <D extends Mixed, C extends Mixed>(
   return new DictionaryType(
     name,
     (u): u is { [K in TypeOf<D>]: TypeOf<C> } => {
-      if (!Dictionary.is(u)) {
+      if (!UnknownRecord.is(u)) {
         return false
       }
       if (!isUnknownCodec(codomain) && !isAnyCodec(codomain) && !isObject(u)) {
@@ -1099,31 +1075,30 @@ export const dictionary = <D extends Mixed, C extends Mixed>(
       return Object.keys(u).every(k => domain.is(k) && codomain.is(u[k]))
     },
     (u, c) => {
-      const dictionaryValidation = Dictionary.validate(u, c)
-      if (dictionaryValidation.isLeft()) {
-        return dictionaryValidation
-      } else {
-        const o = dictionaryValidation.value
-        if (!isUnknownCodec(codomain) && !isAnyCodec(codomain) && !isObject(o)) {
-          return failure(u, c)
-        }
-        const a: { [key: string]: any } = {}
-        const errors: Errors = []
-        const keys = Object.keys(o)
-        const len = keys.length
-        let changed: boolean = false
-        for (let i = 0; i < len; i++) {
-          let k = keys[i]
-          const ok = o[k]
-          const domainValidation = domain.validate(k, appendContext(c, k, domain))
-          const codomainValidation = codomain.validate(ok, appendContext(c, k, codomain))
-          if (domainValidation.isLeft()) {
-            pushAll(errors, domainValidation.value)
-          } else {
-            const vk = domainValidation.value
-            changed = changed || vk !== k
-            k = vk
-          }
+      const unknownRecordValidation = UnknownRecord.validate(u, c)
+      if (unknownRecordValidation.isLeft()) {
+        return unknownRecordValidation
+      }
+      const o = unknownRecordValidation.value
+      if (!isUnknownCodec(codomain) && !isAnyCodec(codomain) && !isObject(o)) {
+        return failure(u, c)
+      }
+      const a: { [key: string]: any } = {}
+      const errors: Errors = []
+      const keys = Object.keys(o)
+      const len = keys.length
+      let changed: boolean = false
+      for (let i = 0; i < len; i++) {
+        let k = keys[i]
+        const ok = o[k]
+        const domainValidation = domain.validate(k, appendContext(c, k, domain, k))
+        if (domainValidation.isLeft()) {
+          pushAll(errors, domainValidation.value)
+        } else {
+          const vk = domainValidation.value
+          changed = changed || vk !== k
+          k = vk
+          const codomainValidation = codomain.validate(ok, appendContext(c, k, codomain, ok))
           if (codomainValidation.isLeft()) {
             pushAll(errors, codomainValidation.value)
           } else {
@@ -1132,8 +1107,8 @@ export const dictionary = <D extends Mixed, C extends Mixed>(
             a[k] = vok
           }
         }
-        return errors.length ? failures(errors) : success((changed ? a : o) as any)
       }
+      return errors.length > 0 ? failures(errors) : success((changed ? a : o) as any)
     },
     domain.encode === identity && codomain.encode === identity
       ? identity
@@ -1193,26 +1168,24 @@ export const union = <CS extends [Mixed, Mixed, ...Array<Mixed>]>(
       const errors: Errors = []
       for (let i = 0; i < len; i++) {
         const type = codecs[i]
-        const validation = type.validate(u, appendContext(c, String(i), type))
+        const validation = type.validate(u, appendContext(c, String(i), type, u))
         if (validation.isRight()) {
           return validation
-        } else {
-          pushAll(errors, validation.value)
         }
+        pushAll(errors, validation.value)
       }
-      return errors.length ? failures(errors) : failure(u, c)
+      return errors.length > 0 ? failures(errors) : failure(u, c)
     },
     useIdentity(codecs, len)
       ? identity
       : a => {
-          let i = 0
-          for (; i < len - 1; i++) {
+          for (let i = 0; i < len - 1; i++) {
             const type = codecs[i]
             if (type.is(a)) {
               return type.encode(a)
             }
           }
-          return codecs[i].encode(a)
+          return a
         },
     codecs
   )
@@ -1233,13 +1206,6 @@ export class IntersectionType<CS extends Array<Any>, A = any, O = A, I = unknown
     super(name, is, validate, encode)
   }
 }
-
-/**
- * used in `intersection` as a workaround for #234
- * @since 1.4.2
- * @deprecated
- */
-export type Compact<A> = { [K in keyof A]: A[K] }
 
 /**
  * @since 1.5.3
@@ -1268,6 +1234,17 @@ export interface IntersectionC<CS extends [Mixed, Mixed, ...Array<Mixed>]>
     unknown
   > {}
 
+const mergeAll = (us: Array<unknown>): any => {
+  let r: unknown = us[0]
+  for (let i = 1; i < us.length; i++) {
+    const u = us[i]
+    if (u !== r) {
+      r = Object.assign(r, u)
+    }
+  }
+  return r
+}
+
 /**
  * @since 1.0.0
  */
@@ -1291,31 +1268,24 @@ export function intersection<CS extends [Mixed, Mixed, ...Array<Mixed>]>(
   const len = codecs.length
   return new IntersectionType(
     name,
-    (u): u is any => (len === 0 ? false : codecs.every(type => type.is(u))),
-    (u, c) => {
-      let a = u
-      const errors: Errors = []
-      for (let i = 0; i < len; i++) {
-        const type = codecs[i]
-        const validation = type.validate(a, appendContext(c, String(i), type))
-        if (validation.isLeft()) {
-          pushAll(errors, validation.value)
-        } else {
-          a = validation.value
-        }
-      }
-      return errors.length ? failures(errors) : len === 0 ? failure(u, c) : success(a)
-    },
-    useIdentity(codecs, len)
-      ? identity
-      : a => {
-          let s = a
+    (u: unknown): u is any => codecs.every(type => type.is(u)),
+    codecs.length === 0
+      ? success
+      : (u, c) => {
+          const us: Array<unknown> = []
+          const errors: Errors = []
           for (let i = 0; i < len; i++) {
-            const type = codecs[i]
-            s = type.encode(s)
+            const codec = codecs[i]
+            const validation = codec.validate(u, appendContext(c, String(i), codec, u))
+            if (validation.isLeft()) {
+              pushAll(errors, validation.value)
+            } else {
+              us.push(validation.value)
+            }
           }
-          return s
+          return errors.length > 0 ? failures(errors) : success(mergeAll(us))
         },
+    codecs.length === 0 ? identity : a => mergeAll(codecs.map(codec => codec.encode(a))),
     codecs
   )
 }
@@ -1391,37 +1361,33 @@ export function tuple<CS extends [Mixed, ...Array<Mixed>]>(
   const len = codecs.length
   return new TupleType(
     name,
-    (u): u is any => arrayType.is(u) && u.length === len && codecs.every((type, i) => type.is(u[i])),
+    (u): u is any => UnknownArray.is(u) && u.length === len && codecs.every((type, i) => type.is(u[i])),
     (u, c) => {
-      const arrayValidation = arrayType.validate(u, c)
-      if (arrayValidation.isLeft()) {
-        return arrayValidation
-      } else {
-        const as = arrayValidation.value
-        let t: Array<any> = as
-        const errors: Errors = []
-        for (let i = 0; i < len; i++) {
-          const a = as[i]
-          const type = codecs[i]
-          const validation = type.validate(a, appendContext(c, String(i), type))
-          if (validation.isLeft()) {
-            pushAll(errors, validation.value)
-          } else {
-            const va = validation.value
-            if (va !== a) {
-              /* istanbul ignore next */
-              if (t === as) {
-                t = as.slice()
-              }
-              t[i] = va
+      const unknownArrayValidation = UnknownArray.validate(u, c)
+      if (unknownArrayValidation.isLeft()) {
+        return unknownArrayValidation
+      }
+      const us = unknownArrayValidation.value
+      let as: Array<any> = us.length > len ? us.slice(0, len) : us // strip additional components
+      const errors: Errors = []
+      for (let i = 0; i < len; i++) {
+        const a = us[i]
+        const type = codecs[i]
+        const validation = type.validate(a, appendContext(c, String(i), type, a))
+        if (validation.isLeft()) {
+          pushAll(errors, validation.value)
+        } else {
+          const va = validation.value
+          if (va !== a) {
+            /* istanbul ignore next */
+            if (as === us) {
+              as = us.slice()
             }
+            as[i] = va
           }
         }
-        if (as.length > len) {
-          errors.push(getValidationError(as[len], appendContext(c, String(len), never)))
-        }
-        return errors.length ? failures(errors) : success(t)
       }
+      return errors.length > 0 ? failures(errors) : success(as)
     },
     useIdentity(codecs, len) ? identity : a => codecs.map((type, i) => type.encode(a[i])),
     codecs
@@ -1510,9 +1476,8 @@ export const readonlyArray = <C extends Mixed>(
       arrayType.validate(u, c).map(x => {
         if (process.env.NODE_ENV !== 'production') {
           return Object.freeze(x)
-        } else {
-          return x
         }
+        return x
       }),
     arrayType.encode as any,
     codec
@@ -1520,91 +1485,12 @@ export const readonlyArray = <C extends Mixed>(
 }
 
 /**
+ * Strips additional properties
  * @since 1.0.0
  */
-export class StrictType<P, A = any, O = A, I = unknown> extends Type<A, O, I> {
-  readonly _tag: 'StrictType' = 'StrictType'
-  constructor(
-    name: string,
-    is: StrictType<P, A, O, I>['is'],
-    validate: StrictType<P, A, O, I>['validate'],
-    encode: StrictType<P, A, O, I>['encode'],
-    readonly props: P
-  ) {
-    super(name, is, validate, encode)
-  }
+export const strict = <P extends Props>(props: P, name?: string): ExactC<TypeC<P>> => {
+  return exact(type(props), name)
 }
-
-/**
- * @since 1.5.3
- */
-export interface StrictC<P extends Props>
-  extends StrictType<P, { [K in keyof P]: TypeOf<P[K]> }, { [K in keyof P]: OutputOf<P[K]> }, unknown> {}
-
-/**
- * Specifies that only the given properties are allowed
- * @deprecated use `exact` instead
- * @since 1.0.0
- */
-export const strict = <P extends Props>(
-  props: P,
-  name: string = `StrictType<${getNameFromProps(props)}>`
-): StrictC<P> => {
-  const exactType = exact(type(props))
-  return new StrictType(name, exactType.is, exactType.validate, exactType.encode, props)
-}
-
-/**
- * @since 1.3.0
- */
-export type TaggedProps<Tag extends string> = { [K in Tag]: LiteralType<any> }
-/**
- * @since 1.3.0
- */
-export interface TaggedRefinement<Tag extends string, A, O = A> extends RefinementType<Tagged<Tag>, A, O> {}
-/**
- * @since 1.3.0
- */
-export interface TaggedUnion<Tag extends string, A, O = A> extends UnionType<Array<Tagged<Tag>>, A, O> {}
-/**
- * @since 1.3.0
- */
-export type TaggedIntersectionArgument<Tag extends string> =
-  | [Tagged<Tag>]
-  | [Tagged<Tag>, Mixed]
-  | [Mixed, Tagged<Tag>]
-  | [Tagged<Tag>, Mixed, Mixed]
-  | [Mixed, Tagged<Tag>, Mixed]
-  | [Mixed, Mixed, Tagged<Tag>]
-  | [Tagged<Tag>, Mixed, Mixed, Mixed]
-  | [Mixed, Tagged<Tag>, Mixed, Mixed]
-  | [Mixed, Mixed, Tagged<Tag>, Mixed]
-  | [Mixed, Mixed, Mixed, Tagged<Tag>]
-  | [Tagged<Tag>, Mixed, Mixed, Mixed, Mixed]
-  | [Mixed, Tagged<Tag>, Mixed, Mixed, Mixed]
-  | [Mixed, Mixed, Tagged<Tag>, Mixed, Mixed]
-  | [Mixed, Mixed, Mixed, Tagged<Tag>, Mixed]
-  | [Mixed, Mixed, Mixed, Mixed, Tagged<Tag>]
-/**
- * @since 1.3.0
- */
-export interface TaggedIntersection<Tag extends string, A, O = A>
-  extends IntersectionType<TaggedIntersectionArgument<Tag>, A, O> {}
-/**
- * @since 1.3.0
- */
-export interface TaggedExact<Tag extends string, A, O = A> extends ExactType<Tagged<Tag>, A, O> {}
-/**
- * @since 1.3.0
- */
-export type Tagged<Tag extends string, A = any, O = A> =
-  | InterfaceType<TaggedProps<Tag>, A, O>
-  | StrictType<TaggedProps<Tag>, A, O>
-  | TaggedRefinement<Tag, A, O>
-  | TaggedUnion<Tag, A, O>
-  | TaggedIntersection<Tag, A, O>
-  | TaggedExact<Tag, A, O>
-  | RecursiveType<any, A, O>
 
 type IndexItem = [unknown, Any, Any]
 
@@ -1619,19 +1505,19 @@ const monoidIndexRecord: Monoid<IndexRecord> = {
   concat: (a, b) => {
     if (a === monoidIndexRecord.empty) {
       return b
-    } else if (b === monoidIndexRecord.empty) {
-      return a
-    } else {
-      const r = cloneIndexRecord(a)
-      for (const k in b) {
-        if (r.hasOwnProperty(k)) {
-          r[k].push(...b[k])
-        } else {
-          r[k] = b[k]
-        }
-      }
-      return r
     }
+    if (b === monoidIndexRecord.empty) {
+      return a
+    }
+    const r = cloneIndexRecord(a)
+    for (const k in b) {
+      if (r.hasOwnProperty(k)) {
+        r[k].push(...b[k])
+      } else {
+        r[k] = b[k]
+      }
+    }
+    return r
   },
   empty: emptyIndexRecord
 }
@@ -1674,21 +1560,24 @@ const getCodecIndexRecord = (codec: Any, origin: Any, id: Any): IndexRecord => {
       }
     }
     return interfaceIndex
-  } else if (isIntersectionCodec(codec)) {
+  }
+  if (isIntersectionCodec(codec)) {
     return foldMapIndexRecord(codec.types, type => getCodecIndexRecord(type, origin, codec))
-  } else if (isUnionCodec(codec)) {
+  }
+  if (isUnionCodec(codec)) {
     return foldMapIndexRecord(codec.types, type => getCodecIndexRecord(type, origin, type))
-  } else if (isExactCodec(codec) || isRefinementCodec(codec)) {
+  }
+  if (isExactCodec(codec) || isRefinementCodec(codec)) {
     return getCodecIndexRecord(codec.type, origin, codec)
-  } else if (isRecursiveCodec(codec)) {
+  }
+  if (isRecursiveCodec(codec)) {
     const indexRecord = codec.getIndexRecord()
     if (codec !== origin) {
       return updateindexRecordOrigin(origin, indexRecord)
     }
     return indexRecord
-  } else {
-    return monoidIndexRecord.empty
   }
+  return monoidIndexRecord.empty
 }
 
 let isRecursiveCodecIndexable = true
@@ -1739,7 +1628,7 @@ export const getIndexRecord = (codecs: Array<Mixed>): IndexRecord => {
   return isIndexRecordEmpty(ir) ? monoidIndexRecord.empty : ir
 }
 
-const getTaggedUnion = <Tag extends string, CS extends [Tagged<Tag>, Tagged<Tag>, ...Array<Tagged<Tag>>]>(
+const getTaggedUnion = <Tag extends string, CS extends [Mixed, Mixed, ...Array<Mixed>]>(
   index: Index,
   tag: Tag,
   codecs: CS,
@@ -1750,47 +1639,40 @@ const getTaggedUnion = <Tag extends string, CS extends [Tagged<Tag>, Tagged<Tag>
     v,
     codecs.findIndex(codec => codec === origin)
   ])
-  const find = (tagValue: unknown): [number, Mixed] | undefined => {
+  const findIndex = (tagValue: unknown): number | undefined => {
     for (let i = 0; i < indexWithPosition.length; i++) {
       const [value, position] = indexWithPosition[i]
       if (value === tagValue) {
-        return [i, codecs[position]]
+        return position
       }
     }
   }
-  const isTagValue = (u: unknown): u is LiteralValue => find(u) !== undefined
-  const TagValue = new Type<LiteralValue, LiteralValue, unknown>(
-    index.map(([v]) => JSON.stringify(v)).join(' | '),
-    isTagValue,
-    (u, c) => (isTagValue(u) ? success(u) : failure(u, c)),
-    identity
-  )
+  const isTagValue = (u: unknown): u is LiteralValue => findIndex(u) !== undefined
   return new TaggedUnionType(
     name,
     (u): u is TypeOf<CS[number]> => {
-      if (!Dictionary.is(u)) {
+      if (!UnknownRecord.is(u)) {
         return false
       }
       const tagValue = u[tag]
-      const type = find(tagValue)
-      return type ? type[1].is(u) : false
+      const index = findIndex(tagValue)
+      return index !== undefined ? codecs[index].is(u) : false
     },
     (u, c) => {
-      const dictionaryResult = Dictionary.validate(u, c)
+      const dictionaryResult = UnknownRecord.validate(u, c)
       if (dictionaryResult.isLeft()) {
         return dictionaryResult
-      } else {
-        const d = dictionaryResult.value
-        const tagValue = d[tag]
-        const tagValueValidation = TagValue.validate(d[tag], appendContext(c, tag, TagValue))
-        if (tagValueValidation.isLeft()) {
-          return tagValueValidation
-        }
-        const [i, type] = find(tagValue)!
-        return type.validate(d, appendContext(c, String(i), type))
       }
+      const d = dictionaryResult.value
+      const tagValue = d[tag]
+      if (!isTagValue(tagValue)) {
+        return failure(u, c)
+      }
+      const index = findIndex(tagValue)!
+      const codec = codecs[index]
+      return codec.validate(d, appendContext(c, String(index), codec, d))
     },
-    useIdentity(codecs, len) ? identity : a => find(a[tag])![1].encode(a),
+    useIdentity(codecs, len) ? identity : a => codecs[findIndex(a[tag])!].encode(a),
     codecs,
     tag
   )
@@ -1801,7 +1683,7 @@ const getTaggedUnion = <Tag extends string, CS extends [Tagged<Tag>, Tagged<Tag>
  */
 export class TaggedUnionType<
   Tag extends string,
-  CS extends Array<Tagged<Tag>>,
+  CS extends Array<Mixed>,
   A = any,
   O = A,
   I = unknown
@@ -1821,13 +1703,13 @@ export class TaggedUnionType<
 /**
  * @since 1.5.3
  */
-export interface TaggedUnionC<Tag extends string, CS extends [Tagged<Tag>, Tagged<Tag>, ...Array<Tagged<Tag>>]>
+export interface TaggedUnionC<Tag extends string, CS extends [Mixed, Mixed, ...Array<Mixed>]>
   extends TaggedUnionType<Tag, CS, TypeOf<CS[number]>, OutputOf<CS[number]>, unknown> {}
 
 /**
  * @since 1.3.0
  */
-export const taggedUnion = <Tag extends string, CS extends [Tagged<Tag>, Tagged<Tag>, ...Array<Tagged<Tag>>]>(
+export const taggedUnion = <Tag extends string, CS extends [Mixed, Mixed, ...Array<Mixed>]>(
   tag: Tag,
   codecs: CS,
   name: string = getUnionName(codecs)
@@ -1835,13 +1717,12 @@ export const taggedUnion = <Tag extends string, CS extends [Tagged<Tag>, Tagged<
   const indexRecord = getIndexRecord(codecs)
   if (!indexRecord.hasOwnProperty(tag)) {
     if (isRecursiveCodecIndexable && codecs.length > 0) {
-      console.warn(`[io-ts] Cannot build a tagged union for (B | A), returning a de-optimized union`)
+      console.warn(`[io-ts] Cannot build a tagged union for ${name}, returning a de-optimized union`)
     }
     const U = union(codecs, name)
     return new TaggedUnionType(name, U.is, U.validate, U.encode, codecs, tag)
-  } else {
-    return getTaggedUnion(indexRecord[tag], tag, codecs, name)
   }
+  return getTaggedUnion(indexRecord[tag], tag, codecs, name)
 }
 
 /**
@@ -1902,36 +1783,270 @@ const getProps = (codec: HasProps): Props => {
  */
 export interface ExactC<C extends HasProps> extends ExactType<C, TypeOf<C>, OutputOf<C>, InputOf<C>> {}
 
+const stripKeys = (o: any, props: Props): unknown => {
+  const keys = Object.getOwnPropertyNames(o)
+  let shouldStrip = false
+  const r: any = {}
+  for (let i = 0; i < keys.length; i++) {
+    const key = keys[i]
+    if (!hasOwnProperty.call(props, key)) {
+      shouldStrip = true
+    } else {
+      r[key] = o[key]
+    }
+  }
+  return shouldStrip ? r : o
+}
+
+const getExactTypeName = (codec: Any): string => {
+  if (isInterfaceCodec(codec)) {
+    return `{| ${getNameFromProps(codec.props)} |}`
+  } else if (isPartialCodec(codec)) {
+    return getPartialTypeName(`{| ${getNameFromProps(codec.props)} |}`)
+  }
+  return `Exact<${codec.name}>`
+}
+
 /**
+ * Strips additional properties
  * @since 1.1.0
  */
-export function exact<C extends HasProps>(codec: C, name: string = `ExactType<${codec.name}>`): ExactC<C> {
+export const exact = <C extends HasProps>(codec: C, name: string = getExactTypeName(codec)): ExactC<C> => {
   const props: Props = getProps(codec)
   return new ExactType(
     name,
     (u): u is TypeOf<C> => codec.is(u) && Object.getOwnPropertyNames(u).every(k => hasOwnProperty.call(props, k)),
     (u, c) => {
-      const looseValidation = codec.validate(u, c)
-      if (looseValidation.isLeft()) {
-        return looseValidation
-      } else {
-        const o = looseValidation.value
-        const keys = Object.getOwnPropertyNames(o)
-        const len = keys.length
-        const errors: Errors = []
-        for (let i = 0; i < len; i++) {
-          const key = keys[i]
-          if (!hasOwnProperty.call(props, key)) {
-            errors.push(getValidationError(o[key], appendContext(c, key, never)))
-          }
-        }
-        return errors.length ? failures(errors) : success(o)
+      const unknownRecordValidation = UnknownRecord.validate(u, c)
+      if (unknownRecordValidation.isLeft()) {
+        return unknownRecordValidation
       }
+      const validation = codec.validate(u, c)
+      if (validation.isLeft()) {
+        return validation
+      }
+      return success(stripKeys(validation.value, props))
     },
-    codec.encode,
+    a => codec.encode(stripKeys(a, props)),
     codec
   )
 }
+
+export { nullType as null, undefinedType as undefined, UnknownArray as Array, type as interface, voidType as void }
+
+//
+// deprecations
+//
+
+/**
+ * @since 1.0.0
+ * @deprecated
+ */
+export const getValidationError /* istanbul ignore next */ = (value: unknown, context: Context): ValidationError => ({
+  value,
+  context
+})
+
+/**
+ * @since 1.0.0
+ * @deprecated
+ */
+export const getDefaultContext /* istanbul ignore next */ = (decoder: Decoder<any, any>): Context => [
+  { key: '', type: decoder }
+]
+
+/**
+ * @since 1.0.0
+ * @deprecated
+ */
+export class AnyType extends Type<any> {
+  readonly _tag: 'AnyType' = 'AnyType'
+  constructor() {
+    super('any', (_): _ is any => true, success, identity)
+  }
+}
+
+/**
+ * @since 1.5.3
+ * @deprecated
+ */
+export interface AnyC extends AnyType {}
+
+/**
+ * Use `unknown` instead
+ * @since 1.0.0
+ * @deprecated
+ */
+export const any: AnyC = new AnyType()
+
+/**
+ * Use `UnknownRecord` instead
+ * @since 1.0.0
+ * @deprecated
+ */
+export const Dictionary: UnknownRecordC = UnknownRecord
+
+/**
+ * @since 1.0.0
+ * @deprecated
+ */
+export class ObjectType extends Type<object> {
+  readonly _tag: 'ObjectType' = 'ObjectType'
+  constructor() {
+    super('object', UnknownRecord.is, UnknownRecord.validate, identity)
+  }
+}
+
+/**
+ * @since 1.5.3
+ * @deprecated
+ */
+export interface ObjectC extends ObjectType {}
+
+/**
+ * Use `UnknownRecord` instead
+ * @since 1.0.0
+ * @deprecated
+ */
+export const object: ObjectC = new ObjectType()
+
+/**
+ * Use `BrandC` instead
+ * @since 1.5.3
+ * @deprecated
+ */
+export interface RefinementC<C extends Any> extends RefinementType<C, TypeOf<C>, OutputOf<C>, InputOf<C>> {}
+
+/**
+ * Use `brand` instead
+ * @since 1.0.0
+ * @deprecated
+ */
+export function refinement<C extends Any>(
+  codec: C,
+  predicate: Predicate<TypeOf<C>>,
+  name: string = `(${codec.name} | ${getFunctionName(predicate)})`
+): RefinementC<C> {
+  return new RefinementType(
+    name,
+    (u): u is TypeOf<C> => codec.is(u) && predicate(u),
+    (i, c) => {
+      const validation = codec.validate(i, c)
+      if (validation.isLeft()) {
+        return validation
+      }
+      const a = validation.value
+      return predicate(a) ? success(a) : failure(a, c)
+    },
+    codec.encode,
+    codec,
+    predicate
+  )
+}
+
+/**
+ * Use `Int` instead
+ * @since 1.0.0
+ * @deprecated
+ */
+export const Integer = refinement(number, Number.isInteger, 'Integer')
+
+/**
+ * Use `record` instead
+ * @since 1.0.0
+ * @deprecated
+ */
+export const dictionary: typeof record = record
+
+/**
+ * used in `intersection` as a workaround for #234
+ * @since 1.4.2
+ * @deprecated
+ */
+export type Compact<A> = { [K in keyof A]: A[K] }
+
+/**
+ * @since 1.0.0
+ * @deprecated
+ */
+export class StrictType<P, A = any, O = A, I = unknown> extends Type<A, O, I> {
+  readonly _tag: 'StrictType' = 'StrictType'
+  constructor(
+    name: string,
+    is: StrictType<P, A, O, I>['is'],
+    validate: StrictType<P, A, O, I>['validate'],
+    encode: StrictType<P, A, O, I>['encode'],
+    readonly props: P
+  ) {
+    super(name, is, validate, encode)
+  }
+}
+
+/**
+ * @since 1.5.3
+ * @deprecated
+ */
+export interface StrictC<P extends Props>
+  extends StrictType<P, { [K in keyof P]: TypeOf<P[K]> }, { [K in keyof P]: OutputOf<P[K]> }, unknown> {}
+
+/**
+ * @since 1.3.0
+ * @deprecated
+ */
+export type TaggedProps<Tag extends string> = { [K in Tag]: LiteralType<any> }
+/**
+ * @since 1.3.0
+ * @deprecated
+ */
+export interface TaggedRefinement<Tag extends string, A, O = A> extends RefinementType<Tagged<Tag>, A, O> {}
+/**
+ * @since 1.3.0
+ * @deprecated
+ */
+export interface TaggedUnion<Tag extends string, A, O = A> extends UnionType<Array<Tagged<Tag>>, A, O> {}
+/**
+ * @since 1.3.0
+ * @deprecated
+ */
+export type TaggedIntersectionArgument<Tag extends string> =
+  | [Tagged<Tag>]
+  | [Tagged<Tag>, Mixed]
+  | [Mixed, Tagged<Tag>]
+  | [Tagged<Tag>, Mixed, Mixed]
+  | [Mixed, Tagged<Tag>, Mixed]
+  | [Mixed, Mixed, Tagged<Tag>]
+  | [Tagged<Tag>, Mixed, Mixed, Mixed]
+  | [Mixed, Tagged<Tag>, Mixed, Mixed]
+  | [Mixed, Mixed, Tagged<Tag>, Mixed]
+  | [Mixed, Mixed, Mixed, Tagged<Tag>]
+  | [Tagged<Tag>, Mixed, Mixed, Mixed, Mixed]
+  | [Mixed, Tagged<Tag>, Mixed, Mixed, Mixed]
+  | [Mixed, Mixed, Tagged<Tag>, Mixed, Mixed]
+  | [Mixed, Mixed, Mixed, Tagged<Tag>, Mixed]
+  | [Mixed, Mixed, Mixed, Mixed, Tagged<Tag>]
+/**
+ * @since 1.3.0
+ * @deprecated
+ */
+export interface TaggedIntersection<Tag extends string, A, O = A>
+  extends IntersectionType<TaggedIntersectionArgument<Tag>, A, O> {}
+/**
+ * @since 1.3.0
+ * @deprecated
+ */
+export interface TaggedExact<Tag extends string, A, O = A> extends ExactType<Tagged<Tag>, A, O> {}
+/**
+ * @since 1.3.0
+ * @deprecated
+ */
+export type Tagged<Tag extends string, A = any, O = A> =
+  | InterfaceType<TaggedProps<Tag>, A, O>
+  | StrictType<TaggedProps<Tag>, A, O>
+  | TaggedRefinement<Tag, A, O>
+  | TaggedUnion<Tag, A, O>
+  | TaggedIntersection<Tag, A, O>
+  | TaggedExact<Tag, A, O>
+  | RecursiveType<any, A, O>
 
 /**
  * Drops the codec "kind"
@@ -1989,5 +2104,3 @@ export function alias<A, O, I>(
 ): <AA extends Exact<A, AA>, OO extends Exact<O, OO> = O>() => Type<AA, OO, I> {
   return () => codec as any
 }
-
-export { nullType as null, undefinedType as undefined, arrayType as Array, type as interface, voidType as void }

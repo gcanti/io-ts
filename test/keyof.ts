@@ -34,9 +34,9 @@ describe('keyof', () => {
 
     it('should fail decoding an invalid value', () => {
       const T = t.keyof({ a: 1, b: 2 })
-      assertFailure(T.decode('c'), ['Invalid value "c" supplied to : "a" | "b"'])
+      assertFailure(T, 'c', ['Invalid value "c" supplied to : "a" | "b"'])
       // check for hasOwnProperty oddity: { a: 1 }.hasOwnProperty(['a'] as any) === true
-      assertFailure(T.decode(['a']), ['Invalid value ["a"] supplied to : "a" | "b"'])
+      assertFailure(T, ['a'], ['Invalid value ["a"] supplied to : "a" | "b"'])
     })
   })
 

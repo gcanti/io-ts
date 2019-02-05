@@ -14,6 +14,55 @@
 **Note**: Gaps between patch versions are faulty/broken releases. **Note**: A feature tagged as Experimental is in a
 high state of flux, you're at risk of it changing without notice.
 
+# 1.8.1
+
+- **New Feature**
+  - add `brand` combinator (@gcanti, @lostintime)
+  - add `Int` codec (@gcanti)
+  - `exact` strips additional properties while decoding / encoding (@gcanti)
+  - un-deprecate `strict` combinator, is now an alias of `exact(type(...))` (@gcanti)
+- **Bug Fix**
+  - fix wrong context keys for tagged unions (@gcanti)
+- **Deprecation**
+  - deprecate `refinement` combinator in favour of `brand` (@gcanti)
+  - deprecate `Integer` codec in favour of `Int` (@gcanti)
+  - deprecate `StrictType` class (@gcanti)
+  - deprecate `StrictC` interface (@gcanti)
+- **Polish**
+  - modify the implementation of `intersection` in order to support combinators that strip additional properties (@gcanti)
+  - do not validate the codomain of a key of a record if its domain in invalid (@gcanti)
+  - normalize missing `message` field in `ValidationError` (@gcanti)
+  - fix name of recursive codec definitions (@gcanti)
+  - remove unexpected validation path from partial type, closes #195 (@gcanti)
+  - do not leak taggedUnion implementation when tag validation fails (@gcanti)
+  - add `actual` value to all context entries (@gcanti)
+  - `exact` now bails out when the value is not an `UnknownRecord` (@gcanti)
+  - `tuple` should not leak the implementation (`never` usage) (@gcanti)
+  - `exact` should not leak the implementation (`never` usage) (@gcanti)
+  - use `Number.isInteger` in `Integer` implementation (@gcanti)
+  - use the Flow convention to name `exact` codecs (@gcanti)
+
+# 1.7.1
+
+- **Deprecation**
+  - deprecate `any` (@gcanti)
+  - deprecate `object` (@gcanti)
+  - deprecate `Dictionary` in favour of `UnknownRecord` (@gcanti)
+  - deprecate `Array` in favour of `UnknownArray` (@gcanti)
+  - deprecate `dictionary` in favour of `record` (@gcanti)
+
+# 1.7.0
+
+- **New Feature**
+  - better support for custom messages, closes #148 (@gcanti)
+    - add optional message field to `ValidationError`
+    - add `message` argument to `failure`
+    - `PathReporter` should account for the new field
+  - add `actual` optional field to `ContextEntry`, closes #194 (@gcanti)
+- **Deprecation**
+  - deprecate `getValidationError` (@gcanti)
+  - deprecate `getDefaultContext` (@gcanti)
+
 # 1.6.4
 
 - **Bug Fix**

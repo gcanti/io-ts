@@ -28,8 +28,8 @@ describe('Type', () => {
 
     it('should combine two types', () => {
       assertSuccess(BAI.decode('1'))
-      assertFailure(BAI.decode(1), ['Invalid value 1 supplied to : T'])
-      assertFailure(BAI.decode('a'), ['Invalid value "a" supplied to : T'])
+      assertFailure(BAI, 1, ['Invalid value 1 supplied to : T'])
+      assertFailure(BAI, 'a', ['Invalid value "a" supplied to : T'])
       assert.strictEqual(BAI.encode(2), '2')
     })
 
@@ -60,19 +60,6 @@ describe('Type', () => {
     it('should return an encoder', () => {
       assert.strictEqual(BAI.asEncoder().encode(2), '2')
     })
-  })
-
-  it.skip('decode may be used as a static function', () => {
-    const Person = t.type(
-      {
-        name: t.string,
-        age: t.number
-      },
-      'Person'
-    )
-    const decode = Person.decode
-    assertSuccess(decode({ name: 'name', age: 0 }))
-    assertFailure(decode(null), ['Invalid value null supplied to Person'])
   })
 })
 

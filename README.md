@@ -16,9 +16,7 @@ Also a codec can
 - be used as a custom type guard (through `is`)
 
 ```ts
-export type mixed = unknown
-
-class Type<A, O = A, I = mixed> {
+class Type<A, O, I> {
   readonly _A: A
   readonly _O: O
   readonly _I: I
@@ -26,7 +24,7 @@ class Type<A, O = A, I = mixed> {
     /** a unique name for this codec */
     readonly name: string,
     /** a custom type guard */
-    readonly is: (v: mixed) => v is A,
+    readonly is: (u: unknown) => u is A,
     /** succeeds if a value of type I can be decoded to a value of type A */
     readonly validate: (input: I, context: Context) => Either<Errors, A>,
     /** converts a value of type A to a value of type O */
@@ -47,22 +45,14 @@ A codec representing `string` can be defined as
 ```ts
 import * as t from 'io-ts'
 
-// codec definition
-export class StringType extends t.Type<string> {
-  // equivalent to Type<string, string, mixed> as per type parameter defaults
-  readonly _tag: 'StringType' = 'StringType'
-  constructor() {
-    super(
-      'string',
-      (m): m is string => typeof m === 'string',
-      (m, c) => (this.is(m) ? t.success(m) : t.failure(m, c)),
-      t.identity
-    )
-  }
-}
+const isString = (u: unknown): u is string => typeof u === 'string'
 
-// codec instance: use this when building other codecs instances
-export const string = new StringType()
+const string = new t.Type<string, string, unknown>(
+  'string',
+  isString,
+  (u, c) => (isString(u) ? t.success(u) : t.failure(u, c)),
+  t.identity
+)
 ```
 
 A codec can be used to validate an object in memory (for example an API payload)
@@ -124,11 +114,14 @@ interface ContextEntry {
   readonly key: string
   readonly type: Decoder<any, any>
 }
+
 interface Context extends ReadonlyArray<ContextEntry> {}
+
 interface ValidationError {
-  readonly value: mixed
+  readonly value: unknown
   readonly context: Context
 }
+
 interface Errors extends Array<ValidationError> {}
 ```
 
@@ -147,6 +140,28 @@ const Person = t.type({
 })
 
 console.log(getPaths(Person.decode({}))) // => [ '.name', '.age' ]
+```
+
+# Custom error messages
+
+You can set your own error message by providing a `message` argument to `failure`
+
+Example
+
+```ts
+const NumberFromString = new t.Type<number, string, unknown>(
+  'NumberFromString',
+  t.number.is,
+  (u, c) =>
+    t.string.validate(u, c).chain(s => {
+      const n = +s
+      return isNaN(n) ? t.failure(u, c, 'cannot parse to a number') : t.success(n)
+    }),
+  String
+)
+
+console.log(PathReporter.report(NumberFromString.decode('a')))
+// => ['cannot parse to a number']
 ```
 
 # Community
@@ -190,49 +205,48 @@ type Person = {
 import * as t from 'io-ts'
 ```
 
-| Type                      | TypeScript                              | codec / combinator                                    |
-| ------------------------- | --------------------------------------- | ----------------------------------------------------- |
-| null                      | `null`                                  | `t.null` or `t.nullType`                              |
-| undefined                 | `undefined`                             | `t.undefined`                                         |
-| void                      | `void`                                  | `t.void` or `t.voidType`                              |
-| string                    | `string`                                | `t.string`                                            |
-| number                    | `number`                                | `t.number`                                            |
-| boolean                   | `boolean`                               | `t.boolean`                                           |
-| any                       | `any`                                   | `t.any`                                               |
-| never                     | `never`                                 | `t.never`                                             |
-| object                    | `object`                                | `t.object`                                            |
-| integer                   | ✘                                       | `t.Integer`                                           |
-| array of any              | `Array<mixed>`                          | `t.Array`                                             |
-| array of type             | `Array<A>`                              | `t.array(A)`                                          |
-| dictionary of any         | `{ [key: string]: mixed }`              | `t.Dictionary`                                        |
-| dictionary of type        | `{ [K in A]: B }`                       | `t.dictionary(A, B)`                                  |
-| function                  | `Function`                              | `t.Function`                                          |
-| literal                   | `'s'`                                   | `t.literal('s')`                                      |
-| partial                   | `Partial<{ name: string }>`             | `t.partial({ name: t.string })`                       |
-| readonly                  | `Readonly<T>`                           | `t.readonly(T)`                                       |
-| readonly array            | `ReadonlyArray<number>`                 | `t.readonlyArray(t.number)`                           |
-| type alias                | `type A = { name: string }`             | `t.type({ name: t.string })`                          |
-| tuple                     | `[ A, B ]`                              | `t.tuple([ A, B ])`                                   |
-| union                     | `A \| B`                                | `t.union([ A, B ])` or `t.taggedUnion(tag, [ A, B ])` |
-| intersection              | `A & B`                                 | `t.intersection([ A, B ])`                            |
-| keyof                     | `keyof M`                               | `t.keyof(M)`                                          |
-| recursive types           | see [Recursive types](#recursive-types) | `t.recursion(name, definition)`                       |
-| refinement                | ✘                                       | `t.refinement(A, predicate)`                          |
-| exact types               | ✘                                       | `t.exact(type)`                                       |
-| strict types (deprecated) | ✘                                       | `t.strict({ name: t.string })`                        |
+| Type                        | TypeScript                  | codec / combinator                                                   |
+| --------------------------- | --------------------------- | -------------------------------------------------------------------- |
+| null                        | `null`                      | `t.null` or `t.nullType`                                             |
+| undefined                   | `undefined`                 | `t.undefined`                                                        |
+| void                        | `void`                      | `t.void` or `t.voidType`                                             |
+| string                      | `string`                    | `t.string`                                                           |
+| number                      | `number`                    | `t.number`                                                           |
+| boolean                     | `boolean`                   | `t.boolean`                                                          |
+| unknown                     | `unknown`                   | `t.unknown`                                                          |
+| never                       | `never`                     | `t.never`                                                            |
+| object                      | `object`                    | `t.object`                                                           |
+| array of unknown            | `Array<unknown>`            | `t.UnknownArray`                                                     |
+| array of type               | `Array<A>`                  | `t.array(A)`                                                         |
+| record of unknown           | `Record<string, unknown>`   | `t.UnknownRecord`                                                    |
+| record of type              | `Record<K, A>`              | `t.record(K, A)`                                                     |
+| function                    | `Function`                  | `t.Function`                                                         |
+| literal                     | `'s'`                       | `t.literal('s')`                                                     |
+| partial                     | `Partial<{ name: string }>` | `t.partial({ name: t.string })`                                      |
+| readonly                    | `Readonly<A>`               | `t.readonly(A)`                                                      |
+| readonly array              | `ReadonlyArray<A>`          | `t.readonlyArray(A)`                                                 |
+| type alias                  | `type T = { name: A }`      | `t.type({ name: A })`                                                |
+| tuple                       | `[ A, B ]`                  | `t.tuple([ A, B ])`                                                  |
+| union                       | `A \| B`                    | `t.union([ A, B ])` or `t.taggedUnion(tag, [ A, B ])`                |
+| intersection                | `A & B`                     | `t.intersection([ A, B ])`                                           |
+| keyof                       | `keyof M`                   | `t.keyof(M)`                                                         |
+| recursive types             | ✘                           | `t.recursion(name, definition)`                                      |
+| branded types / refinements | ✘                           | `t.brand(A, predicate, brand)`                                       |
+| integer                     | ✘                           | `t.Int` (built-in branded codec)                                     |
+| exact types                 | ✘                           | `t.exact(type)`                                                      |
+| strict                      | ✘                           | `t.strict({ name: A })` (an alias of `t.exact(t.type({ name: A })))` |
 
 # Recursive types
 
 Recursive types can't be inferred by TypeScript so you must provide the static type as a hint
 
 ```ts
-// helper type
-interface ICategory {
+interface Category {
   name: string
-  categories: Array<ICategory>
+  categories: Array<Category>
 }
 
-const Category = t.recursion<ICategory>('Category', Category =>
+const Category: t.RecursiveType<t.Type<Category>> = t.recursion('Category', () =>
   t.type({
     name: t.string,
     categories: t.array(Category)
@@ -243,24 +257,24 @@ const Category = t.recursion<ICategory>('Category', Category =>
 ## Mutually recursive types
 
 ```ts
-interface IFoo {
+interface Foo {
   type: 'Foo'
-  b: IBar | undefined
+  b: Bar | undefined
 }
 
-interface IBar {
+interface Bar {
   type: 'Bar'
-  a: IFoo | undefined
+  a: Foo | undefined
 }
 
-const Foo: t.RecursiveType<t.Type<IFoo>, IFoo> = t.recursion<IFoo>('Foo', _ =>
+const Foo: t.RecursiveType<t.Type<Foo>> = t.recursion('Foo', () =>
   t.interface({
     type: t.literal('Foo'),
     b: t.union([Bar, t.undefined])
   })
 )
 
-const Bar: t.RecursiveType<t.Type<IBar>, IBar> = t.recursion<IBar>('Bar', _ =>
+const Bar: t.RecursiveType<t.Type<Bar>> = t.recursion('Bar', () =>
   t.interface({
     type: t.literal('Bar'),
     a: t.union([Foo, t.undefined])
@@ -290,19 +304,45 @@ const B = t.type({
 const U = t.taggedUnion('tag', [A, B])
 ```
 
-# Refinements
+# Branded types / Refinements
 
-You can refine a type (_any_ type) using the `refinement` combinator
+You can brand / refine a codec (_any_ codec) using the `brand` combinator
 
 ```ts
-const Positive = t.refinement(t.number, n => n >= 0, 'Positive')
+// a unique brand for positive numbers
+interface PositiveBrand {
+  readonly Positive: unique symbol // use `unique symbol` here to ensure uniqueness across modules / packages
+}
 
-const Adult = t.refinement(Person, person => person.age >= 18, 'Adult')
+const Positive = t.brand(
+  t.number, // a codec representing the type to be refined
+  (n): n is t.Branded<number, PositiveBrand> => n >= 0, // a custom type guard using the build-in helper `Branded`
+  'Positive' // the name must match the readonly field in the brand
+)
+
+type Positive = t.TypeOf<typeof Positive>
+/*
+same as
+type Positive = number & t.Brand<PositiveBrand>
+*/
+```
+
+Branded codecs can be merged with `t.intersection`
+
+```ts
+// t.Int is a built-in branded codec
+const PositiveInt = t.intersection([t.Int, Positive])
+
+type PositiveInt = t.TypeOf<typeof PositiveInt>
+/*
+same as
+type PositiveInt = number & t.Brand<t.IntBrand> & t.Brand<PositiveBrand>
+*/
 ```
 
 # Exact types
 
-You can make a codec alias exact (which means that only the given properties are allowed) using the `exact` combinator
+You can make a codec exact (which means that additional properties are stripped) using the `exact` combinator
 
 ```ts
 const Person = t.type({
@@ -312,26 +352,8 @@ const Person = t.type({
 
 const ExactPerson = t.exact(Person)
 
-Person.decode({ name: 'Giulio', age: 43, surname: 'Canti' }) // ok
-ExactPerson.decode({ name: 'Giulio', age: 43, surname: 'Canti' }) // fails
-```
-
-# Strict types (deprecated)
-
-**Note**. This combinator is deprecated, use `exact` instead.
-
-You can make a codec strict (which means that only the given properties are allowed) using the `strict` combinator
-
-```ts
-const Person = t.type({
-  name: t.string,
-  age: t.number
-})
-
-const StrictPerson = t.strict(Person.props)
-
-Person.decode({ name: 'Giulio', age: 43, surname: 'Canti' }) // ok
-StrictPerson.decode({ name: 'Giulio', age: 43, surname: 'Canti' }) // fails
+Person.decode({ name: 'Giulio', age: 43, surname: 'Canti' }) // ok, result is right({ name: 'Giulio', age: 43, surname: 'Canti' })
+ExactPerson.decode({ name: 'Giulio', age: 43, surname: 'Canti' }) // ok but result is right({ name: 'Giulio', age: 43 })
 ```
 
 # Mixing required and optional props
@@ -386,13 +408,13 @@ You can define your own types. Let's see an example
 import * as t from 'io-ts'
 
 // represents a Date from an ISO string
-const DateFromString = new t.Type<Date, string>(
+const DateFromString = new t.Type<Date, string, unknown>(
   'DateFromString',
-  (m): m is Date => m instanceof Date,
-  (m, c) =>
-    t.string.validate(m, c).chain(s => {
+  (u): u is Date => u instanceof Date,
+  (u, c) =>
+    t.string.validate(u, c).chain(s => {
       const d = new Date(s)
-      return isNaN(d.getTime()) ? t.failure(s, c) : t.success(d)
+      return isNaN(d.getTime()) ? t.failure(u, c) : t.success(d)
     }),
   a => a.toISOString()
 )
@@ -428,11 +450,14 @@ Would be:
 
 ```ts
 import * as t from 'io-ts'
+
+// t.Mixed = t.Type<any, any, unknown>
 const ResponseBody = <RT extends t.Mixed>(type: RT) =>
   t.interface({
     result: type,
     _links: Links
   })
+
 const Links = t.interface({
   previous: t.string,
   next: t.string
@@ -530,5 +555,4 @@ const Good = t.keyof({
 Benefits
 
 - unique check for free
-- better performance
-- quick info stays responsive
+- better performance, `O(log(n))` vs `O(n)`

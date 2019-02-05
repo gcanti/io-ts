@@ -40,7 +40,7 @@ describe('union', () => {
 
     it('should fail decoding an invalid value', () => {
       const T = t.union([t.string, t.number])
-      assertFailure(T.decode(true), [
+      assertFailure(T, true, [
         'Invalid value true supplied to : (string | number)/0: string',
         'Invalid value true supplied to : (string | number)/1: number'
       ])
@@ -62,20 +62,20 @@ describe('union', () => {
     describe('robustness', () => {
       it('should handle zero codecs', () => {
         const T = t.union([] as any)
-        assertFailure(T.decode(true), ['Invalid value true supplied to : ()'])
+        assertFailure(T, true, ['Invalid value true supplied to : ()'])
       })
 
       it('should handle one codec', () => {
         const T = t.union([t.string] as any)
         assertSuccess(T.decode('s'))
-        assertFailure(T.decode(true), ['Invalid value true supplied to : (string)/0: string'])
+        assertFailure(T, true, ['Invalid value true supplied to : (string)/0: string'])
       })
     })
   })
 
   describe('encode', () => {
     it('should encode a prismatic value', () => {
-      const T1 = t.union([t.interface({ a: NumberFromString }), t.number])
+      const T1 = t.union([t.type({ a: NumberFromString }), t.number])
       assert.deepEqual(T1.encode({ a: 1 }), { a: '1' })
       assert.strictEqual(T1.encode(1), 1)
     })
@@ -88,6 +88,12 @@ describe('union', () => {
     it('should return the same reference while encoding', () => {
       const T = t.union([t.type({ a: t.number }), t.string])
       assert.strictEqual(T.encode, t.identity)
+    })
+
+    it('should play well with stripping combinators', () => {
+      const T = t.union([t.strict({ a: t.number }), t.type({ b: NumberFromString })])
+      const x = { a: 1, c: true }
+      assert.deepEqual(T.encode(x), x)
     })
   })
 
