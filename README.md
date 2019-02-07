@@ -58,16 +58,18 @@ const string = new t.Type<string, string, unknown>(
 A codec can be used to validate an object in memory (for example an API payload)
 
 ```ts
-const Person = t.type({
-  name: t.string,
-  age: t.number
+import * as t from 'io-ts'
+
+const User = t.type({
+  userId: t.number,
+  name: t.string
 })
 
 // validation succeeded
-Person.decode(JSON.parse('{"name":"Giulio","age":43}')) // => Right({name: "Giulio", age: 43})
+User.decode(JSON.parse('{"userId":1,"name":"Giulio"}')) // => Right({ userId: 1, name: "Giulio" })
 
 // validation failed
-Person.decode(JSON.parse('{"name":"Giulio"}')) // => Left([...])
+User.decode(JSON.parse('{"name":"Giulio"}')) // => Left([...])
 ```
 
 # TypeScript compatibility
@@ -101,10 +103,10 @@ Example
 ```ts
 import { PathReporter } from 'io-ts/lib/PathReporter'
 
-const result = Person.decode({ name: 'Giulio' })
+const result = User.decode({ name: 'Giulio' })
 
 console.log(PathReporter.report(result))
-// => ['Invalid value undefined supplied to : { name: string, age: number }/age: number']
+// => [ 'Invalid value undefined supplied to : { userId: number, name: string }/userId: number' ]
 ```
 
 You can define your own reporter. `Errors` has the following type
@@ -128,18 +130,11 @@ interface Errors extends Array<ValidationError> {}
 Example
 
 ```ts
-import * as t from 'io-ts'
-
 const getPaths = <A>(v: t.Validation<A>): Array<string> => {
   return v.fold(errors => errors.map(error => error.context.map(({ key }) => key).join('.')), () => ['no errors'])
 }
 
-const Person = t.type({
-  name: t.string,
-  age: t.number
-})
-
-console.log(getPaths(Person.decode({}))) // => [ '.name', '.age' ]
+console.log(getPaths(User.decode({}))) // => [ '.userId', '.name' ]
 ```
 
 # Custom error messages
@@ -185,25 +180,21 @@ values
 
 ![inference](docs/images/inference.png)
 
-Note that the type annotation isn't needed, TypeScript infers the type automatically based on a schema.
+Note that the type annotation isn't needed, TypeScript infers the type automatically based on a schema (and comments are preserved).
 
 Static types can be extracted from codecs using the `TypeOf` operator
 
 ```ts
-type Person = t.TypeOf<typeof Person>
+type User = t.TypeOf<typeof User>
 
 // same as
-type Person = {
+type User = {
+  userId: number
   name: string
-  age: number
 }
 ```
 
 # Implemented types / combinators
-
-```ts
-import * as t from 'io-ts'
-```
 
 | Type                        | TypeScript                  | codec / combinator                                                   |
 | --------------------------- | --------------------------- | -------------------------------------------------------------------- |
@@ -345,15 +336,10 @@ type PositiveInt = number & t.Brand<t.IntBrand> & t.Brand<PositiveBrand>
 You can make a codec exact (which means that additional properties are stripped) using the `exact` combinator
 
 ```ts
-const Person = t.type({
-  name: t.string,
-  age: t.number
-})
+const ExactUser = t.exact(User)
 
-const ExactPerson = t.exact(Person)
-
-Person.decode({ name: 'Giulio', age: 43, surname: 'Canti' }) // ok, result is right({ name: 'Giulio', age: 43, surname: 'Canti' })
-ExactPerson.decode({ name: 'Giulio', age: 43, surname: 'Canti' }) // ok but result is right({ name: 'Giulio', age: 43 })
+User.decode({ userId: 1, name: 'Giulio', age: 45 }) // ok, result is right({ userId: 1, name: 'Giulio', age: 45 })
+ExactUser.decode({ userId: 1, name: 'Giulio', age: 43 }) // ok but result is right({ userId: 1, name: 'Giulio' })
 ```
 
 # Mixing required and optional props
@@ -384,17 +370,12 @@ type C = {
 You can apply `partial` to an already defined codec via its `props` field
 
 ```ts
-const Person = t.type({
-  name: t.string,
-  age: t.number
-})
+const PartialUser = t.partial(User.props)
 
-const PartialPerson = t.partial(Person.props)
-
-type PartialPerson = t.TypeOf<typeof PartialPerson>
+type PartialUser = t.TypeOf<typeof PartialUser>
 
 // same as
-type PartialPerson = {
+type PartialUser = {
   name?: string
   age?: number
 }
@@ -405,8 +386,6 @@ type PartialPerson = {
 You can define your own types. Let's see an example
 
 ```ts
-import * as t from 'io-ts'
-
 // represents a Date from an ISO string
 const DateFromString = new t.Type<Date, string, unknown>(
   'DateFromString',
@@ -449,10 +428,8 @@ interface Links {
 Would be:
 
 ```ts
-import * as t from 'io-ts'
-
 // t.Mixed = t.Type<any, any, unknown>
-const ResponseBody = <RT extends t.Mixed>(type: RT) =>
+const ResponseBody = <C extends t.Mixed>(codec: C) =>
   t.interface({
     result: type,
     _links: Links
@@ -479,8 +456,8 @@ functionThatRequiresRuntimeType(ResponseBody(t.array(UserModel)), ...params)
 You can pipe two codecs if their type parameters do align
 
 ```ts
-const NumberDecoder = new t.Type<number, string, string>(
-  'NumberDecoder',
+const NumberCodec = new t.Type<number, string, string>(
+  'NumberCodec',
   t.number.is,
   (s, c) => {
     const n = parseFloat(s)
@@ -490,7 +467,7 @@ const NumberDecoder = new t.Type<number, string, string>(
 )
 
 const NumberFromString = t.string.pipe(
-  NumberDecoder,
+  NumberCodec,
   'NumberFromString'
 )
 ```
@@ -507,9 +484,9 @@ import { Either, right } from 'fp-ts/lib/Either'
 
 const { NODE_ENV } = process.env
 
-export function unsafeDecode<A, O, I>(value: I, type: t.Type<A, O, I>): Either<t.Errors, A> {
-  if (NODE_ENV !== 'production' || type.encode !== t.identity) {
-    return type.decode(value)
+export function unsafeDecode<A, O, I>(value: I, codec: t.Type<A, O, I>): Either<t.Errors, A> {
+  if (NODE_ENV !== 'production' || codec.encode !== t.identity) {
+    return codec.decode(value)
   } else {
     // unsafe cast
     return right(value as any)
@@ -520,9 +497,9 @@ export function unsafeDecode<A, O, I>(value: I, type: t.Type<A, O, I>): Either<t
 
 import { failure } from 'io-ts/lib/PathReporter'
 
-export function unsafeGet<A, O, I>(value: I, type: t.Type<A, O, I>): A {
+export function unsafeGet<A, O, I>(value: I, codec: t.Type<A, O, I>): A {
   if (NODE_ENV !== 'production' || type.encode !== t.identity) {
-    return type.decode(value).getOrElseL(errors => {
+    return codec.decode(value).getOrElseL(errors => {
       throw new Error(failure(errors).join('\n'))
     })
   } else {
