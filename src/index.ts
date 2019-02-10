@@ -1138,7 +1138,7 @@ export const union = <CS extends [Mixed, Mixed, ...Array<Mixed>]>(
               return type.encode(a)
             }
           }
-          return a
+          return codecs[len - 1].encode(a)
         },
     codecs
   )

@@ -80,6 +80,12 @@ describe('union', () => {
       assert.strictEqual(T1.encode(1), 1)
     })
 
+    it('should encode a prismatic value at last position', () => {
+      const T1 = t.union([t.number, t.type({ a: NumberFromString })])
+      assert.deepStrictEqual(T1.encode({ a: 1 }), { a: '1' })
+      assert.strictEqual(T1.encode(1), 1)
+    })
+
     it('should encode a nullary union', () => {
       const T0 = t.union([] as any)
       assert.strictEqual(T0.encode(1 as never), 1)
