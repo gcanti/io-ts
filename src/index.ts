@@ -5,11 +5,6 @@ import { Monoid } from 'fp-ts/lib/Monoid'
 /**
  * @since 1.0.0
  */
-export type mixed = unknown
-
-/**
- * @since 1.0.0
- */
 export interface ContextEntry {
   readonly key: string
   readonly type: Decoder<any, any>
@@ -1804,6 +1799,13 @@ export { nullType as null, undefinedType as undefined, UnknownArray as Array, ty
 //
 // deprecations
 //
+
+/**
+ * Use `unknown` instead
+ * @since 1.0.0
+ * @deprecated
+ */
+export type mixed = unknown
 
 /**
  * @since 1.0.0
