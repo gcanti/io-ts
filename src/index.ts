@@ -1134,7 +1134,7 @@ export const union = <CS extends [Mixed, Mixed, ...Array<Mixed>]>(
       : a => {
           for (let i = 0; i < len - 1; i++) {
             const type = codecs[i]
-            if (type.is(a)) {
+            if ((isExactCodec(type) && type.type.is(a)) || type.is(a)) {
               return type.encode(a)
             }
           }

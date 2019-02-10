@@ -99,7 +99,7 @@ describe('union', () => {
     it('should play well with stripping combinators', () => {
       const T = t.union([t.strict({ a: t.number }), t.type({ b: NumberFromString })])
       const x = { a: 1, c: true }
-      assert.deepStrictEqual(T.encode(x), x)
+      assert.deepStrictEqual(T.encode(x), { a: 1 })
     })
   })
 
