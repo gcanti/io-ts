@@ -100,6 +100,16 @@ describe('union', () => {
       const T = t.union([t.strict({ a: t.number }), t.type({ b: NumberFromString })])
       const x = { a: 1, c: true }
       assert.deepStrictEqual(T.encode(x), { a: 1 })
+      const y = { b: 1, d: 'a' }
+      assert.deepStrictEqual(T.encode(y), { b: '1', d: 'a' })
+    })
+
+    it('should play well with stripping combinators at last pos', () => {
+      const T = t.union([t.type({ b: NumberFromString }), t.strict({ a: t.number })])
+      const x = { a: 1, c: true }
+      assert.deepStrictEqual(T.encode(x), { a: 1 })
+      const y = { b: 1, d: 'a' }
+      assert.deepStrictEqual(T.encode(y), { b: '1', d: 'a' })
     })
   })
 
