@@ -19,14 +19,14 @@ describe('strict', () => {
     it('should check a isomorphic value', () => {
       const T = t.strict({ a: t.number })
       assert.strictEqual(T.is({ a: 0 }), true)
-      assert.strictEqual(T.is({ a: 0, b: 1 }), false)
+      assert.strictEqual(T.is({ a: 0, b: 1 }), true)
       assert.strictEqual(T.is(undefined), false)
     })
 
     it('should check a prismatic value', () => {
       const T = t.strict({ a: NumberFromString })
       assert.strictEqual(T.is({ a: 1 }), true)
-      assert.strictEqual(T.is({ a: 1, b: 1 }), false)
+      assert.strictEqual(T.is({ a: 1, b: 1 }), true)
       assert.strictEqual(T.is(undefined), false)
     })
   })

@@ -91,9 +91,26 @@ describe('union', () => {
     })
 
     it('should play well with stripping combinators', () => {
-      const T = t.union([t.strict({ a: t.number }), t.type({ b: NumberFromString })])
-      const x = { a: 1, c: true }
-      assert.deepStrictEqual(T.encode(x), x)
+      const x1 = { a: 1, c: true }
+      const x2 = { b: 2, c: true }
+
+      const T1 = t.union([t.strict({ a: t.number }), t.strict({ b: t.number })])
+      assert.deepStrictEqual(T1.encode({ a: 1 }), { a: 1 })
+      assert.deepStrictEqual(T1.encode({ b: 2 }), { b: 2 })
+      assert.deepStrictEqual(T1.encode(x1), { a: 1 })
+      assert.deepStrictEqual(T1.encode(x2), { b: 2 })
+
+      const T2 = t.union([t.strict({ a: t.number }), t.type({ b: NumberFromString })])
+      assert.deepStrictEqual(T2.encode({ a: 1 }), { a: 1 })
+      assert.deepStrictEqual(T2.encode({ b: 2 }), { b: '2' })
+      assert.deepStrictEqual(T2.encode(x1), { a: 1 })
+      assert.deepStrictEqual(T2.encode(x2), { b: '2', c: true })
+
+      const T3 = t.union([t.strict({ a: t.number }), t.strict({ b: NumberFromString })])
+      assert.deepStrictEqual(T3.encode({ a: 1 }), { a: 1 })
+      assert.deepStrictEqual(T3.encode({ b: 2 }), { b: '2' })
+      assert.deepStrictEqual(T3.encode(x1), { a: 1 })
+      assert.deepStrictEqual(T3.encode(x2), { b: '2' })
     })
   })
 

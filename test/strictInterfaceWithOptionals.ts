@@ -49,6 +49,7 @@ describe('strictInterfaceWithOptionals', () => {
     const T = strictInterfaceWithOptionals({ foo: t.string }, { bar: t.string }, 'T')
     assert.strictEqual(T.is({ foo: 'foo' }), true)
     assert.strictEqual(T.is({ foo: 'foo', bar: 'a' }), true)
-    assert.strictEqual(T.is({ foo: 'foo', a: 1 }), false)
+    assert.strictEqual(T.is({ foo: 'foo', a: 1 }), true)
+    assert.strictEqual(T.is({ foo: 'foo', bar: 1 }), false)
   })
 })

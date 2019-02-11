@@ -14,6 +14,11 @@
 **Note**: Gaps between patch versions are faulty/broken releases. **Note**: A feature tagged as Experimental is in a
 high state of flux, you're at risk of it changing without notice.
 
+# 1.8.2
+
+- **Bug Fix**
+  - align the runtime behavior of `Exact.is` with the type system, fix #288 (@gcanti)
+
 # 1.8.1
 
 - **New Feature**
