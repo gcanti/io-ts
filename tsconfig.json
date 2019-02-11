@@ -12,6 +12,7 @@
     "target": "es5",
     "moduleResolution": "node",
     "forceConsistentCasingInFileNames": true,
+    "stripInternal": true,
     "lib": ["es2015"]
   },
   "include": ["./src/**/*"]
