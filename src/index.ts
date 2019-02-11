@@ -1132,13 +1132,12 @@ export const union = <CS extends [Mixed, Mixed, ...Array<Mixed>]>(
     useIdentity(codecs, len)
       ? identity
       : a => {
-          for (let i = 0; i < len - 1; i++) {
-            const type = codecs[i]
-            if (type.is(a)) {
-              return type.encode(a)
+          for (let i = 0; i < len; i++) {
+            const codec = codecs[i]
+            if (codec.is(a)) {
+              return codec.encode(a)
             }
           }
-          return a
         },
     codecs
   )
@@ -1777,7 +1776,7 @@ export const exact = <C extends HasProps>(codec: C, name: string = getExactTypeN
   const props: Props = getProps(codec)
   return new ExactType(
     name,
-    (u): u is TypeOf<C> => codec.is(u) && Object.getOwnPropertyNames(u).every(k => hasOwnProperty.call(props, k)),
+    codec.is,
     (u, c) => {
       const unknownRecordValidation = UnknownRecord.validate(u, c)
       if (unknownRecordValidation.isLeft()) {
