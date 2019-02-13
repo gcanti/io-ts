@@ -2,7 +2,7 @@
   "compilerOptions": {
     "outDir": "./lib",
     "declaration": true,
-    "module": "commonjs",
+    "module": "UMD",
     "noImplicitReturns": false,
     "noUnusedLocals": true,
     "noUnusedParameters": true,
