@@ -5,9 +5,11 @@ import { NumberFromString } from './helpers'
 
 describe('PathReporter', () => {
   it('should use the function name as error message', () => {
+    // tslint:disable-next-line: no-empty
     assert.deepStrictEqual(PathReporter.report(t.number.decode(function() {})), [
       'Invalid value <function0> supplied to : number'
     ])
+    // tslint:disable-next-line: no-empty
     assert.deepStrictEqual(PathReporter.report(t.number.decode(function f() {})), [
       'Invalid value f supplied to : number'
     ])
@@ -19,5 +21,9 @@ describe('PathReporter', () => {
 
   it('should account for the optional message field', () => {
     assert.deepStrictEqual(PathReporter.report(NumberFromString.decode('a')), ['cannot parse to a number'])
+  })
+
+  it('should handle NaN', () => {
+    assert.deepStrictEqual(PathReporter.report(t.string.decode(NaN)), ['Invalid value NaN supplied to : string'])
   })
 })
