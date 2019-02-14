@@ -314,34 +314,6 @@ export const unknown: UnknownC = new UnknownType()
 /**
  * @since 1.0.0
  */
-export class NeverType extends Type<never> {
-  readonly _tag: 'NeverType' = 'NeverType'
-  constructor() {
-    super(
-      'never',
-      (_): _ is never => false,
-      (u, c) => failure(u, c),
-      /* istanbul ignore next */
-      () => {
-        throw new Error('cannot encode never')
-      }
-    )
-  }
-}
-
-/**
- * @since 1.5.3
- */
-export interface NeverC extends NeverType {}
-
-/**
- * @since 1.0.0
- */
-export const never: NeverC = new NeverType()
-
-/**
- * @since 1.0.0
- */
 export class StringType extends Type<string> {
   readonly _tag: 'StringType' = 'StringType'
   constructor() {
@@ -1822,6 +1794,37 @@ export const getValidationError /* istanbul ignore next */ = (value: unknown, co
 export const getDefaultContext /* istanbul ignore next */ = (decoder: Decoder<any, any>): Context => [
   { key: '', type: decoder }
 ]
+
+/**
+ * @since 1.0.0
+ * @deprecated
+ */
+export class NeverType extends Type<never> {
+  readonly _tag: 'NeverType' = 'NeverType'
+  constructor() {
+    super(
+      'never',
+      (_): _ is never => false,
+      (u, c) => failure(u, c),
+      /* istanbul ignore next */
+      () => {
+        throw new Error('cannot encode never')
+      }
+    )
+  }
+}
+
+/**
+ * @since 1.5.3
+ * @deprecated
+ */
+export interface NeverC extends NeverType {}
+
+/**
+ * @since 1.0.0
+ * @deprecated
+ */
+export const never: NeverC = new NeverType()
 
 /**
  * @since 1.0.0
