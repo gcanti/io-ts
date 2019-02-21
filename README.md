@@ -82,6 +82,8 @@ The stable version is tested against TypeScript 3.2.4.
 | 1.5.3         | 3.0.1+                      |
 | 1.5.2-        | 2.7.2+                      |
 
+**Note**. This library is conceived, tested and is supposed to be consumed by TypeScript with the `strict` flag turned on.
+
 **Note**. If you are running `< typescript@3.0.1` you have to polyfill `unknown`.
 
 You can use [unknown-ts](https://github.com/gcanti/unknown-ts) as a polyfill.
