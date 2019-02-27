@@ -1,9 +1,6 @@
-[![build status](https://img.shields.io/travis/gcanti/io-ts/master.svg?style=flat-square)](https://travis-ci.org/gcanti/io-ts)
-[![dependency status](https://img.shields.io/david/gcanti/io-ts.svg?style=flat-square)](https://david-dm.org/gcanti/io-ts)
-![npm downloads](https://img.shields.io/npm/dm/io-ts.svg)
-[![Minified Size](https://badgen.net/bundlephobia/minzip/io-ts)](https://bundlephobia.com/result?p=io-ts)
-
-Table of contents
+---
+title: Home
+---
 
 <!-- START doctoc generated TOC please keep comment here to allow auto update -->
 <!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->

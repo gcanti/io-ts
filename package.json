@@ -19,7 +19,9 @@
     "perf": "node perf/index",
     "dtslint": "dtslint dtslint",
     "declaration": "tsc -p declaration/tsconfig.json",
-    "mocha": "TS_NODE_CACHE=false mocha -r ts-node/register test/*.ts"
+    "mocha": "TS_NODE_CACHE=false mocha -r ts-node/register test/*.ts",
+    "doctoc": "doctoc README.md docs",
+    "docs": "rimraf rm -rf docs/**/*.md!docs/index.md && ts-node docs.ts && npm run doctoc"
   },
   "repository": {
     "type": "git",
@@ -39,6 +41,8 @@
     "@types/jest": "^23.3.8",
     "@types/node": "7.0.4",
     "benchmark": "2.1.4",
+    "docs-ts": "github:gcanti/docs-ts",
+    "doctoc": "^1.4.0",
     "dtslint": "github:gcanti/dtslint",
     "jest": "^23.6.0",
     "mocha": "^5.2.0",
@@ -82,7 +86,7 @@
         "branches": 100,
         "functions": 100,
         "lines": 100,
-        "statements": 0
+        "statements": 100
       }
     }
   }
