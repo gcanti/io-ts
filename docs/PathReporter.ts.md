@@ -9,10 +9,21 @@ Table of Contents
 <!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
 
 
+- [PathReporter](#pathreporter)
 - [failure](#failure)
 - [success](#success)
 
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
+
+# PathReporter
+
+**Signature** (constant)
+
+```ts
+export const PathReporter: Reporter<Array<string>> = ...
+```
+
+Added in v1.0.0
 
 # failure
 

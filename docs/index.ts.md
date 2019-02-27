@@ -115,6 +115,22 @@ Table of Contents
 - [UnionType](#uniontype)
 - [UnknownType](#unknowntype)
 - [VoidType](#voidtype)
+- [~~Dictionary~~ (deprecated)](#dictionary-deprecated)
+- [Function](#function)
+- [Int](#int-1)
+- [~~Integer~~ (deprecated)](#integer-deprecated)
+- [UnknownArray](#unknownarray)
+- [UnknownRecord](#unknownrecord)
+- [~~any~~ (deprecated)](#any-deprecated)
+- [boolean](#boolean)
+- [~~dictionary~~ (deprecated)](#dictionary-deprecated)
+- [~~never~~ (deprecated)](#never-deprecated)
+- [nullType](#nulltype)
+- [number](#number)
+- [~~object~~ (deprecated)](#object-deprecated)
+- [string](#string)
+- [unknown](#unknown)
+- [voidType](#voidtype)
 - [~~alias~~ (deprecated)](#alias-deprecated)
 - [appendContext](#appendcontext)
 - [array](#array)
@@ -1620,6 +1636,174 @@ export class VoidType {
 ```
 
 Added in v1.2.0
+
+# ~~Dictionary~~ (deprecated)
+
+Use `UnknownRecord` instead
+
+**Signature** (constant)
+
+```ts
+export const Dictionary: UnknownRecordC = ...
+```
+
+Added in v1.0.0
+
+# Function
+
+**Signature** (constant)
+
+```ts
+export const Function: FunctionC = ...
+```
+
+Added in v1.0.0
+
+# Int
+
+A branded codec representing an integer
+
+**Signature** (constant)
+
+```ts
+export const Int = ...
+```
+
+Added in v1.8.1
+
+# ~~Integer~~ (deprecated)
+
+Use `Int` instead
+
+**Signature** (constant)
+
+```ts
+export const Integer = ...
+```
+
+Added in v1.0.0
+
+# UnknownArray
+
+**Signature** (constant)
+
+```ts
+export const UnknownArray: UnknownArrayC = ...
+```
+
+Added in v1.7.1
+
+# UnknownRecord
+
+**Signature** (constant)
+
+```ts
+export const UnknownRecord: UnknownRecordC = ...
+```
+
+Added in v1.7.1
+
+# ~~any~~ (deprecated)
+
+Use `unknown` instead
+
+**Signature** (constant)
+
+```ts
+export const any: AnyC = ...
+```
+
+Added in v1.0.0
+
+# boolean
+
+**Signature** (constant)
+
+```ts
+export const boolean: BooleanC = ...
+```
+
+Added in v1.0.0
+
+# ~~dictionary~~ (deprecated)
+
+Use `record` instead
+
+**Signature** (constant)
+
+```ts
+export const dictionary: typeof record = ...
+```
+
+Added in v1.0.0
+
+# ~~never~~ (deprecated)
+
+**Signature** (constant)
+
+```ts
+export const never: NeverC = ...
+```
+
+Added in v1.0.0
+
+# nullType
+
+**Signature** (constant)
+
+```ts
+export const nullType: NullC = ...
+```
+
+# number
+
+**Signature** (constant)
+
+```ts
+export const number: NumberC = ...
+```
+
+Added in v1.0.0
+
+# ~~object~~ (deprecated)
+
+Use `UnknownRecord` instead
+
+**Signature** (constant)
+
+```ts
+export const object: ObjectC = ...
+```
+
+Added in v1.0.0
+
+# string
+
+**Signature** (constant)
+
+```ts
+export const string: StringC = ...
+```
+
+Added in v1.0.0
+
+# unknown
+
+**Signature** (constant)
+
+```ts
+export const unknown: UnknownC = ...
+```
+
+Added in v1.5.0
+
+# voidType
+
+**Signature** (constant)
+
+```ts
+export const voidType: VoidC = ...
+```
 
 # ~~alias~~ (deprecated)
 
