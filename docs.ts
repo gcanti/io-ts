@@ -1,3 +1,8 @@
 import { main } from 'docs-ts'
 
-main('src/**/*.ts', 'docs').run()
+const pkg = require('./package.json')
+
+const srcDir = 'src/**/*.ts'
+const outDir = 'docs'
+const doTypeCheckExamples = true
+main(srcDir, outDir, doTypeCheckExamples, pkg.name).run()

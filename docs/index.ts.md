@@ -3,14 +3,12 @@ title: index.ts
 nav_order: 1
 ---
 
-Table of Contents
-
 <!-- START doctoc generated TOC please keep comment here to allow auto update -->
 <!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
 
 
 - [Any](#any)
-- [~~AnyC~~ (deprecated)](#anyc-deprecated)
+- [~~AnyC~~](#anyc)
 - [AnyProps](#anyprops)
 - [ArrayC](#arrayc)
 - [BooleanC](#booleanc)
@@ -31,22 +29,22 @@ Table of Contents
 - [KeyofC](#keyofc)
 - [LiteralC](#literalc)
 - [Mixed](#mixed)
-- [~~NeverC~~ (deprecated)](#neverc-deprecated)
+- [~~NeverC~~](#neverc)
 - [NullC](#nullc)
 - [NumberC](#numberc)
-- [~~ObjectC~~ (deprecated)](#objectc-deprecated)
+- [~~ObjectC~~](#objectc)
 - [PartialC](#partialc)
 - [Props](#props)
 - [ReadonlyArrayC](#readonlyarrayc)
 - [ReadonlyC](#readonlyc)
 - [RecordC](#recordc)
-- [~~RefinementC~~ (deprecated)](#refinementc-deprecated)
-- [~~StrictC~~ (deprecated)](#strictc-deprecated)
+- [~~RefinementC~~](#refinementc)
+- [~~StrictC~~](#strictc)
 - [StringC](#stringc)
-- [~~TaggedExact~~ (deprecated)](#taggedexact-deprecated)
-- [~~TaggedIntersection~~ (deprecated)](#taggedintersection-deprecated)
-- [~~TaggedRefinement~~ (deprecated)](#taggedrefinement-deprecated)
-- [~~TaggedUnion~~ (deprecated)](#taggedunion-deprecated)
+- [~~TaggedExact~~](#taggedexact)
+- [~~TaggedIntersection~~](#taggedintersection)
+- [~~TaggedRefinement~~](#taggedrefinement)
+- [~~TaggedUnion~~](#taggedunion)
 - [TaggedUnionC](#taggedunionc)
 - [TupleC](#tuplec)
 - [TypeC](#typec)
@@ -58,10 +56,10 @@ Table of Contents
 - [ValidationError](#validationerror)
 - [VoidC](#voidc)
 - [Branded](#branded)
-- [~~Compact~~ (deprecated)](#compact-deprecated)
+- [~~Compact~~](#compact)
 - [Decode](#decode)
 - [Encode](#encode)
-- [~~Exact~~ (deprecated)](#exact-deprecated)
+- [~~Exact~~](#exact)
 - [HasProps](#hasprops)
 - [InputOf](#inputof)
 - [Int](#int)
@@ -70,20 +68,20 @@ Table of Contents
 - [OutputOfDictionary](#outputofdictionary)
 - [OutputOfPartialProps](#outputofpartialprops)
 - [OutputOfProps](#outputofprops)
-- [~~PropsOf~~ (deprecated)](#propsof-deprecated)
-- [~~Tagged~~ (deprecated)](#tagged-deprecated)
-- [~~TaggedIntersectionArgument~~ (deprecated)](#taggedintersectionargument-deprecated)
-- [~~TaggedProps~~ (deprecated)](#taggedprops-deprecated)
+- [~~PropsOf~~](#propsof)
+- [~~Tagged~~](#tagged)
+- [~~TaggedIntersectionArgument~~](#taggedintersectionargument)
+- [~~TaggedProps~~](#taggedprops)
 - [TypeOf](#typeof)
 - [TypeOfDictionary](#typeofdictionary)
 - [TypeOfPartialProps](#typeofpartialprops)
 - [TypeOfProps](#typeofprops)
 - [Validate](#validate)
 - [Validation](#validation)
-- [~~mixed~~ (deprecated)](#mixed-deprecated)
+- [~~mixed~~](#mixed)
 - [AnyArrayType](#anyarraytype)
 - [AnyDictionaryType](#anydictionarytype)
-- [~~AnyType~~ (deprecated)](#anytype-deprecated)
+- [~~AnyType~~](#anytype)
 - [ArrayType](#arraytype)
 - [BooleanType](#booleantype)
 - [DictionaryType](#dictionarytype)
@@ -93,16 +91,16 @@ Table of Contents
 - [IntersectionType](#intersectiontype)
 - [KeyofType](#keyoftype)
 - [LiteralType](#literaltype)
-- [~~NeverType~~ (deprecated)](#nevertype-deprecated)
+- [~~NeverType~~](#nevertype)
 - [NullType](#nulltype)
 - [NumberType](#numbertype)
-- [~~ObjectType~~ (deprecated)](#objecttype-deprecated)
+- [~~ObjectType~~](#objecttype)
 - [PartialType](#partialtype)
 - [ReadonlyArrayType](#readonlyarraytype)
 - [ReadonlyType](#readonlytype)
 - [RecursiveType](#recursivetype)
 - [RefinementType](#refinementtype)
-- [~~StrictType~~ (deprecated)](#stricttype-deprecated)
+- [~~StrictType~~](#stricttype)
 - [StringType](#stringtype)
 - [TaggedUnionType](#taggeduniontype)
 - [TupleType](#tupletype)
@@ -115,34 +113,34 @@ Table of Contents
 - [UnionType](#uniontype)
 - [UnknownType](#unknowntype)
 - [VoidType](#voidtype)
-- [~~Dictionary~~ (deprecated)](#dictionary-deprecated)
+- [~~Dictionary~~](#dictionary)
 - [Function](#function)
 - [Int](#int-1)
-- [~~Integer~~ (deprecated)](#integer-deprecated)
+- [~~Integer~~](#integer)
 - [UnknownArray](#unknownarray)
 - [UnknownRecord](#unknownrecord)
-- [~~any~~ (deprecated)](#any-deprecated)
+- [~~any~~](#any)
 - [boolean](#boolean)
-- [~~dictionary~~ (deprecated)](#dictionary-deprecated)
-- [~~never~~ (deprecated)](#never-deprecated)
+- [~~dictionary~~](#dictionary)
+- [~~never~~](#never)
 - [nullType](#nulltype)
 - [number](#number)
-- [~~object~~ (deprecated)](#object-deprecated)
+- [~~object~~](#object)
 - [string](#string)
 - [unknown](#unknown)
 - [voidType](#voidtype)
-- [~~alias~~ (deprecated)](#alias-deprecated)
+- [~~alias~~](#alias)
 - [appendContext](#appendcontext)
 - [array](#array)
 - [brand](#brand)
-- [~~clean~~ (deprecated)](#clean-deprecated)
+- [~~clean~~](#clean)
 - [exact](#exact)
 - [failure](#failure)
 - [failures](#failures)
 - [getContextEntry](#getcontextentry)
-- [~~getDefaultContext~~ (deprecated)](#getdefaultcontext-deprecated)
+- [~~getDefaultContext~~](#getdefaultcontext)
 - [getFunctionName](#getfunctionname)
-- [~~getValidationError~~ (deprecated)](#getvalidationerror-deprecated)
+- [~~getValidationError~~](#getvalidationerror)
 - [identity](#identity)
 - [intersection](#intersection)
 - [keyof](#keyof)
@@ -152,7 +150,7 @@ Table of Contents
 - [readonlyArray](#readonlyarray)
 - [record](#record)
 - [recursion](#recursion)
-- [~~refinement~~ (deprecated)](#refinement-deprecated)
+- [~~refinement~~](#refinement)
 - [strict](#strict)
 - [success](#success)
 - [taggedUnion](#taggedunion)
@@ -172,7 +170,7 @@ export interface Any extends Type<any, any, any> {}
 
 Added in v1.0.0
 
-# ~~AnyC~~ (deprecated)
+# ~~AnyC~~
 
 **Signature** (interface)
 
@@ -421,7 +419,7 @@ export interface Mixed extends Type<any, any, unknown> {}
 
 Added in v1.0.0
 
-# ~~NeverC~~ (deprecated)
+# ~~NeverC~~
 
 **Signature** (interface)
 
@@ -451,7 +449,7 @@ export interface NumberC extends NumberType {}
 
 Added in v1.5.3
 
-# ~~ObjectC~~ (deprecated)
+# ~~ObjectC~~
 
 **Signature** (interface)
 
@@ -522,7 +520,7 @@ export interface RecordC<D extends Mixed, C extends Mixed>
 
 Added in v1.5.3
 
-# ~~RefinementC~~ (deprecated)
+# ~~RefinementC~~
 
 Use `BrandC` instead
 
@@ -534,7 +532,7 @@ export interface RefinementC<C extends Any> extends RefinementType<C, TypeOf<C>,
 
 Added in v1.5.3
 
-# ~~StrictC~~ (deprecated)
+# ~~StrictC~~
 
 **Signature** (interface)
 
@@ -555,7 +553,7 @@ export interface StringC extends StringType {}
 
 Added in v1.5.3
 
-# ~~TaggedExact~~ (deprecated)
+# ~~TaggedExact~~
 
 **Signature** (interface)
 
@@ -565,7 +563,7 @@ export interface TaggedExact<Tag extends string, A, O = A> extends ExactType<Tag
 
 Added in v1.3.0
 
-# ~~TaggedIntersection~~ (deprecated)
+# ~~TaggedIntersection~~
 
 **Signature** (interface)
 
@@ -576,7 +574,7 @@ export interface TaggedIntersection<Tag extends string, A, O = A>
 
 Added in v1.3.0
 
-# ~~TaggedRefinement~~ (deprecated)
+# ~~TaggedRefinement~~
 
 **Signature** (interface)
 
@@ -586,7 +584,7 @@ export interface TaggedRefinement<Tag extends string, A, O = A> extends Refineme
 
 Added in v1.3.0
 
-# ~~TaggedUnion~~ (deprecated)
+# ~~TaggedUnion~~
 
 **Signature** (interface)
 
@@ -742,7 +740,7 @@ export type Branded<A, B> = A & Brand<B>
 
 Added in v1.8.1
 
-# ~~Compact~~ (deprecated)
+# ~~Compact~~
 
 used in `intersection` as a workaround for #234
 
@@ -774,7 +772,7 @@ export type Encode<A, O> = (a: A) => O
 
 Added in v1.0.0
 
-# ~~Exact~~ (deprecated)
+# ~~Exact~~
 
 **Signature** (type alias)
 
@@ -871,7 +869,7 @@ export type OutputOfProps<P extends AnyProps> = { [K in keyof P]: OutputOf<P[K]>
 
 Added in v1.0.0
 
-# ~~PropsOf~~ (deprecated)
+# ~~PropsOf~~
 
 **Signature** (type alias)
 
@@ -881,7 +879,7 @@ export type PropsOf<T extends { props: any }> = T['props']
 
 Added in v1.0.0
 
-# ~~Tagged~~ (deprecated)
+# ~~Tagged~~
 
 **Signature** (type alias)
 
@@ -898,7 +896,7 @@ export type Tagged<Tag extends string, A = any, O = A> =
 
 Added in v1.3.0
 
-# ~~TaggedIntersectionArgument~~ (deprecated)
+# ~~TaggedIntersectionArgument~~
 
 **Signature** (type alias)
 
@@ -923,7 +921,7 @@ export type TaggedIntersectionArgument<Tag extends string> =
 
 Added in v1.3.0
 
-# ~~TaggedProps~~ (deprecated)
+# ~~TaggedProps~~
 
 **Signature** (type alias)
 
@@ -993,7 +991,7 @@ export type Validation<A> = Either<Errors, A>
 
 Added in v1.0.0
 
-# ~~mixed~~ (deprecated)
+# ~~mixed~~
 
 Use `unknown` instead
 
@@ -1011,9 +1009,7 @@ Added in v1.0.0
 
 ```ts
 export class AnyArrayType {
-  constructor() {
-    super('UnknownArray', Array.isArray, (u, c) => (this.is(u) ? success(u) : failure(u, c)), identity)
-  }
+  constructor() { ... }
   ...
 }
 ```
@@ -1026,29 +1022,20 @@ Added in v1.0.0
 
 ```ts
 export class AnyDictionaryType {
-  constructor() {
-    super(
-      'UnknownRecord',
-      (u): u is { [key: string]: unknown } => u !== null && typeof u === 'object',
-      (u, c) => (this.is(u) ? success(u) : failure(u, c)),
-      identity
-    )
-  }
+  constructor() { ... }
   ...
 }
 ```
 
 Added in v1.0.0
 
-# ~~AnyType~~ (deprecated)
+# ~~AnyType~~
 
 **Signature** (class)
 
 ```ts
 export class AnyType {
-  constructor() {
-    super('any', (_): _ is any => true, success, identity)
-  }
+  constructor() { ... }
   ...
 }
 ```
@@ -1067,9 +1054,7 @@ export class ArrayType<C, A, O, I> {
     validate: ArrayType<C, A, O, I>['validate'],
     encode: ArrayType<C, A, O, I>['encode'],
     readonly type: C
-  ) {
-    super(name, is, validate, encode)
-  }
+  ) { ... }
   ...
 }
 ```
@@ -1082,14 +1067,7 @@ Added in v1.0.0
 
 ```ts
 export class BooleanType {
-  constructor() {
-    super(
-      'boolean',
-      (u): u is boolean => typeof u === 'boolean',
-      (u, c) => (this.is(u) ? success(u) : failure(u, c)),
-      identity
-    )
-  }
+  constructor() { ... }
   ...
 }
 ```
@@ -1109,9 +1087,7 @@ export class DictionaryType<D, C, A, O, I> {
     encode: DictionaryType<D, C, A, O, I>['encode'],
     readonly domain: D,
     readonly codomain: C
-  ) {
-    super(name, is, validate, encode)
-  }
+  ) { ... }
   ...
 }
 ```
@@ -1130,9 +1106,7 @@ export class ExactType<C, A, O, I> {
     validate: ExactType<C, A, O, I>['validate'],
     encode: ExactType<C, A, O, I>['encode'],
     readonly type: C
-  ) {
-    super(name, is, validate, encode)
-  }
+  ) { ... }
   ...
 }
 ```
@@ -1145,15 +1119,7 @@ Added in v1.1.0
 
 ```ts
 export class FunctionType {
-  constructor() {
-    super(
-      'Function',
-      // tslint:disable-next-line:strict-type-predicates
-      (u): u is Function => typeof u === 'function',
-      (u, c) => (this.is(u) ? success(u) : failure(u, c)),
-      identity
-    )
-  }
+  constructor() { ... }
   ...
 }
 ```
@@ -1172,9 +1138,7 @@ export class InterfaceType<P, A, O, I> {
     validate: InterfaceType<P, A, O, I>['validate'],
     encode: InterfaceType<P, A, O, I>['encode'],
     readonly props: P
-  ) {
-    super(name, is, validate, encode)
-  }
+  ) { ... }
   ...
 }
 ```
@@ -1193,9 +1157,7 @@ export class IntersectionType<CS, A, O, I> {
     validate: IntersectionType<CS, A, O, I>['validate'],
     encode: IntersectionType<CS, A, O, I>['encode'],
     readonly types: CS
-  ) {
-    super(name, is, validate, encode)
-  }
+  ) { ... }
   ...
 }
 ```
@@ -1214,9 +1176,7 @@ export class KeyofType<D> {
     validate: KeyofType<D>['validate'],
     encode: KeyofType<D>['encode'],
     readonly keys: D
-  ) {
-    super(name, is, validate, encode)
-  }
+  ) { ... }
   ...
 }
 ```
@@ -1235,32 +1195,20 @@ export class LiteralType<V> {
     validate: LiteralType<V>['validate'],
     encode: LiteralType<V>['encode'],
     readonly value: V
-  ) {
-    super(name, is, validate, encode)
-  }
+  ) { ... }
   ...
 }
 ```
 
 Added in v1.0.0
 
-# ~~NeverType~~ (deprecated)
+# ~~NeverType~~
 
 **Signature** (class)
 
 ```ts
 export class NeverType {
-  constructor() {
-    super(
-      'never',
-      (_): _ is never => false,
-      (u, c) => failure(u, c),
-      /* istanbul ignore next */
-      () => {
-        throw new Error('cannot encode never')
-      }
-    )
-  }
+  constructor() { ... }
   ...
 }
 ```
@@ -1273,9 +1221,7 @@ Added in v1.0.0
 
 ```ts
 export class NullType {
-  constructor() {
-    super('null', (u): u is null => u === null, (u, c) => (this.is(u) ? success(u) : failure(u, c)), identity)
-  }
+  constructor() { ... }
   ...
 }
 ```
@@ -1288,29 +1234,20 @@ Added in v1.0.0
 
 ```ts
 export class NumberType {
-  constructor() {
-    super(
-      'number',
-      (u): u is number => typeof u === 'number',
-      (u, c) => (this.is(u) ? success(u) : failure(u, c)),
-      identity
-    )
-  }
+  constructor() { ... }
   ...
 }
 ```
 
 Added in v1.0.0
 
-# ~~ObjectType~~ (deprecated)
+# ~~ObjectType~~
 
 **Signature** (class)
 
 ```ts
 export class ObjectType {
-  constructor() {
-    super('object', UnknownRecord.is, UnknownRecord.validate, identity)
-  }
+  constructor() { ... }
   ...
 }
 ```
@@ -1329,9 +1266,7 @@ export class PartialType<P, A, O, I> {
     validate: PartialType<P, A, O, I>['validate'],
     encode: PartialType<P, A, O, I>['encode'],
     readonly props: P
-  ) {
-    super(name, is, validate, encode)
-  }
+  ) { ... }
   ...
 }
 ```
@@ -1350,9 +1285,7 @@ export class ReadonlyArrayType<C, A, O, I> {
     validate: ReadonlyArrayType<C, A, O, I>['validate'],
     encode: ReadonlyArrayType<C, A, O, I>['encode'],
     readonly type: C
-  ) {
-    super(name, is, validate, encode)
-  }
+  ) { ... }
   ...
 }
 ```
@@ -1371,9 +1304,7 @@ export class ReadonlyType<C, A, O, I> {
     validate: ReadonlyType<C, A, O, I>['validate'],
     encode: ReadonlyType<C, A, O, I>['encode'],
     readonly type: C
-  ) {
-    super(name, is, validate, encode)
-  }
+  ) { ... }
   ...
 }
 ```
@@ -1392,9 +1323,7 @@ export class RecursiveType<C, A, O, I> {
     validate: RecursiveType<C, A, O, I>['validate'],
     encode: RecursiveType<C, A, O, I>['encode'],
     private runDefinition: () => C
-  ) {
-    super(name, is, validate, encode)
-  }
+  ) { ... }
   ...
 }
 ```
@@ -1414,16 +1343,14 @@ export class RefinementType<C, A, O, I> {
     encode: RefinementType<C, A, O, I>['encode'],
     readonly type: C,
     readonly predicate: Predicate<A>
-  ) {
-    super(name, is, validate, encode)
-  }
+  ) { ... }
   ...
 }
 ```
 
 Added in v1.0.0
 
-# ~~StrictType~~ (deprecated)
+# ~~StrictType~~
 
 **Signature** (class)
 
@@ -1435,9 +1362,7 @@ export class StrictType<P, A, O, I> {
     validate: StrictType<P, A, O, I>['validate'],
     encode: StrictType<P, A, O, I>['encode'],
     readonly props: P
-  ) {
-    super(name, is, validate, encode)
-  }
+  ) { ... }
   ...
 }
 ```
@@ -1450,14 +1375,7 @@ Added in v1.0.0
 
 ```ts
 export class StringType {
-  constructor() {
-    super(
-      'string',
-      (u): u is string => typeof u === 'string',
-      (u, c) => (this.is(u) ? success(u) : failure(u, c)),
-      identity
-    )
-  }
+  constructor() { ... }
   ...
 }
 ```
@@ -1477,9 +1395,7 @@ export class TaggedUnionType<Tag, CS, A, O, I> {
     encode: TaggedUnionType<Tag, CS, A, O, I>['encode'],
     codecs: CS,
     readonly tag: Tag
-  ) {
-    super(name, is, validate, encode, codecs) /* istanbul ignore next */ // <= workaround for https://github.com/Microsoft/TypeScript/issues/13455
-  }
+  ) { ... }
   ...
 }
 ```
@@ -1498,9 +1414,7 @@ export class TupleType<CS, A, O, I> {
     validate: TupleType<CS, A, O, I>['validate'],
     encode: TupleType<CS, A, O, I>['encode'],
     readonly types: CS
-  ) {
-    super(name, is, validate, encode)
-  }
+  ) { ... }
   ...
 }
 ```
@@ -1522,7 +1436,7 @@ export class Type<A, O, I> {
     readonly validate: Validate<I, A>,
     /** converts a value of type A to a value of type O */
     readonly encode: Encode<A, O>
-  ) {}
+  ) { ... }
   ...
 }
 ```
@@ -1572,14 +1486,7 @@ decode(i: I): Validation<A> { ... }
 
 ```ts
 export class UndefinedType {
-  constructor() {
-    super(
-      'undefined',
-      (u): u is undefined => u === void 0,
-      (u, c) => (this.is(u) ? success(u) : failure(u, c)),
-      identity
-    )
-  }
+  constructor() { ... }
   ...
 }
 ```
@@ -1598,9 +1505,7 @@ export class UnionType<CS, A, O, I> {
     validate: UnionType<CS, A, O, I>['validate'],
     encode: UnionType<CS, A, O, I>['encode'],
     readonly types: CS
-  ) {
-    super(name, is, validate, encode)
-  }
+  ) { ... }
   ...
 }
 ```
@@ -1613,9 +1518,7 @@ Added in v1.0.0
 
 ```ts
 export class UnknownType {
-  constructor() {
-    super('unknown', (_): _ is unknown => true, success, identity)
-  }
+  constructor() { ... }
   ...
 }
 ```
@@ -1628,16 +1531,14 @@ Added in v1.5.0
 
 ```ts
 export class VoidType {
-  constructor() {
-    super('void', undefinedType.is, undefinedType.validate, identity)
-  }
+  constructor() { ... }
   ...
 }
 ```
 
 Added in v1.2.0
 
-# ~~Dictionary~~ (deprecated)
+# ~~Dictionary~~
 
 Use `UnknownRecord` instead
 
@@ -1671,7 +1572,7 @@ export const Int = ...
 
 Added in v1.8.1
 
-# ~~Integer~~ (deprecated)
+# ~~Integer~~
 
 Use `Int` instead
 
@@ -1703,7 +1604,7 @@ export const UnknownRecord: UnknownRecordC = ...
 
 Added in v1.7.1
 
-# ~~any~~ (deprecated)
+# ~~any~~
 
 Use `unknown` instead
 
@@ -1725,7 +1626,7 @@ export const boolean: BooleanC = ...
 
 Added in v1.0.0
 
-# ~~dictionary~~ (deprecated)
+# ~~dictionary~~
 
 Use `record` instead
 
@@ -1737,7 +1638,7 @@ export const dictionary: typeof record = ...
 
 Added in v1.0.0
 
-# ~~never~~ (deprecated)
+# ~~never~~
 
 **Signature** (constant)
 
@@ -1765,7 +1666,7 @@ export const number: NumberC = ...
 
 Added in v1.0.0
 
-# ~~object~~ (deprecated)
+# ~~object~~
 
 Use `UnknownRecord` instead
 
@@ -1805,7 +1706,7 @@ Added in v1.5.0
 export const voidType: VoidC = ...
 ```
 
-# ~~alias~~ (deprecated)
+# ~~alias~~
 
 Keeps the codec "kind"
 
@@ -1881,7 +1782,7 @@ export const brand = <C extends Any, N extends string, B extends { readonly [K i
 
 Added in v1.8.1
 
-# ~~clean~~ (deprecated)
+# ~~clean~~
 
 Drops the codec "kind"
 
@@ -1935,7 +1836,7 @@ export const getContextEntry = (key: string, decoder: Decoder<any, any>): Contex
 
 Added in v1.0.0
 
-# ~~getDefaultContext~~ (deprecated)
+# ~~getDefaultContext~~
 
 **Signature** (function)
 
@@ -1955,7 +1856,7 @@ export const getFunctionName = (f: Function): string => ...
 
 Added in v1.0.0
 
-# ~~getValidationError~~ (deprecated)
+# ~~getValidationError~~
 
 **Signature** (function)
 
@@ -2093,7 +1994,7 @@ export const recursion = <A, O = A, I = unknown, C extends Type<A, O, I> = Type<
 
 Added in v1.0.0
 
-# ~~refinement~~ (deprecated)
+# ~~refinement~~
 
 Use `brand` instead
 
