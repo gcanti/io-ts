@@ -20,8 +20,8 @@
     "dtslint": "dtslint dtslint",
     "declaration": "tsc -p declaration/tsconfig.json",
     "mocha": "TS_NODE_CACHE=false mocha -r ts-node/register test/*.ts",
-    "doctoc": "doctoc README.md docs",
-    "docs": "rimraf rm -rf docs/**/*.md!docs/index.md && ts-node docs.ts && npm run doctoc"
+    "doctoc": "doctoc README.md",
+    "docs": "rimraf rm -rf \"docs/!(index.md|_config.yml)\" && ts-node docs.ts && doctoc docs"
   },
   "repository": {
     "type": "git",
