@@ -5,7 +5,9 @@ nav_order: 4
 
 **Table of contents**
 
-- [~~ThrowReporter~~ (constant)](#throwreporter-constant)# ~~ThrowReporter~~ (constant)
+- [~~ThrowReporter~~ (constant)](#throwreporter-constant)
+
+# ~~ThrowReporter~~ (constant)
 
 **Signature**
 

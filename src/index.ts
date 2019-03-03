@@ -1765,7 +1765,19 @@ export const exact = <C extends HasProps>(codec: C, name: string = getExactTypeN
   )
 }
 
-export { nullType as null, undefinedType as undefined, UnknownArray as Array, type as interface, voidType as void }
+export { nullType as null }
+export { undefinedType as undefined }
+/**
+ * Use `UnknownArray` instead
+ * @deprecated
+ */
+export { UnknownArray as Array }
+/**
+ * Use `type` instead
+ * @deprecated
+ */
+export { type as interface }
+export { voidType as void }
 
 //
 // deprecations

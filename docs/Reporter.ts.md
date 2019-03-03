@@ -5,7 +5,9 @@ nav_order: 3
 
 **Table of contents**
 
-- [Reporter (interface)](#reporter-interface)# Reporter (interface)
+- [Reporter (interface)](#reporter-interface)
+
+# Reporter (interface)
 
 **Signature**
 

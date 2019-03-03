@@ -154,7 +154,14 @@ nav_order: 1
 - [taggedUnion (function)](#taggedunion-function)
 - [tuple (function)](#tuple-function)
 - [type (function)](#type-function)
-- [union (function)](#union-function)# Any (interface)
+- [union (function)](#union-function)
+- [~~Array~~ (export)](#array-export)
+- [~~interface~~ (export)](#interface-export)
+- [null (export)](#null-export)
+- [undefined (export)](#undefined-export)
+- [void (export)](#void-export)
+
+# Any (interface)
 
 **Signature**
 
@@ -2085,3 +2092,47 @@ export const union = <CS extends [Mixed, Mixed, ...Array<Mixed>]>(
 ```
 
 Added in v1.0.0
+
+# ~~Array~~ (export)
+
+Use `UnknownArray` instead
+
+**Signature**
+
+```ts
+export { UnknownArray as Array }
+```
+
+# ~~interface~~ (export)
+
+Use `type` instead
+
+**Signature**
+
+```ts
+export { type as interface }
+```
+
+# null (export)
+
+**Signature**
+
+```ts
+export { nullType as null }
+```
+
+# undefined (export)
+
+**Signature**
+
+```ts
+export { undefinedType as undefined }
+```
+
+# void (export)
+
+**Signature**
+
+```ts
+export { voidType as void }
+```

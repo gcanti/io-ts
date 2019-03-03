@@ -7,7 +7,9 @@ nav_order: 2
 
 - [PathReporter (constant)](#pathreporter-constant)
 - [failure (function)](#failure-function)
-- [success (function)](#success-function)# PathReporter (constant)
+- [success (function)](#success-function)
+
+# PathReporter (constant)
 
 **Signature**
 
