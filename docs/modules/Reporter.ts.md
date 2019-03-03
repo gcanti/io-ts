@@ -1,11 +1,16 @@
 ---
 title: Reporter.ts
 nav_order: 3
+parent: Modules
 ---
 
-**Table of contents**
+---
+
+<h2 class="text-delta">Table of contents</h2>
 
 - [Reporter (interface)](#reporter-interface)
+
+---
 
 # Reporter (interface)
 

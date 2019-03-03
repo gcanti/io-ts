@@ -1,9 +1,12 @@
 ---
 title: index.ts
 nav_order: 1
+parent: Modules
 ---
 
-**Table of contents**
+---
+
+<h2 class="text-delta">Table of contents</h2>
 
 - [Any (interface)](#any-interface)
 - [~~AnyC~~ (interface)](#anyc-interface)
@@ -160,6 +163,8 @@ nav_order: 1
 - [null (export)](#null-export)
 - [undefined (export)](#undefined-export)
 - [void (export)](#void-export)
+
+---
 
 # Any (interface)
 

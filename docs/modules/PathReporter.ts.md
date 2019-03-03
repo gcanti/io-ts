@@ -1,13 +1,18 @@
 ---
 title: PathReporter.ts
 nav_order: 2
+parent: Modules
 ---
 
-**Table of contents**
+---
+
+<h2 class="text-delta">Table of contents</h2>
 
 - [PathReporter (constant)](#pathreporter-constant)
 - [failure (function)](#failure-function)
 - [success (function)](#success-function)
+
+---
 
 # PathReporter (constant)
 
