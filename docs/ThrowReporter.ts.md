@@ -3,17 +3,11 @@ title: ThrowReporter.ts
 nav_order: 4
 ---
 
-<!-- START doctoc generated TOC please keep comment here to allow auto update -->
-<!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
 **Table of contents**
 
-- [~~ThrowReporter~~](#throwreporter)
+- [~~ThrowReporter~~ (constant)](#throwreporter-constant)# ~~ThrowReporter~~ (constant)
 
-<!-- END doctoc generated TOC please keep comment here to allow auto update -->
-
-# ~~ThrowReporter~~
-
-**Signature** (constant)
+**Signature**
 
 ```ts
 export const ThrowReporter: Reporter<void> = ...

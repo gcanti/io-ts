@@ -3,17 +3,11 @@ title: Reporter.ts
 nav_order: 3
 ---
 
-<!-- START doctoc generated TOC please keep comment here to allow auto update -->
-<!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
 **Table of contents**
 
-- [Reporter](#reporter)
+- [Reporter (interface)](#reporter-interface)# Reporter (interface)
 
-<!-- END doctoc generated TOC please keep comment here to allow auto update -->
-
-# Reporter
-
-**Signature** (interface)
+**Signature**
 
 ```ts
 export interface Reporter<A> {

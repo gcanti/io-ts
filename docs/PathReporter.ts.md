@@ -3,19 +3,13 @@ title: PathReporter.ts
 nav_order: 2
 ---
 
-<!-- START doctoc generated TOC please keep comment here to allow auto update -->
-<!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
 **Table of contents**
 
-- [PathReporter](#pathreporter)
-- [failure](#failure)
-- [success](#success)
+- [PathReporter (constant)](#pathreporter-constant)
+- [failure (function)](#failure-function)
+- [success (function)](#success-function)# PathReporter (constant)
 
-<!-- END doctoc generated TOC please keep comment here to allow auto update -->
-
-# PathReporter
-
-**Signature** (constant)
+**Signature**
 
 ```ts
 export const PathReporter: Reporter<Array<string>> = ...
@@ -23,9 +17,9 @@ export const PathReporter: Reporter<Array<string>> = ...
 
 Added in v1.0.0
 
-# failure
+# failure (function)
 
-**Signature** (function)
+**Signature**
 
 ```ts
 export function failure(es: Array<ValidationError>): Array<string> { ... }
@@ -33,9 +27,9 @@ export function failure(es: Array<ValidationError>): Array<string> { ... }
 
 Added in v1.0.0
 
-# success
+# success (function)
 
-**Signature** (function)
+**Signature**
 
 ```ts
 export function success(): Array<string> { ... }

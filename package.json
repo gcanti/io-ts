@@ -21,7 +21,7 @@
     "declaration": "tsc -p declaration/tsconfig.json",
     "mocha": "TS_NODE_CACHE=false mocha -r ts-node/register test/*.ts",
     "doctoc": "doctoc README.md",
-    "docs": "rimraf rm -rf \"docs/!(index.md|_config.yml)\" && ts-node docs.ts && doctoc docs --title \"**Table of contents**\""
+    "docs": "docs-ts"
   },
   "repository": {
     "type": "git",

@@ -3,166 +3,160 @@ title: index.ts
 nav_order: 1
 ---
 
-<!-- START doctoc generated TOC please keep comment here to allow auto update -->
-<!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
 **Table of contents**
 
-- [Any](#any)
-- [~~AnyC~~](#anyc)
-- [AnyProps](#anyprops)
-- [ArrayC](#arrayc)
-- [BooleanC](#booleanc)
-- [Brand](#brand)
-- [BrandC](#brandc)
-- [Context](#context)
-- [ContextEntry](#contextentry)
-- [Decoder](#decoder)
-- [Encoder](#encoder)
-- [Errors](#errors)
-- [ExactC](#exactc)
-- [FunctionC](#functionc)
-- [HasPropsIntersection](#haspropsintersection)
-- [HasPropsReadonly](#haspropsreadonly)
-- [HasPropsRefinement](#haspropsrefinement)
-- [IntBrand](#intbrand)
-- [IntersectionC](#intersectionc)
-- [KeyofC](#keyofc)
-- [LiteralC](#literalc)
-- [Mixed](#mixed)
-- [~~NeverC~~](#neverc)
-- [NullC](#nullc)
-- [NumberC](#numberc)
-- [~~ObjectC~~](#objectc)
-- [PartialC](#partialc)
-- [Props](#props)
-- [ReadonlyArrayC](#readonlyarrayc)
-- [ReadonlyC](#readonlyc)
-- [RecordC](#recordc)
-- [~~RefinementC~~](#refinementc)
-- [~~StrictC~~](#strictc)
-- [StringC](#stringc)
-- [~~TaggedExact~~](#taggedexact)
-- [~~TaggedIntersection~~](#taggedintersection)
-- [~~TaggedRefinement~~](#taggedrefinement)
-- [~~TaggedUnion~~](#taggedunion)
-- [TaggedUnionC](#taggedunionc)
-- [TupleC](#tuplec)
-- [TypeC](#typec)
-- [UndefinedC](#undefinedc)
-- [UnionC](#unionc)
-- [UnknownArrayC](#unknownarrayc)
-- [UnknownC](#unknownc)
-- [UnknownRecordC](#unknownrecordc)
-- [ValidationError](#validationerror)
-- [VoidC](#voidc)
-- [Branded](#branded)
-- [~~Compact~~](#compact)
-- [Decode](#decode)
-- [Encode](#encode)
-- [~~Exact~~](#exact)
-- [HasProps](#hasprops)
-- [InputOf](#inputof)
-- [Int](#int)
-- [Is](#is)
-- [OutputOf](#outputof)
-- [OutputOfDictionary](#outputofdictionary)
-- [OutputOfPartialProps](#outputofpartialprops)
-- [OutputOfProps](#outputofprops)
-- [~~PropsOf~~](#propsof)
-- [~~Tagged~~](#tagged)
-- [~~TaggedIntersectionArgument~~](#taggedintersectionargument)
-- [~~TaggedProps~~](#taggedprops)
-- [TypeOf](#typeof)
-- [TypeOfDictionary](#typeofdictionary)
-- [TypeOfPartialProps](#typeofpartialprops)
-- [TypeOfProps](#typeofprops)
-- [Validate](#validate)
-- [Validation](#validation)
-- [~~mixed~~](#mixed)
-- [AnyArrayType](#anyarraytype)
-- [AnyDictionaryType](#anydictionarytype)
-- [~~AnyType~~](#anytype)
-- [ArrayType](#arraytype)
-- [BooleanType](#booleantype)
-- [DictionaryType](#dictionarytype)
-- [ExactType](#exacttype)
-- [FunctionType](#functiontype)
-- [InterfaceType](#interfacetype)
-- [IntersectionType](#intersectiontype)
-- [KeyofType](#keyoftype)
-- [LiteralType](#literaltype)
-- [~~NeverType~~](#nevertype)
-- [NullType](#nulltype)
-- [NumberType](#numbertype)
-- [~~ObjectType~~](#objecttype)
-- [PartialType](#partialtype)
-- [ReadonlyArrayType](#readonlyarraytype)
-- [ReadonlyType](#readonlytype)
-- [RecursiveType](#recursivetype)
-- [RefinementType](#refinementtype)
-- [~~StrictType~~](#stricttype)
-- [StringType](#stringtype)
-- [TaggedUnionType](#taggeduniontype)
-- [TupleType](#tupletype)
-- [Type](#type)
-  - [pipe](#pipe)
-  - [asDecoder](#asdecoder)
-  - [asEncoder](#asencoder)
-  - [decode](#decode)
-- [UndefinedType](#undefinedtype)
-- [UnionType](#uniontype)
-- [UnknownType](#unknowntype)
-- [VoidType](#voidtype)
-- [~~Dictionary~~](#dictionary)
-- [Function](#function)
-- [Int](#int-1)
-- [~~Integer~~](#integer)
-- [UnknownArray](#unknownarray)
-- [UnknownRecord](#unknownrecord)
-- [~~any~~](#any)
-- [boolean](#boolean)
-- [~~dictionary~~](#dictionary)
-- [~~never~~](#never)
-- [nullType](#nulltype)
-- [number](#number)
-- [~~object~~](#object)
-- [string](#string)
-- [unknown](#unknown)
-- [voidType](#voidtype)
-- [~~alias~~](#alias)
-- [appendContext](#appendcontext)
-- [array](#array)
-- [brand](#brand)
-- [~~clean~~](#clean)
-- [exact](#exact)
-- [failure](#failure)
-- [failures](#failures)
-- [getContextEntry](#getcontextentry)
-- [~~getDefaultContext~~](#getdefaultcontext)
-- [getFunctionName](#getfunctionname)
-- [~~getValidationError~~](#getvalidationerror)
-- [identity](#identity)
-- [intersection](#intersection)
-- [keyof](#keyof)
-- [literal](#literal)
-- [partial](#partial)
-- [readonly](#readonly)
-- [readonlyArray](#readonlyarray)
-- [record](#record)
-- [recursion](#recursion)
-- [~~refinement~~](#refinement)
-- [strict](#strict)
-- [success](#success)
-- [taggedUnion](#taggedunion)
-- [tuple](#tuple)
-- [type](#type)
-- [union](#union)
+- [Any (interface)](#any-interface)
+- [~~AnyC~~ (interface)](#anyc-interface)
+- [AnyProps (interface)](#anyprops-interface)
+- [ArrayC (interface)](#arrayc-interface)
+- [BooleanC (interface)](#booleanc-interface)
+- [Brand (interface)](#brand-interface)
+- [BrandC (interface)](#brandc-interface)
+- [Context (interface)](#context-interface)
+- [ContextEntry (interface)](#contextentry-interface)
+- [Decoder (interface)](#decoder-interface)
+- [Encoder (interface)](#encoder-interface)
+- [Errors (interface)](#errors-interface)
+- [ExactC (interface)](#exactc-interface)
+- [FunctionC (interface)](#functionc-interface)
+- [HasPropsIntersection (interface)](#haspropsintersection-interface)
+- [HasPropsReadonly (interface)](#haspropsreadonly-interface)
+- [HasPropsRefinement (interface)](#haspropsrefinement-interface)
+- [IntBrand (interface)](#intbrand-interface)
+- [IntersectionC (interface)](#intersectionc-interface)
+- [KeyofC (interface)](#keyofc-interface)
+- [LiteralC (interface)](#literalc-interface)
+- [Mixed (interface)](#mixed-interface)
+- [~~NeverC~~ (interface)](#neverc-interface)
+- [NullC (interface)](#nullc-interface)
+- [NumberC (interface)](#numberc-interface)
+- [~~ObjectC~~ (interface)](#objectc-interface)
+- [PartialC (interface)](#partialc-interface)
+- [Props (interface)](#props-interface)
+- [ReadonlyArrayC (interface)](#readonlyarrayc-interface)
+- [ReadonlyC (interface)](#readonlyc-interface)
+- [RecordC (interface)](#recordc-interface)
+- [~~RefinementC~~ (interface)](#refinementc-interface)
+- [~~StrictC~~ (interface)](#strictc-interface)
+- [StringC (interface)](#stringc-interface)
+- [~~TaggedExact~~ (interface)](#taggedexact-interface)
+- [~~TaggedIntersection~~ (interface)](#taggedintersection-interface)
+- [~~TaggedRefinement~~ (interface)](#taggedrefinement-interface)
+- [~~TaggedUnion~~ (interface)](#taggedunion-interface)
+- [TaggedUnionC (interface)](#taggedunionc-interface)
+- [TupleC (interface)](#tuplec-interface)
+- [TypeC (interface)](#typec-interface)
+- [UndefinedC (interface)](#undefinedc-interface)
+- [UnionC (interface)](#unionc-interface)
+- [UnknownArrayC (interface)](#unknownarrayc-interface)
+- [UnknownC (interface)](#unknownc-interface)
+- [UnknownRecordC (interface)](#unknownrecordc-interface)
+- [ValidationError (interface)](#validationerror-interface)
+- [VoidC (interface)](#voidc-interface)
+- [Branded (type alias)](#branded-type-alias)
+- [~~Compact~~ (type alias)](#compact-type-alias)
+- [Decode (type alias)](#decode-type-alias)
+- [Encode (type alias)](#encode-type-alias)
+- [~~Exact~~ (type alias)](#exact-type-alias)
+- [HasProps (type alias)](#hasprops-type-alias)
+- [InputOf (type alias)](#inputof-type-alias)
+- [Int (type alias)](#int-type-alias)
+- [Is (type alias)](#is-type-alias)
+- [OutputOf (type alias)](#outputof-type-alias)
+- [OutputOfDictionary (type alias)](#outputofdictionary-type-alias)
+- [OutputOfPartialProps (type alias)](#outputofpartialprops-type-alias)
+- [OutputOfProps (type alias)](#outputofprops-type-alias)
+- [~~PropsOf~~ (type alias)](#propsof-type-alias)
+- [~~Tagged~~ (type alias)](#tagged-type-alias)
+- [~~TaggedIntersectionArgument~~ (type alias)](#taggedintersectionargument-type-alias)
+- [~~TaggedProps~~ (type alias)](#taggedprops-type-alias)
+- [TypeOf (type alias)](#typeof-type-alias)
+- [TypeOfDictionary (type alias)](#typeofdictionary-type-alias)
+- [TypeOfPartialProps (type alias)](#typeofpartialprops-type-alias)
+- [TypeOfProps (type alias)](#typeofprops-type-alias)
+- [Validate (type alias)](#validate-type-alias)
+- [Validation (type alias)](#validation-type-alias)
+- [~~mixed~~ (type alias)](#mixed-type-alias)
+- [AnyArrayType (class)](#anyarraytype-class)
+- [AnyDictionaryType (class)](#anydictionarytype-class)
+- [~~AnyType~~ (class)](#anytype-class)
+- [ArrayType (class)](#arraytype-class)
+- [BooleanType (class)](#booleantype-class)
+- [DictionaryType (class)](#dictionarytype-class)
+- [ExactType (class)](#exacttype-class)
+- [FunctionType (class)](#functiontype-class)
+- [InterfaceType (class)](#interfacetype-class)
+- [IntersectionType (class)](#intersectiontype-class)
+- [KeyofType (class)](#keyoftype-class)
+- [LiteralType (class)](#literaltype-class)
+- [~~NeverType~~ (class)](#nevertype-class)
+- [NullType (class)](#nulltype-class)
+- [NumberType (class)](#numbertype-class)
+- [~~ObjectType~~ (class)](#objecttype-class)
+- [PartialType (class)](#partialtype-class)
+- [ReadonlyArrayType (class)](#readonlyarraytype-class)
+- [ReadonlyType (class)](#readonlytype-class)
+- [RecursiveType (class)](#recursivetype-class)
+- [RefinementType (class)](#refinementtype-class)
+- [~~StrictType~~ (class)](#stricttype-class)
+- [StringType (class)](#stringtype-class)
+- [TaggedUnionType (class)](#taggeduniontype-class)
+- [TupleType (class)](#tupletype-class)
+- [Type (class)](#type-class)
+  - [pipe (method)](#pipe-method)
+  - [asDecoder (method)](#asdecoder-method)
+  - [asEncoder (method)](#asencoder-method)
+  - [decode (method)](#decode-method)
+- [UndefinedType (class)](#undefinedtype-class)
+- [UnionType (class)](#uniontype-class)
+- [UnknownType (class)](#unknowntype-class)
+- [VoidType (class)](#voidtype-class)
+- [~~Dictionary~~ (constant)](#dictionary-constant)
+- [Function (constant)](#function-constant)
+- [Int (constant)](#int-constant)
+- [~~Integer~~ (constant)](#integer-constant)
+- [UnknownArray (constant)](#unknownarray-constant)
+- [UnknownRecord (constant)](#unknownrecord-constant)
+- [~~any~~ (constant)](#any-constant)
+- [boolean (constant)](#boolean-constant)
+- [~~dictionary~~ (constant)](#dictionary-constant)
+- [~~never~~ (constant)](#never-constant)
+- [nullType (constant)](#nulltype-constant)
+- [number (constant)](#number-constant)
+- [~~object~~ (constant)](#object-constant)
+- [string (constant)](#string-constant)
+- [unknown (constant)](#unknown-constant)
+- [voidType (constant)](#voidtype-constant)
+- [~~alias~~ (function)](#alias-function)
+- [appendContext (function)](#appendcontext-function)
+- [array (function)](#array-function)
+- [brand (function)](#brand-function)
+- [~~clean~~ (function)](#clean-function)
+- [exact (function)](#exact-function)
+- [failure (function)](#failure-function)
+- [failures (function)](#failures-function)
+- [getContextEntry (function)](#getcontextentry-function)
+- [~~getDefaultContext~~ (function)](#getdefaultcontext-function)
+- [getFunctionName (function)](#getfunctionname-function)
+- [~~getValidationError~~ (function)](#getvalidationerror-function)
+- [identity (function)](#identity-function)
+- [intersection (function)](#intersection-function)
+- [keyof (function)](#keyof-function)
+- [literal (function)](#literal-function)
+- [partial (function)](#partial-function)
+- [readonly (function)](#readonly-function)
+- [readonlyArray (function)](#readonlyarray-function)
+- [record (function)](#record-function)
+- [recursion (function)](#recursion-function)
+- [~~refinement~~ (function)](#refinement-function)
+- [strict (function)](#strict-function)
+- [success (function)](#success-function)
+- [taggedUnion (function)](#taggedunion-function)
+- [tuple (function)](#tuple-function)
+- [type (function)](#type-function)
+- [union (function)](#union-function)# Any (interface)
 
-<!-- END doctoc generated TOC please keep comment here to allow auto update -->
-
-# Any
-
-**Signature** (interface)
+**Signature**
 
 ```ts
 export interface Any extends Type<any, any, any> {}
@@ -170,9 +164,9 @@ export interface Any extends Type<any, any, any> {}
 
 Added in v1.0.0
 
-# ~~AnyC~~
+# ~~AnyC~~ (interface)
 
-**Signature** (interface)
+**Signature**
 
 ```ts
 export interface AnyC extends AnyType {}
@@ -180,9 +174,9 @@ export interface AnyC extends AnyType {}
 
 Added in v1.5.3
 
-# AnyProps
+# AnyProps (interface)
 
-**Signature** (interface)
+**Signature**
 
 ```ts
 export interface AnyProps {
@@ -192,9 +186,9 @@ export interface AnyProps {
 
 Added in v1.0.0
 
-# ArrayC
+# ArrayC (interface)
 
-**Signature** (interface)
+**Signature**
 
 ```ts
 export interface ArrayC<C extends Mixed> extends ArrayType<C, Array<TypeOf<C>>, Array<OutputOf<C>>, unknown> {}
@@ -202,9 +196,9 @@ export interface ArrayC<C extends Mixed> extends ArrayType<C, Array<TypeOf<C>>, 
 
 Added in v1.5.3
 
-# BooleanC
+# BooleanC (interface)
 
-**Signature** (interface)
+**Signature**
 
 ```ts
 export interface BooleanC extends BooleanType {}
@@ -212,9 +206,9 @@ export interface BooleanC extends BooleanType {}
 
 Added in v1.5.3
 
-# Brand
+# Brand (interface)
 
-**Signature** (interface)
+**Signature**
 
 ```ts
 export interface Brand<B> {
@@ -224,9 +218,9 @@ export interface Brand<B> {
 
 Added in v1.8.1
 
-# BrandC
+# BrandC (interface)
 
-**Signature** (interface)
+**Signature**
 
 ```ts
 export interface BrandC<C extends Any, B> extends RefinementType<C, Branded<TypeOf<C>, B>, OutputOf<C>, InputOf<C>> {}
@@ -234,9 +228,9 @@ export interface BrandC<C extends Any, B> extends RefinementType<C, Branded<Type
 
 Added in v1.8.1
 
-# Context
+# Context (interface)
 
-**Signature** (interface)
+**Signature**
 
 ```ts
 export interface Context extends ReadonlyArray<ContextEntry> {}
@@ -244,9 +238,9 @@ export interface Context extends ReadonlyArray<ContextEntry> {}
 
 Added in v1.0.0
 
-# ContextEntry
+# ContextEntry (interface)
 
-**Signature** (interface)
+**Signature**
 
 ```ts
 export interface ContextEntry {
@@ -259,9 +253,9 @@ export interface ContextEntry {
 
 Added in v1.0.0
 
-# Decoder
+# Decoder (interface)
 
-**Signature** (interface)
+**Signature**
 
 ```ts
 export interface Decoder<I, A> {
@@ -273,9 +267,9 @@ export interface Decoder<I, A> {
 
 Added in v1.0.0
 
-# Encoder
+# Encoder (interface)
 
-**Signature** (interface)
+**Signature**
 
 ```ts
 export interface Encoder<A, O> {
@@ -285,9 +279,9 @@ export interface Encoder<A, O> {
 
 Added in v1.0.0
 
-# Errors
+# Errors (interface)
 
-**Signature** (interface)
+**Signature**
 
 ```ts
 export interface Errors extends Array<ValidationError> {}
@@ -295,9 +289,9 @@ export interface Errors extends Array<ValidationError> {}
 
 Added in v1.0.0
 
-# ExactC
+# ExactC (interface)
 
-**Signature** (interface)
+**Signature**
 
 ```ts
 export interface ExactC<C extends HasProps> extends ExactType<C, TypeOf<C>, OutputOf<C>, InputOf<C>> {}
@@ -305,9 +299,9 @@ export interface ExactC<C extends HasProps> extends ExactType<C, TypeOf<C>, Outp
 
 Added in v1.5.3
 
-# FunctionC
+# FunctionC (interface)
 
-**Signature** (interface)
+**Signature**
 
 ```ts
 export interface FunctionC extends FunctionType {}
@@ -315,9 +309,9 @@ export interface FunctionC extends FunctionType {}
 
 Added in v1.5.3
 
-# HasPropsIntersection
+# HasPropsIntersection (interface)
 
-**Signature** (interface)
+**Signature**
 
 ```ts
 export interface HasPropsIntersection extends IntersectionType<Array<HasProps>, any, any, any> {}
@@ -325,9 +319,9 @@ export interface HasPropsIntersection extends IntersectionType<Array<HasProps>, 
 
 Added in v1.1.0
 
-# HasPropsReadonly
+# HasPropsReadonly (interface)
 
-**Signature** (interface)
+**Signature**
 
 ```ts
 export interface HasPropsReadonly extends ReadonlyType<HasProps, any, any, any> {}
@@ -335,9 +329,9 @@ export interface HasPropsReadonly extends ReadonlyType<HasProps, any, any, any> 
 
 Added in v1.1.0
 
-# HasPropsRefinement
+# HasPropsRefinement (interface)
 
-**Signature** (interface)
+**Signature**
 
 ```ts
 export interface HasPropsRefinement extends RefinementType<HasProps, any, any, any> {}
@@ -345,9 +339,9 @@ export interface HasPropsRefinement extends RefinementType<HasProps, any, any, a
 
 Added in v1.1.0
 
-# IntBrand
+# IntBrand (interface)
 
-**Signature** (interface)
+**Signature**
 
 ```ts
 export interface IntBrand {
@@ -357,9 +351,9 @@ export interface IntBrand {
 
 Added in v1.8.1
 
-# IntersectionC
+# IntersectionC (interface)
 
-**Signature** (interface)
+**Signature**
 
 ```ts
 export interface IntersectionC<CS extends [Mixed, Mixed, ...Array<Mixed>]>
@@ -389,9 +383,9 @@ export interface IntersectionC<CS extends [Mixed, Mixed, ...Array<Mixed>]>
 
 Added in v1.5.3
 
-# KeyofC
+# KeyofC (interface)
 
-**Signature** (interface)
+**Signature**
 
 ```ts
 export interface KeyofC<D extends { [key: string]: unknown }> extends KeyofType<D> {}
@@ -399,9 +393,9 @@ export interface KeyofC<D extends { [key: string]: unknown }> extends KeyofType<
 
 Added in v1.5.3
 
-# LiteralC
+# LiteralC (interface)
 
-**Signature** (interface)
+**Signature**
 
 ```ts
 export interface LiteralC<V extends LiteralValue> extends LiteralType<V> {}
@@ -409,9 +403,9 @@ export interface LiteralC<V extends LiteralValue> extends LiteralType<V> {}
 
 Added in v1.5.3
 
-# Mixed
+# Mixed (interface)
 
-**Signature** (interface)
+**Signature**
 
 ```ts
 export interface Mixed extends Type<any, any, unknown> {}
@@ -419,9 +413,9 @@ export interface Mixed extends Type<any, any, unknown> {}
 
 Added in v1.0.0
 
-# ~~NeverC~~
+# ~~NeverC~~ (interface)
 
-**Signature** (interface)
+**Signature**
 
 ```ts
 export interface NeverC extends NeverType {}
@@ -429,9 +423,9 @@ export interface NeverC extends NeverType {}
 
 Added in v1.5.3
 
-# NullC
+# NullC (interface)
 
-**Signature** (interface)
+**Signature**
 
 ```ts
 export interface NullC extends NullType {}
@@ -439,9 +433,9 @@ export interface NullC extends NullType {}
 
 Added in v1.5.3
 
-# NumberC
+# NumberC (interface)
 
-**Signature** (interface)
+**Signature**
 
 ```ts
 export interface NumberC extends NumberType {}
@@ -449,9 +443,9 @@ export interface NumberC extends NumberType {}
 
 Added in v1.5.3
 
-# ~~ObjectC~~
+# ~~ObjectC~~ (interface)
 
-**Signature** (interface)
+**Signature**
 
 ```ts
 export interface ObjectC extends ObjectType {}
@@ -459,9 +453,9 @@ export interface ObjectC extends ObjectType {}
 
 Added in v1.5.3
 
-# PartialC
+# PartialC (interface)
 
-**Signature** (interface)
+**Signature**
 
 ```ts
 export interface PartialC<P extends Props>
@@ -470,9 +464,9 @@ export interface PartialC<P extends Props>
 
 Added in v1.5.3
 
-# Props
+# Props (interface)
 
-**Signature** (interface)
+**Signature**
 
 ```ts
 export interface Props {
@@ -482,9 +476,9 @@ export interface Props {
 
 Added in v1.0.0
 
-# ReadonlyArrayC
+# ReadonlyArrayC (interface)
 
-**Signature** (interface)
+**Signature**
 
 ```ts
 export interface ReadonlyArrayC<C extends Mixed>
@@ -493,9 +487,9 @@ export interface ReadonlyArrayC<C extends Mixed>
 
 Added in v1.5.3
 
-# ReadonlyC
+# ReadonlyC (interface)
 
-**Signature** (interface)
+**Signature**
 
 ```ts
 export interface ReadonlyC<C extends Mixed>
@@ -509,9 +503,9 @@ export interface ReadonlyC<C extends Mixed>
 
 Added in v1.5.3
 
-# RecordC
+# RecordC (interface)
 
-**Signature** (interface)
+**Signature**
 
 ```ts
 export interface RecordC<D extends Mixed, C extends Mixed>
@@ -520,11 +514,11 @@ export interface RecordC<D extends Mixed, C extends Mixed>
 
 Added in v1.5.3
 
-# ~~RefinementC~~
+# ~~RefinementC~~ (interface)
 
 Use `BrandC` instead
 
-**Signature** (interface)
+**Signature**
 
 ```ts
 export interface RefinementC<C extends Any> extends RefinementType<C, TypeOf<C>, OutputOf<C>, InputOf<C>> {}
@@ -532,9 +526,9 @@ export interface RefinementC<C extends Any> extends RefinementType<C, TypeOf<C>,
 
 Added in v1.5.3
 
-# ~~StrictC~~
+# ~~StrictC~~ (interface)
 
-**Signature** (interface)
+**Signature**
 
 ```ts
 export interface StrictC<P extends Props>
@@ -543,9 +537,9 @@ export interface StrictC<P extends Props>
 
 Added in v1.5.3
 
-# StringC
+# StringC (interface)
 
-**Signature** (interface)
+**Signature**
 
 ```ts
 export interface StringC extends StringType {}
@@ -553,9 +547,9 @@ export interface StringC extends StringType {}
 
 Added in v1.5.3
 
-# ~~TaggedExact~~
+# ~~TaggedExact~~ (interface)
 
-**Signature** (interface)
+**Signature**
 
 ```ts
 export interface TaggedExact<Tag extends string, A, O = A> extends ExactType<Tagged<Tag>, A, O> {}
@@ -563,9 +557,9 @@ export interface TaggedExact<Tag extends string, A, O = A> extends ExactType<Tag
 
 Added in v1.3.0
 
-# ~~TaggedIntersection~~
+# ~~TaggedIntersection~~ (interface)
 
-**Signature** (interface)
+**Signature**
 
 ```ts
 export interface TaggedIntersection<Tag extends string, A, O = A>
@@ -574,9 +568,9 @@ export interface TaggedIntersection<Tag extends string, A, O = A>
 
 Added in v1.3.0
 
-# ~~TaggedRefinement~~
+# ~~TaggedRefinement~~ (interface)
 
-**Signature** (interface)
+**Signature**
 
 ```ts
 export interface TaggedRefinement<Tag extends string, A, O = A> extends RefinementType<Tagged<Tag>, A, O> {}
@@ -584,9 +578,9 @@ export interface TaggedRefinement<Tag extends string, A, O = A> extends Refineme
 
 Added in v1.3.0
 
-# ~~TaggedUnion~~
+# ~~TaggedUnion~~ (interface)
 
-**Signature** (interface)
+**Signature**
 
 ```ts
 export interface TaggedUnion<Tag extends string, A, O = A> extends UnionType<Array<Tagged<Tag>>, A, O> {}
@@ -594,9 +588,9 @@ export interface TaggedUnion<Tag extends string, A, O = A> extends UnionType<Arr
 
 Added in v1.3.0
 
-# TaggedUnionC
+# TaggedUnionC (interface)
 
-**Signature** (interface)
+**Signature**
 
 ```ts
 export interface TaggedUnionC<Tag extends string, CS extends [Mixed, Mixed, ...Array<Mixed>]>
@@ -605,9 +599,9 @@ export interface TaggedUnionC<Tag extends string, CS extends [Mixed, Mixed, ...A
 
 Added in v1.5.3
 
-# TupleC
+# TupleC (interface)
 
-**Signature** (interface)
+**Signature**
 
 ```ts
 export interface TupleC<CS extends [Mixed, ...Array<Mixed>]>
@@ -641,9 +635,9 @@ export interface TupleC<CS extends [Mixed, ...Array<Mixed>]>
 
 Added in v1.5.3
 
-# TypeC
+# TypeC (interface)
 
-**Signature** (interface)
+**Signature**
 
 ```ts
 export interface TypeC<P extends Props>
@@ -652,9 +646,9 @@ export interface TypeC<P extends Props>
 
 Added in v1.5.3
 
-# UndefinedC
+# UndefinedC (interface)
 
-**Signature** (interface)
+**Signature**
 
 ```ts
 export interface UndefinedC extends UndefinedType {}
@@ -662,9 +656,9 @@ export interface UndefinedC extends UndefinedType {}
 
 Added in v1.5.3
 
-# UnionC
+# UnionC (interface)
 
-**Signature** (interface)
+**Signature**
 
 ```ts
 export interface UnionC<CS extends [Mixed, Mixed, ...Array<Mixed>]>
@@ -673,9 +667,9 @@ export interface UnionC<CS extends [Mixed, Mixed, ...Array<Mixed>]>
 
 Added in v1.5.3
 
-# UnknownArrayC
+# UnknownArrayC (interface)
 
-**Signature** (interface)
+**Signature**
 
 ```ts
 export interface UnknownArrayC extends AnyArrayType {}
@@ -683,9 +677,9 @@ export interface UnknownArrayC extends AnyArrayType {}
 
 Added in v1.5.3
 
-# UnknownC
+# UnknownC (interface)
 
-**Signature** (interface)
+**Signature**
 
 ```ts
 export interface UnknownC extends UnknownType {}
@@ -693,9 +687,9 @@ export interface UnknownC extends UnknownType {}
 
 Added in v1.5.3
 
-# UnknownRecordC
+# UnknownRecordC (interface)
 
-**Signature** (interface)
+**Signature**
 
 ```ts
 export interface UnknownRecordC extends AnyDictionaryType {}
@@ -703,9 +697,9 @@ export interface UnknownRecordC extends AnyDictionaryType {}
 
 Added in v1.5.3
 
-# ValidationError
+# ValidationError (interface)
 
-**Signature** (interface)
+**Signature**
 
 ```ts
 export interface ValidationError {
@@ -720,9 +714,9 @@ export interface ValidationError {
 
 Added in v1.0.0
 
-# VoidC
+# VoidC (interface)
 
-**Signature** (interface)
+**Signature**
 
 ```ts
 export interface VoidC extends VoidType {}
@@ -730,9 +724,9 @@ export interface VoidC extends VoidType {}
 
 Added in v1.5.3
 
-# Branded
+# Branded (type alias)
 
-**Signature** (type alias)
+**Signature**
 
 ```ts
 export type Branded<A, B> = A & Brand<B>
@@ -740,11 +734,11 @@ export type Branded<A, B> = A & Brand<B>
 
 Added in v1.8.1
 
-# ~~Compact~~
+# ~~Compact~~ (type alias)
 
 used in `intersection` as a workaround for #234
 
-**Signature** (type alias)
+**Signature**
 
 ```ts
 export type Compact<A> = { [K in keyof A]: A[K] }
@@ -752,9 +746,9 @@ export type Compact<A> = { [K in keyof A]: A[K] }
 
 Added in v1.4.2
 
-# Decode
+# Decode (type alias)
 
-**Signature** (type alias)
+**Signature**
 
 ```ts
 export type Decode<I, A> = (i: I) => Validation<A>
@@ -762,9 +756,9 @@ export type Decode<I, A> = (i: I) => Validation<A>
 
 Added in v1.0.0
 
-# Encode
+# Encode (type alias)
 
-**Signature** (type alias)
+**Signature**
 
 ```ts
 export type Encode<A, O> = (a: A) => O
@@ -772,9 +766,9 @@ export type Encode<A, O> = (a: A) => O
 
 Added in v1.0.0
 
-# ~~Exact~~
+# ~~Exact~~ (type alias)
 
-**Signature** (type alias)
+**Signature**
 
 ```ts
 export type Exact<T, X extends T> = T &
@@ -783,9 +777,9 @@ export type Exact<T, X extends T> = T &
 
 Added in v1.1.0
 
-# HasProps
+# HasProps (type alias)
 
-**Signature** (type alias)
+**Signature**
 
 ```ts
 export type HasProps =
@@ -799,9 +793,9 @@ export type HasProps =
 
 Added in v1.1.0
 
-# InputOf
+# InputOf (type alias)
 
-**Signature** (type alias)
+**Signature**
 
 ```ts
 export type InputOf<C extends Any> = C['_I']
@@ -809,9 +803,9 @@ export type InputOf<C extends Any> = C['_I']
 
 Added in v1.0.0
 
-# Int
+# Int (type alias)
 
-**Signature** (type alias)
+**Signature**
 
 ```ts
 export type Int = Branded<number, IntBrand>
@@ -819,9 +813,9 @@ export type Int = Branded<number, IntBrand>
 
 Added in v1.8.1
 
-# Is
+# Is (type alias)
 
-**Signature** (type alias)
+**Signature**
 
 ```ts
 export type Is<A> = (u: unknown) => u is A
@@ -829,9 +823,9 @@ export type Is<A> = (u: unknown) => u is A
 
 Added in v1.0.0
 
-# OutputOf
+# OutputOf (type alias)
 
-**Signature** (type alias)
+**Signature**
 
 ```ts
 export type OutputOf<C extends Any> = C['_O']
@@ -839,9 +833,9 @@ export type OutputOf<C extends Any> = C['_O']
 
 Added in v1.0.0
 
-# OutputOfDictionary
+# OutputOfDictionary (type alias)
 
-**Signature** (type alias)
+**Signature**
 
 ```ts
 export type OutputOfDictionary<D extends Any, C extends Any> = { [K in OutputOf<D>]: OutputOf<C> }
@@ -849,9 +843,9 @@ export type OutputOfDictionary<D extends Any, C extends Any> = { [K in OutputOf<
 
 Added in v1.0.0
 
-# OutputOfPartialProps
+# OutputOfPartialProps (type alias)
 
-**Signature** (type alias)
+**Signature**
 
 ```ts
 export type OutputOfPartialProps<P extends AnyProps> = { [K in keyof P]?: OutputOf<P[K]> }
@@ -859,9 +853,9 @@ export type OutputOfPartialProps<P extends AnyProps> = { [K in keyof P]?: Output
 
 Added in v1.0.0
 
-# OutputOfProps
+# OutputOfProps (type alias)
 
-**Signature** (type alias)
+**Signature**
 
 ```ts
 export type OutputOfProps<P extends AnyProps> = { [K in keyof P]: OutputOf<P[K]> }
@@ -869,9 +863,9 @@ export type OutputOfProps<P extends AnyProps> = { [K in keyof P]: OutputOf<P[K]>
 
 Added in v1.0.0
 
-# ~~PropsOf~~
+# ~~PropsOf~~ (type alias)
 
-**Signature** (type alias)
+**Signature**
 
 ```ts
 export type PropsOf<T extends { props: any }> = T['props']
@@ -879,9 +873,9 @@ export type PropsOf<T extends { props: any }> = T['props']
 
 Added in v1.0.0
 
-# ~~Tagged~~
+# ~~Tagged~~ (type alias)
 
-**Signature** (type alias)
+**Signature**
 
 ```ts
 export type Tagged<Tag extends string, A = any, O = A> =
@@ -896,9 +890,9 @@ export type Tagged<Tag extends string, A = any, O = A> =
 
 Added in v1.3.0
 
-# ~~TaggedIntersectionArgument~~
+# ~~TaggedIntersectionArgument~~ (type alias)
 
-**Signature** (type alias)
+**Signature**
 
 ```ts
 export type TaggedIntersectionArgument<Tag extends string> =
@@ -921,9 +915,9 @@ export type TaggedIntersectionArgument<Tag extends string> =
 
 Added in v1.3.0
 
-# ~~TaggedProps~~
+# ~~TaggedProps~~ (type alias)
 
-**Signature** (type alias)
+**Signature**
 
 ```ts
 export type TaggedProps<Tag extends string> = { [K in Tag]: LiteralType<any> }
@@ -931,9 +925,9 @@ export type TaggedProps<Tag extends string> = { [K in Tag]: LiteralType<any> }
 
 Added in v1.3.0
 
-# TypeOf
+# TypeOf (type alias)
 
-**Signature** (type alias)
+**Signature**
 
 ```ts
 export type TypeOf<C extends Any> = C['_A']
@@ -941,9 +935,9 @@ export type TypeOf<C extends Any> = C['_A']
 
 Added in v1.0.0
 
-# TypeOfDictionary
+# TypeOfDictionary (type alias)
 
-**Signature** (type alias)
+**Signature**
 
 ```ts
 export type TypeOfDictionary<D extends Any, C extends Any> = { [K in TypeOf<D>]: TypeOf<C> }
@@ -951,9 +945,9 @@ export type TypeOfDictionary<D extends Any, C extends Any> = { [K in TypeOf<D>]:
 
 Added in v1.0.0
 
-# TypeOfPartialProps
+# TypeOfPartialProps (type alias)
 
-**Signature** (type alias)
+**Signature**
 
 ```ts
 export type TypeOfPartialProps<P extends AnyProps> = { [K in keyof P]?: TypeOf<P[K]> }
@@ -961,9 +955,9 @@ export type TypeOfPartialProps<P extends AnyProps> = { [K in keyof P]?: TypeOf<P
 
 Added in v1.0.0
 
-# TypeOfProps
+# TypeOfProps (type alias)
 
-**Signature** (type alias)
+**Signature**
 
 ```ts
 export type TypeOfProps<P extends AnyProps> = { [K in keyof P]: TypeOf<P[K]> }
@@ -971,9 +965,9 @@ export type TypeOfProps<P extends AnyProps> = { [K in keyof P]: TypeOf<P[K]> }
 
 Added in v1.0.0
 
-# Validate
+# Validate (type alias)
 
-**Signature** (type alias)
+**Signature**
 
 ```ts
 export type Validate<I, A> = (i: I, context: Context) => Validation<A>
@@ -981,9 +975,9 @@ export type Validate<I, A> = (i: I, context: Context) => Validation<A>
 
 Added in v1.0.0
 
-# Validation
+# Validation (type alias)
 
-**Signature** (type alias)
+**Signature**
 
 ```ts
 export type Validation<A> = Either<Errors, A>
@@ -991,11 +985,11 @@ export type Validation<A> = Either<Errors, A>
 
 Added in v1.0.0
 
-# ~~mixed~~
+# ~~mixed~~ (type alias)
 
 Use `unknown` instead
 
-**Signature** (type alias)
+**Signature**
 
 ```ts
 export type mixed = unknown
@@ -1003,9 +997,9 @@ export type mixed = unknown
 
 Added in v1.0.0
 
-# AnyArrayType
+# AnyArrayType (class)
 
-**Signature** (class)
+**Signature**
 
 ```ts
 export class AnyArrayType {
@@ -1016,9 +1010,9 @@ export class AnyArrayType {
 
 Added in v1.0.0
 
-# AnyDictionaryType
+# AnyDictionaryType (class)
 
-**Signature** (class)
+**Signature**
 
 ```ts
 export class AnyDictionaryType {
@@ -1029,9 +1023,9 @@ export class AnyDictionaryType {
 
 Added in v1.0.0
 
-# ~~AnyType~~
+# ~~AnyType~~ (class)
 
-**Signature** (class)
+**Signature**
 
 ```ts
 export class AnyType {
@@ -1042,9 +1036,9 @@ export class AnyType {
 
 Added in v1.0.0
 
-# ArrayType
+# ArrayType (class)
 
-**Signature** (class)
+**Signature**
 
 ```ts
 export class ArrayType<C, A, O, I> {
@@ -1061,9 +1055,9 @@ export class ArrayType<C, A, O, I> {
 
 Added in v1.0.0
 
-# BooleanType
+# BooleanType (class)
 
-**Signature** (class)
+**Signature**
 
 ```ts
 export class BooleanType {
@@ -1074,9 +1068,9 @@ export class BooleanType {
 
 Added in v1.0.0
 
-# DictionaryType
+# DictionaryType (class)
 
-**Signature** (class)
+**Signature**
 
 ```ts
 export class DictionaryType<D, C, A, O, I> {
@@ -1094,9 +1088,9 @@ export class DictionaryType<D, C, A, O, I> {
 
 Added in v1.0.0
 
-# ExactType
+# ExactType (class)
 
-**Signature** (class)
+**Signature**
 
 ```ts
 export class ExactType<C, A, O, I> {
@@ -1113,9 +1107,9 @@ export class ExactType<C, A, O, I> {
 
 Added in v1.1.0
 
-# FunctionType
+# FunctionType (class)
 
-**Signature** (class)
+**Signature**
 
 ```ts
 export class FunctionType {
@@ -1126,9 +1120,9 @@ export class FunctionType {
 
 Added in v1.0.0
 
-# InterfaceType
+# InterfaceType (class)
 
-**Signature** (class)
+**Signature**
 
 ```ts
 export class InterfaceType<P, A, O, I> {
@@ -1145,9 +1139,9 @@ export class InterfaceType<P, A, O, I> {
 
 Added in v1.0.0
 
-# IntersectionType
+# IntersectionType (class)
 
-**Signature** (class)
+**Signature**
 
 ```ts
 export class IntersectionType<CS, A, O, I> {
@@ -1164,9 +1158,9 @@ export class IntersectionType<CS, A, O, I> {
 
 Added in v1.0.0
 
-# KeyofType
+# KeyofType (class)
 
-**Signature** (class)
+**Signature**
 
 ```ts
 export class KeyofType<D> {
@@ -1183,9 +1177,9 @@ export class KeyofType<D> {
 
 Added in v1.0.0
 
-# LiteralType
+# LiteralType (class)
 
-**Signature** (class)
+**Signature**
 
 ```ts
 export class LiteralType<V> {
@@ -1202,9 +1196,9 @@ export class LiteralType<V> {
 
 Added in v1.0.0
 
-# ~~NeverType~~
+# ~~NeverType~~ (class)
 
-**Signature** (class)
+**Signature**
 
 ```ts
 export class NeverType {
@@ -1215,9 +1209,9 @@ export class NeverType {
 
 Added in v1.0.0
 
-# NullType
+# NullType (class)
 
-**Signature** (class)
+**Signature**
 
 ```ts
 export class NullType {
@@ -1228,9 +1222,9 @@ export class NullType {
 
 Added in v1.0.0
 
-# NumberType
+# NumberType (class)
 
-**Signature** (class)
+**Signature**
 
 ```ts
 export class NumberType {
@@ -1241,9 +1235,9 @@ export class NumberType {
 
 Added in v1.0.0
 
-# ~~ObjectType~~
+# ~~ObjectType~~ (class)
 
-**Signature** (class)
+**Signature**
 
 ```ts
 export class ObjectType {
@@ -1254,9 +1248,9 @@ export class ObjectType {
 
 Added in v1.0.0
 
-# PartialType
+# PartialType (class)
 
-**Signature** (class)
+**Signature**
 
 ```ts
 export class PartialType<P, A, O, I> {
@@ -1273,9 +1267,9 @@ export class PartialType<P, A, O, I> {
 
 Added in v1.0.0
 
-# ReadonlyArrayType
+# ReadonlyArrayType (class)
 
-**Signature** (class)
+**Signature**
 
 ```ts
 export class ReadonlyArrayType<C, A, O, I> {
@@ -1292,9 +1286,9 @@ export class ReadonlyArrayType<C, A, O, I> {
 
 Added in v1.0.0
 
-# ReadonlyType
+# ReadonlyType (class)
 
-**Signature** (class)
+**Signature**
 
 ```ts
 export class ReadonlyType<C, A, O, I> {
@@ -1311,9 +1305,9 @@ export class ReadonlyType<C, A, O, I> {
 
 Added in v1.0.0
 
-# RecursiveType
+# RecursiveType (class)
 
-**Signature** (class)
+**Signature**
 
 ```ts
 export class RecursiveType<C, A, O, I> {
@@ -1330,9 +1324,9 @@ export class RecursiveType<C, A, O, I> {
 
 Added in v1.0.0
 
-# RefinementType
+# RefinementType (class)
 
-**Signature** (class)
+**Signature**
 
 ```ts
 export class RefinementType<C, A, O, I> {
@@ -1350,9 +1344,9 @@ export class RefinementType<C, A, O, I> {
 
 Added in v1.0.0
 
-# ~~StrictType~~
+# ~~StrictType~~ (class)
 
-**Signature** (class)
+**Signature**
 
 ```ts
 export class StrictType<P, A, O, I> {
@@ -1369,9 +1363,9 @@ export class StrictType<P, A, O, I> {
 
 Added in v1.0.0
 
-# StringType
+# StringType (class)
 
-**Signature** (class)
+**Signature**
 
 ```ts
 export class StringType {
@@ -1382,9 +1376,9 @@ export class StringType {
 
 Added in v1.0.0
 
-# TaggedUnionType
+# TaggedUnionType (class)
 
-**Signature** (class)
+**Signature**
 
 ```ts
 export class TaggedUnionType<Tag, CS, A, O, I> {
@@ -1402,9 +1396,9 @@ export class TaggedUnionType<Tag, CS, A, O, I> {
 
 Added in v1.3.0
 
-# TupleType
+# TupleType (class)
 
-**Signature** (class)
+**Signature**
 
 ```ts
 export class TupleType<CS, A, O, I> {
@@ -1421,9 +1415,9 @@ export class TupleType<CS, A, O, I> {
 
 Added in v1.0.0
 
-# Type
+# Type (class)
 
-**Signature** (class)
+**Signature**
 
 ```ts
 export class Type<A, O, I> {
@@ -1443,9 +1437,9 @@ export class Type<A, O, I> {
 
 Added in v1.0.0
 
-## pipe
+## pipe (method)
 
-**Signature** (method)
+**Signature**
 
 ```ts
 pipe<B, IB, A extends IB, OB extends A>(
@@ -1454,35 +1448,35 @@ pipe<B, IB, A extends IB, OB extends A>(
     name: string = `pipe($ { ... }
 ```
 
-## asDecoder
+## asDecoder (method)
 
-**Signature** (method)
+**Signature**
 
 ```ts
 asDecoder(): Decoder<I, A> { ... }
 ```
 
-## asEncoder
+## asEncoder (method)
 
-**Signature** (method)
+**Signature**
 
 ```ts
 asEncoder(): Encoder<A, O> { ... }
 ```
 
-## decode
+## decode (method)
 
 a version of `validate` with a default context
 
-**Signature** (method)
+**Signature**
 
 ```ts
 decode(i: I): Validation<A> { ... }
 ```
 
-# UndefinedType
+# UndefinedType (class)
 
-**Signature** (class)
+**Signature**
 
 ```ts
 export class UndefinedType {
@@ -1493,9 +1487,9 @@ export class UndefinedType {
 
 Added in v1.0.0
 
-# UnionType
+# UnionType (class)
 
-**Signature** (class)
+**Signature**
 
 ```ts
 export class UnionType<CS, A, O, I> {
@@ -1512,9 +1506,9 @@ export class UnionType<CS, A, O, I> {
 
 Added in v1.0.0
 
-# UnknownType
+# UnknownType (class)
 
-**Signature** (class)
+**Signature**
 
 ```ts
 export class UnknownType {
@@ -1525,9 +1519,9 @@ export class UnknownType {
 
 Added in v1.5.0
 
-# VoidType
+# VoidType (class)
 
-**Signature** (class)
+**Signature**
 
 ```ts
 export class VoidType {
@@ -1538,11 +1532,11 @@ export class VoidType {
 
 Added in v1.2.0
 
-# ~~Dictionary~~
+# ~~Dictionary~~ (constant)
 
 Use `UnknownRecord` instead
 
-**Signature** (constant)
+**Signature**
 
 ```ts
 export const Dictionary: UnknownRecordC = ...
@@ -1550,9 +1544,9 @@ export const Dictionary: UnknownRecordC = ...
 
 Added in v1.0.0
 
-# Function
+# Function (constant)
 
-**Signature** (constant)
+**Signature**
 
 ```ts
 export const Function: FunctionC = ...
@@ -1560,11 +1554,11 @@ export const Function: FunctionC = ...
 
 Added in v1.0.0
 
-# Int
+# Int (constant)
 
 A branded codec representing an integer
 
-**Signature** (constant)
+**Signature**
 
 ```ts
 export const Int = ...
@@ -1572,11 +1566,11 @@ export const Int = ...
 
 Added in v1.8.1
 
-# ~~Integer~~
+# ~~Integer~~ (constant)
 
 Use `Int` instead
 
-**Signature** (constant)
+**Signature**
 
 ```ts
 export const Integer = ...
@@ -1584,9 +1578,9 @@ export const Integer = ...
 
 Added in v1.0.0
 
-# UnknownArray
+# UnknownArray (constant)
 
-**Signature** (constant)
+**Signature**
 
 ```ts
 export const UnknownArray: UnknownArrayC = ...
@@ -1594,9 +1588,9 @@ export const UnknownArray: UnknownArrayC = ...
 
 Added in v1.7.1
 
-# UnknownRecord
+# UnknownRecord (constant)
 
-**Signature** (constant)
+**Signature**
 
 ```ts
 export const UnknownRecord: UnknownRecordC = ...
@@ -1604,11 +1598,11 @@ export const UnknownRecord: UnknownRecordC = ...
 
 Added in v1.7.1
 
-# ~~any~~
+# ~~any~~ (constant)
 
 Use `unknown` instead
 
-**Signature** (constant)
+**Signature**
 
 ```ts
 export const any: AnyC = ...
@@ -1616,9 +1610,9 @@ export const any: AnyC = ...
 
 Added in v1.0.0
 
-# boolean
+# boolean (constant)
 
-**Signature** (constant)
+**Signature**
 
 ```ts
 export const boolean: BooleanC = ...
@@ -1626,11 +1620,11 @@ export const boolean: BooleanC = ...
 
 Added in v1.0.0
 
-# ~~dictionary~~
+# ~~dictionary~~ (constant)
 
 Use `record` instead
 
-**Signature** (constant)
+**Signature**
 
 ```ts
 export const dictionary: typeof record = ...
@@ -1638,9 +1632,9 @@ export const dictionary: typeof record = ...
 
 Added in v1.0.0
 
-# ~~never~~
+# ~~never~~ (constant)
 
-**Signature** (constant)
+**Signature**
 
 ```ts
 export const never: NeverC = ...
@@ -1648,17 +1642,17 @@ export const never: NeverC = ...
 
 Added in v1.0.0
 
-# nullType
+# nullType (constant)
 
-**Signature** (constant)
+**Signature**
 
 ```ts
 export const nullType: NullC = ...
 ```
 
-# number
+# number (constant)
 
-**Signature** (constant)
+**Signature**
 
 ```ts
 export const number: NumberC = ...
@@ -1666,11 +1660,11 @@ export const number: NumberC = ...
 
 Added in v1.0.0
 
-# ~~object~~
+# ~~object~~ (constant)
 
 Use `UnknownRecord` instead
 
-**Signature** (constant)
+**Signature**
 
 ```ts
 export const object: ObjectC = ...
@@ -1678,9 +1672,9 @@ export const object: ObjectC = ...
 
 Added in v1.0.0
 
-# string
+# string (constant)
 
-**Signature** (constant)
+**Signature**
 
 ```ts
 export const string: StringC = ...
@@ -1688,9 +1682,9 @@ export const string: StringC = ...
 
 Added in v1.0.0
 
-# unknown
+# unknown (constant)
 
-**Signature** (constant)
+**Signature**
 
 ```ts
 export const unknown: UnknownC = ...
@@ -1698,19 +1692,19 @@ export const unknown: UnknownC = ...
 
 Added in v1.5.0
 
-# voidType
+# voidType (constant)
 
-**Signature** (constant)
+**Signature**
 
 ```ts
 export const voidType: VoidC = ...
 ```
 
-# ~~alias~~
+# ~~alias~~ (function)
 
 Keeps the codec "kind"
 
-**Signature** (function)
+**Signature**
 
 ```ts
 export function alias<A, O, P, I>(
@@ -1744,9 +1738,9 @@ export function alias<A, O, I>(
 
 Added in v1.1.0
 
-# appendContext
+# appendContext (function)
 
-**Signature** (function)
+**Signature**
 
 ```ts
 export const appendContext = (c: Context, key: string, decoder: Decoder<any, any>, actual?: unknown): Context => ...
@@ -1754,9 +1748,9 @@ export const appendContext = (c: Context, key: string, decoder: Decoder<any, any
 
 Added in v1.0.0
 
-# array
+# array (function)
 
-**Signature** (function)
+**Signature**
 
 ```ts
 export const array = <C extends Mixed>(codec: C, name: string = `Array<${codec.name}>`): ArrayC<C> =>
@@ -1768,9 +1762,9 @@ export const array = <C extends Mixed>(codec: C, name: string = `Array<${codec.n
 
 Added in v1.0.0
 
-# brand
+# brand (function)
 
-**Signature** (function)
+**Signature**
 
 ```ts
 export const brand = <C extends Any, N extends string, B extends { readonly [K in N]: symbol }>(
@@ -1782,11 +1776,11 @@ export const brand = <C extends Any, N extends string, B extends { readonly [K i
 
 Added in v1.8.1
 
-# ~~clean~~
+# ~~clean~~ (function)
 
 Drops the codec "kind"
 
-**Signature** (function)
+**Signature**
 
 ```ts
 export function clean<A, O = A, I = unknown>(codec: Type<A, O, I>): Type<A, O, I> { ... }
@@ -1794,11 +1788,11 @@ export function clean<A, O = A, I = unknown>(codec: Type<A, O, I>): Type<A, O, I
 
 Added in v1.1.0
 
-# exact
+# exact (function)
 
 Strips additional properties
 
-**Signature** (function)
+**Signature**
 
 ```ts
 export const exact = <C extends HasProps>(codec: C, name: string = getExactTypeName(codec)): ExactC<C> => ...
@@ -1806,9 +1800,9 @@ export const exact = <C extends HasProps>(codec: C, name: string = getExactTypeN
 
 Added in v1.1.0
 
-# failure
+# failure (function)
 
-**Signature** (function)
+**Signature**
 
 ```ts
 export const failure = <T>(value: unknown, context: Context, message?: string): Validation<T> => ...
@@ -1816,9 +1810,9 @@ export const failure = <T>(value: unknown, context: Context, message?: string): 
 
 Added in v1.0.0
 
-# failures
+# failures (function)
 
-**Signature** (function)
+**Signature**
 
 ```ts
 export const failures = <T>(errors: Errors): Validation<T> => ...
@@ -1826,9 +1820,9 @@ export const failures = <T>(errors: Errors): Validation<T> => ...
 
 Added in v1.0.0
 
-# getContextEntry
+# getContextEntry (function)
 
-**Signature** (function)
+**Signature**
 
 ```ts
 export const getContextEntry = (key: string, decoder: Decoder<any, any>): ContextEntry => ...
@@ -1836,9 +1830,9 @@ export const getContextEntry = (key: string, decoder: Decoder<any, any>): Contex
 
 Added in v1.0.0
 
-# ~~getDefaultContext~~
+# ~~getDefaultContext~~ (function)
 
-**Signature** (function)
+**Signature**
 
 ```ts
 export const getDefaultContext /* istanbul ignore next */ = (decoder: Decoder<any, any>): Context => ...
@@ -1846,9 +1840,9 @@ export const getDefaultContext /* istanbul ignore next */ = (decoder: Decoder<an
 
 Added in v1.0.0
 
-# getFunctionName
+# getFunctionName (function)
 
-**Signature** (function)
+**Signature**
 
 ```ts
 export const getFunctionName = (f: Function): string => ...
@@ -1856,9 +1850,9 @@ export const getFunctionName = (f: Function): string => ...
 
 Added in v1.0.0
 
-# ~~getValidationError~~
+# ~~getValidationError~~ (function)
 
-**Signature** (function)
+**Signature**
 
 ```ts
 export const getValidationError /* istanbul ignore next */ = (value: unknown, context: Context): ValidationError => ...
@@ -1866,9 +1860,9 @@ export const getValidationError /* istanbul ignore next */ = (value: unknown, co
 
 Added in v1.0.0
 
-# identity
+# identity (function)
 
-**Signature** (function)
+**Signature**
 
 ```ts
 export const identity = <A>(a: A): A => ...
@@ -1876,9 +1870,9 @@ export const identity = <A>(a: A): A => ...
 
 Added in v1.0.0
 
-# intersection
+# intersection (function)
 
-**Signature** (function)
+**Signature**
 
 ```ts
 export function intersection<A extends Mixed, B extends Mixed, C extends Mixed, D extends Mixed, E extends Mixed>(
@@ -1901,9 +1895,9 @@ export function intersection<CS extends [Mixed, Mixed, ...Array<Mixed>]>(
 
 Added in v1.0.0
 
-# keyof
+# keyof (function)
 
-**Signature** (function)
+**Signature**
 
 ```ts
 export const keyof = <D extends { [key: string]: unknown }>(
@@ -1916,9 +1910,9 @@ export const keyof = <D extends { [key: string]: unknown }>(
 
 Added in v1.0.0
 
-# literal
+# literal (function)
 
-**Signature** (function)
+**Signature**
 
 ```ts
 export const literal = <V extends LiteralValue>(value: V, name: string = JSON.stringify(value)): LiteralC<V> => ...
@@ -1926,9 +1920,9 @@ export const literal = <V extends LiteralValue>(value: V, name: string = JSON.st
 
 Added in v1.0.0
 
-# partial
+# partial (function)
 
-**Signature** (function)
+**Signature**
 
 ```ts
 export const partial = <P extends Props>(
@@ -1939,9 +1933,9 @@ export const partial = <P extends Props>(
 
 Added in v1.0.0
 
-# readonly
+# readonly (function)
 
-**Signature** (function)
+**Signature**
 
 ```ts
 export const readonly = <C extends Mixed>(codec: C, name: string = `Readonly<${codec.name}>`): ReadonlyC<C> =>
@@ -1954,9 +1948,9 @@ export const readonly = <C extends Mixed>(codec: C, name: string = `Readonly<${c
 
 Added in v1.0.0
 
-# readonlyArray
+# readonlyArray (function)
 
-**Signature** (function)
+**Signature**
 
 ```ts
 export const readonlyArray = <C extends Mixed>(
@@ -1967,9 +1961,9 @@ export const readonlyArray = <C extends Mixed>(
 
 Added in v1.0.0
 
-# record
+# record (function)
 
-**Signature** (function)
+**Signature**
 
 ```ts
 export const record = <D extends Mixed, C extends Mixed>(
@@ -1981,9 +1975,9 @@ export const record = <D extends Mixed, C extends Mixed>(
 
 Added in v1.7.1
 
-# recursion
+# recursion (function)
 
-**Signature** (function)
+**Signature**
 
 ```ts
 export const recursion = <A, O = A, I = unknown, C extends Type<A, O, I> = Type<A, O, I>>(
@@ -1994,11 +1988,11 @@ export const recursion = <A, O = A, I = unknown, C extends Type<A, O, I> = Type<
 
 Added in v1.0.0
 
-# ~~refinement~~
+# ~~refinement~~ (function)
 
 Use `brand` instead
 
-**Signature** (function)
+**Signature**
 
 ```ts
 export function refinement<C extends Any>(
@@ -2009,11 +2003,11 @@ export function refinement<C extends Any>(
 
 Added in v1.0.0
 
-# strict
+# strict (function)
 
 Strips additional properties
 
-**Signature** (function)
+**Signature**
 
 ```ts
 export const strict = <P extends Props>(props: P, name?: string): ExactC<TypeC<P>> => ...
@@ -2021,9 +2015,9 @@ export const strict = <P extends Props>(props: P, name?: string): ExactC<TypeC<P
 
 Added in v1.0.0
 
-# success
+# success (function)
 
-**Signature** (function)
+**Signature**
 
 ```ts
 export const success = <T>(value: T): Validation<T> => ...
@@ -2031,9 +2025,9 @@ export const success = <T>(value: T): Validation<T> => ...
 
 Added in v1.0.0
 
-# taggedUnion
+# taggedUnion (function)
 
-**Signature** (function)
+**Signature**
 
 ```ts
 export const taggedUnion = <Tag extends string, CS extends [Mixed, Mixed, ...Array<Mixed>]>(
@@ -2045,9 +2039,9 @@ export const taggedUnion = <Tag extends string, CS extends [Mixed, Mixed, ...Arr
 
 Added in v1.3.0
 
-# tuple
+# tuple (function)
 
-**Signature** (function)
+**Signature**
 
 ```ts
 export function tuple<A extends Mixed, B extends Mixed, C extends Mixed, D extends Mixed, E extends Mixed>(
@@ -2071,17 +2065,17 @@ export function tuple<CS extends [Mixed, ...Array<Mixed>]>(
 
 Added in v1.0.0
 
-# type
+# type (function)
 
-**Signature** (function)
+**Signature**
 
 ```ts
 export const type = <P extends Props>(props: P, name: string = getInterfaceTypeName(props)): TypeC<P> => ...
 ```
 
-# union
+# union (function)
 
-**Signature** (function)
+**Signature**
 
 ```ts
 export const union = <CS extends [Mixed, Mixed, ...Array<Mixed>]>(
