@@ -215,11 +215,11 @@ describe('getIndexRecord', () => {
         ar: A | R
         ra: R | A
       }
-      const R = t.recursion<R>('R', self =>
+      const R: t.RecursiveType<t.Type<R>> = t.recursion('R', () =>
         t.type({
           type: t.literal('R'),
-          ar: t.taggedUnion('type', [A, self as any]),
-          ra: t.taggedUnion('type', [self as any, A])
+          ar: t.taggedUnion('type', [A, R]),
+          ra: t.taggedUnion('type', [R, A])
         })
       )
       assertEqualIndexRecord([R], { type: [['R', R, R]] })
