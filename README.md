@@ -198,6 +198,8 @@ console.log(PathReporter.report(NumberFromString.decode('a')))
   io-ts
 - [graphql-to-io-ts](https://github.com/micimize/graphql-to-io-ts) - Generate typescript and cooresponding io-ts types from a graphql
   schema
+- [io-ts-promise](https://github.com/aeirola/io-ts-promise) - Convenience library for using io-ts with promise-based APIs
+
 
 # TypeScript integration
 
