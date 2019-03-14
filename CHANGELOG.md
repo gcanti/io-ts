@@ -14,6 +14,16 @@
 **Note**: Gaps between patch versions are faulty/broken releases. **Note**: A feature tagged as Experimental is in a
 high state of flux, you're at risk of it changing without notice.
 
+# 1.8.3
+
+- **Polish**
+  - add `stripInternal` flag to `tsconfig.json` (@gcanti)
+  - handle `NaN` in `PathReporter` (@gcanti)
+  - throw if union encoding doesn't find a usable codec (@leemhenson)
+- **Deprecation**
+  - deprecate `NeverType` (@gcanti)
+  - deprecate `FunctionType` (@gcanti)
+
 # 1.8.2
 
 - **Bug Fix**

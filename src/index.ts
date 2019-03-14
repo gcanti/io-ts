@@ -433,6 +433,7 @@ export interface UnknownRecordC extends AnyDictionaryType {}
 
 /**
  * @since 1.0.0
+ * @deprecated
  */
 export class FunctionType extends Type<Function> {
   readonly _tag: 'FunctionType' = 'FunctionType'
@@ -449,11 +450,13 @@ export class FunctionType extends Type<Function> {
 
 /**
  * @since 1.5.3
+ * @deprecated
  */
 export interface FunctionC extends FunctionType {}
 
 /**
  * @since 1.0.0
+ * @deprecated
  */
 export const Function: FunctionC = new FunctionType()
 
@@ -1110,7 +1113,7 @@ export const union = <CS extends [Mixed, Mixed, ...Array<Mixed>]>(
               return codec.encode(a)
             }
           }
-
+          // https://github.com/gcanti/io-ts/pull/305
           throw new Error(`no codec found to encode value in union type ${name}`)
         },
     codecs
