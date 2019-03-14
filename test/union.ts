@@ -112,6 +112,33 @@ describe('union', () => {
       assert.deepStrictEqual(T3.encode(x1), { a: 1 })
       assert.deepStrictEqual(T3.encode(x2), { b: '2' })
     })
+
+    it('should throw if none of the codecs are applicable', () => {
+      class DateT extends t.Type<Date, number> {
+        public readonly _tag: 'DateT' = 'DateT'
+
+        constructor() {
+          super(
+            'DateT',
+            (u): u is Date => u instanceof Date,
+            (u, c) => t.number.validate(u, c).map(n => new Date(n)),
+            a => a.valueOf()
+          )
+        }
+      }
+
+      const U1 = t.union([new DateT(), t.null])
+      const u1 = 'not the right thing' as any
+      let failed = false
+
+      try {
+        U1.encode(u1)
+      } catch (e) {
+        failed = true
+      }
+
+      assert.equal(failed, true)
+    })
   })
 
   it.skip('should optimize tagged unions', () => {

@@ -1110,6 +1110,8 @@ export const union = <CS extends [Mixed, Mixed, ...Array<Mixed>]>(
               return codec.encode(a)
             }
           }
+
+          throw new Error(`no codec found to encode value in union type ${name}`)
         },
     codecs
   )
