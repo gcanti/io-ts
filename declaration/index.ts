@@ -39,7 +39,7 @@ type R = {
   b: R | undefined | null
 }
 
-export const Rec1 = t.recursion<R>('R1', self =>
+export const Rec1: t.Type<R> = t.recursion('R1', self =>
   t.interface({
     a: t.number,
     b: t.union([self, t.undefined, t.null])

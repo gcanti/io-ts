@@ -267,7 +267,7 @@ interface Category {
   categories: Array<Category>
 }
 
-const Category: t.RecursiveType<t.Type<Category>> = t.recursion('Category', () =>
+const Category: t.Type<Category> = t.recursion('Category', () =>
   t.type({
     name: t.string,
     categories: t.array(Category)
@@ -288,14 +288,14 @@ interface Bar {
   a: Foo | undefined
 }
 
-const Foo: t.RecursiveType<t.Type<Foo>> = t.recursion('Foo', () =>
+const Foo: t.Type<Foo> = t.recursion('Foo', () =>
   t.interface({
     type: t.literal('Foo'),
     b: t.union([Bar, t.undefined])
   })
 )
 
-const Bar: t.RecursiveType<t.Type<Bar>> = t.recursion('Bar', () =>
+const Bar: t.Type<Bar> = t.recursion('Bar', () =>
   t.interface({
     type: t.literal('Bar'),
     a: t.union([Foo, t.undefined])

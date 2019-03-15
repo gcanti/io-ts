@@ -25,7 +25,7 @@ declare type R = {
     a: number;
     b: R | undefined | null;
 };
-export declare const Rec1: t.RecursiveType<t.Type<R, R, unknown>, R, R, unknown>;
+export declare const Rec1: t.Type<R>;
 export declare const A1: t.ArrayC<t.TypeC<{
     e: t.TypeC<{
         d: t.TypeC<{

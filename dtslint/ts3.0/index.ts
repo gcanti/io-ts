@@ -33,22 +33,14 @@ interface Recursion1 {
   items: Array<Recursion1>
 }
 
-const Recursion1 = t.recursion<Recursion1>('T', _ =>
+const Recursion1: t.Type<Recursion1> = t.recursion('T', () =>
   t.type({
     type: t.literal('a'),
-    items: t.array(_)
+    items: t.array(Recursion1)
   })
 )
 
-const Recursion1TypeTest = Recursion1 // $ExpectType RecursiveType<Type<Recursion1, Recursion1, unknown>, Recursion1, Recursion1, unknown>
-
-// $ExpectError
-const Recursion2 = t.recursion<string>('T', _ => {
-  return t.type({
-    type: t.literal('a'),
-    items: t.array(_)
-  })
-})
+const Recursion1TypeTest = Recursion1 // $ExpectType Type<Recursion1, Recursion1, unknown>
 
 //
 // literal

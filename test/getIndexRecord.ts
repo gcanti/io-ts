@@ -140,7 +140,7 @@ describe('getIndexRecord', () => {
         ru: R | undefined
         ur: undefined | R
       }
-      const R = t.recursion<R>('R', Self =>
+      const R: t.Type<R> = t.recursion('R', Self =>
         t.type({
           ru: t.union([Self, t.undefined]),
           ur: t.union([t.undefined, Self])
@@ -155,7 +155,7 @@ describe('getIndexRecord', () => {
         ru: R | undefined
         ur: undefined | R
       }
-      const R = t.recursion<R>('R', Self =>
+      const R: t.Type<R> = t.recursion('R', Self =>
         t.type({
           type: t.literal('R'),
           ru: t.union([Self, t.undefined]),
@@ -174,7 +174,7 @@ describe('getIndexRecord', () => {
         ra: R | A
         ar: A | R
       }
-      const R = t.recursion<R>('R', Self =>
+      const R: t.Type<R> = t.recursion('R', Self =>
         t.type({
           ra: t.union([Self, A]),
           ar: t.union([A, Self])
@@ -194,7 +194,7 @@ describe('getIndexRecord', () => {
         ra: R | A
         ar: A | R
       }
-      const R = t.recursion<R>('R', Self =>
+      const R: t.Type<R> = t.recursion('R', Self =>
         t.type({
           type: t.literal('R'),
           ra: t.union([Self, A]),
@@ -215,7 +215,7 @@ describe('getIndexRecord', () => {
         ar: A | R
         ra: R | A
       }
-      const R: t.RecursiveType<t.Type<R>> = t.recursion('R', () =>
+      const R: t.Type<R> = t.recursion('R', () =>
         t.type({
           type: t.literal('R'),
           ar: t.taggedUnion('type', [A, R]),
@@ -232,7 +232,7 @@ describe('getIndexRecord', () => {
         bu: B | undefined
         ub: undefined | B
       }
-      const A: t.RecursiveType<t.Type<A>, A> = t.recursion('A', () =>
+      const A: t.Type<A> = t.recursion('A', () =>
         t.type({
           type: t.literal('A'),
           bu: t.union([B, t.undefined]),
@@ -244,7 +244,7 @@ describe('getIndexRecord', () => {
         au: A | undefined
         ua: undefined | A
       }
-      const B = t.recursion<B>('B', () =>
+      const B: t.Type<B> = t.recursion('B', () =>
         t.type({
           type: t.literal('B'),
           au: t.union([A, t.undefined]),
@@ -266,7 +266,7 @@ describe('getIndexRecord', () => {
       type: 'R'
       ra: R | A
     }
-    const R = t.recursion<R>('R', Self =>
+    const R: t.Type<R> = t.recursion('R', Self =>
       t.type({
         type: t.literal('R'),
         ra: t.union([Self, A])
