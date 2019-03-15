@@ -8,7 +8,6 @@ Table of contents
 <!-- START doctoc generated TOC please keep comment here to allow auto update -->
 <!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
 
-
 - [The idea](#the-idea)
 - [TypeScript compatibility](#typescript-compatibility)
 - [Error reporters](#error-reporters)
@@ -200,7 +199,6 @@ console.log(PathReporter.report(NumberFromString.decode('a')))
   schema
 - [io-ts-promise](https://github.com/aeirola/io-ts-promise) - Convenience library for using io-ts with promise-based APIs
 
-
 # TypeScript integration
 
 codecs can be inspected
@@ -303,8 +301,6 @@ const Bar: t.RecursiveType<t.Type<Bar>> = t.recursion('Bar', () =>
     a: t.union([Foo, t.undefined])
   })
 )
-
-const FooBar = t.taggedUnion('type', [Foo, Bar])
 ```
 
 # Tagged unions
