@@ -1,3 +1,6 @@
+/**
+ * @deprecated
+ */
 import { Reporter } from './Reporter'
 import { PathReporter } from './PathReporter'
 

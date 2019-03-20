@@ -21,7 +21,7 @@ parent: Modules
 - [Encoder (interface)](#encoder-interface)
 - [Errors (interface)](#errors-interface)
 - [ExactC (interface)](#exactc-interface)
-- [FunctionC (interface)](#functionc-interface)
+- [~~FunctionC~~ (interface)](#functionc-interface)
 - [HasPropsIntersection (interface)](#haspropsintersection-interface)
 - [HasPropsReadonly (interface)](#haspropsreadonly-interface)
 - [HasPropsRefinement (interface)](#haspropsrefinement-interface)
@@ -87,7 +87,7 @@ parent: Modules
 - [BooleanType (class)](#booleantype-class)
 - [DictionaryType (class)](#dictionarytype-class)
 - [ExactType (class)](#exacttype-class)
-- [FunctionType (class)](#functiontype-class)
+- [~~FunctionType~~ (class)](#functiontype-class)
 - [InterfaceType (class)](#interfacetype-class)
 - [IntersectionType (class)](#intersectiontype-class)
 - [KeyofType (class)](#keyoftype-class)
@@ -115,7 +115,7 @@ parent: Modules
 - [UnknownType (class)](#unknowntype-class)
 - [VoidType (class)](#voidtype-class)
 - [~~Dictionary~~ (constant)](#dictionary-constant)
-- [Function (constant)](#function-constant)
+- [~~Function~~ (constant)](#function-constant)
 - [Int (constant)](#int-constant)
 - [~~Integer~~ (constant)](#integer-constant)
 - [UnknownArray (constant)](#unknownarray-constant)
@@ -311,7 +311,7 @@ export interface ExactC<C extends HasProps> extends ExactType<C, TypeOf<C>, Outp
 
 Added in v1.5.3
 
-# FunctionC (interface)
+# ~~FunctionC~~ (interface)
 
 **Signature**
 
@@ -1119,7 +1119,7 @@ export class ExactType<C, A, O, I> {
 
 Added in v1.1.0
 
-# FunctionType (class)
+# ~~FunctionType~~ (class)
 
 **Signature**
 
@@ -1457,7 +1457,8 @@ Added in v1.0.0
 pipe<B, IB, A extends IB, OB extends A>(
     this: Type<A, O, I>,
     ab: Type<B, OB, IB>,
-    name: string = `pipe($ { ... }
+    name: string = `pipe(${this.name}, ${ab.name})`
+  ): Type<B, O, I> { ... }
 ```
 
 ## asDecoder (method)
@@ -1556,7 +1557,7 @@ export const Dictionary: UnknownRecordC = ...
 
 Added in v1.0.0
 
-# Function (constant)
+# ~~Function~~ (constant)
 
 **Signature**
 
@@ -1742,10 +1743,7 @@ export function alias<A, O, P, I>(
   OO extends Exact<O, OO> = O,
   PP extends Exact<P, PP> = P,
   II extends I = I
->() => InterfaceType<PP, AA, OO, II>
-export function alias<A, O, I>(
-  codec: Type<A, O, I>
-): <AA extends Exact<A, AA>, OO extends Exact<O, OO> = O>() => Type<AA, OO, I> { ... }
+>() => InterfaceType<PP, AA, OO, II> { ... }
 ```
 
 Added in v1.1.0
@@ -1899,10 +1897,7 @@ export function intersection<A extends Mixed, B extends Mixed, C extends Mixed>(
   codecs: [A, B, C],
   name?: string
 ): IntersectionC<[A, B, C]>
-export function intersection<A extends Mixed, B extends Mixed>(codecs: [A, B], name?: string): IntersectionC<[A, B]>
-export function intersection<CS extends [Mixed, Mixed, ...Array<Mixed>]>(
-  codecs: CS,
-  name: string = `($ { ... }
+export function intersection<A extends Mixed, B extends Mixed>(codecs: [A, B], name?: string): IntersectionC<[A, B]> { ... }
 ```
 
 Added in v1.0.0
@@ -2010,7 +2005,8 @@ Use `brand` instead
 export function refinement<C extends Any>(
   codec: C,
   predicate: Predicate<TypeOf<C>>,
-  name: string = `($ { ... }
+  name: string = `(${codec.name} | ${getFunctionName(predicate)})`
+): RefinementC<C> { ... }
 ```
 
 Added in v1.0.0
@@ -2069,10 +2065,7 @@ export function tuple<A extends Mixed, B extends Mixed, C extends Mixed>(
   name?: string
 ): TupleC<[A, B, C]>
 export function tuple<A extends Mixed, B extends Mixed>(codecs: [A, B], name?: string): TupleC<[A, B]>
-export function tuple<A extends Mixed>(codecs: [A], name?: string): TupleC<[A]>
-export function tuple<CS extends [Mixed, ...Array<Mixed>]>(
-  codecs: CS,
-  name: string = `[$ { ... }
+export function tuple<A extends Mixed>(codecs: [A], name?: string): TupleC<[A]> { ... }
 ```
 
 Added in v1.0.0
