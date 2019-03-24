@@ -250,7 +250,7 @@ type User = {
 | tuple                       | `[ A, B ]`                  | `t.tuple([ A, B ])`                                                  |
 | union                       | `A \| B`                    | `t.union([ A, B ])` or `t.taggedUnion(tag, [ A, B ])`                |
 | intersection                | `A & B`                     | `t.intersection([ A, B ])`                                           |
-| keyof                       | `keyof M`                   | `t.keyof(M)`                                                         |
+| keyof                       | `keyof M`                   | `t.keyof(M)` (**only supports string keys**)                         |
 | recursive types             | ✘                           | `t.recursion(name, definition)`                                      |
 | branded types / refinements | ✘                           | `t.brand(A, predicate, brand)`                                       |
 | integer                     | ✘                           | `t.Int` (built-in branded codec)                                     |
@@ -562,13 +562,13 @@ Benefits
 - unique check for free
 - better performance, `O(log(n))` vs `O(n)`
 
-Beware that `keyof` is designed to work with objects containing string keys. If you intend to define a numbers enumeration, you have to use an `union` of number literals : 
+Beware that `keyof` is designed to work with objects containing string keys. If you intend to define a numbers enumeration, you have to use an `union` of number literals :
 
 ```ts
 const HttpCode = t.union([
   t.literal(200),
   t.literal(201),
-  t.literal(202),
+  t.literal(202)
   // etc...
 ])
 ```
