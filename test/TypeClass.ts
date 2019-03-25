@@ -1,7 +1,7 @@
 import * as assert from 'assert'
 import * as t from '../src/index'
 import { assertSuccess, assertFailure } from './helpers'
-import { right } from 'fp-ts/lib/Either'
+import { right, Either } from 'fp-ts/lib/Either'
 
 const BAA = new t.Type<number, string, string>(
   'BAA',
@@ -19,6 +19,28 @@ const BAI = t.string.pipe(
 )
 
 describe('Type', () => {
+  it('should auto bind decode', () => {
+    function clone<C extends t.Any>(t: C): C {
+      const r = Object.create(Object.getPrototypeOf(t))
+      ;(Object as any).assign(r, t)
+      return r
+    }
+
+    const T = t.string
+    const decode = <L, A>(f: (u: unknown) => Either<L, A>, u: unknown): boolean => f(u).isRight()
+    assert.strictEqual(decode(T.decode, 'a'), true)
+    assert.strictEqual(decode(clone(T).decode, 'a'), true)
+    type A = {
+      a: A | null
+    }
+    const A: t.Type<A> = t.recursion('A', () =>
+      t.type({
+        a: t.union([A, t.null])
+      })
+    )
+    assert.strictEqual(decode(clone(A).decode, { a: { a: null } }), true)
+  })
+
   describe('pipe', () => {
     it('should assign a default name', () => {
       const AOI = t.string

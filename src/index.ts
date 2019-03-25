@@ -115,7 +115,9 @@ export class Type<A, O = A, I = unknown> implements Decoder<I, A>, Encoder<A, O>
     readonly validate: Validate<I, A>,
     /** converts a value of type A to a value of type O */
     readonly encode: Encode<A, O>
-  ) {}
+  ) {
+    this.decode = this.decode.bind(this)
+  }
 
   pipe<B, IB, A extends IB, OB extends A>(
     this: Type<A, O, I>,
