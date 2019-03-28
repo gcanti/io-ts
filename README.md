@@ -188,6 +188,8 @@ console.log(PathReporter.report(NumberFromString.decode('a')))
 // => ['cannot parse to a number']
 ```
 
+You can also use the [`withMessage`](https://gcanti.github.io/io-ts-types/modules/withMessage.ts.html) helper from [io-ts-types](https://github.com/gcanti/io-ts-types)
+
 # Community
 
 - [io-ts-types](https://github.com/gcanti/io-ts-types) - A collection of codecs and combinators for use with
