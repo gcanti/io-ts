@@ -14,6 +14,11 @@
 **Note**: Gaps between patch versions are faulty/broken releases. **Note**: A feature tagged as Experimental is in a
 high state of flux, you're at risk of it changing without notice.
 
+# 1.8.5
+
+- **Bug Fix**
+  - change how types and output types are retrieved in `IntersectionC` and `TupleC`, fix #315 (@gcanti)
+
 # 1.8.4
 
 - **Polish**
