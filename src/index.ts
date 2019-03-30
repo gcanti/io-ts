@@ -1144,23 +1144,23 @@ export class IntersectionType<CS extends Array<Any>, A = any, O = A, I = unknown
 export interface IntersectionC<CS extends [Mixed, Mixed, ...Array<Mixed>]>
   extends IntersectionType<
     CS,
-    CS extends [Mixed, Mixed]
-      ? TypeOf<CS['0']> & TypeOf<CS['1']>
-      : CS extends [Mixed, Mixed, Mixed]
-      ? TypeOf<CS['0']> & TypeOf<CS['1']> & TypeOf<CS['2']>
-      : CS extends [Mixed, Mixed, Mixed, Mixed]
-      ? TypeOf<CS['0']> & TypeOf<CS['1']> & TypeOf<CS['2']> & TypeOf<CS['3']>
-      : CS extends [Mixed, Mixed, Mixed, Mixed, Mixed]
-      ? TypeOf<CS['0']> & TypeOf<CS['1']> & TypeOf<CS['2']> & TypeOf<CS['3']> & TypeOf<CS['4']>
+    CS extends { length: 2 }
+      ? TypeOf<CS[0]> & TypeOf<CS[1]>
+      : CS extends { length: 3 }
+      ? TypeOf<CS[0]> & TypeOf<CS[1]> & TypeOf<CS[2]>
+      : CS extends { length: 4 }
+      ? TypeOf<CS[0]> & TypeOf<CS[1]> & TypeOf<CS[2]> & TypeOf<CS[3]>
+      : CS extends { length: 5 }
+      ? TypeOf<CS[0]> & TypeOf<CS[1]> & TypeOf<CS[2]> & TypeOf<CS[3]> & TypeOf<CS[4]>
       : unknown,
-    CS extends [Mixed, Mixed]
-      ? OutputOf<CS['0']> & OutputOf<CS['1']>
-      : CS extends [Mixed, Mixed, Mixed]
-      ? OutputOf<CS['0']> & OutputOf<CS['1']> & OutputOf<CS['2']>
-      : CS extends [Mixed, Mixed, Mixed, Mixed]
-      ? OutputOf<CS['0']> & OutputOf<CS['1']> & OutputOf<CS['2']> & OutputOf<CS['3']>
-      : CS extends [Mixed, Mixed, Mixed, Mixed, Mixed]
-      ? OutputOf<CS['0']> & OutputOf<CS['1']> & OutputOf<CS['2']> & OutputOf<CS['3']> & OutputOf<CS['4']>
+    CS extends { length: 2 }
+      ? OutputOf<CS[0]> & OutputOf<CS[1]>
+      : CS extends { length: 3 }
+      ? OutputOf<CS[0]> & OutputOf<CS[1]> & OutputOf<CS[2]>
+      : CS extends { length: 4 }
+      ? OutputOf<CS[0]> & OutputOf<CS[1]> & OutputOf<CS[2]> & OutputOf<CS[3]>
+      : CS extends { length: 5 }
+      ? OutputOf<CS[0]> & OutputOf<CS[1]> & OutputOf<CS[2]> & OutputOf<CS[3]> & OutputOf<CS[4]>
       : unknown,
     unknown
   > {}
@@ -1252,27 +1252,27 @@ export class TupleType<CS extends Array<Any>, A = any, O = A, I = unknown> exten
 export interface TupleC<CS extends [Mixed, ...Array<Mixed>]>
   extends TupleType<
     CS,
-    CS extends [Mixed]
-      ? [TypeOf<CS['0']>]
-      : CS extends [Mixed, Mixed]
-      ? [TypeOf<CS['0']>, TypeOf<CS['1']>]
-      : CS extends [Mixed, Mixed, Mixed]
-      ? [TypeOf<CS['0']>, TypeOf<CS['1']>, TypeOf<CS['2']>]
-      : CS extends [Mixed, Mixed, Mixed, Mixed]
-      ? [TypeOf<CS['0']>, TypeOf<CS['1']>, TypeOf<CS['2']>, TypeOf<CS['3']>]
-      : CS extends [Mixed, Mixed, Mixed, Mixed, Mixed]
-      ? [TypeOf<CS['0']>, TypeOf<CS['1']>, TypeOf<CS['2']>, TypeOf<CS['3']>, TypeOf<CS['4']>]
+    CS extends { length: 1 }
+      ? [TypeOf<CS[0]>]
+      : CS extends { length: 2 }
+      ? [TypeOf<CS[0]>, TypeOf<CS[1]>]
+      : CS extends { length: 3 }
+      ? [TypeOf<CS[0]>, TypeOf<CS[1]>, TypeOf<CS[2]>]
+      : CS extends { length: 4 }
+      ? [TypeOf<CS[0]>, TypeOf<CS[1]>, TypeOf<CS[2]>, TypeOf<CS[3]>]
+      : CS extends { length: 5 }
+      ? [TypeOf<CS[0]>, TypeOf<CS[1]>, TypeOf<CS[2]>, TypeOf<CS[3]>, TypeOf<CS[4]>]
       : unknown,
-    CS extends [Mixed]
-      ? [OutputOf<CS['0']>]
-      : CS extends [Mixed, Mixed]
-      ? [OutputOf<CS['0']>, OutputOf<CS['1']>]
-      : CS extends [Mixed, Mixed, Mixed]
-      ? [OutputOf<CS['0']>, OutputOf<CS['1']>, OutputOf<CS['2']>]
-      : CS extends [Mixed, Mixed, Mixed, Mixed]
-      ? [OutputOf<CS['0']>, OutputOf<CS['1']>, OutputOf<CS['2']>, OutputOf<CS['3']>]
-      : CS extends [Mixed, Mixed, Mixed, Mixed, Mixed]
-      ? [OutputOf<CS['0']>, OutputOf<CS['1']>, OutputOf<CS['2']>, OutputOf<CS['3']>, OutputOf<CS['4']>]
+    CS extends { length: 1 }
+      ? [OutputOf<CS[0]>]
+      : CS extends { length: 2 }
+      ? [OutputOf<CS[0]>, OutputOf<CS[1]>]
+      : CS extends { length: 3 }
+      ? [OutputOf<CS[0]>, OutputOf<CS[1]>, OutputOf<CS[2]>]
+      : CS extends { length: 4 }
+      ? [OutputOf<CS[0]>, OutputOf<CS[1]>, OutputOf<CS[2]>, OutputOf<CS[3]>]
+      : CS extends { length: 5 }
+      ? [OutputOf<CS[0]>, OutputOf<CS[1]>, OutputOf<CS[2]>, OutputOf<CS[3]>, OutputOf<CS[4]>]
       : unknown,
     unknown
   > {}
