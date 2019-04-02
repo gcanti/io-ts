@@ -461,7 +461,7 @@ Would be:
 // t.Mixed = t.Type<any, any, unknown>
 const ResponseBody = <C extends t.Mixed>(codec: C) =>
   t.interface({
-    result: type,
+    result: codec,
     _links: Links
   })
 
