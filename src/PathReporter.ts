@@ -1,5 +1,6 @@
 import { Reporter } from './Reporter'
 import { Context, getFunctionName, ValidationError } from './index'
+import { fold } from 'fp-ts/lib/Either'
 
 function stringify(v: any): string {
   if (typeof v === 'function') {
@@ -42,5 +43,5 @@ export function success(): Array<string> {
  * @since 1.0.0
  */
 export const PathReporter: Reporter<Array<string>> = {
-  report: validation => validation.fold(failure, success)
+  report: validation => fold(validation, failure, success)
 }

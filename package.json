@@ -34,11 +34,11 @@
   },
   "homepage": "https://github.com/gcanti/io-ts",
   "dependencies": {
-    "fp-ts": "^1.0.0"
+    "fp-ts": "github:gcanti/fp-ts#v2-lib"
   },
   "devDependencies": {
     "@types/benchmark": "1.0.31",
-    "@types/jest": "^23.3.8",
+    "@types/jest": "^23.3.14",
     "@types/node": "7.0.4",
     "benchmark": "2.1.4",
     "docs-ts": "0.0.1",
@@ -46,13 +46,13 @@
     "dtslint": "github:gcanti/dtslint",
     "jest": "^23.6.0",
     "mocha": "^5.2.0",
-    "prettier": "^1.15.3",
+    "prettier": "^1.17.0",
     "rimraf": "2.6.2",
-    "ts-jest": "^23.10.4",
+    "ts-jest": "^23.10.5",
     "ts-node": "^7.0.1",
-    "tslint": "^5.11.0",
+    "tslint": "^5.16.0",
     "tslint-config-standard": "^8.0.1",
-    "typescript": "^3.4.1"
+    "typescript": "^3.4.5"
   },
   "tags": [
     "typescript",

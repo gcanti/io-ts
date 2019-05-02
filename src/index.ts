@@ -1,4 +1,4 @@
-import { Either, Left, Right } from 'fp-ts/lib/Either'
+import { either, Either, isLeft, isRight, left, right } from 'fp-ts/lib/Either'
 import { Predicate, Refinement } from 'fp-ts/lib/function'
 import { Monoid } from 'fp-ts/lib/Monoid'
 
@@ -129,10 +129,10 @@ export class Type<A, O = A, I = unknown> implements Decoder<I, A>, Encoder<A, O>
       ab.is,
       (i, c) => {
         const validation = this.validate(i, c)
-        if (validation.isLeft()) {
+        if (isLeft(validation)) {
           return validation as any
         }
-        return ab.validate(validation.value, c)
+        return ab.validate(validation.right, c)
       },
       this.encode === identity && ab.encode === identity ? (identity as any) : b => this.encode(ab.encode(b))
     )
@@ -181,7 +181,7 @@ export const appendContext = (c: Context, key: string, decoder: Decoder<any, any
 /**
  * @since 1.0.0
  */
-export const failures = <T>(errors: Errors): Validation<T> => new Left(errors)
+export const failures = <T>(errors: Errors): Validation<T> => left(errors)
 
 /**
  * @since 1.0.0
@@ -192,7 +192,7 @@ export const failure = <T>(value: unknown, context: Context, message?: string): 
 /**
  * @since 1.0.0
  */
-export const success = <T>(value: T): Validation<T> => new Right<Errors, T>(value)
+export const success = <T>(value: T): Validation<T> => right<T>(value)
 
 const pushAll = <A>(xs: Array<A>, ys: Array<A>): void => {
   const l = ys.length
@@ -679,20 +679,20 @@ export const array = <C extends Mixed>(codec: C, name: string = `Array<${codec.n
     (u): u is Array<TypeOf<C>> => UnknownArray.is(u) && u.every(codec.is),
     (u, c) => {
       const unknownArrayValidation = UnknownArray.validate(u, c)
-      if (unknownArrayValidation.isLeft()) {
+      if (isLeft(unknownArrayValidation)) {
         return unknownArrayValidation
       }
-      const us = unknownArrayValidation.value
+      const us = unknownArrayValidation.right
       const len = us.length
       let as: Array<TypeOf<C>> = us
       const errors: Errors = []
       for (let i = 0; i < len; i++) {
         const ui = us[i]
         const validation = codec.validate(ui, appendContext(c, String(i), codec, ui))
-        if (validation.isLeft()) {
-          pushAll(errors, validation.value)
+        if (isLeft(validation)) {
+          pushAll(errors, validation.left)
         } else {
-          const ai = validation.value
+          const ai = validation.right
           if (ai !== ui) {
             if (as === us) {
               as = us.slice()
@@ -795,10 +795,10 @@ export const type = <P extends Props>(props: P, name: string = getInterfaceTypeN
     },
     (u, c) => {
       const unknownRecordValidation = UnknownRecord.validate(u, c)
-      if (unknownRecordValidation.isLeft()) {
+      if (isLeft(unknownRecordValidation)) {
         return unknownRecordValidation
       }
-      const o = unknownRecordValidation.value
+      const o = unknownRecordValidation.right
       let a = o
       const errors: Errors = []
       for (let i = 0; i < len; i++) {
@@ -812,10 +812,10 @@ export const type = <P extends Props>(props: P, name: string = getInterfaceTypeN
         const ak = a[k]
         const type = types[i]
         const validation = type.validate(ak, appendContext(c, k, type, ak))
-        if (validation.isLeft()) {
-          pushAll(errors, validation.value)
+        if (isLeft(validation)) {
+          pushAll(errors, validation.left)
         } else {
-          const vak = validation.value
+          const vak = validation.right
           if (vak !== ak) {
             /* istanbul ignore next */
             if (a === o) {
@@ -907,10 +907,10 @@ export const partial = <P extends Props>(
     },
     (u, c) => {
       const unknownRecordValidation = UnknownRecord.validate(u, c)
-      if (unknownRecordValidation.isLeft()) {
+      if (isLeft(unknownRecordValidation)) {
         return unknownRecordValidation
       }
-      const o = unknownRecordValidation.value
+      const o = unknownRecordValidation.right
       let a = o
       const errors: Errors = []
       for (let i = 0; i < len; i++) {
@@ -918,10 +918,10 @@ export const partial = <P extends Props>(
         const ak = a[k]
         const type = props[k]
         const validation = type.validate(ak, appendContext(c, k, type, ak))
-        if (validation.isLeft() && ak !== undefined) {
-          pushAll(errors, validation.value)
-        } else if (validation.isRight()) {
-          const vak = validation.value
+        if (isLeft(validation) && ak !== undefined) {
+          pushAll(errors, validation.left)
+        } else if (isRight(validation)) {
+          const vak = validation.right
           if (vak !== ak) {
             /* istanbul ignore next */
             if (a === o) {
@@ -1006,10 +1006,10 @@ export const record = <D extends Mixed, C extends Mixed>(
     },
     (u, c) => {
       const unknownRecordValidation = UnknownRecord.validate(u, c)
-      if (unknownRecordValidation.isLeft()) {
+      if (isLeft(unknownRecordValidation)) {
         return unknownRecordValidation
       }
-      const o = unknownRecordValidation.value
+      const o = unknownRecordValidation.right
       if (!isUnknownCodec(codomain) && !isAnyCodec(codomain) && !isObject(o)) {
         return failure(u, c)
       }
@@ -1022,17 +1022,17 @@ export const record = <D extends Mixed, C extends Mixed>(
         let k = keys[i]
         const ok = o[k]
         const domainValidation = domain.validate(k, appendContext(c, k, domain, k))
-        if (domainValidation.isLeft()) {
-          pushAll(errors, domainValidation.value)
+        if (isLeft(domainValidation)) {
+          pushAll(errors, domainValidation.left)
         } else {
-          const vk = domainValidation.value
+          const vk = domainValidation.right
           changed = changed || vk !== k
           k = vk
           const codomainValidation = codomain.validate(ok, appendContext(c, k, codomain, ok))
-          if (codomainValidation.isLeft()) {
-            pushAll(errors, codomainValidation.value)
+          if (isLeft(codomainValidation)) {
+            pushAll(errors, codomainValidation.left)
           } else {
-            const vok = codomainValidation.value
+            const vok = codomainValidation.right
             changed = changed || vok !== ok
             a[k] = vok
           }
@@ -1099,10 +1099,10 @@ export const union = <CS extends [Mixed, Mixed, ...Array<Mixed>]>(
       for (let i = 0; i < len; i++) {
         const type = codecs[i]
         const validation = type.validate(u, appendContext(c, String(i), type, u))
-        if (validation.isRight()) {
+        if (isRight(validation)) {
           return validation
         }
-        pushAll(errors, validation.value)
+        pushAll(errors, validation.left)
       }
       return errors.length > 0 ? failures(errors) : failure(u, c)
     },
@@ -1217,10 +1217,10 @@ export function intersection<CS extends [Mixed, Mixed, ...Array<Mixed>]>(
           for (let i = 0; i < len; i++) {
             const codec = codecs[i]
             const validation = codec.validate(u, appendContext(c, String(i), codec, u))
-            if (validation.isLeft()) {
-              pushAll(errors, validation.value)
+            if (isLeft(validation)) {
+              pushAll(errors, validation.left)
             } else {
-              us.push(validation.value)
+              us.push(validation.right)
             }
           }
           return errors.length > 0 ? failures(errors) : success(mergeAll(u, us))
@@ -1304,20 +1304,20 @@ export function tuple<CS extends [Mixed, ...Array<Mixed>]>(
     (u): u is any => UnknownArray.is(u) && u.length === len && codecs.every((type, i) => type.is(u[i])),
     (u, c) => {
       const unknownArrayValidation = UnknownArray.validate(u, c)
-      if (unknownArrayValidation.isLeft()) {
+      if (isLeft(unknownArrayValidation)) {
         return unknownArrayValidation
       }
-      const us = unknownArrayValidation.value
+      const us = unknownArrayValidation.right
       let as: Array<any> = us.length > len ? us.slice(0, len) : us // strip additional components
       const errors: Errors = []
       for (let i = 0; i < len; i++) {
         const a = us[i]
         const type = codecs[i]
         const validation = type.validate(a, appendContext(c, String(i), type, a))
-        if (validation.isLeft()) {
-          pushAll(errors, validation.value)
+        if (isLeft(validation)) {
+          pushAll(errors, validation.left)
         } else {
-          const va = validation.value
+          const va = validation.right
           if (va !== a) {
             /* istanbul ignore next */
             if (as === us) {
@@ -1369,7 +1369,7 @@ export const readonly = <C extends Mixed>(codec: C, name: string = `Readonly<${c
     name,
     codec.is,
     (u, c) =>
-      codec.validate(u, c).map(x => {
+      either.map(codec.validate(u, c), x => {
         if (process.env.NODE_ENV !== 'production') {
           return Object.freeze(x)
         }
@@ -1413,7 +1413,7 @@ export const readonlyArray = <C extends Mixed>(
     name,
     arrayType.is,
     (u, c) =>
-      arrayType.validate(u, c).map(x => {
+      either.map(arrayType.validate(u, c), x => {
         if (process.env.NODE_ENV !== 'production') {
           return Object.freeze(x)
         }
@@ -1600,10 +1600,10 @@ const getTaggedUnion = <Tag extends string, CS extends [Mixed, Mixed, ...Array<M
     },
     (u, c) => {
       const dictionaryResult = UnknownRecord.validate(u, c)
-      if (dictionaryResult.isLeft()) {
+      if (isLeft(dictionaryResult)) {
         return dictionaryResult
       }
-      const d = dictionaryResult.value
+      const d = dictionaryResult.right
       const tagValue = d[tag]
       if (!isTagValue(tagValue)) {
         return failure(u, c)
@@ -1758,14 +1758,14 @@ export const exact = <C extends HasProps>(codec: C, name: string = getExactTypeN
     codec.is,
     (u, c) => {
       const unknownRecordValidation = UnknownRecord.validate(u, c)
-      if (unknownRecordValidation.isLeft()) {
+      if (isLeft(unknownRecordValidation)) {
         return unknownRecordValidation
       }
       const validation = codec.validate(u, c)
-      if (validation.isLeft()) {
+      if (isLeft(validation)) {
         return validation
       }
-      return success(stripKeys(validation.value, props))
+      return success(stripKeys(validation.right, props))
     },
     a => codec.encode(stripKeys(a, props)),
     codec
@@ -1922,10 +1922,10 @@ export function refinement<C extends Any>(
     (u): u is TypeOf<C> => codec.is(u) && predicate(u),
     (i, c) => {
       const validation = codec.validate(i, c)
-      if (validation.isLeft()) {
+      if (isLeft(validation)) {
         return validation
       }
-      const a = validation.value
+      const a = validation.right
       return predicate(a) ? success(a) : failure(a, c)
     },
     codec.encode,
