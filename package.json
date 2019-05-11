@@ -1,20 +1,23 @@
 {
   "name": "io-ts",
-  "version": "1.8.5",
+  "version": "1.8.6",
   "description": "TypeScript compatible runtime type system for IO validation",
   "files": [
-    "lib"
+    "lib",
+    "es6"
   ],
   "main": "lib/index.js",
+  "module": "es6/index.js",
   "typings": "lib/index.d.ts",
+  "sideEffects": false,
   "scripts": {
     "lint": "tslint -p tsconfig.json src/**/*.ts test/**/*.ts",
     "jest": "jest",
     "prettier": "prettier --no-semi --single-quote --print-width 120 --parser typescript --list-different \"{src,test}/**/*.ts\"",
     "fix-prettier": "prettier --no-semi --single-quote --print-width 120 --parser typescript --write \"{src,test,examples,exercises}/**/*.ts\"",
     "test": "npm run prettier && npm run lint && npm run dtslint && npm run declaration && npm run jest",
-    "clean": "rimraf lib/*",
-    "build": "npm run clean && tsc",
+    "clean": "rimraf lib/* es6/*",
+    "build": "npm run clean && tsc && tsc -p tsconfig.es6.json",
     "prepublish": "npm run build",
     "perf": "node perf/index",
     "dtslint": "dtslint dtslint",
