@@ -767,6 +767,49 @@ export interface Props {
 export interface TypeC<P extends Props>
   extends InterfaceType<P, { [K in keyof P]: TypeOf<P[K]> }, { [K in keyof P]: OutputOf<P[K]> }, unknown> {}
 
+interface Optional {
+  optional: true
+}
+
+export const optional = <T>(rt: Type<T>, name?: string) => {
+  const unionType = union([rt, nullType, undefinedType], name || rt.name + '?')
+  return Object.assign(unionType, { optional: true } as Optional)
+}
+
+type OptionalPropsTypes<P extends Props> = { [K in keyof P]?: P[K]['_A'] }
+type OptionalPropsOutputs<P extends Props> = { [K in keyof P]?: P[K]['_O'] }
+type RequiredPropsKeys<P extends Props> = { [K in keyof P]: P[K] extends Optional ? never : K }[keyof P]
+type RequiredPropsTypes<P extends Props> = { [K in RequiredPropsKeys<P>]: P[K]['_A'] }
+type RequiredPropsOutputs<P extends Props> = { [K in RequiredPropsKeys<P>]: P[K]['_O'] }
+
+export const partialPartial = <P extends Props>(
+  props: P,
+  name?: string
+): Type<OptionalPropsTypes<P> & RequiredPropsTypes<P>, OptionalPropsOutputs<P> & RequiredPropsOutputs<P>, mixed> => {
+  let someOptional = false
+  let someRequired = false
+  const optionalProps: Props = {}
+  const requiredProps: Props = {}
+  for (const key of Object.keys(props)) {
+    const val: any = props[key]
+    if (val.optional) {
+      someOptional = true
+      optionalProps[key] = val
+    } else {
+      someRequired = true
+      requiredProps[key] = val
+    }
+  }
+  const computedName = name || getInterfaceTypeName(props)
+  if (someOptional && someRequired) {
+    return intersection([type(requiredProps), partial(optionalProps)], computedName) as any
+  } else if (someOptional) {
+    return partial(props, computedName) as any
+  } else {
+    return type(props, computedName) as any
+  }
+}
+
 const getInterfaceTypeName = (props: Props): string => {
   return `{ ${getNameFromProps(props)} }`
 }

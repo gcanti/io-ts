@@ -585,3 +585,70 @@ const toNumber = (n: t.Int): number => n
 
 // $ExpectError
 const intToInt2 = (int: t.Int): Int2 => int
+
+//
+// partialPartial
+//
+
+const Human = t.partialPartial({
+  name: t.string,
+  age: t.optional(t.number),
+})
+type Human = t.TypeOf<typeof Human>
+
+const bob: Human = { name: 'Bob' }
+const bob30: Human = { name: 'Bob', age: 30 }
+// $ExpectError
+const bobThirty: Human = { name: 'Bob', age: 'thirty' }
+// $ExpectError
+const nobody: Human = {}
+
+/**
+ * if a generic type is passed into a method which uses partialPartial, it could either
+ * be optional or not, so if specifying the return type explicitly, we have to assume
+ * it could be undefined on the `TypeOf` type.
+ */
+export const partialPartialAbstract = <Type extends t.Type<A, O>, A = any, O = any>(
+  type: Type
+): t.Validation<{ t: 'v'; v?: t.TypeOf<Type> }> => {
+  const T = t.partialPartial({
+    t: t.literal('v'),
+    v: type
+  })
+  const res = T.validate(1 as any, [])
+  res.map(x => {
+    x.t // $ExpectType "v"
+    // `x.v` could be undefined; we don't know whether `type` is optional here:
+    x.v // $ExpectType Type["_A"] | undefined
+  })
+  return res
+}
+
+/**
+ * to avoid the problem above, rely on type inference, which will keep track of the
+ * generic type to figure out if `v` should be optional.
+ */
+export const partialPartialAbstractInferred = <Type extends t.Type<A, O>, A = any, O = any>(
+  type: Type
+) => {
+  const T = t.partialPartial({
+    t: t.literal('v'),
+    v: type
+  })
+  const res = T.validate(1 as any, [])
+  res.map(x => {
+    x.t // $ExpectType "v"
+    // `x.v` could be undefined; we don't know whether `type` is optional here:
+    x.v // $ExpectType Type["_A"] | undefined
+  })
+  return res
+}
+
+const inferredWithOptional = partialPartialAbstractInferred(t.optional(t.string))
+const vShouldBeOptional = inferredWithOptional.getOrElse(0 as any)
+const vNotSuppliedOk: typeof vShouldBeOptional = { t: 'v' }
+
+const inferredWithoutOptional = partialPartialAbstractInferred(t.string)
+const vShouldBeRequired = inferredWithoutOptional.getOrElse(0 as any)
+// $ExpectError
+const vNotSuppliedFailure: typeof vShouldBeRequired = { t: 'v' }
