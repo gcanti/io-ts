@@ -26,4 +26,13 @@ describe('PathReporter', () => {
   it('should handle NaN', () => {
     assert.deepStrictEqual(PathReporter.report(t.string.decode(NaN)), ['Invalid value NaN supplied to : string'])
   })
+
+  it('should handle Infinity', () => {
+    assert.deepStrictEqual(PathReporter.report(t.string.decode(Infinity)), [
+      'Invalid value Infinity supplied to : string'
+    ])
+    assert.deepStrictEqual(PathReporter.report(t.string.decode(-Infinity)), [
+      'Invalid value -Infinity supplied to : string'
+    ])
+  })
 })
