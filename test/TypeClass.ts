@@ -97,6 +97,7 @@ describe('getContextEntry', () => {
 describe('clean', () => {
   it('should return the same type', () => {
     const T = t.type({ a: t.string })
+    // tslint:disable-next-line: deprecation
     assert.strictEqual(t.clean(T), T)
   })
 })

@@ -1,17 +1,7 @@
 {
+  "extends": "../tsconfig.json",
   "compilerOptions": {
-    "noEmit": true,
-    "sourceMap": true,
-    "declaration": true,
-    "module": "commonjs",
-    "noImplicitReturns": false,
-    "noUnusedLocals": true,
-    "noUnusedParameters": true,
-    "noFallthroughCasesInSwitch": true,
-    "noEmitOnError": false,
-    "strict": true,
-    "target": "es5",
-    "moduleResolution": "node",
-    "forceConsistentCasingInFileNames": true
-  }
+    "noEmit": true
+  },
+  "include": ["./**/*"]
 }

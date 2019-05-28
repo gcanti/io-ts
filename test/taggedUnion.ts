@@ -204,6 +204,7 @@ describe('taggedUnion', () => {
       }
 
       const A = t.type({ type: t.literal('A'), a: t.number }, 'A')
+      // tslint:disable-next-line: deprecation
       const B = t.refinement(A, x => x.a > 0, 'B')
       t.taggedUnion('type', [B, A])
 

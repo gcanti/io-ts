@@ -54,6 +54,7 @@ describe('record', () => {
     })
 
     it('should accept an array if the codomain is `any`', () => {
+      // tslint:disable-next-line: deprecation
       const T = t.record(t.string, t.any)
       assert.strictEqual(T.is([]), true)
     })
@@ -88,6 +89,7 @@ describe('record', () => {
     })
 
     it('should accept an array if the codomain is `any`', () => {
+      // tslint:disable-next-line: deprecation
       const T = t.record(t.string, t.any)
       assertSuccess(T.decode([1]))
     })
@@ -111,6 +113,7 @@ describe('record', () => {
     })
 
     it('should fail decoding an invalid value when the codec is array if the codomain is `any`', () => {
+      // tslint:disable-next-line: deprecation
       const T = t.record(HyphenatedString, t.any)
       assertFailure(T, [1], ['Invalid value "0" supplied to : { [K in HyphenatedString]: any }/0: HyphenatedString'])
     })
@@ -161,6 +164,7 @@ describe('record', () => {
     })
 
     it('should accept an array if the codomain is `any`', () => {
+      // tslint:disable-next-line: deprecation
       const T = t.record(t.string, t.any)
       const a = [1]
       assert.strictEqual(T.encode(a), a)
@@ -171,6 +175,7 @@ describe('record', () => {
     const T1 = t.record(t.string, t.number)
     const value1 = { aa: 1 }
     assertStrictEqual(T1.decode(value1), value1)
+    // tslint:disable-next-line: deprecation
     const T2 = t.record(t.refinement(t.string, s => s.length >= 2), t.number)
     const value2 = { aa: 1 }
     assertStrictEqual(T2.decode(value2), value2)

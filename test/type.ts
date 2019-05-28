@@ -50,7 +50,7 @@ describe('type', () => {
       assertSuccess(T2.decode({ a: 1 }), { a: 1 })
       assertSuccess(T2.decode({}), { a: undefined })
 
-      const T3 = t.type({ a: t.any })
+      const T3 = t.type({ a: t.unknown })
       assert.deepStrictEqual(T3.decode({}).value, { a: undefined })
     })
 

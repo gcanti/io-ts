@@ -73,6 +73,7 @@ describe('strict', () => {
   })
 
   it('should export a StrictType class', () => {
+    // tslint:disable-next-line: deprecation
     const T = new t.StrictType<{}, {}, {}, unknown>(
       'name',
       (_): _ is {} => true,

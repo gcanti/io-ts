@@ -205,6 +205,7 @@ const getIsCodec = <T extends Any>(tag: string) => (codec: Any): codec is T => (
 
 const isUnknownCodec = getIsCodec<UnknownType>('UnknownType')
 
+// tslint:disable-next-line: deprecation
 const isAnyCodec = getIsCodec<AnyType>('AnyType')
 
 const isLiteralCodec = getIsCodec<LiteralType<LiteralValue>>('LiteralType')
@@ -213,6 +214,7 @@ const isInterfaceCodec = getIsCodec<InterfaceType<Props>>('InterfaceType')
 
 const isPartialCodec = getIsCodec<PartialType<Props>>('PartialType')
 
+// tslint:disable-next-line: deprecation
 const isStrictCodec = getIsCodec<StrictType<Props>>('StrictType')
 
 const isIntersectionCodec = getIsCodec<IntersectionType<Array<Any>>>('IntersectionType')
@@ -454,12 +456,14 @@ export class FunctionType extends Type<Function> {
  * @since 1.5.3
  * @deprecated
  */
+// tslint:disable-next-line: deprecation
 export interface FunctionC extends FunctionType {}
 
 /**
  * @since 1.0.0
  * @deprecated
  */
+// tslint:disable-next-line: deprecation
 export const Function: FunctionC = new FunctionType()
 
 /**
@@ -506,6 +510,7 @@ export const brand = <C extends Any, N extends string, B extends { readonly [K i
   predicate: Refinement<TypeOf<C>, Branded<TypeOf<C>, B>>,
   name: N
 ): BrandC<C, B> => {
+  // tslint:disable-next-line: deprecation
   return refinement(codec, predicate, name)
 }
 
@@ -1701,6 +1706,7 @@ export type HasProps =
   | HasPropsReadonly
   | HasPropsIntersection
   | InterfaceType<any, any, any, any>
+  // tslint:disable-next-line: deprecation
   | StrictType<any, any, any, any>
   | PartialType<any, any, any, any>
 
@@ -1837,12 +1843,14 @@ export class NeverType extends Type<never> {
  * @since 1.5.3
  * @deprecated
  */
+// tslint:disable-next-line: deprecation
 export interface NeverC extends NeverType {}
 
 /**
  * @since 1.0.0
  * @deprecated
  */
+// tslint:disable-next-line: deprecation
 export const never: NeverC = new NeverType()
 
 /**
@@ -1860,6 +1868,7 @@ export class AnyType extends Type<any> {
  * @since 1.5.3
  * @deprecated
  */
+// tslint:disable-next-line: deprecation
 export interface AnyC extends AnyType {}
 
 /**
@@ -1867,6 +1876,7 @@ export interface AnyC extends AnyType {}
  * @since 1.0.0
  * @deprecated
  */
+// tslint:disable-next-line: deprecation
 export const any: AnyC = new AnyType()
 
 /**
@@ -1891,6 +1901,7 @@ export class ObjectType extends Type<object> {
  * @since 1.5.3
  * @deprecated
  */
+// tslint:disable-next-line: deprecation
 export interface ObjectC extends ObjectType {}
 
 /**
@@ -1898,6 +1909,7 @@ export interface ObjectC extends ObjectType {}
  * @since 1.0.0
  * @deprecated
  */
+// tslint:disable-next-line: deprecation
 export const object: ObjectC = new ObjectType()
 
 /**
@@ -1916,7 +1928,8 @@ export function refinement<C extends Any>(
   codec: C,
   predicate: Predicate<TypeOf<C>>,
   name: string = `(${codec.name} | ${getFunctionName(predicate)})`
-): RefinementC<C> {
+): // tslint:disable-next-line: deprecation
+RefinementC<C> {
   return new RefinementType(
     name,
     (u): u is TypeOf<C> => codec.is(u) && predicate(u),
@@ -1939,6 +1952,7 @@ export function refinement<C extends Any>(
  * @since 1.0.0
  * @deprecated
  */
+// tslint:disable-next-line: deprecation
 export const Integer = refinement(number, Number.isInteger, 'Integer')
 
 /**
@@ -1963,8 +1977,11 @@ export class StrictType<P, A = any, O = A, I = unknown> extends Type<A, O, I> {
   readonly _tag: 'StrictType' = 'StrictType'
   constructor(
     name: string,
+    // tslint:disable-next-line: deprecation
     is: StrictType<P, A, O, I>['is'],
+    // tslint:disable-next-line: deprecation
     validate: StrictType<P, A, O, I>['validate'],
+    // tslint:disable-next-line: deprecation
     encode: StrictType<P, A, O, I>['encode'],
     readonly props: P
   ) {
@@ -1976,7 +1993,7 @@ export class StrictType<P, A = any, O = A, I = unknown> extends Type<A, O, I> {
  * @since 1.5.3
  * @deprecated
  */
-export interface StrictC<P extends Props>
+export interface StrictC<P extends Props>  // tslint:disable-next-line: deprecation
   extends StrictType<P, { [K in keyof P]: TypeOf<P[K]> }, { [K in keyof P]: OutputOf<P[K]> }, unknown> {}
 
 /**
@@ -1988,53 +2005,77 @@ export type TaggedProps<Tag extends string> = { [K in Tag]: LiteralType<any> }
  * @since 1.3.0
  * @deprecated
  */
+// tslint:disable-next-line: deprecation
 export interface TaggedRefinement<Tag extends string, A, O = A> extends RefinementType<Tagged<Tag>, A, O> {}
 /**
  * @since 1.3.0
  * @deprecated
  */
+// tslint:disable-next-line: deprecation
 export interface TaggedUnion<Tag extends string, A, O = A> extends UnionType<Array<Tagged<Tag>>, A, O> {}
 /**
  * @since 1.3.0
  * @deprecated
  */
 export type TaggedIntersectionArgument<Tag extends string> =
+  // tslint:disable-next-line: deprecation
   | [Tagged<Tag>]
+  // tslint:disable-next-line: deprecation
   | [Tagged<Tag>, Mixed]
+  // tslint:disable-next-line: deprecation
   | [Mixed, Tagged<Tag>]
+  // tslint:disable-next-line: deprecation
   | [Tagged<Tag>, Mixed, Mixed]
+  // tslint:disable-next-line: deprecation
   | [Mixed, Tagged<Tag>, Mixed]
+  // tslint:disable-next-line: deprecation
   | [Mixed, Mixed, Tagged<Tag>]
+  // tslint:disable-next-line: deprecation
   | [Tagged<Tag>, Mixed, Mixed, Mixed]
+  // tslint:disable-next-line: deprecation
   | [Mixed, Tagged<Tag>, Mixed, Mixed]
+  // tslint:disable-next-line: deprecation
   | [Mixed, Mixed, Tagged<Tag>, Mixed]
+  // tslint:disable-next-line: deprecation
   | [Mixed, Mixed, Mixed, Tagged<Tag>]
+  // tslint:disable-next-line: deprecation
   | [Tagged<Tag>, Mixed, Mixed, Mixed, Mixed]
+  // tslint:disable-next-line: deprecation
   | [Mixed, Tagged<Tag>, Mixed, Mixed, Mixed]
+  // tslint:disable-next-line: deprecation
   | [Mixed, Mixed, Tagged<Tag>, Mixed, Mixed]
+  // tslint:disable-next-line: deprecation
   | [Mixed, Mixed, Mixed, Tagged<Tag>, Mixed]
+  // tslint:disable-next-line: deprecation
   | [Mixed, Mixed, Mixed, Mixed, Tagged<Tag>]
 /**
  * @since 1.3.0
  * @deprecated
  */
-export interface TaggedIntersection<Tag extends string, A, O = A>
+export interface TaggedIntersection<Tag extends string, A, O = A>  // tslint:disable-next-line: deprecation
   extends IntersectionType<TaggedIntersectionArgument<Tag>, A, O> {}
 /**
  * @since 1.3.0
  * @deprecated
  */
+// tslint:disable-next-line: deprecation
 export interface TaggedExact<Tag extends string, A, O = A> extends ExactType<Tagged<Tag>, A, O> {}
 /**
  * @since 1.3.0
  * @deprecated
  */
 export type Tagged<Tag extends string, A = any, O = A> =
+  // tslint:disable-next-line: deprecation
   | InterfaceType<TaggedProps<Tag>, A, O>
+  // tslint:disable-next-line: deprecation
   | StrictType<TaggedProps<Tag>, A, O>
+  // tslint:disable-next-line: deprecation
   | TaggedRefinement<Tag, A, O>
+  // tslint:disable-next-line: deprecation
   | TaggedUnion<Tag, A, O>
+  // tslint:disable-next-line: deprecation
   | TaggedIntersection<Tag, A, O>
+  // tslint:disable-next-line: deprecation
   | TaggedExact<Tag, A, O>
   | RecursiveType<any, A, O>
 
@@ -2068,29 +2109,41 @@ export type Exact<T, X extends T> = T &
 export function alias<A, O, P, I>(
   codec: PartialType<P, A, O, I>
 ): <
+  // tslint:disable-next-line: deprecation
   AA extends Exact<A, AA>,
+  // tslint:disable-next-line: deprecation
   OO extends Exact<O, OO> = O,
+  // tslint:disable-next-line: deprecation
   PP extends Exact<P, PP> = P,
   II extends I = I
 >() => PartialType<PP, AA, OO, II>
 export function alias<A, O, P, I>(
+  // tslint:disable-next-line: deprecation
   codec: StrictType<P, A, O, I>
 ): <
+  // tslint:disable-next-line: deprecation
   AA extends Exact<A, AA>,
+  // tslint:disable-next-line: deprecation
   OO extends Exact<O, OO> = O,
+  // tslint:disable-next-line: deprecation
   PP extends Exact<P, PP> = P,
   II extends I = I
->() => StrictType<PP, AA, OO, II>
+>() => // tslint:disable-next-line: deprecation
+StrictType<PP, AA, OO, II>
 export function alias<A, O, P, I>(
   codec: InterfaceType<P, A, O, I>
 ): <
+  // tslint:disable-next-line: deprecation
   AA extends Exact<A, AA>,
+  // tslint:disable-next-line: deprecation
   OO extends Exact<O, OO> = O,
+  // tslint:disable-next-line: deprecation
   PP extends Exact<P, PP> = P,
   II extends I = I
 >() => InterfaceType<PP, AA, OO, II>
 export function alias<A, O, I>(
   codec: Type<A, O, I>
-): <AA extends Exact<A, AA>, OO extends Exact<O, OO> = O>() => Type<AA, OO, I> {
+): // tslint:disable-next-line: deprecation
+<AA extends Exact<A, AA>, OO extends Exact<O, OO> = O>() => Type<AA, OO, I> {
   return () => codec as any
 }

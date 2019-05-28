@@ -35,12 +35,16 @@ describe('getIndexRecord', () => {
   })
 
   it('should handle refinement codecs', () => {
+    // tslint:disable-next-line: deprecation
     const A = t.refinement(t.type({ type: t.literal('A'), a: t.string }), () => true)
     assertEqualIndexRecord([A], { type: [['A', A, A]] })
+    // tslint:disable-next-line: deprecation
     const B = t.refinement(t.type({ type: t.literal('B') }), () => true)
     assertEqualIndexRecord([A, B], { type: [['A', A, A], ['B', B, B]] })
+    // tslint:disable-next-line: deprecation
     const C = t.refinement(t.type({ kind: t.literal('A') }), () => true)
     assertEmptyIndexRecord([A, C])
+    // tslint:disable-next-line: deprecation
     const D = t.refinement(t.type({ type: t.literal('A') }), () => true)
     assertEmptyIndexRecord([A, D])
   })

@@ -48,13 +48,14 @@ describe('union', () => {
 
     it('should handle refinements', () => {
       const A = t.type({ type: t.literal('A'), a: t.number })
+      // tslint:disable-next-line: deprecation
       const B = t.refinement(A, x => x.a > 0)
       const T = t.union([B, A])
       assertSuccess(T.decode({ type: 'A', a: -1 }))
     })
 
     it('should return the same reference if validation succeeded', () => {
-      const T = t.union([t.Dictionary, t.number])
+      const T = t.union([t.UnknownRecord, t.number])
       const value = {}
       assertStrictEqual(T.decode(value), value)
     })

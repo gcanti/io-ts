@@ -371,23 +371,23 @@ Added in v1.8.1
 export interface IntersectionC<CS extends [Mixed, Mixed, ...Array<Mixed>]>
   extends IntersectionType<
     CS,
-    CS extends [Mixed, Mixed]
-      ? TypeOf<CS['0']> & TypeOf<CS['1']>
-      : CS extends [Mixed, Mixed, Mixed]
-      ? TypeOf<CS['0']> & TypeOf<CS['1']> & TypeOf<CS['2']>
-      : CS extends [Mixed, Mixed, Mixed, Mixed]
-      ? TypeOf<CS['0']> & TypeOf<CS['1']> & TypeOf<CS['2']> & TypeOf<CS['3']>
-      : CS extends [Mixed, Mixed, Mixed, Mixed, Mixed]
-      ? TypeOf<CS['0']> & TypeOf<CS['1']> & TypeOf<CS['2']> & TypeOf<CS['3']> & TypeOf<CS['4']>
+    CS extends { length: 2 }
+      ? TypeOf<CS[0]> & TypeOf<CS[1]>
+      : CS extends { length: 3 }
+      ? TypeOf<CS[0]> & TypeOf<CS[1]> & TypeOf<CS[2]>
+      : CS extends { length: 4 }
+      ? TypeOf<CS[0]> & TypeOf<CS[1]> & TypeOf<CS[2]> & TypeOf<CS[3]>
+      : CS extends { length: 5 }
+      ? TypeOf<CS[0]> & TypeOf<CS[1]> & TypeOf<CS[2]> & TypeOf<CS[3]> & TypeOf<CS[4]>
       : unknown,
-    CS extends [Mixed, Mixed]
-      ? OutputOf<CS['0']> & OutputOf<CS['1']>
-      : CS extends [Mixed, Mixed, Mixed]
-      ? OutputOf<CS['0']> & OutputOf<CS['1']> & OutputOf<CS['2']>
-      : CS extends [Mixed, Mixed, Mixed, Mixed]
-      ? OutputOf<CS['0']> & OutputOf<CS['1']> & OutputOf<CS['2']> & OutputOf<CS['3']>
-      : CS extends [Mixed, Mixed, Mixed, Mixed, Mixed]
-      ? OutputOf<CS['0']> & OutputOf<CS['1']> & OutputOf<CS['2']> & OutputOf<CS['3']> & OutputOf<CS['4']>
+    CS extends { length: 2 }
+      ? OutputOf<CS[0]> & OutputOf<CS[1]>
+      : CS extends { length: 3 }
+      ? OutputOf<CS[0]> & OutputOf<CS[1]> & OutputOf<CS[2]>
+      : CS extends { length: 4 }
+      ? OutputOf<CS[0]> & OutputOf<CS[1]> & OutputOf<CS[2]> & OutputOf<CS[3]>
+      : CS extends { length: 5 }
+      ? OutputOf<CS[0]> & OutputOf<CS[1]> & OutputOf<CS[2]> & OutputOf<CS[3]> & OutputOf<CS[4]>
       : unknown,
     unknown
   > {}
@@ -543,7 +543,7 @@ Added in v1.5.3
 **Signature**
 
 ```ts
-export interface StrictC<P extends Props>
+export interface StrictC<P extends Props>  // tslint:disable-next-line: deprecation
   extends StrictType<P, { [K in keyof P]: TypeOf<P[K]> }, { [K in keyof P]: OutputOf<P[K]> }, unknown> {}
 ```
 
@@ -574,7 +574,7 @@ Added in v1.3.0
 **Signature**
 
 ```ts
-export interface TaggedIntersection<Tag extends string, A, O = A>
+export interface TaggedIntersection<Tag extends string, A, O = A>  // tslint:disable-next-line: deprecation
   extends IntersectionType<TaggedIntersectionArgument<Tag>, A, O> {}
 ```
 
@@ -619,27 +619,27 @@ Added in v1.5.3
 export interface TupleC<CS extends [Mixed, ...Array<Mixed>]>
   extends TupleType<
     CS,
-    CS extends [Mixed]
-      ? [TypeOf<CS['0']>]
-      : CS extends [Mixed, Mixed]
-      ? [TypeOf<CS['0']>, TypeOf<CS['1']>]
-      : CS extends [Mixed, Mixed, Mixed]
-      ? [TypeOf<CS['0']>, TypeOf<CS['1']>, TypeOf<CS['2']>]
-      : CS extends [Mixed, Mixed, Mixed, Mixed]
-      ? [TypeOf<CS['0']>, TypeOf<CS['1']>, TypeOf<CS['2']>, TypeOf<CS['3']>]
-      : CS extends [Mixed, Mixed, Mixed, Mixed, Mixed]
-      ? [TypeOf<CS['0']>, TypeOf<CS['1']>, TypeOf<CS['2']>, TypeOf<CS['3']>, TypeOf<CS['4']>]
+    CS extends { length: 1 }
+      ? [TypeOf<CS[0]>]
+      : CS extends { length: 2 }
+      ? [TypeOf<CS[0]>, TypeOf<CS[1]>]
+      : CS extends { length: 3 }
+      ? [TypeOf<CS[0]>, TypeOf<CS[1]>, TypeOf<CS[2]>]
+      : CS extends { length: 4 }
+      ? [TypeOf<CS[0]>, TypeOf<CS[1]>, TypeOf<CS[2]>, TypeOf<CS[3]>]
+      : CS extends { length: 5 }
+      ? [TypeOf<CS[0]>, TypeOf<CS[1]>, TypeOf<CS[2]>, TypeOf<CS[3]>, TypeOf<CS[4]>]
       : unknown,
-    CS extends [Mixed]
-      ? [OutputOf<CS['0']>]
-      : CS extends [Mixed, Mixed]
-      ? [OutputOf<CS['0']>, OutputOf<CS['1']>]
-      : CS extends [Mixed, Mixed, Mixed]
-      ? [OutputOf<CS['0']>, OutputOf<CS['1']>, OutputOf<CS['2']>]
-      : CS extends [Mixed, Mixed, Mixed, Mixed]
-      ? [OutputOf<CS['0']>, OutputOf<CS['1']>, OutputOf<CS['2']>, OutputOf<CS['3']>]
-      : CS extends [Mixed, Mixed, Mixed, Mixed, Mixed]
-      ? [OutputOf<CS['0']>, OutputOf<CS['1']>, OutputOf<CS['2']>, OutputOf<CS['3']>, OutputOf<CS['4']>]
+    CS extends { length: 1 }
+      ? [OutputOf<CS[0]>]
+      : CS extends { length: 2 }
+      ? [OutputOf<CS[0]>, OutputOf<CS[1]>]
+      : CS extends { length: 3 }
+      ? [OutputOf<CS[0]>, OutputOf<CS[1]>, OutputOf<CS[2]>]
+      : CS extends { length: 4 }
+      ? [OutputOf<CS[0]>, OutputOf<CS[1]>, OutputOf<CS[2]>, OutputOf<CS[3]>]
+      : CS extends { length: 5 }
+      ? [OutputOf<CS[0]>, OutputOf<CS[1]>, OutputOf<CS[2]>, OutputOf<CS[3]>, OutputOf<CS[4]>]
       : unknown,
     unknown
   > {}
@@ -799,6 +799,7 @@ export type HasProps =
   | HasPropsReadonly
   | HasPropsIntersection
   | InterfaceType<any, any, any, any>
+  // tslint:disable-next-line: deprecation
   | StrictType<any, any, any, any>
   | PartialType<any, any, any, any>
 ```
@@ -891,11 +892,17 @@ Added in v1.0.0
 
 ```ts
 export type Tagged<Tag extends string, A = any, O = A> =
+  // tslint:disable-next-line: deprecation
   | InterfaceType<TaggedProps<Tag>, A, O>
+  // tslint:disable-next-line: deprecation
   | StrictType<TaggedProps<Tag>, A, O>
+  // tslint:disable-next-line: deprecation
   | TaggedRefinement<Tag, A, O>
+  // tslint:disable-next-line: deprecation
   | TaggedUnion<Tag, A, O>
+  // tslint:disable-next-line: deprecation
   | TaggedIntersection<Tag, A, O>
+  // tslint:disable-next-line: deprecation
   | TaggedExact<Tag, A, O>
   | RecursiveType<any, A, O>
 ```
@@ -908,20 +915,35 @@ Added in v1.3.0
 
 ```ts
 export type TaggedIntersectionArgument<Tag extends string> =
+  // tslint:disable-next-line: deprecation
   | [Tagged<Tag>]
+  // tslint:disable-next-line: deprecation
   | [Tagged<Tag>, Mixed]
+  // tslint:disable-next-line: deprecation
   | [Mixed, Tagged<Tag>]
+  // tslint:disable-next-line: deprecation
   | [Tagged<Tag>, Mixed, Mixed]
+  // tslint:disable-next-line: deprecation
   | [Mixed, Tagged<Tag>, Mixed]
+  // tslint:disable-next-line: deprecation
   | [Mixed, Mixed, Tagged<Tag>]
+  // tslint:disable-next-line: deprecation
   | [Tagged<Tag>, Mixed, Mixed, Mixed]
+  // tslint:disable-next-line: deprecation
   | [Mixed, Tagged<Tag>, Mixed, Mixed]
+  // tslint:disable-next-line: deprecation
   | [Mixed, Mixed, Tagged<Tag>, Mixed]
+  // tslint:disable-next-line: deprecation
   | [Mixed, Mixed, Mixed, Tagged<Tag>]
+  // tslint:disable-next-line: deprecation
   | [Tagged<Tag>, Mixed, Mixed, Mixed, Mixed]
+  // tslint:disable-next-line: deprecation
   | [Mixed, Tagged<Tag>, Mixed, Mixed, Mixed]
+  // tslint:disable-next-line: deprecation
   | [Mixed, Mixed, Tagged<Tag>, Mixed, Mixed]
+  // tslint:disable-next-line: deprecation
   | [Mixed, Mixed, Mixed, Tagged<Tag>, Mixed]
+  // tslint:disable-next-line: deprecation
   | [Mixed, Mixed, Mixed, Mixed, Tagged<Tag>]
 ```
 
@@ -1364,8 +1386,11 @@ Added in v1.0.0
 export class StrictType<P, A, O, I> {
   constructor(
     name: string,
+    // tslint:disable-next-line: deprecation
     is: StrictType<P, A, O, I>['is'],
+    // tslint:disable-next-line: deprecation
     validate: StrictType<P, A, O, I>['validate'],
+    // tslint:disable-next-line: deprecation
     encode: StrictType<P, A, O, I>['encode'],
     readonly props: P
   ) { ... }
@@ -1723,24 +1748,35 @@ Keeps the codec "kind"
 export function alias<A, O, P, I>(
   codec: PartialType<P, A, O, I>
 ): <
+  // tslint:disable-next-line: deprecation
   AA extends Exact<A, AA>,
+  // tslint:disable-next-line: deprecation
   OO extends Exact<O, OO> = O,
+  // tslint:disable-next-line: deprecation
   PP extends Exact<P, PP> = P,
   II extends I = I
 >() => PartialType<PP, AA, OO, II>
 export function alias<A, O, P, I>(
+  // tslint:disable-next-line: deprecation
   codec: StrictType<P, A, O, I>
 ): <
+  // tslint:disable-next-line: deprecation
   AA extends Exact<A, AA>,
+  // tslint:disable-next-line: deprecation
   OO extends Exact<O, OO> = O,
+  // tslint:disable-next-line: deprecation
   PP extends Exact<P, PP> = P,
   II extends I = I
->() => StrictType<PP, AA, OO, II>
+>() => // tslint:disable-next-line: deprecation
+StrictType<PP, AA, OO, II>
 export function alias<A, O, P, I>(
   codec: InterfaceType<P, A, O, I>
 ): <
+  // tslint:disable-next-line: deprecation
   AA extends Exact<A, AA>,
+  // tslint:disable-next-line: deprecation
   OO extends Exact<O, OO> = O,
+  // tslint:disable-next-line: deprecation
   PP extends Exact<P, PP> = P,
   II extends I = I
 >() => InterfaceType<PP, AA, OO, II> { ... }
@@ -2006,7 +2042,8 @@ export function refinement<C extends Any>(
   codec: C,
   predicate: Predicate<TypeOf<C>>,
   name: string = `(${codec.name} | ${getFunctionName(predicate)})`
-): RefinementC<C> { ... }
+): // tslint:disable-next-line: deprecation
+RefinementC<C> { ... }
 ```
 
 Added in v1.0.0

@@ -98,6 +98,7 @@ describe('boolean', () => {
 
 describe('Integer', () => {
   it('should validate integers', () => {
+    // tslint:disable-next-line: deprecation
     const T = t.Integer
     assertSuccess(T.decode(1))
     assertFailure(T, 0.5, ['Invalid value 0.5 supplied to : Integer'])
@@ -117,14 +118,17 @@ describe('void', () => {
 
 describe('object', () => {
   it('should decode arrays', () => {
+    // tslint:disable-next-line: deprecation
     assertSuccess(t.object.decode([]))
   })
 
   it('should decode objects', () => {
+    // tslint:disable-next-line: deprecation
     assertSuccess(t.object.decode({}))
   })
 
   it('should fail with primitives', () => {
+    // tslint:disable-next-line: deprecation
     const T = t.object
     assertFailure(T, 's', ['Invalid value "s" supplied to : object'])
     assertFailure(T, 1, ['Invalid value 1 supplied to : object'])
@@ -132,6 +136,7 @@ describe('object', () => {
   })
 
   it('should fail with null and undefined', () => {
+    // tslint:disable-next-line: deprecation
     const T = t.object
     assertFailure(T, null, ['Invalid value null supplied to : object'])
     assertFailure(T, undefined, ['Invalid value undefined supplied to : object'])
@@ -140,10 +145,12 @@ describe('object', () => {
 
 describe('Function', () => {
   it('should decode functions', () => {
+    // tslint:disable-next-line: deprecation
     assertSuccess(t.Function.decode(t.identity))
   })
 
   it('should not decode non-functions', () => {
+    // tslint:disable-next-line: deprecation
     const T = t.Function
     assertFailure(T, 1, ['Invalid value 1 supplied to : Function'])
   })
@@ -151,32 +158,51 @@ describe('Function', () => {
 
 describe('any', () => {
   it('should decode any value', () => {
+    // tslint:disable-next-line: deprecation
     assertSuccess(t.any.decode(null))
+    // tslint:disable-next-line: deprecation
     assertSuccess(t.any.decode(undefined))
+    // tslint:disable-next-line: deprecation
     assertSuccess(t.any.decode('foo'))
+    // tslint:disable-next-line: deprecation
     assertSuccess(t.any.decode(1))
+    // tslint:disable-next-line: deprecation
     assertSuccess(t.any.decode(true))
+    // tslint:disable-next-line: deprecation
     assertSuccess(t.any.decode(t.identity))
+    // tslint:disable-next-line: deprecation
     assertSuccess(t.any.decode({}))
+    // tslint:disable-next-line: deprecation
     assertSuccess(t.any.decode([]))
+    // tslint:disable-next-line: deprecation
     assertSuccess(t.any.decode(/a/))
   })
 
   it('should accept any value', () => {
+    // tslint:disable-next-line: deprecation
     assert.ok(t.any.is(null))
+    // tslint:disable-next-line: deprecation
     assert.ok(t.any.is(undefined))
+    // tslint:disable-next-line: deprecation
     assert.ok(t.any.is('foo'))
+    // tslint:disable-next-line: deprecation
     assert.ok(t.any.is(1))
+    // tslint:disable-next-line: deprecation
     assert.ok(t.any.is(true))
+    // tslint:disable-next-line: deprecation
     assert.ok(t.any.is(t.identity))
+    // tslint:disable-next-line: deprecation
     assert.ok(t.any.is({}))
+    // tslint:disable-next-line: deprecation
     assert.ok(t.any.is([]))
+    // tslint:disable-next-line: deprecation
     assert.ok(t.any.is(/a/))
   })
 })
 
 describe('never', () => {
   it('should not decode any value', () => {
+    // tslint:disable-next-line: deprecation
     const T = (t.never as any) as t.Any
     assertFailure(T, null, ['Invalid value null supplied to : never'])
     assertFailure(T, undefined, ['Invalid value undefined supplied to : never'])
@@ -190,14 +216,23 @@ describe('never', () => {
   })
 
   it('should not accept any value', () => {
+    // tslint:disable-next-line: deprecation
     assert.ok(!t.never.is(null))
+    // tslint:disable-next-line: deprecation
     assert.ok(!t.never.is(undefined))
+    // tslint:disable-next-line: deprecation
     assert.ok(!t.never.is('foo'))
+    // tslint:disable-next-line: deprecation
     assert.ok(!t.never.is(1))
+    // tslint:disable-next-line: deprecation
     assert.ok(!t.never.is(true))
+    // tslint:disable-next-line: deprecation
     assert.ok(!t.never.is(t.identity))
+    // tslint:disable-next-line: deprecation
     assert.ok(!t.never.is({}))
+    // tslint:disable-next-line: deprecation
     assert.ok(!t.never.is([]))
+    // tslint:disable-next-line: deprecation
     assert.ok(!t.never.is(/a/))
   })
 })

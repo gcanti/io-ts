@@ -52,6 +52,7 @@ describe('exact', () => {
     })
 
     it('should succeed validating a valid value (refinement)', () => {
+      // tslint:disable-next-line: deprecation
       const T = t.exact(t.refinement(t.type({ foo: t.string }), p => p.foo.length > 2))
       assertSuccess(T.decode({ foo: 'foo' }))
     })
@@ -106,12 +107,14 @@ describe('exact', () => {
     })
 
     it('should fail validating an invalid value (refinement)', () => {
+      // tslint:disable-next-line: deprecation
       const T = t.exact(t.refinement(t.type({ foo: t.string }), p => p.foo.length > 2))
       assertFailure(T, null, ['Invalid value null supplied to : Exact<({ foo: string } | <function1>)>'])
       assertFailure(T, { foo: 'a' }, ['Invalid value {"foo":"a"} supplied to : Exact<({ foo: string } | <function1>)>'])
     })
 
     it('should strip additional properties (refinement)', () => {
+      // tslint:disable-next-line: deprecation
       const T = t.exact(t.refinement(t.type({ foo: t.string }), p => p.foo.length > 2))
       assertSuccess(T.decode({ foo: 'foo', bar: 1 }), { foo: 'foo' })
     })
