@@ -2,12 +2,14 @@ import * as assert from 'assert'
 import * as t from '../src/index'
 import { assertFailure, assertStrictEqual, assertSuccess, NumberFromString } from './helpers'
 
+// tslint:disable-next-line: deprecation
 const OptionNumber = t.taggedUnion(
   'type',
   [t.type({ type: t.literal('None') }, 'None'), t.type({ type: t.literal('Some'), value: t.number }, 'Some')],
   'OptionNumber'
 )
 
+// tslint:disable-next-line: deprecation
 const OptionNumberFromString = t.taggedUnion(
   'type',
   [t.type({ type: t.literal('None') }, 'None'), t.type({ type: t.literal('Some'), value: NumberFromString }, 'Some')],
@@ -17,6 +19,7 @@ const OptionNumberFromString = t.taggedUnion(
 describe('taggedUnion', () => {
   describe('name', () => {
     it('should assign a default name', () => {
+      // tslint:disable-next-line: deprecation
       const OptionNumber = t.taggedUnion('type', [
         t.type({ type: t.literal('None') }),
         t.type({ type: t.literal('Some'), value: t.number })
@@ -25,6 +28,7 @@ describe('taggedUnion', () => {
     })
 
     it('should accept a name', () => {
+      // tslint:disable-next-line: deprecation
       const T = t.taggedUnion('type', OptionNumber.types, 'T')
       assert.strictEqual(T.name, 'T')
     })
@@ -56,6 +60,7 @@ describe('taggedUnion', () => {
     it('should handle intersections', () => {
       const A = t.intersection([t.type({ type: t.literal('A') }), t.partial({ a: t.string })], 'A')
       const B = t.type({ type: t.literal('B'), b: t.number }, 'B')
+      // tslint:disable-next-line: deprecation
       const T = t.taggedUnion('type', [A, B], 'T')
       assertSuccess(T.decode({ type: 'A' }))
       assertSuccess(T.decode({ type: 'B', b: 1 }))
@@ -74,6 +79,7 @@ describe('taggedUnion', () => {
           forest: t.array(Self)
         })
       )
+      // tslint:disable-next-line: deprecation
       const T = t.taggedUnion('type', [A, B], 'T')
       assertSuccess(T.decode({ type: 'A' }))
       assertSuccess(T.decode({ type: 'B', forest: [] }))
@@ -88,6 +94,7 @@ describe('taggedUnion', () => {
       const B = t.type({ type: t.literal('B'), b: t.string }, 'B')
       const C = t.type({ type: t.literal('C') }, 'C')
       const SubUnion = t.union([A, B], 'Subunion')
+      // tslint:disable-next-line: deprecation
       const T = t.taggedUnion('type', [SubUnion, C], 'T')
       assertSuccess(T.decode({ type: 'A' }))
       assertSuccess(T.decode({ type: 'B', b: 'b' }))
@@ -99,7 +106,9 @@ describe('taggedUnion', () => {
       const A = t.type({ type: t.literal('A') })
       const B = t.type({ type: t.literal('B') })
       const C = t.type({ type: t.literal('C') })
+      // tslint:disable-next-line: deprecation
       const SubTaggedUnion = t.taggedUnion('type', [A, B])
+      // tslint:disable-next-line: deprecation
       const T = t.taggedUnion('type', [SubTaggedUnion, C])
       assertSuccess(T.decode({ type: 'A' }))
       assertSuccess(T.decode({ type: 'B' }))
@@ -112,6 +121,7 @@ describe('taggedUnion', () => {
     })
 
     it('should support numeric tags', () => {
+      // tslint:disable-next-line: deprecation
       const T = t.taggedUnion('type', [
         t.type({ type: t.literal(1), a: t.string }),
         t.type({ type: t.literal(2), b: t.number })
@@ -126,6 +136,7 @@ describe('taggedUnion', () => {
     })
 
     it('should support boolean tags', () => {
+      // tslint:disable-next-line: deprecation
       const T = t.taggedUnion('type', [
         t.type({ type: t.literal(true), a: t.string }),
         t.type({ type: t.literal(false), b: t.number })
@@ -140,6 +151,7 @@ describe('taggedUnion', () => {
     })
 
     it('should support mixed string, numeric and boolean tags', () => {
+      // tslint:disable-next-line: deprecation
       const T = t.taggedUnion(
         'type',
         [
@@ -181,6 +193,7 @@ describe('taggedUnion', () => {
   })
 
   it('should handle one codec', () => {
+    // tslint:disable-next-line: deprecation
     const T = t.taggedUnion('type', [t.type({ type: t.literal('A') })] as any)
     assertSuccess(T.decode({ type: 'A' }))
     assertFailure(T, null, ['Invalid value null supplied to : ({ type: "A" })'])
@@ -190,6 +203,7 @@ describe('taggedUnion', () => {
     const log: Array<string> = []
     const original = console.warn
     console.warn = (message: string) => log.push(message)
+    // tslint:disable-next-line: deprecation
     t.taggedUnion('type', [t.type({ type: t.literal('a') }), t.type({ bad: t.literal('b') })])
     console.warn = original
     assert.deepStrictEqual(log, [

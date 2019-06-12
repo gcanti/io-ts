@@ -1080,6 +1080,7 @@ export const union = <CS extends [Mixed, Mixed, ...Array<Mixed>]>(
       }
       return undefined
     }
+    // tslint:disable-next-line: deprecation
     return new TaggedUnionType(
       name,
       (u): u is TypeOf<CS[number]> => {
@@ -1460,6 +1461,7 @@ export const strict = <P extends Props>(props: P, name?: string): ExactC<TypeC<P
 
 /**
  * @since 1.3.0
+ * @deprecated
  */
 export class TaggedUnionType<
   Tag extends string,
@@ -1470,8 +1472,11 @@ export class TaggedUnionType<
 > extends UnionType<CS, A, O, I> {
   constructor(
     name: string,
+    // tslint:disable-next-line: deprecation
     is: TaggedUnionType<Tag, CS, A, O, I>['is'],
+    // tslint:disable-next-line: deprecation
     validate: TaggedUnionType<Tag, CS, A, O, I>['validate'],
+    // tslint:disable-next-line: deprecation
     encode: TaggedUnionType<Tag, CS, A, O, I>['encode'],
     codecs: CS,
     readonly tag: Tag
@@ -1482,23 +1487,30 @@ export class TaggedUnionType<
 
 /**
  * @since 1.5.3
+ * @deprecated
  */
-export interface TaggedUnionC<Tag extends string, CS extends [Mixed, Mixed, ...Array<Mixed>]>
+export interface TaggedUnionC<Tag extends string, CS extends [Mixed, Mixed, ...Array<Mixed>]>  // tslint:disable-next-line: deprecation
   extends TaggedUnionType<Tag, CS, TypeOf<CS[number]>, OutputOf<CS[number]>, unknown> {}
 
 /**
+ * Use `union` instead
+ *
  * @since 1.3.0
+ * @deprecated
  */
 export const taggedUnion = <Tag extends string, CS extends [Mixed, Mixed, ...Array<Mixed>]>(
   tag: Tag,
   codecs: CS,
   name: string = getUnionName(codecs)
+  // tslint:disable-next-line: deprecation
 ): TaggedUnionC<Tag, CS> => {
   const U = union(codecs, name)
+  // tslint:disable-next-line: deprecation
   if (U instanceof TaggedUnionType) {
     return U
   } else {
     console.warn(`[io-ts] Cannot build a tagged union for ${name}, returning a de-optimized union`)
+    // tslint:disable-next-line: deprecation
     return new TaggedUnionType(name, U.is, U.validate, U.encode, codecs, tag)
   }
 }
