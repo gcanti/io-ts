@@ -46,7 +46,7 @@ parent: Modules
 - [~~TaggedIntersection~~ (interface)](#taggedintersection-interface)
 - [~~TaggedRefinement~~ (interface)](#taggedrefinement-interface)
 - [~~TaggedUnion~~ (interface)](#taggedunion-interface)
-- [TaggedUnionC (interface)](#taggedunionc-interface)
+- [~~TaggedUnionC~~ (interface)](#taggedunionc-interface)
 - [TupleC (interface)](#tuplec-interface)
 - [TypeC (interface)](#typec-interface)
 - [UndefinedC (interface)](#undefinedc-interface)
@@ -103,7 +103,7 @@ parent: Modules
 - [RefinementType (class)](#refinementtype-class)
 - [~~StrictType~~ (class)](#stricttype-class)
 - [StringType (class)](#stringtype-class)
-- [TaggedUnionType (class)](#taggeduniontype-class)
+- [~~TaggedUnionType~~ (class)](#taggeduniontype-class)
 - [TupleType (class)](#tupletype-class)
 - [Type (class)](#type-class)
   - [pipe (method)](#pipe-method)
@@ -154,7 +154,7 @@ parent: Modules
 - [~~refinement~~ (function)](#refinement-function)
 - [strict (function)](#strict-function)
 - [success (function)](#success-function)
-- [taggedUnion (function)](#taggedunion-function)
+- [~~taggedUnion~~ (function)](#taggedunion-function)
 - [tuple (function)](#tuple-function)
 - [type (function)](#type-function)
 - [union (function)](#union-function)
@@ -600,12 +600,12 @@ export interface TaggedUnion<Tag extends string, A, O = A> extends UnionType<Arr
 
 Added in v1.3.0
 
-# TaggedUnionC (interface)
+# ~~TaggedUnionC~~ (interface)
 
 **Signature**
 
 ```ts
-export interface TaggedUnionC<Tag extends string, CS extends [Mixed, Mixed, ...Array<Mixed>]>
+export interface TaggedUnionC<Tag extends string, CS extends [Mixed, Mixed, ...Array<Mixed>]>  // tslint:disable-next-line: deprecation
   extends TaggedUnionType<Tag, CS, TypeOf<CS[number]>, OutputOf<CS[number]>, unknown> {}
 ```
 
@@ -1413,7 +1413,7 @@ export class StringType {
 
 Added in v1.0.0
 
-# TaggedUnionType (class)
+# ~~TaggedUnionType~~ (class)
 
 **Signature**
 
@@ -1421,8 +1421,11 @@ Added in v1.0.0
 export class TaggedUnionType<Tag, CS, A, O, I> {
   constructor(
     name: string,
+    // tslint:disable-next-line: deprecation
     is: TaggedUnionType<Tag, CS, A, O, I>['is'],
+    // tslint:disable-next-line: deprecation
     validate: TaggedUnionType<Tag, CS, A, O, I>['validate'],
+    // tslint:disable-next-line: deprecation
     encode: TaggedUnionType<Tag, CS, A, O, I>['encode'],
     codecs: CS,
     readonly tag: Tag
@@ -2070,7 +2073,9 @@ export const success = <T>(value: T): Validation<T> => ...
 
 Added in v1.0.0
 
-# taggedUnion (function)
+# ~~taggedUnion~~ (function)
+
+Use `union` instead
 
 **Signature**
 
@@ -2079,6 +2084,7 @@ export const taggedUnion = <Tag extends string, CS extends [Mixed, Mixed, ...Arr
   tag: Tag,
   codecs: CS,
   name: string = getUnionName(codecs)
+  // tslint:disable-next-line: deprecation
 ): TaggedUnionC<Tag, CS> => ...
 ```
 

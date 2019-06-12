@@ -18,6 +18,8 @@ high state of flux, you're at risk of it changing without notice.
 
 - **New Feature**
   - `union` is now able to detect and optimize tagged unions (@gcanti)
+- **Deprecation**
+  - deprecate `taggedUnion` in favour of `union` (@gcanti)
 
 # 1.8.6
 
