@@ -17,7 +17,6 @@ Table of contents
 - [Implemented types / combinators](#implemented-types--combinators)
 - [Recursive types](#recursive-types)
   - [Mutually recursive types](#mutually-recursive-types)
-- [Tagged unions](#tagged-unions)
 - [Branded types / Refinements](#branded-types--refinements)
 - [Exact types](#exact-types)
 - [Mixing required and optional props](#mixing-required-and-optional-props)
@@ -250,7 +249,7 @@ type User = {
 | readonly array              | `ReadonlyArray<A>`          | `t.readonlyArray(A)`                                                 |
 | type alias                  | `type T = { name: A }`      | `t.type({ name: A })`                                                |
 | tuple                       | `[ A, B ]`                  | `t.tuple([ A, B ])`                                                  |
-| union                       | `A \| B`                    | `t.union([ A, B ])` or `t.taggedUnion(tag, [ A, B ])`                |
+| union                       | `A \| B`                    | `t.union([ A, B ])`                                                  |
 | intersection                | `A & B`                     | `t.intersection([ A, B ])`                                           |
 | keyof                       | `keyof M`                   | `t.keyof(M)` (**only supports string keys**)                         |
 | recursive types             | ✘                           | `t.recursion(name, definition)`                                      |
@@ -303,26 +302,6 @@ const Bar: t.Type<Bar> = t.recursion('Bar', () =>
     a: t.union([Foo, t.undefined])
   })
 )
-```
-
-# Tagged unions
-
-If you are encoding tagged unions, instead of the general purpose `union` combinator, you may want to use the
-`taggedUnion` combinator in order to get better performances
-
-```ts
-const A = t.type({
-  tag: t.literal('A'),
-  foo: t.string
-})
-
-const B = t.type({
-  tag: t.literal('B'),
-  bar: t.number
-})
-
-// the actual presence of the tag is statically checked
-const U = t.taggedUnion('tag', [A, B])
 ```
 
 # Branded types / Refinements
