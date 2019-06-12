@@ -61,11 +61,6 @@ describe('union', () => {
     })
 
     describe('robustness', () => {
-      it('should handle zero codecs', () => {
-        const T = t.union([] as any)
-        assertFailure(T, true, ['Invalid value true supplied to : ()'])
-      })
-
       it('should handle one codec', () => {
         const T = t.union([t.string] as any)
         assertSuccess(T.decode('s'))
@@ -79,11 +74,6 @@ describe('union', () => {
       const T1 = t.union([t.type({ a: NumberFromString }), t.number])
       assert.deepStrictEqual(T1.encode({ a: 1 }), { a: '1' })
       assert.strictEqual(T1.encode(1), 1)
-    })
-
-    it('should encode a nullary union', () => {
-      const T0 = t.union([] as any)
-      assert.strictEqual(T0.encode(1 as never), 1)
     })
 
     it('should return the same reference while encoding', () => {
@@ -127,25 +117,104 @@ describe('union', () => {
           )
         }
       }
+      const dateT = new DateT()
 
-      const U1 = t.union([new DateT(), t.null])
-      const u1 = 'not the right thing' as any
-      let failed = false
-
-      try {
-        U1.encode(u1)
-      } catch (e) {
-        failed = true
-      }
-
-      assert.equal(failed, true)
+      const U1 = t.union([dateT, t.null])
+      assert.throws(() => {
+        U1.encode(1 as any)
+      })
+      const M1 = t.type({ tag: t.literal('a'), a: dateT })
+      const M2 = t.type({ tag: t.literal('b'), b: t.number })
+      const T2 = t.union([M1, M2])
+      assert.throws(() => {
+        T2.encode(1 as any)
+      })
     })
   })
 
-  it.skip('should optimize tagged unions', () => {
-    const A = t.type({ type: t.literal('A') })
-    const B = t.type({ type: t.literal('B') })
-    const T = t.union([A, B])
-    assert.strictEqual(T instanceof t.TaggedUnionType, true)
+  describe('getTags', () => {
+    it('not eligible', () => {
+      assert.strictEqual(t.getTags(t.string), t.emptyTags)
+    })
+
+    it('type', () => {
+      assert.strictEqual(t.getTags(t.type({ a: t.string })), t.emptyTags)
+      assert.deepStrictEqual(t.getTags(t.type({ tag: t.literal('a') })), { tag: ['a'] })
+      assert.deepStrictEqual(t.getTags(t.type({ tag: t.literal('a'), type: t.literal('b') })), {
+        tag: ['a'],
+        type: ['b']
+      })
+    })
+
+    it('intersection', () => {
+      assert.strictEqual(t.getTags(t.intersection([t.type({ a: t.string }), t.type({ b: t.number })])), t.emptyTags)
+      assert.deepStrictEqual(t.getTags(t.intersection([t.type({ a: t.literal('a') }), t.type({ b: t.number })])), {
+        a: ['a']
+      })
+      assert.deepStrictEqual(
+        t.getTags(t.intersection([t.type({ a: t.literal('a') }), t.type({ b: t.literal('b') })])),
+        {
+          a: ['a'],
+          b: ['b']
+        }
+      )
+      assert.deepStrictEqual(
+        t.getTags(t.intersection([t.type({ a: t.literal('a') }), t.type({ a: t.literal('a') })])),
+        {
+          a: ['a']
+        }
+      )
+      assert.strictEqual(
+        t.getTags(t.intersection([t.type({ a: t.literal('a') }), t.type({ a: t.literal('b') })])),
+        t.emptyTags
+      )
+    })
+
+    it('union', () => {
+      assert.strictEqual(t.getTags(t.union([t.string, t.number])), t.emptyTags)
+      assert.strictEqual(
+        t.getTags(t.union([t.type({ tag: t.literal('a') }), t.type({ type: t.literal('b') })])),
+        t.emptyTags
+      )
+      assert.strictEqual(
+        t.getTags(t.union([t.type({ tag: t.literal('a') }), t.type({ tag: t.literal('a') })])),
+        t.emptyTags
+      )
+      const U1 = t.union([t.type({ tag: t.literal('a') }), t.type({ tag: t.literal('b') })])
+      assert.deepStrictEqual(t.getTags(U1), {
+        tag: ['a', 'b']
+      })
+      const U2 = t.union([U1, t.type({ tag: t.literal('c') })])
+      assert.deepStrictEqual(t.getTags(U2), {
+        tag: ['a', 'b', 'c']
+      })
+      assert.deepStrictEqual(
+        t.getTags(
+          t.union([
+            t.type({ tag: t.literal('a'), type: t.literal('a') }),
+            t.type({ tag: t.literal('b'), type: t.literal('b') })
+          ])
+        ),
+        {
+          tag: ['a', 'b'],
+          type: ['a', 'b']
+        }
+      )
+    })
+  })
+
+  it('getIndex', () => {
+    const M1 = t.type({ tag: t.literal('a') })
+    const M2 = t.type({ tag: t.literal('b') })
+    const M3 = t.intersection([t.type({ tag: t.literal('a') }), t.type({ b: t.number })])
+    const M4 = t.intersection([t.type({ tag: t.literal('c') }), t.type({ b: t.number })])
+    const U1 = t.union([M1, M2])
+    assert.deepStrictEqual(t.getIndex([t.string]), undefined)
+    assert.deepStrictEqual(t.getIndex([M1]), ['tag', [['a']]])
+    assert.deepStrictEqual(t.getIndex([M1, M1]), undefined)
+    assert.deepStrictEqual(t.getIndex([M1, M2]), ['tag', [['a'], ['b']]])
+    assert.deepStrictEqual(t.getIndex([M1, M2, M3]), undefined)
+    assert.deepStrictEqual(t.getIndex([M1, M2, M4]), ['tag', [['a'], ['b'], ['c']]])
+    assert.deepStrictEqual(t.getIndex([U1, M4]), ['tag', [['a', 'b'], ['c']]])
   })
 })

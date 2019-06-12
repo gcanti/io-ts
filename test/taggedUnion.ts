@@ -92,10 +92,7 @@ describe('taggedUnion', () => {
       assertSuccess(T.decode({ type: 'A' }))
       assertSuccess(T.decode({ type: 'B', b: 'b' }))
       assertSuccess(T.decode({ type: 'C' }))
-      assertFailure(T, { type: 'B' }, [
-        'Invalid value "B" supplied to : T/0: Subunion/0: A/type: "A"',
-        'Invalid value undefined supplied to : T/0: Subunion/1: B/b: string'
-      ])
+      assertFailure(T, { type: 'B' }, ['Invalid value undefined supplied to : T/0: Subunion/1: B/b: string'])
     })
 
     it('should handle sub tagged unions', () => {
@@ -183,35 +180,10 @@ describe('taggedUnion', () => {
     assert.strictEqual(T.encode, t.identity)
   })
 
-  describe('wrong arguments', () => {
-    it('should handle zero codecs', () => {
-      const T = t.taggedUnion('type', [] as any)
-      assertFailure(T, true, ['Invalid value true supplied to : ()'])
-    })
-
-    it('should handle one codec', () => {
-      const T = t.taggedUnion('type', [t.type({ type: t.literal('A') })] as any)
-      assertSuccess(T.decode({ type: 'A' }))
-      assertFailure(T, null, ['Invalid value null supplied to : ({ type: "A" })'])
-    })
-
-    it('should deoptimize if the arguments are wrong', () => {
-      const log: Array<string> = []
-      const warn = console.warn
-
-      console.warn = (message: string) => {
-        log.push(message)
-      }
-
-      const A = t.type({ type: t.literal('A'), a: t.number }, 'A')
-      // tslint:disable-next-line: deprecation
-      const B = t.refinement(A, x => x.a > 0, 'B')
-      t.taggedUnion('type', [B, A])
-
-      console.warn = warn
-
-      assert.deepStrictEqual(log, ['[io-ts] Cannot build a tagged union for (B | A), returning a de-optimized union'])
-    })
+  it('should handle one codec', () => {
+    const T = t.taggedUnion('type', [t.type({ type: t.literal('A') })] as any)
+    assertSuccess(T.decode({ type: 'A' }))
+    assertFailure(T, null, ['Invalid value null supplied to : ({ type: "A" })'])
   })
 
   it('should warn for un-optimized unions', () => {

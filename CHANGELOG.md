@@ -14,6 +14,11 @@
 **Note**: Gaps between patch versions are faulty/broken releases. **Note**: A feature tagged as Experimental is in a
 high state of flux, you're at risk of it changing without notice.
 
+# 1.9.0
+
+- **New Feature**
+  - `union` is now able to detect and optimize tagged unions (@gcanti)
+
 # 1.8.6
 
 output ES modules to better support tree-shaking, closes #326 (@gcanti)
