@@ -1,6 +1,11 @@
 var Benchmark = require('benchmark')
 var t = require('../lib/index')
 
+/*
+space-object (good) x 371,834 ops/sec ±1.06% (80 runs sampled)
+space-object (bad) x 376,063 ops/sec ±0.76% (89 runs sampled)
+*/
+
 const suite = new Benchmark.Suite()
 
 const Vector = t.tuple([t.number, t.number, t.number])

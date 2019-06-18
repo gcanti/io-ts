@@ -51,7 +51,7 @@ describe('type', () => {
       assertSuccess(T2.decode({}), { a: undefined })
 
       const T3 = t.type({ a: t.unknown })
-      assert.deepStrictEqual(T3.decode({}).value, { a: undefined })
+      assertSuccess(T3.decode({}), { a: undefined })
     })
 
     it('should fail decoding an invalid value', () => {
@@ -82,11 +82,15 @@ describe('type', () => {
   it('should keep unknown properties', () => {
     const T = t.type({ a: t.string })
     const validation = T.decode({ a: 's', b: 1 })
-    if (validation.isRight()) {
-      assert.deepStrictEqual(validation.value, { a: 's', b: 1 })
-    } else {
-      assert.ok(false)
-    }
+    t.fold(
+      validation,
+      () => {
+        assert.ok(false)
+      },
+      a => {
+        assert.deepStrictEqual(a, { a: 's', b: 1 })
+      }
+    )
   })
 
   it('should return the same reference if validation succeeded and nothing changed', () => {

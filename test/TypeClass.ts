@@ -27,7 +27,7 @@ describe('Type', () => {
     }
 
     const T = t.string
-    const decode = <L, A>(f: (u: unknown) => Either<L, A>, u: unknown): boolean => f(u).isRight()
+    const decode = <L, A>(f: (u: unknown) => Either<L, A>, u: unknown): boolean => t.fold(f(u), () => false, () => true)
     assert.strictEqual(decode(T.decode, 'a'), true)
     assert.strictEqual(decode(clone(T).decode, 'a'), true)
     type A = {

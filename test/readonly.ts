@@ -1,6 +1,7 @@
 import * as assert from 'assert'
 import * as t from '../src/index'
 import { assertSuccess, assertFailure, NumberFromString } from './helpers'
+import { either } from 'fp-ts/lib/Either'
 
 describe('readonly', () => {
   describe('name', () => {
@@ -44,14 +45,14 @@ describe('readonly', () => {
 
     it('should freeze the value', () => {
       const T = t.readonly(t.type({ a: t.number }))
-      T.decode({ a: 1 }).map(x => assert.ok(Object.isFrozen(x)))
+      either.map(T.decode({ a: 1 }), x => assert.ok(Object.isFrozen(x)))
     })
 
     it('should not freeze in production', () => {
       const env = process.env.NODE_ENV
       process.env.NODE_ENV = 'production'
       const T = t.readonly(t.type({ a: t.number }))
-      T.decode({ a: 1 }).map(x => assert.ok(!Object.isFrozen(x)))
+      either.map(T.decode({ a: 1 }), x => assert.ok(!Object.isFrozen(x)))
       process.env.NODE_ENV = env
     })
   })

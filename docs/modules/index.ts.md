@@ -123,11 +123,13 @@ parent: Modules
 - [~~any~~ (constant)](#any-constant)
 - [boolean (constant)](#boolean-constant)
 - [~~dictionary~~ (constant)](#dictionary-constant)
+- [failures (constant)](#failures-constant)
 - [~~never~~ (constant)](#never-constant)
 - [nullType (constant)](#nulltype-constant)
 - [number (constant)](#number-constant)
 - [~~object~~ (constant)](#object-constant)
 - [string (constant)](#string-constant)
+- [success (constant)](#success-constant)
 - [unknown (constant)](#unknown-constant)
 - [voidType (constant)](#voidtype-constant)
 - [~~alias~~ (function)](#alias-function)
@@ -137,7 +139,6 @@ parent: Modules
 - [~~clean~~ (function)](#clean-function)
 - [exact (function)](#exact-function)
 - [failure (function)](#failure-function)
-- [failures (function)](#failures-function)
 - [getContextEntry (function)](#getcontextentry-function)
 - [~~getDefaultContext~~ (function)](#getdefaultcontext-function)
 - [getFunctionName (function)](#getfunctionname-function)
@@ -153,7 +154,6 @@ parent: Modules
 - [recursion (function)](#recursion-function)
 - [~~refinement~~ (function)](#refinement-function)
 - [strict (function)](#strict-function)
-- [success (function)](#success-function)
 - [~~taggedUnion~~ (function)](#taggedunion-function)
 - [tuple (function)](#tuple-function)
 - [type (function)](#type-function)
@@ -1673,6 +1673,16 @@ export const dictionary: typeof record = ...
 
 Added in v1.0.0
 
+# failures (constant)
+
+**Signature**
+
+```ts
+export const failures: <T>(errors: Errors) => Validation<T> = ...
+```
+
+Added in v1.0.0
+
 # ~~never~~ (constant)
 
 **Signature**
@@ -1719,6 +1729,16 @@ Added in v1.0.0
 
 ```ts
 export const string: StringC = ...
+```
+
+Added in v1.0.0
+
+# success (constant)
+
+**Signature**
+
+```ts
+export const success: <T>(value: T) => Validation<T> = ...
 ```
 
 Added in v1.0.0
@@ -1806,7 +1826,8 @@ export const array = <C extends Mixed>(codec: C, name: string = `Array<${codec.n
   new ArrayType(
     name,
     (u): u is Array<TypeOf<C>> => UnknownArray.is(u) && u.every(codec.is),
-    (u, c) => ...
+    (u, c) =>
+      chain(UnknownArray.validate(u, c), us => ...
 ```
 
 Added in v1.0.0
@@ -1855,16 +1876,6 @@ Added in v1.1.0
 
 ```ts
 export const failure = <T>(value: unknown, context: Context, message?: string): Validation<T> => ...
-```
-
-Added in v1.0.0
-
-# failures (function)
-
-**Signature**
-
-```ts
-export const failures = <T>(errors: Errors): Validation<T> => ...
 ```
 
 Added in v1.0.0
@@ -1984,12 +1995,7 @@ Added in v1.0.0
 **Signature**
 
 ```ts
-export const readonly = <C extends Mixed>(codec: C, name: string = `Readonly<${codec.name}>`): ReadonlyC<C> =>
-  new ReadonlyType(
-    name,
-    codec.is,
-    (u, c) =>
-      codec.validate(u, c).map(x => ...
+export const readonly = <C extends Mixed>(codec: C, name: string = `Readonly<${codec.name}>`): ReadonlyC<C> => ...
 ```
 
 Added in v1.0.0
@@ -2059,16 +2065,6 @@ Strips additional properties
 
 ```ts
 export const strict = <P extends Props>(props: P, name?: string): ExactC<TypeC<P>> => ...
-```
-
-Added in v1.0.0
-
-# success (function)
-
-**Signature**
-
-```ts
-export const success = <T>(value: T): Validation<T> => ...
 ```
 
 Added in v1.0.0
