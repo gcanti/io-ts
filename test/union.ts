@@ -1,6 +1,7 @@
 import * as assert from 'assert'
 import * as t from '../src/index'
 import { assertFailure, assertStrictEqual, assertSuccess, NumberFromString } from './helpers'
+import { either } from 'fp-ts/lib/Either'
 
 describe('union', () => {
   describe('name', () => {
@@ -112,7 +113,7 @@ describe('union', () => {
           super(
             'DateT',
             (u): u is Date => u instanceof Date,
-            (u, c) => t.number.validate(u, c).map(n => new Date(n)),
+            (u, c) => either.map(t.number.validate(u, c), n => new Date(n)),
             a => a.valueOf()
           )
         }

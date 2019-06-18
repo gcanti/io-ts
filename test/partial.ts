@@ -70,7 +70,7 @@ describe('partial', () => {
     assertStrictEqual(T.decode(input1), input1)
     const input2 = { a: undefined }
     assertStrictEqual(T.decode(input2), input2)
-    assert.deepStrictEqual(T.decode({ b: 1 }).value, { b: 1 })
+    assertSuccess(T.decode({ b: 1 }), { b: 1 } as any)
     const input3 = { a: undefined, b: 1 }
     assertStrictEqual(T.decode(input3), input3)
   })
