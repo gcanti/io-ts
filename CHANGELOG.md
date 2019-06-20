@@ -16,6 +16,8 @@ high state of flux, you're at risk of it changing without notice.
 
 # 1.10.0
 
+**Note**. `io-ts` depends on [`fp-ts`](https://github.com/gcanti/fp-ts), starting from `1.10.0` you must install `fp-ts` manually (`fp-ts` is now a `peerDependency`)
+
 - **New Feature**
   - make `io-ts` compatible with both `fp-ts@1.x`, `fp-ts@2.x` (@gcanti)
 

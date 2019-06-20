@@ -8,6 +8,8 @@ Table of contents
 <!-- START doctoc generated TOC please keep comment here to allow auto update -->
 <!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
 
+
+- [Installation](#installation)
 - [The idea](#the-idea)
 - [TypeScript compatibility](#typescript-compatibility)
 - [Error reporters](#error-reporters)
@@ -28,6 +30,16 @@ Table of contents
   - [Union of string literals](#union-of-string-literals)
 
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
+
+# Installation
+
+To install the stable version:
+
+```sh
+npm i io-ts
+```
+
+**Note**. `io-ts` depends on [`fp-ts`](https://github.com/gcanti/fp-ts), starting from `1.10.0` you must install `fp-ts` manually (`fp-ts` is now a `peerDependency`)
 
 # The idea
 
