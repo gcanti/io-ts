@@ -147,6 +147,39 @@ describe('union', () => {
       })
     })
 
+    it('strict', () => {
+      assert.strictEqual(t.getTags(t.strict({ a: t.string })), t.emptyTags)
+      assert.deepStrictEqual(t.getTags(t.strict({ tag: t.literal('a') })), { tag: ['a'] })
+      assert.deepStrictEqual(t.getTags(t.strict({ tag: t.literal('a'), type: t.literal('b') })), {
+        tag: ['a'],
+        type: ['b']
+      })
+    })
+
+    it('exact', () => {
+      assert.strictEqual(t.getTags(t.exact(t.type({ a: t.string }))), t.emptyTags)
+      assert.deepStrictEqual(t.getTags(t.exact(t.type({ tag: t.literal('a') }))), { tag: ['a'] })
+      assert.deepStrictEqual(t.getTags(t.exact(t.type({ tag: t.literal('a'), type: t.literal('b') }))), {
+        tag: ['a'],
+        type: ['b']
+      })
+    })
+
+    it('refinement', () => {
+      // tslint:disable-next-line: deprecation
+      assert.strictEqual(t.getTags(t.refinement(t.type({ a: t.string }), () => true)), t.emptyTags)
+      // tslint:disable-next-line: deprecation
+      assert.deepStrictEqual(t.getTags(t.refinement(t.type({ tag: t.literal('a') }), () => true)), { tag: ['a'] })
+      assert.deepStrictEqual(
+        // tslint:disable-next-line: deprecation
+        t.getTags(t.refinement(t.type({ tag: t.literal('a'), type: t.literal('b') }), () => true)),
+        {
+          tag: ['a'],
+          type: ['b']
+        }
+      )
+    })
+
     it('intersection', () => {
       assert.strictEqual(t.getTags(t.intersection([t.type({ a: t.string }), t.type({ b: t.number })])), t.emptyTags)
       assert.deepStrictEqual(t.getTags(t.intersection([t.type({ a: t.literal('a') }), t.type({ b: t.number })])), {
