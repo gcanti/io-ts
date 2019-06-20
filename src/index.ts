@@ -2053,6 +2053,20 @@ function isTypeC(codec: Any): codec is TypeC<Props> {
   return (codec as any)._tag === 'InterfaceType'
 }
 
+// tslint:disable-next-line: deprecation
+function isStrictC(codec: Any): codec is StrictC<Props> {
+  return (codec as any)._tag === 'StrictType'
+}
+
+function isExactC(codec: Any): codec is ExactC<HasProps> {
+  return (codec as any)._tag === 'ExactType'
+}
+
+// tslint:disable-next-line: deprecation
+function isRefinementC(codec: Any): codec is RefinementC<Any> {
+  return (codec as any)._tag === 'RefinementType'
+}
+
 function isIntersectionC(codec: Any): codec is IntersectionC<[Mixed, Mixed, ...Array<Mixed>]> {
   return (codec as any)._tag === 'IntersectionType'
 }
@@ -2074,7 +2088,7 @@ export function getTags(codec: Any): Tags {
   if (codec === lazyCodec) {
     return emptyTags
   }
-  if (isTypeC(codec)) {
+  if (isTypeC(codec) || isStrictC(codec)) {
     let index: Tags = emptyTags
     // tslint:disable-next-line: forin
     for (let k in codec.props) {
@@ -2087,6 +2101,8 @@ export function getTags(codec: Any): Tags {
       }
     }
     return index
+  } else if (isExactC(codec) || isRefinementC(codec)) {
+    return getTags(codec.type)
   } else if (isIntersectionC(codec)) {
     return codec.types.reduce((tags, codec) => mergeTags(tags, getTags(codec)), emptyTags)
   } else if (isUnionC(codec)) {
