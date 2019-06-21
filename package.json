@@ -1,6 +1,6 @@
 {
   "name": "io-ts",
-  "version": "1.10.1",
+  "version": "1.10.2",
   "description": "TypeScript compatible runtime type system for IO validation",
   "files": [
     "lib",
@@ -36,7 +36,7 @@
     "url": "https://github.com/gcanti/io-ts/issues"
   },
   "homepage": "https://github.com/gcanti/io-ts",
-  "peerDependencies": {
+  "dependencies": {
     "fp-ts": "^1.0.0 || ^2.0.0-rc.6"
   },
   "devDependencies": {
