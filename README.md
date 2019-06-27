@@ -109,7 +109,7 @@ User.decode(JSON.parse('{"name":"Giulio"}')) // => Left([...])
 
 # TypeScript compatibility
 
-The stable version is tested against TypeScript 3.2.4.
+The stable version is tested against TypeScript 3.5.2
 
 | io-ts version | required TypeScript version |
 | ------------- | --------------------------- |
