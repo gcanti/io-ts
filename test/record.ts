@@ -157,12 +157,6 @@ describe('record', () => {
       assert.deepStrictEqual(T.encode({ 'a-b': 1 }), { ab: 1 })
     })
 
-    it('should accept an array if the codomain is `unknown`', () => {
-      const T = t.record(t.string, t.unknown)
-      const a = [1]
-      assert.strictEqual(T.encode(a), a)
-    })
-
     it('should accept an array if the codomain is `any`', () => {
       // tslint:disable-next-line: deprecation
       const T = t.record(t.string, t.any)
