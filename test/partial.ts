@@ -91,6 +91,7 @@ describe('partial', () => {
       name: withDefault(t.string, 'foo')
     })
     assertSuccess(T.decode({}), { name: 'foo' })
+    assertSuccess(T.decode({ name: 'a' }), { name: 'a' })
   })
 
   it('should preserve additional properties while encoding', () => {

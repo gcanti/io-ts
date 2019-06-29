@@ -6,6 +6,7 @@ import { PathReporter } from '../src/PathReporter'
 export function assertStrictEqual<T>(result: t.Validation<T>, expected: any): void {
   t.fold(
     result,
+    /* istanbul ignore next */
     () => {
       throw new Error(`${result} is not a right`)
     },
@@ -18,6 +19,7 @@ export function assertStrictEqual<T>(result: t.Validation<T>, expected: any): vo
 export function assertSuccess<T>(result: t.Validation<T>, expected?: T): void {
   t.fold(
     result,
+    /* istanbul ignore next */
     () => {
       throw new Error(`${result} is not a right`)
     },
@@ -32,10 +34,12 @@ export function assertSuccess<T>(result: t.Validation<T>, expected?: T): void {
 export function assertStrictSuccess<T>(result: t.Validation<T>, expected: T): void {
   t.fold(
     result,
+    /* istanbul ignore next */
     () => {
       throw new Error(`${result} is not a right`)
     },
     a => {
+      /* istanbul ignore next */
       if (expected !== undefined) {
         assert.strictEqual(a, expected)
       }
@@ -50,6 +54,7 @@ export function assertFailure(codec: t.Any, value: unknown, errors: Array<string
     () => {
       assert.deepStrictEqual(PathReporter.report(result), errors)
     },
+    /* istanbul ignore next */
     () => {
       throw new Error(`${result} is not a left`)
     }
