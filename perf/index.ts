@@ -1,5 +1,10 @@
-var Benchmark = require('benchmark')
-var t = require('../lib/index')
+import * as Benchmark from 'benchmark'
+import * as t from '../src'
+
+/*
+space-object (good) x 404,422 ops/sec ±0.84% (85 runs sampled)
+space-object (bad) x 366,083 ops/sec ±0.88% (80 runs sampled)
+*/
 
 const suite = new Benchmark.Suite()
 
@@ -33,27 +38,15 @@ const CrewMember = t.type({
   home: Planet
 })
 
-const DateFromNumber = new t.Type(
-  'DateFromNumber',
-  v => v instanceof Date,
-  (s, c) =>
-    t.number.validate(s, c).chain(n => {
-      const d = new Date(n)
-      return isNaN(d.getTime()) ? t.failure(n, c) : t.success(d)
-    }),
-  a => a.getTime()
-)
-
 const Ship = t.type({
   type: t.literal('ship'),
   location: Vector,
   mass: t.number,
   name: t.string,
-  crew: t.array(CrewMember),
-  date: DateFromNumber
+  crew: t.array(CrewMember)
 })
 
-const T = t.taggedUnion('type', [Asteroid, Planet, Ship])
+const T = t.union([Asteroid, Planet, Ship])
 
 const good = {
   type: 'ship',
@@ -73,20 +66,44 @@ const good = {
         habitable: true
       }
     }
-  ],
-  date: new Date(0)
+  ]
 }
 
-// console.log(T.encode(good))
+const bad = {
+  type: 'ship',
+  location: [1, 2, 3],
+  mass: 4,
+  name: 'foo',
+  crew: [
+    {
+      name: 'bar',
+      age: 44,
+      rank: 'captain',
+      home: {
+        type: 'planet',
+        location: [5, 6, 7],
+        mass: 8,
+        population: 'a',
+        habitable: true
+      }
+    }
+  ]
+}
+
+// console.log(T.decode(good))
+// console.log(T.decode(bad))
 
 suite
   .add('space-object (good)', function() {
-    T.encode(good)
+    T.decode(good)
   })
-  .on('cycle', function(event) {
+  .add('space-object (bad)', function() {
+    T.decode(bad)
+  })
+  .on('cycle', function(event: any) {
     console.log(String(event.target))
   })
-  .on('complete', function() {
+  .on('complete', function(this: any) {
     console.log('Fastest is ' + this.filter('fastest').map('name'))
   })
   .run({ async: true })

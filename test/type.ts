@@ -82,8 +82,7 @@ describe('type', () => {
   it('should keep unknown properties', () => {
     const T = t.type({ a: t.string })
     const validation = T.decode({ a: 's', b: 1 })
-    t.fold(
-      validation,
+    validation.fold(
       () => {
         assert.ok(false)
       },
