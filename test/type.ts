@@ -1,4 +1,6 @@
 import * as assert from 'assert'
+import { fold } from 'fp-ts/lib/Either'
+import { pipe } from 'fp-ts/lib/pipeable'
 import * as t from '../src/index'
 import { assertFailure, assertStrictEqual, assertSuccess, NumberFromString } from './helpers'
 
@@ -82,13 +84,16 @@ describe('type', () => {
   it('should keep unknown properties', () => {
     const T = t.type({ a: t.string })
     const validation = T.decode({ a: 's', b: 1 })
-    validation.fold(
-      () => {
-        assert.ok(false)
-      },
-      a => {
-        assert.deepStrictEqual(a, { a: 's', b: 1 })
-      }
+    pipe(
+      validation,
+      fold(
+        () => {
+          assert.ok(false)
+        },
+        a => {
+          assert.deepStrictEqual(a, { a: 's', b: 1 })
+        }
+      )
     )
   })
 

@@ -14,6 +14,12 @@
 **Note**: Gaps between patch versions are faulty/broken releases. **Note**: A feature tagged as Experimental is in a
 high state of flux, you're at risk of it changing without notice.
 
+# 2.0.0
+
+- **Breaking Change**
+  - upgrade to `fp-ts@2.x` (@gcanti)
+  - move `fp-ts` to `peerDependencies` (@gcanti)
+
 # 1.10.4
 
 - **Polish**

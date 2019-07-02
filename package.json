@@ -1,6 +1,6 @@
 {
   "name": "io-ts",
-  "version": "1.10.4",
+  "version": "2.0.0",
   "description": "TypeScript compatible runtime type system for IO validation",
   "files": [
     "lib",
@@ -36,8 +36,8 @@
     "url": "https://github.com/gcanti/io-ts/issues"
   },
   "homepage": "https://github.com/gcanti/io-ts",
-  "dependencies": {
-    "fp-ts": "^1.0.0"
+  "peerDependencies": {
+    "fp-ts": "^2.0.0"
   },
   "devDependencies": {
     "@types/benchmark": "1.0.31",
@@ -47,6 +47,7 @@
     "docs-ts": "^0.1.0",
     "doctoc": "^1.4.0",
     "dtslint": "github:gcanti/dtslint",
+    "fp-ts": "^2.0.0",
     "jest": "^24.8.0",
     "mocha": "^5.2.0",
     "prettier": "^1.15.3",
@@ -92,5 +93,6 @@
         "statements": 100
       }
     }
-  }
+  },
+  "dependencies": {}
 }

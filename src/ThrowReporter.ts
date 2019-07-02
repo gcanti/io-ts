@@ -3,6 +3,7 @@
  */
 import { Reporter } from './Reporter'
 import { PathReporter } from './PathReporter'
+import { isLeft } from 'fp-ts/lib/Either'
 
 /**
  * @since 1.0.0
@@ -10,8 +11,8 @@ import { PathReporter } from './PathReporter'
  */
 export const ThrowReporter: Reporter<void> = {
   report: validation => {
-    if (validation.isLeft()) {
-      throw PathReporter.report(validation).join('\n')
+    if (isLeft(validation)) {
+      throw new Error(PathReporter.report(validation).join('\n'))
     }
   }
 }

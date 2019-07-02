@@ -2,8 +2,8 @@ import * as Benchmark from 'benchmark'
 import * as t from '../src'
 
 /*
-space-object (good) x 404,422 ops/sec ±0.84% (85 runs sampled)
-space-object (bad) x 366,083 ops/sec ±0.88% (80 runs sampled)
+space-object (good) x 435,472 ops/sec ±0.61% (83 runs sampled)
+space-object (bad) x 392,528 ops/sec ±2.39% (87 runs sampled)
 */
 
 const suite = new Benchmark.Suite()
