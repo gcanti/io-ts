@@ -90,6 +90,25 @@ const string = new t.Type<string, string, unknown>(
 )
 ```
 
+The result of calling `decode` can be handled using `fold`
+
+```ts
+import { pipe } from 'fp-ts/lib/pipeable'
+import { fold } from 'fp-ts/lib/Either'
+
+pipe(
+  t.string.decode(null),
+  fold(errors => console.error(`${errors.length} error(s) found`), aValidString => console.log(aValidString))
+)
+// => 1 error(s) found
+
+pipe(
+  t.string.decode('ok'),
+  fold(errors => console.error(`${errors.length} error(s) found`), aValidString => console.log(aValidString))
+)
+// => ok
+```
+
 A codec can be used to validate an object in memory (for example an API payload)
 
 ```ts
