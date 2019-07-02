@@ -113,6 +113,7 @@ The stable version is tested against TypeScript 3.5.2
 
 | io-ts version | required TypeScript version |
 | ------------- | --------------------------- |
+| 2.x+          | 3.5.2+                      |
 | 1.6.x+        | 3.2.2+                      |
 | 1.5.3         | 3.0.1+                      |
 | 1.5.2-        | 2.7.2+                      |
@@ -167,8 +168,14 @@ interface Errors extends Array<ValidationError> {}
 Example
 
 ```ts
+import { pipe } from 'fp-ts/lib/pipeable'
+import { fold } from 'fp-ts/lib/Either'
+
 const getPaths = <A>(v: t.Validation<A>): Array<string> => {
-  return v.fold(errors => errors.map(error => error.context.map(({ key }) => key).join('.')), () => ['no errors'])
+  return pipe(
+    v,
+    fold(errors => errors.map(error => error.context.map(({ key }) => key).join('.')), () => ['no errors'])
+  )
 }
 
 console.log(getPaths(User.decode({}))) // => [ '.userId', '.name' ]
@@ -181,11 +188,13 @@ You can set your own error message by providing a `message` argument to `failure
 Example
 
 ```ts
+import { either } from 'fp-ts/lib/Either'
+
 const NumberFromString = new t.Type<number, string, unknown>(
   'NumberFromString',
   t.number.is,
   (u, c) =>
-    t.string.validate(u, c).chain(s => {
+    either.chain(t.string.validate(u, c), s => {
       const n = +s
       return isNaN(n) ? t.failure(u, c, 'cannot parse to a number') : t.success(n)
     }),
@@ -200,14 +209,15 @@ You can also use the [`withMessage`](https://gcanti.github.io/io-ts-types/module
 
 # Community
 
-- [io-ts-types](https://github.com/gcanti/io-ts-types) - A collection of codecs and combinators for use with
-  io-ts
-- [io-ts-reporters](https://github.com/OliverJAsh/io-ts-reporters) - Error reporters for io-ts
-- [geojson-iots](https://github.com/pierremarc/geojson-iots) - codecs for GeoJSON as defined in rfc7946 made with
-  io-ts
-- [graphql-to-io-ts](https://github.com/micimize/graphql-to-io-ts) - Generate typescript and cooresponding io-ts types from a graphql
-  schema
-- [io-ts-promise](https://github.com/aeirola/io-ts-promise) - Convenience library for using io-ts with promise-based APIs
+- `io-ts@1.x`
+  - [io-ts-types](https://github.com/gcanti/io-ts-types) - A collection of codecs and combinators for use with
+    io-ts
+  - [io-ts-reporters](https://github.com/OliverJAsh/io-ts-reporters) - Error reporters for io-ts
+  - [geojson-iots](https://github.com/pierremarc/geojson-iots) - codecs for GeoJSON as defined in rfc7946 made with
+    io-ts
+  - [graphql-to-io-ts](https://github.com/micimize/graphql-to-io-ts) - Generate typescript and cooresponding io-ts types from a graphql
+    schema
+  - [io-ts-promise](https://github.com/aeirola/io-ts-promise) - Convenience library for using io-ts with promise-based APIs
 
 # TypeScript integration
 
@@ -404,12 +414,14 @@ type PartialUser = {
 You can define your own types. Let's see an example
 
 ```ts
+import { either } from 'fp-ts/lib/Either'
+
 // represents a Date from an ISO string
 const DateFromString = new t.Type<Date, string, unknown>(
   'DateFromString',
   (u): u is Date => u instanceof Date,
   (u, c) =>
-    t.string.validate(u, c).chain(s => {
+    either.chain(t.string.validate(u, c), s => {
       const d = new Date(s)
       return isNaN(d.getTime()) ? t.failure(u, c) : t.success(d)
     }),
@@ -491,41 +503,6 @@ const NumberFromString = t.string.pipe(
 ```
 
 # Tips and Tricks
-
-## Is there a way to turn the checks off in production code?
-
-No, however you can define your own logic for that (if you _really_ trust the input)
-
-```ts
-import * as t from 'io-ts'
-import { Either, right } from 'fp-ts/lib/Either'
-
-const { NODE_ENV } = process.env
-
-export function unsafeDecode<A, O, I>(value: I, codec: t.Type<A, O, I>): Either<t.Errors, A> {
-  if (NODE_ENV !== 'production' || codec.encode !== t.identity) {
-    return codec.decode(value)
-  } else {
-    // unsafe cast
-    return right(value as any)
-  }
-}
-
-// or...
-
-import { failure } from 'io-ts/lib/PathReporter'
-
-export function unsafeGet<A, O, I>(value: I, codec: t.Type<A, O, I>): A {
-  if (NODE_ENV !== 'production' || type.encode !== t.identity) {
-    return codec.decode(value).getOrElseL(errors => {
-      throw new Error(failure(errors).join('\n'))
-    })
-  } else {
-    // unsafe cast
-    return value as any
-  }
-}
-```
 
 ## Union of string literals
 

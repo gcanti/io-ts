@@ -1,59 +1,72 @@
 import * as assert from 'assert'
-import { right, either } from 'fp-ts/lib/Either'
+import { right, either, fold } from 'fp-ts/lib/Either'
 import * as t from '../src/index'
 import { PathReporter } from '../src/PathReporter'
+import { pipe } from 'fp-ts/lib/pipeable'
 
 export function assertStrictEqual<T>(result: t.Validation<T>, expected: any): void {
-  result.fold(
-    /* istanbul ignore next */
-    () => {
-      throw new Error(`${result} is not a right`)
-    },
-    a => {
-      assert.deepStrictEqual(a, expected)
-    }
+  pipe(
+    result,
+    fold(
+      /* istanbul ignore next */
+      () => {
+        throw new Error(`${result} is not a right`)
+      },
+      a => {
+        assert.deepStrictEqual(a, expected)
+      }
+    )
   )
 }
 
 export function assertSuccess<T>(result: t.Validation<T>, expected?: T): void {
-  result.fold(
-    /* istanbul ignore next */
-    () => {
-      throw new Error(`${result} is not a right`)
-    },
-    a => {
-      if (expected !== undefined) {
-        assert.deepStrictEqual(a, expected)
+  pipe(
+    result,
+    fold(
+      /* istanbul ignore next */
+      () => {
+        throw new Error(`${result} is not a right`)
+      },
+      a => {
+        if (expected !== undefined) {
+          assert.deepStrictEqual(a, expected)
+        }
       }
-    }
+    )
   )
 }
 
 export function assertStrictSuccess<T>(result: t.Validation<T>, expected: T): void {
-  result.fold(
-    /* istanbul ignore next */
-    () => {
-      throw new Error(`${result} is not a right`)
-    },
-    a => {
+  pipe(
+    result,
+    fold(
       /* istanbul ignore next */
-      if (expected !== undefined) {
-        assert.strictEqual(a, expected)
+      () => {
+        throw new Error(`${result} is not a right`)
+      },
+      a => {
+        /* istanbul ignore next */
+        if (expected !== undefined) {
+          assert.strictEqual(a, expected)
+        }
       }
-    }
+    )
   )
 }
 
 export function assertFailure(codec: t.Any, value: unknown, errors: Array<string>): void {
   const result = codec.decode(value)
-  result.fold(
-    () => {
-      assert.deepStrictEqual(PathReporter.report(result), errors)
-    },
-    /* istanbul ignore next */
-    () => {
-      throw new Error(`${result} is not a left`)
-    }
+  pipe(
+    result,
+    fold(
+      () => {
+        assert.deepStrictEqual(PathReporter.report(result), errors)
+      },
+      /* istanbul ignore next */
+      () => {
+        throw new Error(`${result} is not a left`)
+      }
+    )
   )
 }
 

@@ -1,7 +1,8 @@
 import * as assert from 'assert'
+import { Either, fold, right } from 'fp-ts/lib/Either'
+import { pipe } from 'fp-ts/lib/pipeable'
 import * as t from '../src/index'
-import { assertSuccess, assertFailure } from './helpers'
-import { right, Either } from 'fp-ts/lib/Either'
+import { assertFailure, assertSuccess } from './helpers'
 
 const BAA = new t.Type<number, string, string>(
   'BAA',
@@ -27,7 +28,11 @@ describe('Type', () => {
     }
 
     const T = t.string
-    const decode = <L, A>(f: (u: unknown) => Either<L, A>, u: unknown): boolean => f(u).fold(() => false, () => true)
+    const decode = <L, A>(f: (u: unknown) => Either<L, A>, u: unknown): boolean =>
+      pipe(
+        f(u),
+        fold(() => false, () => true)
+      )
     assert.strictEqual(decode(T.decode, 'a'), true)
     assert.strictEqual(decode(clone(T).decode, 'a'), true)
     type A = {
