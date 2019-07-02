@@ -1,6 +1,6 @@
 {
   "name": "io-ts",
-  "version": "1.10.3",
+  "version": "1.10.4",
   "description": "TypeScript compatible runtime type system for IO validation",
   "files": [
     "lib",
@@ -19,7 +19,7 @@
     "clean": "rimraf lib/* es6/*",
     "build": "npm run clean && tsc && tsc -p tsconfig.es6.json",
     "prepublish": "npm run build",
-    "perf": "node perf/index",
+    "perf": "ts-node perf/index",
     "dtslint": "dtslint dtslint",
     "declaration": "tsc -p declaration/tsconfig.json",
     "mocha": "TS_NODE_CACHE=false mocha -r ts-node/register test/*.ts",

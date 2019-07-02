@@ -1,30 +1,5 @@
-import { Either, either, left, right } from 'fp-ts/lib/Either'
+import { Either, left, right } from 'fp-ts/lib/Either'
 import { Predicate, Refinement } from 'fp-ts/lib/function'
-
-const map = either.map
-const chain = either.chain
-
-/**
- * @internal
- */
-export function fold<L, A, R>(ma: Either<L, A>, onLeft: (l: L) => R, onRight: (a: A) => R): R {
-  const e: any = ma
-  return e._tag === 'Left'
-    ? onLeft(
-        e.hasOwnProperty('left')
-          ? /* istanbul ignore next */
-            e.left
-          : /* istanbul ignore next */
-            e.value
-      )
-    : onRight(
-        e.hasOwnProperty('right')
-          ? /* istanbul ignore next */
-            e.right
-          : /* istanbul ignore next */
-            e.value
-      )
-}
 
 /**
  * @since 1.0.0
@@ -35,6 +10,7 @@ export interface ContextEntry {
   /** the input data */
   readonly actual?: unknown
 }
+
 /**
  * @since 1.0.0
  */
@@ -151,7 +127,7 @@ export class Type<A, O = A, I = unknown> implements Decoder<I, A>, Encoder<A, O>
     return new Type(
       name,
       ab.is,
-      (i, c) => chain(this.validate(i, c), a => ab.validate(a, c)),
+      (i, c) => this.validate(i, c).chain(a => ab.validate(a, c)),
       this.encode === identity && ab.encode === identity ? (identity as any) : b => this.encode(ab.encode(b))
     )
   }
@@ -675,14 +651,13 @@ export const array = <C extends Mixed>(codec: C, name: string = `Array<${codec.n
     name,
     (u): u is Array<TypeOf<C>> => UnknownArray.is(u) && u.every(codec.is),
     (u, c) =>
-      chain(UnknownArray.validate(u, c), us => {
+      UnknownArray.validate(u, c).chain(us => {
         const len = us.length
         let as: Array<TypeOf<C>> = us
         const errors: Errors = []
         for (let i = 0; i < len; i++) {
           const ui = us[i]
-          fold(
-            codec.validate(ui, appendContext(c, String(i), codec, ui)),
+          codec.validate(ui, appendContext(c, String(i), codec, ui)).fold(
             e => pushAll(errors, e),
             ai => {
               if (ai !== ui) {
@@ -787,7 +762,7 @@ export const type = <P extends Props>(props: P, name: string = getInterfaceTypeN
       return true
     },
     (u, c) =>
-      chain(UnknownRecord.validate(u, c), o => {
+      UnknownRecord.validate(u, c).chain(o => {
         let a = o
         const errors: Errors = []
         for (let i = 0; i < len; i++) {
@@ -800,8 +775,7 @@ export const type = <P extends Props>(props: P, name: string = getInterfaceTypeN
           }
           const ak = a[k]
           const type = types[i]
-          fold(
-            type.validate(ak, appendContext(c, k, type, ak)),
+          type.validate(ak, appendContext(c, k, type, ak)).fold(
             e => pushAll(errors, e),
             vak => {
               if (vak !== ak) {
@@ -895,15 +869,14 @@ export const partial = <P extends Props>(
       return true
     },
     (u, c) =>
-      chain(UnknownRecord.validate(u, c), o => {
+      UnknownRecord.validate(u, c).chain(o => {
         let a = o
         const errors: Errors = []
         for (let i = 0; i < len; i++) {
           const k = keys[i]
           const ak = a[k]
           const type = props[k]
-          fold(
-            type.validate(ak, appendContext(c, k, type, ak)),
+          type.validate(ak, appendContext(c, k, type, ak)).fold(
             e => {
               if (ak !== undefined) {
                 pushAll(errors, e)
@@ -994,7 +967,7 @@ export const record = <D extends Mixed, C extends Mixed>(
       return Object.keys(u).every(k => domain.is(k) && codomain.is(u[k]))
     },
     (u, c) =>
-      chain(UnknownRecord.validate(u, c), o => {
+      UnknownRecord.validate(u, c).chain(o => {
         if (!isUnknownCodec(codomain) && !isAnyCodec(codomain) && !isObject(o)) {
           return failure(u, c)
         }
@@ -1006,14 +979,12 @@ export const record = <D extends Mixed, C extends Mixed>(
         for (let i = 0; i < len; i++) {
           let k = keys[i]
           const ok = o[k]
-          fold(
-            domain.validate(k, appendContext(c, k, domain, k)),
+          domain.validate(k, appendContext(c, k, domain, k)).fold(
             e => pushAll(errors, e),
             vk => {
               changed = changed || vk !== k
               k = vk
-              fold(
-                codomain.validate(ok, appendContext(c, k, codomain, ok)),
+              codomain.validate(ok, appendContext(c, k, codomain, ok)).fold(
                 e => pushAll(errors, e),
                 vok => {
                   changed = changed || vok !== ok
@@ -1098,7 +1069,7 @@ export const union = <CS extends [Mixed, Mixed, ...Array<Mixed>]>(
         return i !== undefined ? codecs[i].is(u) : false
       },
       (u, c) =>
-        chain(UnknownRecord.validate(u, c), r => {
+        UnknownRecord.validate(u, c).chain(r => {
           const i = find(r[tag])
           if (i === undefined) {
             return failure(u, c)
@@ -1128,11 +1099,9 @@ export const union = <CS extends [Mixed, Mixed, ...Array<Mixed>]>(
         const errors: Errors = []
         for (let i = 0; i < codecs.length; i++) {
           const codec = codecs[i]
-          const r = fold<Errors, any, Either<Errors, any> | void>(
-            codec.validate(u, appendContext(c, String(i), codec, u)),
-            e => pushAll(errors, e),
-            success
-          )
+          const r = codec
+            .validate(u, appendContext(c, String(i), codec, u))
+            .fold<Either<Errors, any> | void>(e => pushAll(errors, e), success)
           if (r !== undefined) {
             return r
           }
@@ -1249,7 +1218,7 @@ export function intersection<CS extends [Mixed, Mixed, ...Array<Mixed>]>(
           const errors: Errors = []
           for (let i = 0; i < len; i++) {
             const codec = codecs[i]
-            fold(codec.validate(u, appendContext(c, String(i), codec, u)), e => pushAll(errors, e), a => us.push(a))
+            codec.validate(u, appendContext(c, String(i), codec, u)).fold(e => pushAll(errors, e), a => us.push(a))
           }
           return errors.length > 0 ? failures(errors) : success(mergeAll(u, us))
         },
@@ -1331,14 +1300,13 @@ export function tuple<CS extends [Mixed, ...Array<Mixed>]>(
     name,
     (u): u is any => UnknownArray.is(u) && u.length === len && codecs.every((type, i) => type.is(u[i])),
     (u, c) =>
-      chain(UnknownArray.validate(u, c), us => {
+      UnknownArray.validate(u, c).chain(us => {
         let as: Array<any> = us.length > len ? us.slice(0, len) : us // strip additional components
         const errors: Errors = []
         for (let i = 0; i < len; i++) {
           const a = us[i]
           const type = codecs[i]
-          fold(
-            type.validate(a, appendContext(c, String(i), type, a)),
+          type.validate(a, appendContext(c, String(i), type, a)).fold(
             e => pushAll(errors, e),
             va => {
               if (va !== a) {
@@ -1393,7 +1361,7 @@ export const readonly = <C extends Mixed>(codec: C, name: string = `Readonly<${c
     name,
     codec.is,
     (u, c) =>
-      map(codec.validate(u, c), x => {
+      codec.validate(u, c).map(x => {
         if (process.env.NODE_ENV !== 'production') {
           return Object.freeze(x)
         }
@@ -1438,7 +1406,7 @@ export const readonlyArray = <C extends Mixed>(
     name,
     arrayType.is,
     (u, c) =>
-      map(arrayType.validate(u, c), x => {
+      arrayType.validate(u, c).map(x => {
         if (process.env.NODE_ENV !== 'production') {
           return Object.freeze(x)
         }
@@ -1606,7 +1574,7 @@ export const exact = <C extends HasProps>(codec: C, name: string = getExactTypeN
     name,
     codec.is,
     (u, c) =>
-      chain(UnknownRecord.validate(u, c), () => fold(codec.validate(u, c), left, a => success(stripKeys(a, props)))),
+      UnknownRecord.validate(u, c).chain(() => codec.validate(u, c).fold(left, a => success(stripKeys(a, props)))),
     a => codec.encode(stripKeys(a, props)),
     codec
   )
@@ -1767,7 +1735,7 @@ RefinementC<C> {
   return new RefinementType(
     name,
     (u): u is TypeOf<C> => codec.is(u) && predicate(u),
-    (i, c) => chain(codec.validate(i, c), a => (predicate(a) ? success(a) : failure(a, c))),
+    (i, c) => codec.validate(i, c).chain(a => (predicate(a) ? success(a) : failure(a, c))),
     codec.encode,
     codec,
     predicate

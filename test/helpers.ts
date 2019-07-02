@@ -4,8 +4,7 @@ import * as t from '../src/index'
 import { PathReporter } from '../src/PathReporter'
 
 export function assertStrictEqual<T>(result: t.Validation<T>, expected: any): void {
-  t.fold(
-    result,
+  result.fold(
     /* istanbul ignore next */
     () => {
       throw new Error(`${result} is not a right`)
@@ -17,8 +16,7 @@ export function assertStrictEqual<T>(result: t.Validation<T>, expected: any): vo
 }
 
 export function assertSuccess<T>(result: t.Validation<T>, expected?: T): void {
-  t.fold(
-    result,
+  result.fold(
     /* istanbul ignore next */
     () => {
       throw new Error(`${result} is not a right`)
@@ -32,8 +30,7 @@ export function assertSuccess<T>(result: t.Validation<T>, expected?: T): void {
 }
 
 export function assertStrictSuccess<T>(result: t.Validation<T>, expected: T): void {
-  t.fold(
-    result,
+  result.fold(
     /* istanbul ignore next */
     () => {
       throw new Error(`${result} is not a right`)
@@ -49,8 +46,7 @@ export function assertStrictSuccess<T>(result: t.Validation<T>, expected: T): vo
 
 export function assertFailure(codec: t.Any, value: unknown, errors: Array<string>): void {
   const result = codec.decode(value)
-  t.fold(
-    result,
+  result.fold(
     () => {
       assert.deepStrictEqual(PathReporter.report(result), errors)
     },
