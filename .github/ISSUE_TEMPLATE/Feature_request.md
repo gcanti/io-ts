@@ -30,3 +30,13 @@ about: Suggest an idea for io-ts
 ### Additional context
 
 <!-- Add any other context or links about the feature request here. -->
+
+### Your environment
+
+<!-- PLEASE FILL THIS OUT -->
+
+| Software   | Version(s) |
+| ---------- | ---------- |
+| io-ts      |            |
+| fp-ts      |            |
+| TypeScript |            |
