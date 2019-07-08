@@ -35,8 +35,10 @@ Table of contents
 To install the stable version:
 
 ```sh
-npm i io-ts
+npm i io-ts fp-ts
 ```
+
+Note: [fp-ts](https://github.com/gcanti/fp-ts) is a peer dependency for io-ts
 
 # The idea
 
