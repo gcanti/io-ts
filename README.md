@@ -10,11 +10,10 @@ Table of contents
 
 - [Installation](#installation)
 - [The idea](#the-idea)
+- [TypeScript integration](#typescript-integration)
 - [TypeScript compatibility](#typescript-compatibility)
 - [Error reporters](#error-reporters)
 - [Custom error messages](#custom-error-messages)
-- [Community](#community)
-- [TypeScript integration](#typescript-integration)
 - [Implemented types / combinators](#implemented-types--combinators)
 - [Recursive types](#recursive-types)
   - [Mutually recursive types](#mutually-recursive-types)
@@ -24,8 +23,8 @@ Table of contents
 - [Custom types](#custom-types)
 - [Generic Types](#generic-types)
 - [Piping](#piping)
+- [Community](#community)
 - [Tips and Tricks](#tips-and-tricks)
-  - [Is there a way to turn the checks off in production code?](#is-there-a-way-to-turn-the-checks-off-in-production-code)
   - [Union of string literals](#union-of-string-literals)
 
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
@@ -38,80 +37,110 @@ To install the stable version:
 npm i io-ts fp-ts
 ```
 
-Note: [fp-ts](https://github.com/gcanti/fp-ts) is a peer dependency for io-ts
+Note: [`fp-ts`](https://github.com/gcanti/fp-ts) is a peer dependency for `io-ts`
 
 # The idea
 
-Blog post: ["Typescript and validations at runtime boundaries"](https://lorefnon.tech/2018/03/25/typescript-and-validations-at-runtime-boundaries/) by [@lorefnon](https://github.com/lorefnon)
-
 A value of type `Type<A, O, I>` (called "codec") is the runtime representation of the static type `A`.
 
-Also a codec can
+A codec can:
 
 - decode inputs of type `I` (through `decode`)
 - encode outputs of type `O` (through `encode`)
-- be used as a custom type guard (through `is`)
+- be used as a custom [type guard](https://basarat.gitbooks.io/typescript/content/docs/types/typeGuard.html) (through `is`)
 
 ```ts
 class Type<A, O, I> {
-  readonly _A: A
-  readonly _O: O
-  readonly _I: I
   constructor(
     /** a unique name for this codec */
     readonly name: string,
+
     /** a custom type guard */
     readonly is: (u: unknown) => u is A,
+
     /** succeeds if a value of type I can be decoded to a value of type A */
     readonly validate: (input: I, context: Context) => Either<Errors, A>,
+
     /** converts a value of type A to a value of type O */
     readonly encode: (a: A) => O
   ) {}
+
   /** a version of `validate` with a default context */
   decode(i: I): Either<Errors, A>
 }
 ```
 
-Note. The `Either` type is defined in [fp-ts](https://github.com/gcanti/fp-ts), a library containing implementations of
-common algebraic types in TypeScript.
+The [`Either`](https://gcanti.github.io/fp-ts/modules/Either.ts.html) type returned by `decode` is defined in [fp-ts](https://github.com/gcanti/fp-ts), a library containing implementations of common algebraic types in TypeScript.
+
+The `Either` type represents a value of one of two possible types (a disjoint union). An instance of `Either` is either an instance of `Left` or `Right`:
+
+```ts
+type Either<E, A> =
+  | {
+      readonly _tag: 'Left'
+      readonly left: E
+    }
+  | {
+      readonly _tag: 'Right'
+      readonly right: A
+    }
+```
+
+Convention dictates that `Left` is used for **failure** and `Right` is used for **success**.
 
 **Example**
 
-A codec representing `string` can be defined as
+A codec representing `string` can be defined as:
 
 ```ts
 import * as t from 'io-ts'
 
-const isString = (u: unknown): u is string => typeof u === 'string'
-
 const string = new t.Type<string, string, unknown>(
   'string',
-  isString,
-  (u, c) => (isString(u) ? t.success(u) : t.failure(u, c)),
+  (input: unknown): input is string => typeof input === 'string',
+  // `t.success` and `t.failure` are helpers used to build `Either` instances
+  (input, context) => (typeof input === 'string' ? t.success(input) : t.failure(input, context)),
+  // `A` and `O` are the same, so `encode` is just the identity function
   t.identity
 )
 ```
 
-The result of calling `decode` can be handled using `fold`
+and we can use it as follows:
 
 ```ts
+import { isRight } from 'fp-ts/lib/Either'
+
+isRight(string.decode('a string')) // true
+isRight(string.decode(null)) // false
+```
+
+More generally the result of calling `decode` can be handled using [`fold`](https://gcanti.github.io/fp-ts/modules/Either.ts.html#fold-function) along with `pipe` (which is similar to the pipeline operator)
+
+```ts
+import * as t from 'io-ts'
 import { pipe } from 'fp-ts/lib/pipeable'
 import { fold } from 'fp-ts/lib/Either'
 
+// failure handler
+const onLeft = (errors: t.Errors): string => `${errors.length} error(s) found`
+
+// success handler
+const onRight = (s: string) => `No errors: ${s}`
+
+pipe(
+  t.string.decode('a string'),
+  fold(onLeft, onRight)
+)
+// => "No errors: a string"
+
 pipe(
   t.string.decode(null),
-  fold(errors => console.error(`${errors.length} error(s) found`), aValidString => console.log(aValidString))
+  fold(onLeft, onRight)
 )
-// => 1 error(s) found
-
-pipe(
-  t.string.decode('ok'),
-  fold(errors => console.error(`${errors.length} error(s) found`), aValidString => console.log(aValidString))
-)
-// => ok
+// => "1 error(s) found"
 ```
 
-A codec can be used to validate an object in memory (for example an API payload)
+We can combine these codecs through [combinators](#implemented-types--combinators) to build composite types which represent entities like domain models, request payloads etc. in our applications:
 
 ```ts
 import * as t from 'io-ts'
@@ -120,12 +149,42 @@ const User = t.type({
   userId: t.number,
   name: t.string
 })
+```
 
-// validation succeeded
-User.decode(JSON.parse('{"userId":1,"name":"Giulio"}')) // => Right({ userId: 1, name: "Giulio" })
+So this is equivalent to defining something like:
 
-// validation failed
-User.decode(JSON.parse('{"name":"Giulio"}')) // => Left([...])
+```ts
+type User = {
+  userId: number
+  name: string
+}
+```
+
+The advantage of using `io-ts` to define the runtime type is that we can validate the type at runtime, and we can also extract the corresponding static type, so we don’t have to define it twice.
+
+# TypeScript integration
+
+Codecs can be inspected:
+
+![instrospection](images/introspection.png)
+
+This library uses TypeScript extensively. Its API is defined in a way which automatically infers types for produced
+values
+
+![inference](images/inference.png)
+
+Note that the type annotation isn't needed, TypeScript infers the type automatically based on a schema (and comments are preserved).
+
+Static types can be extracted from codecs using the `TypeOf` operator:
+
+```ts
+type User = t.TypeOf<typeof User>
+
+// same as
+type User = {
+  userId: number
+  name: string
+}
 ```
 
 # TypeScript compatibility
@@ -228,43 +287,6 @@ console.log(PathReporter.report(NumberFromString.decode('a')))
 
 You can also use the [`withMessage`](https://gcanti.github.io/io-ts-types/modules/withMessage.ts.html) helper from [io-ts-types](https://github.com/gcanti/io-ts-types)
 
-# Community
-
-- `io-ts@1.x`
-  - [io-ts-types](https://github.com/gcanti/io-ts-types) - A collection of codecs and combinators for use with
-    io-ts
-  - [io-ts-reporters](https://github.com/OliverJAsh/io-ts-reporters) - Error reporters for io-ts
-  - [geojson-iots](https://github.com/pierremarc/geojson-iots) - codecs for GeoJSON as defined in rfc7946 made with
-    io-ts
-  - [graphql-to-io-ts](https://github.com/micimize/graphql-to-io-ts) - Generate typescript and cooresponding io-ts types from a graphql
-    schema
-  - [io-ts-promise](https://github.com/aeirola/io-ts-promise) - Convenience library for using io-ts with promise-based APIs
-
-# TypeScript integration
-
-codecs can be inspected
-
-![instrospection](images/introspection.png)
-
-This library uses TypeScript extensively. Its API is defined in a way which automatically infers types for produced
-values
-
-![inference](images/inference.png)
-
-Note that the type annotation isn't needed, TypeScript infers the type automatically based on a schema (and comments are preserved).
-
-Static types can be extracted from codecs using the `TypeOf` operator
-
-```ts
-type User = t.TypeOf<typeof User>
-
-// same as
-type User = {
-  userId: number
-  name: string
-}
-```
-
 # Implemented types / combinators
 
 | Type                        | TypeScript                  | codec / combinator                                                   |
@@ -276,8 +298,6 @@ type User = {
 | number                      | `number`                    | `t.number`                                                           |
 | boolean                     | `boolean`                   | `t.boolean`                                                          |
 | unknown                     | `unknown`                   | `t.unknown`                                                          |
-| never                       | `never`                     | `t.never`                                                            |
-| object                      | `object`                    | `t.object`                                                           |
 | array of unknown            | `Array<unknown>`            | `t.UnknownArray`                                                     |
 | array of type               | `Array<A>`                  | `t.array(A)`                                                         |
 | record of unknown           | `Record<string, unknown>`   | `t.UnknownRecord`                                                    |
@@ -292,7 +312,7 @@ type User = {
 | union                       | `A \| B`                    | `t.union([ A, B ])`                                                  |
 | intersection                | `A & B`                     | `t.intersection([ A, B ])`                                           |
 | keyof                       | `keyof M`                   | `t.keyof(M)` (**only supports string keys**)                         |
-| recursive types             | ✘                           | `t.recursion(name, definition)`                                      |
+| recursive types             |                             | `t.recursion(name, definition)`                                      |
 | branded types / refinements | ✘                           | `t.brand(A, predicate, brand)`                                       |
 | integer                     | ✘                           | `t.Int` (built-in branded codec)                                     |
 | exact types                 | ✘                           | `t.exact(type)`                                                      |
@@ -522,6 +542,18 @@ const NumberFromString = t.string.pipe(
   'NumberFromString'
 )
 ```
+
+# Community
+
+- `io-ts@1.x`
+  - [io-ts-types](https://github.com/gcanti/io-ts-types) - A collection of codecs and combinators for use with
+    io-ts
+  - [io-ts-reporters](https://github.com/OliverJAsh/io-ts-reporters) - Error reporters for io-ts
+  - [geojson-iots](https://github.com/pierremarc/geojson-iots) - codecs for GeoJSON as defined in rfc7946 made with
+    io-ts
+  - [graphql-to-io-ts](https://github.com/micimize/graphql-to-io-ts) - Generate typescript and cooresponding io-ts types from a graphql
+    schema
+  - [io-ts-promise](https://github.com/aeirola/io-ts-promise) - Convenience library for using io-ts with promise-based APIs
 
 # Tips and Tricks
 
