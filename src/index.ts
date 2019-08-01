@@ -122,6 +122,9 @@ export class Type<A, O = A, I = unknown> implements Decoder<I, A>, Encoder<A, O>
     this.decode = this.decode.bind(this)
   }
 
+  /**
+   * @since 1.0.0
+   */
   pipe<B, IB, A extends IB, OB extends A>(
     this: Type<A, O, I>,
     ab: Type<B, OB, IB>,
@@ -134,13 +137,22 @@ export class Type<A, O = A, I = unknown> implements Decoder<I, A>, Encoder<A, O>
       this.encode === identity && ab.encode === identity ? (identity as any) : b => this.encode(ab.encode(b))
     )
   }
+  /**
+   * @since 1.0.0
+   */
   asDecoder(): Decoder<I, A> {
     return this
   }
+  /**
+   * @since 1.0.0
+   */
   asEncoder(): Encoder<A, O> {
     return this
   }
-  /** a version of `validate` with a default context */
+  /**
+   * a version of `validate` with a default context
+   * @since 1.0.0
+   */
   decode(i: I): Validation<A> {
     return this.validate(i, [{ key: '', type: this, actual: i }])
   }
@@ -229,7 +241,6 @@ export class NullType extends Type<null> {
 export interface NullC extends NullType {}
 
 /**
- * @alias `null`
  * @since 1.0.0
  */
 export const nullType: NullC = new NullType()
@@ -272,7 +283,6 @@ export class VoidType extends Type<void> {
 export interface VoidC extends VoidType {}
 
 /**
- * @alias `void`
  * @since 1.2.0
  */
 export const voidType: VoidC = new VoidType()
@@ -744,7 +754,6 @@ const getInterfaceTypeName = (props: Props): string => {
 }
 
 /**
- * @alias `interface`
  * @since 1.0.0
  */
 export const type = <P extends Props>(props: P, name: string = getInterfaceTypeName(props)): TypeC<P> => {
@@ -1591,19 +1600,41 @@ export const exact = <C extends HasProps>(codec: C, name: string = getExactTypeN
   )
 }
 
-export { nullType as null }
-export { undefinedType as undefined }
-/**
- * Use `UnknownArray` instead
- * @deprecated
- */
-export { UnknownArray as Array }
-/**
- * Use `type` instead
- * @deprecated
- */
-export { type as interface }
-export { voidType as void }
+export {
+  /**
+   * @since 1.0.0
+   */
+  nullType as null
+}
+
+export {
+  /**
+   * @since 1.0.0
+   */
+  undefinedType as undefined
+}
+
+export {
+  /**
+   * Use `UnknownArray` instead
+   * @deprecated
+   * @since 1.0.0
+   */
+  UnknownArray as Array
+}
+
+export {
+  /**
+   * @since 1.0.0
+   */
+  type as interface
+}
+export {
+  /**
+   * @since 1.0.0
+   */
+  voidType as void
+}
 
 //
 // deprecations

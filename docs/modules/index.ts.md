@@ -159,7 +159,7 @@ parent: Modules
 - [type (function)](#type-function)
 - [union (function)](#union-function)
 - [~~Array~~ (export)](#array-export)
-- [~~interface~~ (export)](#interface-export)
+- [interface (export)](#interface-export)
 - [null (export)](#null-export)
 - [undefined (export)](#undefined-export)
 - [void (export)](#void-export)
@@ -1489,6 +1489,8 @@ pipe<B, IB, A extends IB, OB extends A>(
   ): Type<B, O, I> { ... }
 ```
 
+Added in v1.0.0
+
 ## asDecoder (method)
 
 **Signature**
@@ -1497,6 +1499,8 @@ pipe<B, IB, A extends IB, OB extends A>(
 asDecoder(): Decoder<I, A> { ... }
 ```
 
+Added in v1.0.0
+
 ## asEncoder (method)
 
 **Signature**
@@ -1504,6 +1508,8 @@ asDecoder(): Decoder<I, A> { ... }
 ```ts
 asEncoder(): Encoder<A, O> { ... }
 ```
+
+Added in v1.0.0
 
 ## decode (method)
 
@@ -1514,6 +1520,8 @@ a version of `validate` with a default context
 ```ts
 decode(i: I): Validation<A> { ... }
 ```
+
+Added in v1.0.0
 
 # UndefinedType (class)
 
@@ -1602,7 +1610,7 @@ A branded codec representing an integer
 **Signature**
 
 ```ts
-export const Int = ...
+export const Int: BrandC<NumberC, IntBrand> = ...
 ```
 
 Added in v1.8.1
@@ -1614,7 +1622,7 @@ Use `Int` instead
 **Signature**
 
 ```ts
-export const Integer = ...
+export const Integer: RefinementC<NumberC> = ...
 ```
 
 Added in v1.0.0
@@ -1701,6 +1709,8 @@ Added in v1.0.0
 export const nullType: NullC = ...
 ```
 
+Added in v1.0.0
+
 # number (constant)
 
 **Signature**
@@ -1760,6 +1770,8 @@ Added in v1.5.0
 ```ts
 export const voidType: VoidC = ...
 ```
+
+Added in v1.2.0
 
 # ~~alias~~ (function)
 
@@ -2117,6 +2129,8 @@ Added in v1.0.0
 export const type = <P extends Props>(props: P, name: string = getInterfaceTypeName(props)): TypeC<P> => ...
 ```
 
+Added in v1.0.0
+
 # union (function)
 
 **Signature**
@@ -2137,39 +2151,47 @@ Use `UnknownArray` instead
 **Signature**
 
 ```ts
-export { UnknownArray as Array }
+UnknownArrayC
 ```
 
-# ~~interface~~ (export)
+Added in v1.0.0
 
-Use `type` instead
+# interface (export)
 
 **Signature**
 
 ```ts
-export { type as interface }
+<P extends Props>(props: P, name?: string) => TypeC<P>
 ```
+
+Added in v1.0.0
 
 # null (export)
 
 **Signature**
 
 ```ts
-export { nullType as null }
+NullC
 ```
+
+Added in v1.0.0
 
 # undefined (export)
 
 **Signature**
 
 ```ts
-export { undefinedType as undefined }
+UndefinedC
 ```
+
+Added in v1.0.0
 
 # void (export)
 
 **Signature**
 
 ```ts
-export { voidType as void }
+VoidC
 ```
+
+Added in v1.0.0
