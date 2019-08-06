@@ -126,9 +126,9 @@ describe('recursion', () => {
     type B = {
       a: A | null
     }
-    const A: t.Type<A> = t.recursion('A', self =>
+    const A: t.Type<A> = t.recursion('A', () =>
       t.type({
-        b: t.union([self, B, t.null])
+        b: t.union([A, B, t.null])
       })
     )
     const B: t.Type<B> = t.recursion('B', () =>
@@ -138,5 +138,21 @@ describe('recursion', () => {
     )
     assert.strictEqual(A.is({ b: { b: null } }), true)
     assert.strictEqual(A.is({ b: { a: { b: { a: null } } } }), true)
+
+    // #354
+    interface C1A {
+      a: C1A | string
+    }
+    const C1: t.Type<C1A> = t.recursion('C1', () =>
+      t.type({
+        a: t.union([C2, t.string])
+      })
+    )
+    const C2: t.Type<C1A> = t.recursion('C2', () => C1)
+    const C3 = t.union([C1, t.string])
+
+    assert.strictEqual(C3.is({ a: 'a' }), true)
+    assert.strictEqual(C3.is('a'), true)
+    assert.strictEqual(C3.is({ a: { a: 'a' } }), true)
   })
 })
