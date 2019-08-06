@@ -1985,10 +1985,6 @@ export function alias<A, O, I>(
   return () => codec as any
 }
 
-//
-// backporting
-//
-
 interface NonEmptyArray<A> extends Array<A> {
   0: A
 }
@@ -2089,13 +2085,13 @@ function isRecursiveC(codec: Any): codec is RecursiveType<Any> {
   return (codec as any)._tag === 'RecursiveType'
 }
 
-let lazyCodec: Any | null = null
+const lazyCodecs: Array<Any> = []
 
 /**
  * @internal
  */
 export function getTags(codec: Any): Tags {
-  if (codec === lazyCodec) {
+  if (lazyCodecs.indexOf(codec) !== -1) {
     return emptyTags
   }
   if (isTypeC(codec) || isStrictC(codec)) {
@@ -2118,9 +2114,9 @@ export function getTags(codec: Any): Tags {
   } else if (isUnionC(codec)) {
     return codec.types.slice(1).reduce((tags, codec) => intersectTags(tags, getTags(codec)), getTags(codec.types[0]))
   } else if (isRecursiveC(codec)) {
-    lazyCodec = codec
+    lazyCodecs.push(codec)
     const tags = getTags(codec.type)
-    lazyCodec = null
+    lazyCodecs.pop()
     return tags
   }
   return emptyTags
