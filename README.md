@@ -289,34 +289,34 @@ You can also use the [`withMessage`](https://gcanti.github.io/io-ts-types/module
 
 # Implemented types / combinators
 
-| Type                        | TypeScript                  | codec / combinator                                                   |
-| --------------------------- | --------------------------- | -------------------------------------------------------------------- |
-| null                        | `null`                      | `t.null` or `t.nullType`                                             |
-| undefined                   | `undefined`                 | `t.undefined`                                                        |
-| void                        | `void`                      | `t.void` or `t.voidType`                                             |
-| string                      | `string`                    | `t.string`                                                           |
-| number                      | `number`                    | `t.number`                                                           |
-| boolean                     | `boolean`                   | `t.boolean`                                                          |
-| unknown                     | `unknown`                   | `t.unknown`                                                          |
-| array of unknown            | `Array<unknown>`            | `t.UnknownArray`                                                     |
-| array of type               | `Array<A>`                  | `t.array(A)`                                                         |
-| record of unknown           | `Record<string, unknown>`   | `t.UnknownRecord`                                                    |
-| record of type              | `Record<K, A>`              | `t.record(K, A)`                                                     |
-| function                    | `Function`                  | `t.Function`                                                         |
-| literal                     | `'s'`                       | `t.literal('s')`                                                     |
-| partial                     | `Partial<{ name: string }>` | `t.partial({ name: t.string })`                                      |
-| readonly                    | `Readonly<A>`               | `t.readonly(A)`                                                      |
-| readonly array              | `ReadonlyArray<A>`          | `t.readonlyArray(A)`                                                 |
-| type alias                  | `type T = { name: A }`      | `t.type({ name: A })`                                                |
-| tuple                       | `[ A, B ]`                  | `t.tuple([ A, B ])`                                                  |
-| union                       | `A \| B`                    | `t.union([ A, B ])`                                                  |
-| intersection                | `A & B`                     | `t.intersection([ A, B ])`                                           |
-| keyof                       | `keyof M`                   | `t.keyof(M)` (**only supports string keys**)                         |
-| recursive types             |                             | `t.recursion(name, definition)`                                      |
-| branded types / refinements | ✘                           | `t.brand(A, predicate, brand)`                                       |
-| integer                     | ✘                           | `t.Int` (built-in branded codec)                                     |
-| exact types                 | ✘                           | `t.exact(type)`                                                      |
-| strict                      | ✘                           | `t.strict({ name: A })` (an alias of `t.exact(t.type({ name: A })))` |
+| Type                        | TypeScript                    | codec / combinator                                                   |
+| --------------------------- | ----------------------------- | -------------------------------------------------------------------- |
+| null                        | `null`                        | `t.null` or `t.nullType`                                             |
+| undefined                   | `undefined`                   | `t.undefined`                                                        |
+| void                        | `void`                        | `t.void` or `t.voidType`                                             |
+| string                      | `string`                      | `t.string`                                                           |
+| number                      | `number`                      | `t.number`                                                           |
+| boolean                     | `boolean`                     | `t.boolean`                                                          |
+| unknown                     | `unknown`                     | `t.unknown`                                                          |
+| array of unknown            | `Array<unknown>`              | `t.UnknownArray`                                                     |
+| array of type               | `Array<A>`                    | `t.array(A)`                                                         |
+| record of unknown           | `Record<string, unknown>`     | `t.UnknownRecord`                                                    |
+| record of type              | `Record<K, A>`, `{[k: K]: A}` | `t.record(K, A)`                                                     |
+| function                    | `Function`                    | `t.Function`                                                         |
+| literal                     | `'s'`                         | `t.literal('s')`                                                     |
+| partial                     | `Partial<{ name: string }>`   | `t.partial({ name: t.string })`                                      |
+| readonly                    | `Readonly<A>`                 | `t.readonly(A)`                                                      |
+| readonly array              | `ReadonlyArray<A>`            | `t.readonlyArray(A)`                                                 |
+| type alias                  | `type T = { name: A }`        | `t.type({ name: A })`                                                |
+| tuple                       | `[ A, B ]`                    | `t.tuple([ A, B ])`                                                  |
+| union                       | `A \| B`                      | `t.union([ A, B ])`                                                  |
+| intersection                | `A & B`                       | `t.intersection([ A, B ])`                                           |
+| keyof                       | `keyof M`                     | `t.keyof(M)` (**only supports string keys**)                         |
+| recursive types             |                               | `t.recursion(name, definition)`                                      |
+| branded types / refinements | ✘                             | `t.brand(A, predicate, brand)`                                       |
+| integer                     | ✘                             | `t.Int` (built-in branded codec)                                     |
+| exact types                 | ✘                             | `t.exact(type)`                                                      |
+| strict                      | ✘                             | `t.strict({ name: A })` (an alias of `t.exact(t.type({ name: A })))` |
 
 # Recursive types
 
