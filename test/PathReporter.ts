@@ -15,7 +15,7 @@ describe('PathReporter', () => {
     ])
   })
 
-  it('should say something whene there are no errors', () => {
+  it('should say something when there are no errors', () => {
     assert.deepStrictEqual(PathReporter.report(t.number.decode(1)), ['No errors!'])
   })
 

@@ -551,7 +551,7 @@ const NumberFromString = t.string.pipe(
   - [io-ts-reporters](https://github.com/OliverJAsh/io-ts-reporters) - Error reporters for io-ts
   - [geojson-iots](https://github.com/pierremarc/geojson-iots) - codecs for GeoJSON as defined in rfc7946 made with
     io-ts
-  - [graphql-to-io-ts](https://github.com/micimize/graphql-to-io-ts) - Generate typescript and cooresponding io-ts types from a graphql
+  - [graphql-to-io-ts](https://github.com/micimize/graphql-to-io-ts) - Generate typescript and corresponding io-ts types from a graphql
     schema
   - [io-ts-promise](https://github.com/aeirola/io-ts-promise) - Convenience library for using io-ts with promise-based APIs
 
