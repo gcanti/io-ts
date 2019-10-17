@@ -172,7 +172,10 @@ export const getFunctionName = (f: Function): string =>
 /**
  * @since 1.0.0
  */
-export const getContextEntry = (key: string, decoder: Decoder<any, any>): ContextEntry => ({ key, type: decoder })
+export const getContextEntry = (key: string, decoder: Decoder<any, any>): ContextEntry => ({
+  key,
+  type: decoder
+})
 
 /**
  * @since 1.0.0
@@ -1321,7 +1324,19 @@ export function tuple<CS extends [Mixed, ...Array<Mixed>]>(
     (u): u is any => UnknownArray.is(u) && u.length === len && codecs.every((type, i) => type.is(u[i])),
     (u, c) =>
       chain(UnknownArray.validate(u, c), us => {
-        let as: Array<any> = us.length > len ? us.slice(0, len) : us // strip additional components
+        if (us.length > len) {
+          return failures([
+            {
+              value: u,
+              context: c,
+              message: `Invalid value ${JSON.stringify(u)} supplied to ${name}, additional components: ${JSON.stringify(
+                us.slice(len)
+              )}`
+            }
+          ])
+        }
+
+        let as: Array<any> = us
         const errors: Errors = []
         for (let i = 0; i < len; i++) {
           const a = us[i]
@@ -1936,7 +1951,9 @@ export type PropsOf<T extends { props: any }> = T['props']
  * @deprecated
  */
 export type Exact<T, X extends T> = T &
-  { [K in ({ [K in keyof X]: K } & { [K in keyof T]: never } & { [key: string]: never })[keyof X]]?: never }
+  {
+    [K in ({ [K in keyof X]: K } & { [K in keyof T]: never } & { [key: string]: never })[keyof X]]?: never
+  }
 
 /**
  * Keeps the codec "kind"

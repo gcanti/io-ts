@@ -68,10 +68,20 @@ describe('tuple', () => {
       assertFailure(T, [1, 1], ['Invalid value 1 supplied to : [number, string]/1: string'])
     })
 
-    it('should strip additional components', () => {
+    it('should fail with additional components', () => {
       const T = t.tuple([t.number, t.string])
-      assertSuccess(T.decode([1, 'foo', true]), [1, 'foo'])
-      assertSuccess(T.decode([1, 'foo', true, 'a']), [1, 'foo'])
+      const t1 = [1, 'foo', true]
+      assertFailure(T, t1, [
+        `Invalid value ${JSON.stringify(t1)} supplied to [number, string], additional components: ${JSON.stringify(
+          t1.slice(2)
+        )}`
+      ])
+      const t2 = [1, 'foo', true, 'a']
+      assertFailure(T, t2, [
+        `Invalid value ${JSON.stringify(t2)} supplied to [number, string], additional components: ${JSON.stringify(
+          t2.slice(2)
+        )}`
+      ])
     })
 
     it('should return the same reference if validation succeeded and nothing changed', () => {
