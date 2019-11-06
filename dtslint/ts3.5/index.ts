@@ -133,10 +133,6 @@ type Union3OutputTest = t.OutputOf<typeof Union3> // $ExpectType string | boolea
 // intersection
 //
 
-const Intersection1 = t.intersection([t.string, t.number]) // $ExpectType IntersectionC<[StringC, NumberC]>
-type Intersection1TypeTest = t.TypeOf<typeof Intersection1> // $ExpectType string & number
-type Intersection1OutputTest = t.OutputOf<typeof Intersection1> // $ExpectType string & number
-
 const Intersection2 = t.intersection([t.type({ a: t.number }), t.type({ b: t.string })]) // $ExpectType IntersectionC<[TypeC<{ a: NumberC; }>, TypeC<{ b: StringC; }>]>
 type Intersection2TypeTest = Equals<t.TypeOf<typeof Intersection2>, { a: number; b: string }> // $ExpectType "T"
 type Intersection2OutputTest = Equals<t.OutputOf<typeof Intersection2>, { a: number; b: string }> // $ExpectType "T"
