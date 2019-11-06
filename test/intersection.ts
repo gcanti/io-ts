@@ -75,13 +75,6 @@ describe('intersection', () => {
       ])
     })
 
-    it('should handle primitive types', () => {
-      const T1 = t.intersection([t.string, t.string])
-      assertSuccess(T1.decode('foo'))
-      const T2 = t.intersection([t.string, t.number])
-      assertFailure(T2, 'foo', ['Invalid value "foo" supplied to : (string & number)/1: number'])
-    })
-
     it('should keep unknown properties', () => {
       const T = t.intersection([t.type({ a: t.number }), t.type({ b: t.number })])
       const x = { a: 1, b: 1, c: true }
