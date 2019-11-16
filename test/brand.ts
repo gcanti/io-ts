@@ -38,10 +38,7 @@ const MyNumberFromStringArray = t.brand(
   'MyNumberFromStringArray'
 )
 
-const IntFromString = NumberFromString.pipe(
-  t.Int,
-  'IntFromString'
-)
+const IntFromString = NumberFromString.pipe(t.Int, 'IntFromString')
 
 describe('brand', () => {
   describe('name', () => {

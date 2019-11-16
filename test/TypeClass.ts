@@ -14,10 +14,7 @@ const BAA = new t.Type<number, string, string>(
   n => String(n)
 )
 
-const BAI = t.string.pipe(
-  BAA,
-  'T'
-)
+const BAI = t.string.pipe(BAA, 'T')
 
 describe('Type', () => {
   it('should auto bind decode', () => {
@@ -31,7 +28,10 @@ describe('Type', () => {
     const decode = <L, A>(f: (u: unknown) => Either<L, A>, u: unknown): boolean =>
       pipe(
         f(u),
-        fold(() => false, () => true)
+        fold(
+          () => false,
+          () => true
+        )
       )
     assert.strictEqual(decode(T.decode, 'a'), true)
     assert.strictEqual(decode(clone(T).decode, 'a'), true)

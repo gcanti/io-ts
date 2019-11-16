@@ -231,7 +231,12 @@ const isPartialCodec = getIsCodec<PartialType<Props>>('PartialType')
 export class NullType extends Type<null> {
   readonly _tag: 'NullType' = 'NullType'
   constructor() {
-    super('null', (u): u is null => u === null, (u, c) => (this.is(u) ? success(u) : failure(u, c)), identity)
+    super(
+      'null',
+      (u): u is null => u === null,
+      (u, c) => (this.is(u) ? success(u) : failure(u, c)),
+      identity
+    )
   }
 }
 
@@ -1242,7 +1247,13 @@ export function intersection<CS extends [Mixed, Mixed, ...Array<Mixed>]>(
           }
           return errors.length > 0 ? failures(errors) : success(mergeAll(u, us))
         },
-    codecs.length === 0 ? identity : a => mergeAll(a, codecs.map(codec => codec.encode(a))),
+    codecs.length === 0
+      ? identity
+      : a =>
+          mergeAll(
+            a,
+            codecs.map(codec => codec.encode(a))
+          ),
     codecs
   )
 }
