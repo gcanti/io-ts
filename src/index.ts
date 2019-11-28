@@ -1636,6 +1636,8 @@ export {
 
 export {
   /**
+   * Use `type` instead
+   * @deprecated
    * @since 1.0.0
    */
   type as interface

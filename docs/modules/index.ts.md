@@ -159,7 +159,7 @@ parent: Modules
 - [type (function)](#type-function)
 - [union (function)](#union-function)
 - [~~Array~~ (export)](#array-export)
-- [interface (export)](#interface-export)
+- [~~interface~~ (export)](#interface-export)
 - [null (export)](#null-export)
 - [undefined (export)](#undefined-export)
 - [void (export)](#void-export)
@@ -2156,7 +2156,9 @@ UnknownArrayC
 
 Added in v1.0.0
 
-# interface (export)
+# ~~interface~~ (export)
+
+Use `type` instead
 
 **Signature**
 
