@@ -22,8 +22,10 @@ parent: Modules
 - [Errors (interface)](#errors-interface)
 - [ExactC (interface)](#exactc-interface)
 - [~~FunctionC~~ (interface)](#functionc-interface)
+- [HasPropsExact (interface)](#haspropsexact-interface)
 - [HasPropsIntersection (interface)](#haspropsintersection-interface)
 - [HasPropsReadonly (interface)](#haspropsreadonly-interface)
+- [HasPropsRecursive (interface)](#haspropsrecursive-interface)
 - [HasPropsRefinement (interface)](#haspropsrefinement-interface)
 - [IntBrand (interface)](#intbrand-interface)
 - [IntersectionC (interface)](#intersectionc-interface)
@@ -321,6 +323,16 @@ export interface FunctionC extends FunctionType {}
 
 Added in v1.5.3
 
+# HasPropsExact (interface)
+
+**Signature**
+
+```ts
+export interface HasPropsExact extends ExactType<HasProps, any, any, any> {}
+```
+
+Added in v2.1.0
+
 # HasPropsIntersection (interface)
 
 **Signature**
@@ -340,6 +352,16 @@ export interface HasPropsReadonly extends ReadonlyType<HasProps, any, any, any> 
 ```
 
 Added in v1.1.0
+
+# HasPropsRecursive (interface)
+
+**Signature**
+
+```ts
+export interface HasPropsRecursive extends RecursiveType<HasProps, any, any, any> {}
+```
+
+Added in v2.1.0
 
 # HasPropsRefinement (interface)
 
@@ -798,6 +820,8 @@ export type HasProps =
   | HasPropsRefinement
   | HasPropsReadonly
   | HasPropsIntersection
+  | HasPropsRecursive
+  | HasPropsExact
   | InterfaceType<any, any, any, any>
   // tslint:disable-next-line: deprecation
   | StrictType<any, any, any, any>
