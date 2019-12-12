@@ -1,3 +1,6 @@
+/**
+ * @since 1.0.0
+ */
 import { Reporter } from './Reporter'
 import { Context, getFunctionName, ValidationError } from '.'
 import { fold } from 'fp-ts/lib/Either'

@@ -1,3 +1,6 @@
+/**
+ * @since 1.0.0
+ */
 import { Either, either, isLeft, left, right } from 'fp-ts/lib/Either'
 import { Predicate, Refinement } from 'fp-ts/lib/function'
 
