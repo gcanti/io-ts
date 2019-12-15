@@ -1191,19 +1191,26 @@ export interface IntersectionC<CS extends [Mixed, Mixed, ...Array<Mixed>]>
   > {}
 
 const mergeAll = (base: any, us: Array<any>): any => {
-  let r: any = base
-  for (let i = 0; i < us.length; i++) {
-    const u = us[i]
+  let equal = true
+  let primitive = true
+  for (const u of us) {
     if (u !== base) {
-      // `u` contains a prismatic value or is the result of a stripping combinator
-      if (r === base) {
-        r = Object.assign({}, u)
-        continue
-      }
-      for (const k in u) {
-        if (u[k] !== base[k] || !r.hasOwnProperty(k)) {
-          r[k] = u[k]
-        }
+      equal = false
+    }
+    if (isObject(u)) {
+      primitive = false
+    }
+  }
+  if (equal) {
+    return base
+  } else if (primitive) {
+    return us[us.length - 1]
+  }
+  let r: any = {}
+  for (const u of us) {
+    for (const k in u) {
+      if (u[k] !== base[k] || !r.hasOwnProperty(k)) {
+        r[k] = u[k]
       }
     }
   }

@@ -14,6 +14,11 @@
 **Note**: Gaps between patch versions are faulty/broken releases. **Note**: A feature tagged as Experimental is in a
 high state of flux, you're at risk of it changing without notice.
 
+# 2.0.2
+
+- **Bug Fix**
+  - fix #397 (@gcanti)
+
 # 2.0.1
 
 - **Bug Fix**
