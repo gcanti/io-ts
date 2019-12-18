@@ -127,16 +127,10 @@ const onLeft = (errors: t.Errors): string => `${errors.length} error(s) found`
 // success handler
 const onRight = (s: string) => `No errors: ${s}`
 
-pipe(
-  t.string.decode('a string'),
-  fold(onLeft, onRight)
-)
+pipe(t.string.decode('a string'), fold(onLeft, onRight))
 // => "No errors: a string"
 
-pipe(
-  t.string.decode(null),
-  fold(onLeft, onRight)
-)
+pipe(t.string.decode(null), fold(onLeft, onRight))
 // => "1 error(s) found"
 ```
 
@@ -254,7 +248,10 @@ import { fold } from 'fp-ts/lib/Either'
 const getPaths = <A>(v: t.Validation<A>): Array<string> => {
   return pipe(
     v,
-    fold(errors => errors.map(error => error.context.map(({ key }) => key).join('.')), () => ['no errors'])
+    fold(
+      errors => errors.map(error => error.context.map(({ key }) => key).join('.')),
+      () => ['no errors']
+    )
   )
 }
 
@@ -350,14 +347,14 @@ interface Bar {
 }
 
 const Foo: t.Type<Foo> = t.recursion('Foo', () =>
-  t.interface({
+  t.type({
     type: t.literal('Foo'),
     b: t.union([Bar, t.undefined])
   })
 )
 
 const Bar: t.Type<Bar> = t.recursion('Bar', () =>
-  t.interface({
+  t.type({
     type: t.literal('Bar'),
     a: t.union([Foo, t.undefined])
   })
@@ -490,6 +487,7 @@ interface ResponseBody<T> {
   result: T
   _links: Links
 }
+
 interface Links {
   previous: string
   next: string
@@ -499,14 +497,14 @@ interface Links {
 Would be:
 
 ```ts
-// t.Mixed = t.Type<any, any, unknown>
-const ResponseBody = <C extends t.Mixed>(codec: C) =>
-  t.interface({
+// where `t.Mixed = t.Type<any, any, unknown>`
+const responseBody = <C extends t.Mixed>(codec: C) =>
+  t.type({
     result: codec,
     _links: Links
   })
 
-const Links = t.interface({
+const Links = t.type({
   previous: t.string,
   next: t.string
 })
@@ -519,7 +517,7 @@ const UserModel = t.type({
   name: t.string
 })
 
-functionThatRequiresRuntimeType(ResponseBody(t.array(UserModel)), ...params)
+functionThatRequiresRuntimeType(responseBody(t.array(UserModel)), ...params)
 ```
 
 # Piping
@@ -537,10 +535,7 @@ const NumberCodec = new t.Type<number, string, string>(
   String
 )
 
-const NumberFromString = t.string.pipe(
-  NumberCodec,
-  'NumberFromString'
-)
+const NumberFromString = t.string.pipe(NumberCodec, 'NumberFromString')
 ```
 
 # Community
