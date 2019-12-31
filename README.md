@@ -539,16 +539,16 @@ const NumberFromString = t.string.pipe(NumberCodec, 'NumberFromString')
 ```
 
 # Community
-
-- `io-ts@1.x`
+- `io-ts@2.x`
   - [io-ts-types](https://github.com/gcanti/io-ts-types) - A collection of codecs and combinators for use with
     io-ts
   - [io-ts-reporters](https://github.com/OliverJAsh/io-ts-reporters) - Error reporters for io-ts
+  - [io-ts-promise](https://github.com/aeirola/io-ts-promise) - Convenience library for using io-ts with promise-based APIs
+- `io-ts@1.x`
   - [geojson-iots](https://github.com/pierremarc/geojson-iots) - codecs for GeoJSON as defined in rfc7946 made with
     io-ts
-  - [graphql-to-io-ts](https://github.com/micimize/graphql-to-io-ts) - Generate typescript and corresponding io-ts types from a graphql
-    schema
-  - [io-ts-promise](https://github.com/aeirola/io-ts-promise) - Convenience library for using io-ts with promise-based APIs
+  - [graphql-to-io-ts](https://github.com/micimize/graphql-to-io-ts) - Generate typescript and corresponding io-ts types from a graphql schema
+
 
 # Tips and Tricks
 
