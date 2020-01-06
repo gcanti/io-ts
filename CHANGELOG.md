@@ -14,6 +14,11 @@
 **Note**: Gaps between patch versions are faulty/broken releases. **Note**: A feature tagged as Experimental is in a
 high state of flux, you're at risk of it changing without notice.
 
+# 2.0.4
+
+- **Bug Fix**
+  - remove getters, fix #404 (@gcanti)
+
 # 2.0.3
 
 - **Bug Fix**

@@ -609,14 +609,20 @@ export class RecursiveType<C extends Any, A = any, O = A, I = unknown> extends T
     is: RecursiveType<C, A, O, I>['is'],
     validate: RecursiveType<C, A, O, I>['validate'],
     encode: RecursiveType<C, A, O, I>['encode'],
-    private runDefinition: () => C
+    public runDefinition: () => C
   ) {
     super(name, is, validate, encode)
   }
-  get type(): C {
-    return this.runDefinition()
-  }
+  readonly type!: C
 }
+
+Object.defineProperty(RecursiveType.prototype, 'type', {
+  get: function() {
+    return this.runDefinition()
+  },
+  enumerable: true,
+  configurable: true
+})
 
 /**
  * @since 1.0.0
