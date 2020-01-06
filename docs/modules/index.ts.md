@@ -1354,7 +1354,7 @@ export class RecursiveType<C, A, O, I> {
     is: RecursiveType<C, A, O, I>['is'],
     validate: RecursiveType<C, A, O, I>['validate'],
     encode: RecursiveType<C, A, O, I>['encode'],
-    private runDefinition: () => C
+    public runDefinition: () => C
   ) { ... }
   ...
 }
