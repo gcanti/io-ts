@@ -18,11 +18,17 @@ describe('type', () => {
   })
 
   describe('is', () => {
-    it('should check a isomorphic value', () => {
+    it('should return `true` on valid inputs', () => {
+      const T = t.type({ a: t.string })
+      assert.strictEqual(T.is({ a: 'a' }), true)
+    })
+
+    it('should return `false` on invalid inputs', () => {
       const T = t.type({ a: t.string })
       assert.strictEqual(T.is({}), false)
       assert.strictEqual(T.is({ a: 1 }), false)
-      assert.strictEqual(T.is({ a: 'a' }), true)
+      // #407
+      assert.strictEqual(T.is([]), false)
     })
 
     it('should allow additional properties', () => {
@@ -61,10 +67,12 @@ describe('type', () => {
       assertFailure(T, 1, ['Invalid value 1 supplied to : { a: string }'])
       assertFailure(T, {}, ['Invalid value undefined supplied to : { a: string }/a: string'])
       assertFailure(T, { a: 1 }, ['Invalid value 1 supplied to : { a: string }/a: string'])
+      // #407
+      assertFailure(T, [], ['Invalid value [] supplied to : { a: string }'])
     })
 
     it('should support the alias `interface`', () => {
-      const T = t.type({ a: t.string })
+      const T = t.interface({ a: t.string })
       assertSuccess(T.decode({ a: 'a' }))
     })
   })

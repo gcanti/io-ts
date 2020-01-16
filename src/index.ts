@@ -215,8 +215,6 @@ const pushAll = <A>(xs: Array<A>, ys: Array<A>): void => {
 
 const getIsCodec = <T extends Any>(tag: string) => (codec: Any): codec is T => (codec as any)._tag === tag
 
-const isUnknownCodec = getIsCodec<UnknownType>('UnknownType')
-
 // tslint:disable-next-line: deprecation
 const isAnyCodec = getIsCodec<AnyType>('AnyType')
 
@@ -418,7 +416,7 @@ export class AnyDictionaryType extends Type<{ [key: string]: unknown }> {
   constructor() {
     super(
       'UnknownRecord',
-      (u): u is { [key: string]: unknown } => u !== null && typeof u === 'object',
+      (u): u is { [key: string]: unknown } => Object.prototype.toString.call(u) === '[object Object]',
       (u, c) => (this.is(u) ? success(u) : failure(u, c)),
       identity
     )
@@ -777,16 +775,16 @@ export const type = <P extends Props>(props: P, name: string = getInterfaceTypeN
   return new InterfaceType(
     name,
     (u): u is { [K in keyof P]: TypeOf<P[K]> } => {
-      if (!UnknownRecord.is(u)) {
-        return false
-      }
-      for (let i = 0; i < len; i++) {
-        const k = keys[i]
-        if (!hasOwnProperty.call(u, k) || !types[i].is(u[k])) {
-          return false
+      if (UnknownRecord.is(u)) {
+        for (let i = 0; i < len; i++) {
+          const k = keys[i]
+          if (!hasOwnProperty.call(u, k) || !types[i].is(u[k])) {
+            return false
+          }
         }
+        return true
       }
-      return true
+      return false
     },
     (u, c) =>
       chain(UnknownRecord.validate(u, c), o => {
@@ -884,17 +882,17 @@ export const partial = <P extends Props>(
   return new PartialType(
     name,
     (u): u is { [K in keyof P]?: TypeOf<P[K]> } => {
-      if (!UnknownRecord.is(u)) {
-        return false
-      }
-      for (let i = 0; i < len; i++) {
-        const k = keys[i]
-        const uk = u[k]
-        if (uk !== undefined && !props[k].is(uk)) {
-          return false
+      if (UnknownRecord.is(u)) {
+        for (let i = 0; i < len; i++) {
+          const k = keys[i]
+          const uk = u[k]
+          if (uk !== undefined && !props[k].is(uk)) {
+            return false
+          }
         }
+        return true
       }
-      return true
+      return false
     },
     (u, c) =>
       chain(UnknownRecord.validate(u, c), o => {
@@ -972,8 +970,6 @@ export type OutputOfDictionary<D extends Any, C extends Any> = { [K in OutputOf<
 export interface RecordC<D extends Mixed, C extends Mixed>
   extends DictionaryType<D, C, { [K in TypeOf<D>]: TypeOf<C> }, { [K in OutputOf<D>]: OutputOf<C> }, unknown> {}
 
-const isObject = (r: Record<string, unknown>) => Object.prototype.toString.call(r) === '[object Object]'
-
 /**
  * @since 1.7.1
  */
@@ -985,27 +981,21 @@ export const record = <D extends Mixed, C extends Mixed>(
   return new DictionaryType(
     name,
     (u): u is { [K in TypeOf<D>]: TypeOf<C> } => {
-      if (!UnknownRecord.is(u)) {
-        return false
+      if (UnknownRecord.is(u)) {
+        return Object.keys(u).every(k => domain.is(k) && codomain.is(u[k]))
       }
-      if (!isUnknownCodec(codomain) && !isAnyCodec(codomain) && !isObject(u)) {
-        return false
-      }
-      return Object.keys(u).every(k => domain.is(k) && codomain.is(u[k]))
+      return isAnyCodec(codomain) && Array.isArray(u)
     },
-    (u, c) =>
-      chain(UnknownRecord.validate(u, c), o => {
-        if (!isUnknownCodec(codomain) && !isAnyCodec(codomain) && !isObject(o)) {
-          return failure(u, c)
-        }
+    (u, c) => {
+      if (UnknownRecord.is(u)) {
         const a: { [key: string]: any } = {}
         const errors: Errors = []
-        const keys = Object.keys(o)
+        const keys = Object.keys(u)
         const len = keys.length
         let changed: boolean = false
         for (let i = 0; i < len; i++) {
           let k = keys[i]
-          const ok = o[k]
+          const ok = u[k]
           const domainResult = domain.validate(k, appendContext(c, k, domain, k))
           if (isLeft(domainResult)) {
             pushAll(errors, domainResult.left)
@@ -1023,8 +1013,13 @@ export const record = <D extends Mixed, C extends Mixed>(
             }
           }
         }
-        return errors.length > 0 ? failures(errors) : success((changed ? a : o) as any)
-      }),
+        return errors.length > 0 ? failures(errors) : success((changed ? a : u) as any)
+      }
+      if (isAnyCodec(codomain) && Array.isArray(u)) {
+        return success(u)
+      }
+      return failure(u, c)
+    },
     domain.encode === identity && codomain.encode === identity
       ? identity
       : a => {
@@ -1091,11 +1086,11 @@ export const union = <CS extends [Mixed, Mixed, ...Array<Mixed>]>(
     return new TaggedUnionType(
       name,
       (u): u is TypeOf<CS[number]> => {
-        if (!UnknownRecord.is(u)) {
-          return false
+        if (UnknownRecord.is(u)) {
+          const i = find(u[tag])
+          return i !== undefined ? codecs[i].is(u) : false
         }
-        const i = find(u[tag])
-        return i !== undefined ? codecs[i].is(u) : false
+        return false
       },
       (u, c) =>
         chain(UnknownRecord.validate(u, c), r => {
@@ -1203,7 +1198,7 @@ const mergeAll = (base: any, us: Array<any>): any => {
     if (u !== base) {
       equal = false
     }
-    if (isObject(u)) {
+    if (UnknownRecord.is(u)) {
       primitive = false
     }
   }
@@ -1766,7 +1761,12 @@ export const Dictionary: UnknownRecordC = UnknownRecord
 export class ObjectType extends Type<object> {
   readonly _tag: 'ObjectType' = 'ObjectType'
   constructor() {
-    super('object', UnknownRecord.is, UnknownRecord.validate, identity)
+    super(
+      'object',
+      (u): u is { [key: string]: unknown } => u !== null && typeof u === 'object',
+      (u, c) => (this.is(u) ? success(u) : failure(u, c)),
+      identity
+    )
   }
 }
 

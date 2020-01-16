@@ -2,23 +2,41 @@ import * as assert from 'assert'
 import * as t from '../src/index'
 import { assertSuccess, assertFailure } from './helpers'
 
-describe('Dictionary', () => {
-  it('should succeed validating a valid value', () => {
-    const T = t.UnknownRecord
-    assertSuccess(T.decode({}))
-    assertSuccess(T.decode([]))
-    assertSuccess(T.decode([1]))
-    assertSuccess(T.decode(new Number()))
-    assertSuccess(T.decode(new Date()))
+describe('UnknownRecord', () => {
+  describe('is', () => {
+    it('should return `true` for valid objects', () => {
+      const T = t.UnknownRecord
+      assert.strictEqual(T.is({}), true)
+      assert.strictEqual(T.is({ a: 1 }), true)
+    })
+
+    it('should return `false` for invalid objects', () => {
+      const T = t.UnknownRecord
+      assert.strictEqual(T.is(undefined), false)
+      assert.strictEqual(T.is(new Number()), false)
+      // #407
+      assert.strictEqual(T.is([]), false)
+    })
   })
 
-  it('should fail validating an invalid value', () => {
-    const T = t.UnknownRecord
-    assertFailure(T, 's', ['Invalid value "s" supplied to : UnknownRecord'])
-    assertFailure(T, 1, ['Invalid value 1 supplied to : UnknownRecord'])
-    assertFailure(T, true, ['Invalid value true supplied to : UnknownRecord'])
-    assertFailure(T, null, ['Invalid value null supplied to : UnknownRecord'])
-    assertFailure(T, undefined, ['Invalid value undefined supplied to : UnknownRecord'])
+  describe('decode', () => {
+    it('should succeed validating a valid value', () => {
+      const T = t.UnknownRecord
+      assertSuccess(T.decode({}))
+      assertSuccess(T.decode({ a: 1 }))
+    })
+
+    it('should fail validating an invalid value', () => {
+      const T = t.UnknownRecord
+      assertFailure(T, 's', ['Invalid value "s" supplied to : UnknownRecord'])
+      assertFailure(T, 1, ['Invalid value 1 supplied to : UnknownRecord'])
+      assertFailure(T, true, ['Invalid value true supplied to : UnknownRecord'])
+      assertFailure(T, null, ['Invalid value null supplied to : UnknownRecord'])
+      assertFailure(T, undefined, ['Invalid value undefined supplied to : UnknownRecord'])
+      assertFailure(T, new Number(), ['Invalid value 0 supplied to : UnknownRecord'])
+      // #407
+      assertFailure(T, [], ['Invalid value [] supplied to : UnknownRecord'])
+    })
   })
 })
 
