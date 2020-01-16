@@ -23,34 +23,41 @@ describe('record', () => {
   })
 
   describe('is', () => {
-    it('should check a isomorphic value', () => {
-      const T = t.record(t.string, t.number)
-      assert.strictEqual(T.is({}), true)
-      assert.strictEqual(T.is({ a: 1 }), true)
-      assert.strictEqual(T.is({ a: 'a' }), false)
-      assert.strictEqual(T.is(null), false)
-      assert.strictEqual(T.is([]), false)
+    it('should return `true` on valid inputs', () => {
+      const T1 = t.record(t.string, t.number)
+      assert.strictEqual(T1.is({}), true)
+      assert.strictEqual(T1.is({ a: 1 }), true)
+
+      const T2 = t.record(t.string, NumberFromString)
+      assert.strictEqual(T2.is({}), true)
+      assert.strictEqual(T2.is({ a: 1 }), true)
+
+      const T3 = t.record(HyphenatedString, t.number)
+      assert.strictEqual(T3.is({}), true)
+      assert.strictEqual(T3.is({ 'a-a': 1 }), true)
     })
 
-    it('should check a prismatic value', () => {
-      const T = t.record(t.string, NumberFromString)
-      assert.strictEqual(T.is({}), true)
-      assert.strictEqual(T.is({ a: 1 }), true)
-      assert.strictEqual(T.is({ a: 'a' }), false)
-      assert.strictEqual(T.is(null), false)
-      assert.strictEqual(T.is([]), false)
+    it('should return `false` on invalid inputs', () => {
+      const T1 = t.record(t.string, t.number)
+      assert.strictEqual(T1.is({ a: 'a' }), false)
+      assert.strictEqual(T1.is(null), false)
+      assert.strictEqual(T1.is(new Number()), false)
+      // #407
+      assert.strictEqual(T1.is([]), false)
+
+      const T2 = t.record(t.string, NumberFromString)
+      assert.strictEqual(T2.is({ a: 'a' }), false)
+      assert.strictEqual(T2.is(null), false)
+      // #407
+      assert.strictEqual(T2.is([]), false)
+
+      const T3 = t.record(HyphenatedString, t.number)
+      assert.strictEqual(T3.is({ aa: 1 }), false)
     })
 
-    it('should check a prismatic key', () => {
-      const T = t.record(HyphenatedString, t.number)
-      assert.strictEqual(T.is({}), true)
-      assert.strictEqual(T.is({ 'a-a': 1 }), true)
-      assert.strictEqual(T.is({ aa: 1 }), false)
-    })
-
-    it('should accept an array if the codomain is `unknown`', () => {
+    it('should not accept an array if the codomain is `unknown`', () => {
       const T = t.record(t.string, t.unknown)
-      assert.strictEqual(T.is([]), true)
+      assert.strictEqual(T.is([]), false)
     })
 
     it('should accept an array if the codomain is `any`', () => {
@@ -83,12 +90,12 @@ describe('record', () => {
       assertSuccess(T.decode({ ab: 1 }), { 'a-b': 1 })
     })
 
-    it('should accept an array if the codomain is `unknown`', () => {
+    it('should not decode an array if the codomain is `unknown`', () => {
       const T = t.record(t.string, t.unknown)
-      assertSuccess(T.decode([1]))
+      assertFailure(T, [1], ['Invalid value [1] supplied to : { [K in string]: unknown }'])
     })
 
-    it('should accept an array if the codomain is `any`', () => {
+    it('should decode an array if the codomain is `any`', () => {
       // tslint:disable-next-line: deprecation
       const T = t.record(t.string, t.any)
       assertSuccess(T.decode([1]))
@@ -98,24 +105,11 @@ describe('record', () => {
       const T = t.record(t.string, t.number)
       assertFailure(T, 1, ['Invalid value 1 supplied to : { [K in string]: number }'])
       assertFailure(T, { aa: 's' }, ['Invalid value "s" supplied to : { [K in string]: number }/aa: number'])
-      assertFailure(T, [], ['Invalid value [] supplied to : { [K in string]: number }'])
-      assertFailure(T, [1], ['Invalid value [1] supplied to : { [K in string]: number }'])
       assertFailure(T, new Number(), ['Invalid value 0 supplied to : { [K in string]: number }'])
-    })
-
-    it('should fail decoding an invalid value when the codec is array if the codomain is `unknown`', () => {
-      const T = t.record(HyphenatedString, t.unknown)
-      assertFailure(
-        T,
-        [1],
-        ['Invalid value "0" supplied to : { [K in HyphenatedString]: unknown }/0: HyphenatedString']
-      )
-    })
-
-    it('should fail decoding an invalid value when the codec is array if the codomain is `any`', () => {
-      // tslint:disable-next-line: deprecation
-      const T = t.record(HyphenatedString, t.any)
-      assertFailure(T, [1], ['Invalid value "0" supplied to : { [K in HyphenatedString]: any }/0: HyphenatedString'])
+      // #407
+      assertFailure(T, [], ['Invalid value [] supplied to : { [K in string]: number }'])
+      // #407
+      assertFailure(T, [1], ['Invalid value [1] supplied to : { [K in string]: number }'])
     })
 
     it('should support literals as domain type', () => {

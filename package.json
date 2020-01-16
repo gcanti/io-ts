@@ -1,6 +1,6 @@
 {
   "name": "io-ts",
-  "version": "2.0.4",
+  "version": "2.0.5",
   "description": "TypeScript compatible runtime type system for IO validation",
   "files": [
     "lib",
@@ -37,6 +37,7 @@
     "url": "https://github.com/gcanti/io-ts/issues"
   },
   "homepage": "https://github.com/gcanti/io-ts",
+  "dependencies": {},
   "peerDependencies": {
     "fp-ts": "^2.0.0"
   },
@@ -73,28 +74,5 @@
     "inference",
     "types",
     "runtime"
-  ],
-  "jest": {
-    "collectCoverage": true,
-    "transform": {
-      "^.+\\.tsx?$": "ts-jest"
-    },
-    "testRegex": "test",
-    "moduleFileExtensions": [
-      "ts",
-      "js"
-    ],
-    "testPathIgnorePatterns": [
-      "helpers.ts"
-    ],
-    "coverageThreshold": {
-      "global": {
-        "branches": 100,
-        "functions": 100,
-        "lines": 100,
-        "statements": 100
-      }
-    }
-  },
-  "dependencies": {}
+  ]
 }
