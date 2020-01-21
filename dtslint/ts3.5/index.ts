@@ -10,7 +10,7 @@ type Compact<A> = { [K in keyof A]: A[K] }
 /**
  * Returns the string literal 'T' if `A` and `B` are equal types, 'F' otherwise
  */
-type Equals<A, B> = (<C>() => C extends Compact<A> ? 'T' : 'F') extends (<C>() => C extends Compact<B> ? 'T' : 'F')
+type Equals<A, B> = (<C>() => C extends Compact<A> ? 'T' : 'F') extends <C>() => C extends Compact<B> ? 'T' : 'F'
   ? 'T'
   : 'F'
 
@@ -582,3 +582,20 @@ const toNumber = (n: t.Int): number => n
 
 // $ExpectError
 const intToInt2 = (int: t.Int): Int2 => int
+
+//
+// UnknownRecord
+//
+
+// $ExpectError
+const ur1: Record<string, unknown> = [1, 2, 3]
+// $ExpectError
+const ur2: Record<string, unknown> = new Date()
+// tslint:disable: no-construct
+// $ExpectError
+const ur3: Record<string, unknown> = new Number()
+// $ExpectError
+const ur4: Record<string, unknown> = new String()
+// $ExpectError
+const ur5: Record<string, unknown> = new Boolean()
+// tslint:enable: no-construct

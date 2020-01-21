@@ -14,6 +14,11 @@
 **Note**: Gaps between patch versions are faulty/broken releases. **Note**: A feature tagged as Experimental is in a
 high state of flux, you're at risk of it changing without notice.
 
+# 2.0.6
+
+- **Bug Fix**
+  - whitelist `window` in `UnknownRecord`, fix #413 (@gcanti)
+
 # 2.0.5
 
 - **Bug Fix**
