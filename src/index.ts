@@ -416,7 +416,10 @@ export class AnyDictionaryType extends Type<{ [key: string]: unknown }> {
   constructor() {
     super(
       'UnknownRecord',
-      (u): u is { [key: string]: unknown } => Object.prototype.toString.call(u) === '[object Object]',
+      (u): u is { [key: string]: unknown } => {
+        const s = Object.prototype.toString.call(u)
+        return s === '[object Object]' || s === '[object Window]'
+      },
       (u, c) => (this.is(u) ? success(u) : failure(u, c)),
       identity
     )
