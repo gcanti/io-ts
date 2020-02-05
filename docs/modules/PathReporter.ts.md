@@ -12,13 +12,13 @@ Added in v1.0.0
 
 <h2 class="text-delta">Table of contents</h2>
 
-- [PathReporter (constant)](#pathreporter-constant)
-- [failure (function)](#failure-function)
-- [success (function)](#success-function)
+- [PathReporter](#pathreporter)
+- [failure](#failure)
+- [success](#success)
 
 ---
 
-# PathReporter (constant)
+# PathReporter
 
 **Signature**
 
@@ -28,7 +28,7 @@ export const PathReporter: Reporter<Array<string>> = ...
 
 Added in v1.0.0
 
-# failure (function)
+# failure
 
 **Signature**
 
@@ -38,7 +38,7 @@ export function failure(es: Array<ValidationError>): Array<string> { ... }
 
 Added in v1.0.0
 
-# success (function)
+# success
 
 **Signature**
 

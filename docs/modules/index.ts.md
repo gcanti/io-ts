@@ -118,55 +118,55 @@ Added in v1.0.0
 - [UnionType (class)](#uniontype-class)
 - [UnknownType (class)](#unknowntype-class)
 - [VoidType (class)](#voidtype-class)
-- [~~Dictionary~~ (constant)](#dictionary-constant)
-- [~~Function~~ (constant)](#function-constant)
-- [Int (constant)](#int-constant)
-- [~~Integer~~ (constant)](#integer-constant)
-- [UnknownArray (constant)](#unknownarray-constant)
-- [UnknownRecord (constant)](#unknownrecord-constant)
-- [~~any~~ (constant)](#any-constant)
-- [boolean (constant)](#boolean-constant)
-- [~~dictionary~~ (constant)](#dictionary-constant)
-- [failures (constant)](#failures-constant)
-- [~~never~~ (constant)](#never-constant)
-- [nullType (constant)](#nulltype-constant)
-- [number (constant)](#number-constant)
-- [~~object~~ (constant)](#object-constant)
-- [string (constant)](#string-constant)
-- [success (constant)](#success-constant)
-- [unknown (constant)](#unknown-constant)
-- [voidType (constant)](#voidtype-constant)
-- [~~alias~~ (function)](#alias-function)
-- [appendContext (function)](#appendcontext-function)
-- [array (function)](#array-function)
-- [brand (function)](#brand-function)
-- [~~clean~~ (function)](#clean-function)
-- [exact (function)](#exact-function)
-- [failure (function)](#failure-function)
-- [getContextEntry (function)](#getcontextentry-function)
-- [~~getDefaultContext~~ (function)](#getdefaultcontext-function)
-- [getFunctionName (function)](#getfunctionname-function)
-- [~~getValidationError~~ (function)](#getvalidationerror-function)
-- [identity (function)](#identity-function)
-- [intersection (function)](#intersection-function)
-- [keyof (function)](#keyof-function)
-- [literal (function)](#literal-function)
-- [partial (function)](#partial-function)
-- [readonly (function)](#readonly-function)
-- [readonlyArray (function)](#readonlyarray-function)
-- [record (function)](#record-function)
-- [recursion (function)](#recursion-function)
-- [~~refinement~~ (function)](#refinement-function)
-- [strict (function)](#strict-function)
-- [~~taggedUnion~~ (function)](#taggedunion-function)
-- [tuple (function)](#tuple-function)
-- [type (function)](#type-function)
-- [union (function)](#union-function)
-- [~~Array~~ (export)](#array-export)
-- [~~interface~~ (export)](#interface-export)
-- [null (export)](#null-export)
-- [undefined (export)](#undefined-export)
-- [void (export)](#void-export)
+- [Int](#int)
+- [UnknownArray](#unknownarray)
+- [UnknownRecord](#unknownrecord)
+- [appendContext](#appendcontext)
+- [array](#array)
+- [boolean](#boolean)
+- [brand](#brand)
+- [exact](#exact)
+- [failure](#failure)
+- [failures](#failures)
+- [getContextEntry](#getcontextentry)
+- [getFunctionName](#getfunctionname)
+- [identity](#identity)
+- [intersection](#intersection)
+- [keyof](#keyof)
+- [literal](#literal)
+- [null](#null)
+- [nullType](#nulltype)
+- [number](#number)
+- [partial](#partial)
+- [readonly](#readonly)
+- [readonlyArray](#readonlyarray)
+- [record](#record)
+- [recursion](#recursion)
+- [strict](#strict)
+- [string](#string)
+- [success](#success)
+- [tuple](#tuple)
+- [type](#type)
+- [undefined](#undefined)
+- [union](#union)
+- [unknown](#unknown)
+- [void](#void)
+- [voidType](#voidtype)
+- [~~Array~~](#array)
+- [~~Dictionary~~](#dictionary)
+- [~~Function~~](#function)
+- [~~Integer~~](#integer)
+- [~~alias~~](#alias)
+- [~~any~~](#any)
+- [~~clean~~](#clean)
+- [~~dictionary~~](#dictionary)
+- [~~getDefaultContext~~](#getdefaultcontext)
+- [~~getValidationError~~](#getvalidationerror)
+- [~~interface~~](#interface)
+- [~~never~~](#never)
+- [~~object~~](#object)
+- [~~refinement~~](#refinement)
+- [~~taggedUnion~~](#taggedunion)
 
 ---
 
@@ -1585,29 +1585,7 @@ export class VoidType {
 
 Added in v1.2.0
 
-# ~~Dictionary~~ (constant)
-
-Use `UnknownRecord` instead
-
-**Signature**
-
-```ts
-export const Dictionary: UnknownRecordC = ...
-```
-
-Added in v1.0.0
-
-# ~~Function~~ (constant)
-
-**Signature**
-
-```ts
-export const Function: FunctionC = ...
-```
-
-Added in v1.0.0
-
-# Int (constant)
+# Int
 
 A branded codec representing an integer
 
@@ -1619,7 +1597,430 @@ export const Int: BrandC<NumberC, IntBrand> = ...
 
 Added in v1.8.1
 
-# ~~Integer~~ (constant)
+# UnknownArray
+
+**Signature**
+
+```ts
+export const UnknownArray: UnknownArrayC = ...
+```
+
+Added in v1.7.1
+
+# UnknownRecord
+
+**Signature**
+
+```ts
+export const UnknownRecord: UnknownRecordC = ...
+```
+
+Added in v1.7.1
+
+# appendContext
+
+**Signature**
+
+```ts
+export const appendContext = (c: Context, key: string, decoder: Decoder<any, any>, actual?: unknown): Context => ...
+```
+
+Added in v1.0.0
+
+# array
+
+**Signature**
+
+```ts
+export const array = <C extends Mixed>(codec: C, name: string = `Array<${codec.name}>`): ArrayC<C> =>
+  new ArrayType(
+    name,
+    (u): u is Array<TypeOf<C>> => UnknownArray.is(u) && u.every(codec.is),
+    (u, c) =>
+      chain(UnknownArray.validate(u, c), us => ...
+```
+
+Added in v1.0.0
+
+# boolean
+
+**Signature**
+
+```ts
+export const boolean: BooleanC = ...
+```
+
+Added in v1.0.0
+
+# brand
+
+**Signature**
+
+```ts
+export const brand = <C extends Any, N extends string, B extends { readonly [K in N]: symbol }>(
+  codec: C,
+  predicate: Refinement<TypeOf<C>, Branded<TypeOf<C>, B>>,
+  name: N
+): BrandC<C, B> => ...
+```
+
+Added in v1.8.1
+
+# exact
+
+Strips additional properties
+
+**Signature**
+
+```ts
+export const exact = <C extends HasProps>(codec: C, name: string = getExactTypeName(codec)): ExactC<C> => ...
+```
+
+Added in v1.1.0
+
+# failure
+
+**Signature**
+
+```ts
+export const failure = <T>(value: unknown, context: Context, message?: string): Validation<T> => ...
+```
+
+Added in v1.0.0
+
+# failures
+
+**Signature**
+
+```ts
+export const failures: <T>(errors: Errors) => Validation<T> = ...
+```
+
+Added in v1.0.0
+
+# getContextEntry
+
+**Signature**
+
+```ts
+export const getContextEntry = (key: string, decoder: Decoder<any, any>): ContextEntry => ...
+```
+
+Added in v1.0.0
+
+# getFunctionName
+
+**Signature**
+
+```ts
+export const getFunctionName = (f: Function): string => ...
+```
+
+Added in v1.0.0
+
+# identity
+
+**Signature**
+
+```ts
+export const identity = <A>(a: A): A => ...
+```
+
+Added in v1.0.0
+
+# intersection
+
+**Signature**
+
+```ts
+export function intersection<A extends Mixed, B extends Mixed, C extends Mixed, D extends Mixed, E extends Mixed>(
+  codecs: [A, B, C, D, E],
+  name?: string
+): IntersectionC<[A, B, C, D, E]>
+export function intersection<A extends Mixed, B extends Mixed, C extends Mixed, D extends Mixed>(
+  codecs: [A, B, C, D],
+  name?: string
+): IntersectionC<[A, B, C, D]>
+export function intersection<A extends Mixed, B extends Mixed, C extends Mixed>(
+  codecs: [A, B, C],
+  name?: string
+): IntersectionC<[A, B, C]>
+export function intersection<A extends Mixed, B extends Mixed>(codecs: [A, B], name?: string): IntersectionC<[A, B]> { ... }
+```
+
+Added in v1.0.0
+
+# keyof
+
+**Signature**
+
+```ts
+export const keyof = <D extends { [key: string]: unknown }>(
+  keys: D,
+  name: string = Object.keys(keys)
+    .map(k => JSON.stringify(k))
+    .join(' | ')
+): KeyofC<D> => ...
+```
+
+Added in v1.0.0
+
+# literal
+
+**Signature**
+
+```ts
+export const literal = <V extends LiteralValue>(value: V, name: string = JSON.stringify(value)): LiteralC<V> => ...
+```
+
+Added in v1.0.0
+
+# null
+
+**Signature**
+
+```ts
+NullC
+```
+
+Added in v1.0.0
+
+# nullType
+
+**Signature**
+
+```ts
+export const nullType: NullC = ...
+```
+
+Added in v1.0.0
+
+# number
+
+**Signature**
+
+```ts
+export const number: NumberC = ...
+```
+
+Added in v1.0.0
+
+# partial
+
+**Signature**
+
+```ts
+export const partial = <P extends Props>(
+  props: P,
+  name: string = getPartialTypeName(getInterfaceTypeName(props))
+): PartialC<P> => ...
+```
+
+Added in v1.0.0
+
+# readonly
+
+**Signature**
+
+```ts
+export const readonly = <C extends Mixed>(codec: C, name: string = `Readonly<${codec.name}>`): ReadonlyC<C> => ...
+```
+
+Added in v1.0.0
+
+# readonlyArray
+
+**Signature**
+
+```ts
+export const readonlyArray = <C extends Mixed>(
+  codec: C,
+  name: string = `ReadonlyArray<${codec.name}>`
+): ReadonlyArrayC<C> => ...
+```
+
+Added in v1.0.0
+
+# record
+
+**Signature**
+
+```ts
+export const record = <D extends Mixed, C extends Mixed>(
+  domain: D,
+  codomain: C,
+  name: string = `{ [K in ${domain.name}]: ${codomain.name} }`
+): RecordC<D, C> => ...
+```
+
+Added in v1.7.1
+
+# recursion
+
+**Signature**
+
+```ts
+export const recursion = <A, O = A, I = unknown, C extends Type<A, O, I> = Type<A, O, I>>(
+  name: string,
+  definition: (self: C) => C
+): RecursiveType<C, A, O, I> => ...
+```
+
+Added in v1.0.0
+
+# strict
+
+Strips additional properties
+
+**Signature**
+
+```ts
+export const strict = <P extends Props>(props: P, name?: string): ExactC<TypeC<P>> => ...
+```
+
+Added in v1.0.0
+
+# string
+
+**Signature**
+
+```ts
+export const string: StringC = ...
+```
+
+Added in v1.0.0
+
+# success
+
+**Signature**
+
+```ts
+export const success: <T>(value: T) => Validation<T> = ...
+```
+
+Added in v1.0.0
+
+# tuple
+
+**Signature**
+
+```ts
+export function tuple<A extends Mixed, B extends Mixed, C extends Mixed, D extends Mixed, E extends Mixed>(
+  codecs: [A, B, C, D, E],
+  name?: string
+): TupleC<[A, B, C, D, E]>
+export function tuple<A extends Mixed, B extends Mixed, C extends Mixed, D extends Mixed>(
+  codecs: [A, B, C, D],
+  name?: string
+): TupleC<[A, B, C, D]>
+export function tuple<A extends Mixed, B extends Mixed, C extends Mixed>(
+  codecs: [A, B, C],
+  name?: string
+): TupleC<[A, B, C]>
+export function tuple<A extends Mixed, B extends Mixed>(codecs: [A, B], name?: string): TupleC<[A, B]>
+export function tuple<A extends Mixed>(codecs: [A], name?: string): TupleC<[A]> { ... }
+```
+
+Added in v1.0.0
+
+# type
+
+**Signature**
+
+```ts
+export const type = <P extends Props>(props: P, name: string = getInterfaceTypeName(props)): TypeC<P> => ...
+```
+
+Added in v1.0.0
+
+# undefined
+
+**Signature**
+
+```ts
+UndefinedC
+```
+
+Added in v1.0.0
+
+# union
+
+**Signature**
+
+```ts
+export const union = <CS extends [Mixed, Mixed, ...Array<Mixed>]>(
+  codecs: CS,
+  name: string = getUnionName(codecs)
+): UnionC<CS> => ...
+```
+
+Added in v1.0.0
+
+# unknown
+
+**Signature**
+
+```ts
+export const unknown: UnknownC = ...
+```
+
+Added in v1.5.0
+
+# void
+
+**Signature**
+
+```ts
+VoidC
+```
+
+Added in v1.0.0
+
+# voidType
+
+**Signature**
+
+```ts
+export const voidType: VoidC = ...
+```
+
+Added in v1.2.0
+
+# ~~Array~~
+
+Use `UnknownArray` instead
+
+**Signature**
+
+```ts
+UnknownArrayC
+```
+
+Added in v1.0.0
+
+# ~~Dictionary~~
+
+Use `UnknownRecord` instead
+
+**Signature**
+
+```ts
+export const Dictionary: UnknownRecordC = ...
+```
+
+Added in v1.0.0
+
+# ~~Function~~
+
+**Signature**
+
+```ts
+export const Function: FunctionC = ...
+```
+
+Added in v1.0.0
+
+# ~~Integer~~
 
 Use `Int` instead
 
@@ -1631,153 +2032,7 @@ export const Integer: RefinementC<NumberC> = ...
 
 Added in v1.0.0
 
-# UnknownArray (constant)
-
-**Signature**
-
-```ts
-export const UnknownArray: UnknownArrayC = ...
-```
-
-Added in v1.7.1
-
-# UnknownRecord (constant)
-
-**Signature**
-
-```ts
-export const UnknownRecord: UnknownRecordC = ...
-```
-
-Added in v1.7.1
-
-# ~~any~~ (constant)
-
-Use `unknown` instead
-
-**Signature**
-
-```ts
-export const any: AnyC = ...
-```
-
-Added in v1.0.0
-
-# boolean (constant)
-
-**Signature**
-
-```ts
-export const boolean: BooleanC = ...
-```
-
-Added in v1.0.0
-
-# ~~dictionary~~ (constant)
-
-Use `record` instead
-
-**Signature**
-
-```ts
-export const dictionary: typeof record = ...
-```
-
-Added in v1.0.0
-
-# failures (constant)
-
-**Signature**
-
-```ts
-export const failures: <T>(errors: Errors) => Validation<T> = ...
-```
-
-Added in v1.0.0
-
-# ~~never~~ (constant)
-
-**Signature**
-
-```ts
-export const never: NeverC = ...
-```
-
-Added in v1.0.0
-
-# nullType (constant)
-
-**Signature**
-
-```ts
-export const nullType: NullC = ...
-```
-
-Added in v1.0.0
-
-# number (constant)
-
-**Signature**
-
-```ts
-export const number: NumberC = ...
-```
-
-Added in v1.0.0
-
-# ~~object~~ (constant)
-
-Use `UnknownRecord` instead
-
-**Signature**
-
-```ts
-export const object: ObjectC = ...
-```
-
-Added in v1.0.0
-
-# string (constant)
-
-**Signature**
-
-```ts
-export const string: StringC = ...
-```
-
-Added in v1.0.0
-
-# success (constant)
-
-**Signature**
-
-```ts
-export const success: <T>(value: T) => Validation<T> = ...
-```
-
-Added in v1.0.0
-
-# unknown (constant)
-
-**Signature**
-
-```ts
-export const unknown: UnknownC = ...
-```
-
-Added in v1.5.0
-
-# voidType (constant)
-
-**Signature**
-
-```ts
-export const voidType: VoidC = ...
-```
-
-Added in v1.2.0
-
-# ~~alias~~ (function)
+# ~~alias~~
 
 Keeps the codec "kind"
 
@@ -1823,46 +2078,19 @@ export function alias<A, O, P, I>(
 
 Added in v1.1.0
 
-# appendContext (function)
+# ~~any~~
+
+Use `unknown` instead
 
 **Signature**
 
 ```ts
-export const appendContext = (c: Context, key: string, decoder: Decoder<any, any>, actual?: unknown): Context => ...
+export const any: AnyC = ...
 ```
 
 Added in v1.0.0
 
-# array (function)
-
-**Signature**
-
-```ts
-export const array = <C extends Mixed>(codec: C, name: string = `Array<${codec.name}>`): ArrayC<C> =>
-  new ArrayType(
-    name,
-    (u): u is Array<TypeOf<C>> => UnknownArray.is(u) && u.every(codec.is),
-    (u, c) =>
-      chain(UnknownArray.validate(u, c), us => ...
-```
-
-Added in v1.0.0
-
-# brand (function)
-
-**Signature**
-
-```ts
-export const brand = <C extends Any, N extends string, B extends { readonly [K in N]: symbol }>(
-  codec: C,
-  predicate: Refinement<TypeOf<C>, Branded<TypeOf<C>, B>>,
-  name: N
-): BrandC<C, B> => ...
-```
-
-Added in v1.8.1
-
-# ~~clean~~ (function)
+# ~~clean~~
 
 Drops the codec "kind"
 
@@ -1874,39 +2102,19 @@ export function clean<A, O = A, I = unknown>(codec: Type<A, O, I>): Type<A, O, I
 
 Added in v1.1.0
 
-# exact (function)
+# ~~dictionary~~
 
-Strips additional properties
-
-**Signature**
-
-```ts
-export const exact = <C extends HasProps>(codec: C, name: string = getExactTypeName(codec)): ExactC<C> => ...
-```
-
-Added in v1.1.0
-
-# failure (function)
+Use `record` instead
 
 **Signature**
 
 ```ts
-export const failure = <T>(value: unknown, context: Context, message?: string): Validation<T> => ...
+export const dictionary: typeof record = ...
 ```
 
 Added in v1.0.0
 
-# getContextEntry (function)
-
-**Signature**
-
-```ts
-export const getContextEntry = (key: string, decoder: Decoder<any, any>): ContextEntry => ...
-```
-
-Added in v1.0.0
-
-# ~~getDefaultContext~~ (function)
+# ~~getDefaultContext~~
 
 **Signature**
 
@@ -1916,17 +2124,7 @@ export const getDefaultContext /* istanbul ignore next */ = (decoder: Decoder<an
 
 Added in v1.0.0
 
-# getFunctionName (function)
-
-**Signature**
-
-```ts
-export const getFunctionName = (f: Function): string => ...
-```
-
-Added in v1.0.0
-
-# ~~getValidationError~~ (function)
+# ~~getValidationError~~
 
 **Signature**
 
@@ -1936,127 +2134,41 @@ export const getValidationError /* istanbul ignore next */ = (value: unknown, co
 
 Added in v1.0.0
 
-# identity (function)
+# ~~interface~~
+
+Use `type` instead
 
 **Signature**
 
 ```ts
-export const identity = <A>(a: A): A => ...
+<P extends Props>(props: P, name?: string) => TypeC<P>
 ```
 
 Added in v1.0.0
 
-# intersection (function)
+# ~~never~~
 
 **Signature**
 
 ```ts
-export function intersection<A extends Mixed, B extends Mixed, C extends Mixed, D extends Mixed, E extends Mixed>(
-  codecs: [A, B, C, D, E],
-  name?: string
-): IntersectionC<[A, B, C, D, E]>
-export function intersection<A extends Mixed, B extends Mixed, C extends Mixed, D extends Mixed>(
-  codecs: [A, B, C, D],
-  name?: string
-): IntersectionC<[A, B, C, D]>
-export function intersection<A extends Mixed, B extends Mixed, C extends Mixed>(
-  codecs: [A, B, C],
-  name?: string
-): IntersectionC<[A, B, C]>
-export function intersection<A extends Mixed, B extends Mixed>(codecs: [A, B], name?: string): IntersectionC<[A, B]> { ... }
+export const never: NeverC = ...
 ```
 
 Added in v1.0.0
 
-# keyof (function)
+# ~~object~~
+
+Use `UnknownRecord` instead
 
 **Signature**
 
 ```ts
-export const keyof = <D extends { [key: string]: unknown }>(
-  keys: D,
-  name: string = Object.keys(keys)
-    .map(k => JSON.stringify(k))
-    .join(' | ')
-): KeyofC<D> => ...
+export const object: ObjectC = ...
 ```
 
 Added in v1.0.0
 
-# literal (function)
-
-**Signature**
-
-```ts
-export const literal = <V extends LiteralValue>(value: V, name: string = JSON.stringify(value)): LiteralC<V> => ...
-```
-
-Added in v1.0.0
-
-# partial (function)
-
-**Signature**
-
-```ts
-export const partial = <P extends Props>(
-  props: P,
-  name: string = getPartialTypeName(getInterfaceTypeName(props))
-): PartialC<P> => ...
-```
-
-Added in v1.0.0
-
-# readonly (function)
-
-**Signature**
-
-```ts
-export const readonly = <C extends Mixed>(codec: C, name: string = `Readonly<${codec.name}>`): ReadonlyC<C> => ...
-```
-
-Added in v1.0.0
-
-# readonlyArray (function)
-
-**Signature**
-
-```ts
-export const readonlyArray = <C extends Mixed>(
-  codec: C,
-  name: string = `ReadonlyArray<${codec.name}>`
-): ReadonlyArrayC<C> => ...
-```
-
-Added in v1.0.0
-
-# record (function)
-
-**Signature**
-
-```ts
-export const record = <D extends Mixed, C extends Mixed>(
-  domain: D,
-  codomain: C,
-  name: string = `{ [K in ${domain.name}]: ${codomain.name} }`
-): RecordC<D, C> => ...
-```
-
-Added in v1.7.1
-
-# recursion (function)
-
-**Signature**
-
-```ts
-export const recursion = <A, O = A, I = unknown, C extends Type<A, O, I> = Type<A, O, I>>(
-  name: string,
-  definition: (self: C) => C
-): RecursiveType<C, A, O, I> => ...
-```
-
-Added in v1.0.0
-
-# ~~refinement~~ (function)
+# ~~refinement~~
 
 Use `brand` instead
 
@@ -2073,19 +2185,7 @@ RefinementC<C> { ... }
 
 Added in v1.0.0
 
-# strict (function)
-
-Strips additional properties
-
-**Signature**
-
-```ts
-export const strict = <P extends Props>(props: P, name?: string): ExactC<TypeC<P>> => ...
-```
-
-Added in v1.0.0
-
-# ~~taggedUnion~~ (function)
+# ~~taggedUnion~~
 
 Use `union` instead
 
@@ -2101,103 +2201,3 @@ export const taggedUnion = <Tag extends string, CS extends [Mixed, Mixed, ...Arr
 ```
 
 Added in v1.3.0
-
-# tuple (function)
-
-**Signature**
-
-```ts
-export function tuple<A extends Mixed, B extends Mixed, C extends Mixed, D extends Mixed, E extends Mixed>(
-  codecs: [A, B, C, D, E],
-  name?: string
-): TupleC<[A, B, C, D, E]>
-export function tuple<A extends Mixed, B extends Mixed, C extends Mixed, D extends Mixed>(
-  codecs: [A, B, C, D],
-  name?: string
-): TupleC<[A, B, C, D]>
-export function tuple<A extends Mixed, B extends Mixed, C extends Mixed>(
-  codecs: [A, B, C],
-  name?: string
-): TupleC<[A, B, C]>
-export function tuple<A extends Mixed, B extends Mixed>(codecs: [A, B], name?: string): TupleC<[A, B]>
-export function tuple<A extends Mixed>(codecs: [A], name?: string): TupleC<[A]> { ... }
-```
-
-Added in v1.0.0
-
-# type (function)
-
-**Signature**
-
-```ts
-export const type = <P extends Props>(props: P, name: string = getInterfaceTypeName(props)): TypeC<P> => ...
-```
-
-Added in v1.0.0
-
-# union (function)
-
-**Signature**
-
-```ts
-export const union = <CS extends [Mixed, Mixed, ...Array<Mixed>]>(
-  codecs: CS,
-  name: string = getUnionName(codecs)
-): UnionC<CS> => ...
-```
-
-Added in v1.0.0
-
-# ~~Array~~ (export)
-
-Use `UnknownArray` instead
-
-**Signature**
-
-```ts
-UnknownArrayC
-```
-
-Added in v1.0.0
-
-# ~~interface~~ (export)
-
-Use `type` instead
-
-**Signature**
-
-```ts
-<P extends Props>(props: P, name?: string) => TypeC<P>
-```
-
-Added in v1.0.0
-
-# null (export)
-
-**Signature**
-
-```ts
-NullC
-```
-
-Added in v1.0.0
-
-# undefined (export)
-
-**Signature**
-
-```ts
-UndefinedC
-```
-
-Added in v1.0.0
-
-# void (export)
-
-**Signature**
-
-```ts
-VoidC
-```
-
-Added in v1.0.0
