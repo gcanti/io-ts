@@ -364,7 +364,7 @@ export interface NumberC extends NumberType {}
 export const number: NumberC = new NumberType()
 
 /**
- * @since 2.0.7
+ * @since 2.1.0
  */
 export class BigIntType extends Type<bigint> {
   readonly _tag: 'BigIntType' = 'BigIntType'
@@ -380,12 +380,12 @@ export class BigIntType extends Type<bigint> {
 }
 
 /**
- * @since 2.0.7
+ * @since 2.1.0
  */
 export interface BigIntC extends BigIntType {}
 
 /**
- * @since 2.0.7
+ * @since 2.1.0
  */
 export const bigint: BigIntC = new BigIntType()
 
