@@ -114,6 +114,29 @@ describe('boolean', () => {
   })
 })
 
+describe('bigint', () => {
+  const T = t.bigint
+  it('should decode bigint values', () => {
+    assertSuccess(T.decode(BigInt(0)))
+    assertSuccess(T.decode(BigInt(15)))
+    const decodedBigNumber = T.decode(BigInt(Number.MAX_SAFE_INTEGER) + BigInt(4))
+    assertSuccess(decodedBigNumber)
+    if (decodedBigNumber._tag === 'Right') {
+      assert.equal(decodedBigNumber.right.toString(), '9007199254740995')
+    }
+  })
+
+  it('should not decode non-bigint values', () => {
+    assertFailure(T, true, ['Invalid value true supplied to : bigint'])
+    assertFailure(T, 'test', ['Invalid value "test" supplied to : bigint'])
+    assertFailure(T, 123, ['Invalid value 123 supplied to : bigint'])
+    assertFailure(T, {}, ['Invalid value {} supplied to : bigint'])
+    assertFailure(T, [], ['Invalid value [] supplied to : bigint'])
+    assertFailure(T, null, ['Invalid value null supplied to : bigint'])
+    assertFailure(T, undefined, ['Invalid value undefined supplied to : bigint'])
+  })
+})
+
 describe('Integer', () => {
   it('should validate integers', () => {
     // tslint:disable-next-line: deprecation

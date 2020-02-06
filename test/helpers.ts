@@ -31,6 +31,7 @@ export function assertSuccess<T>(result: t.Validation<T>, expected?: T): void {
         if (expected !== undefined) {
           assert.deepStrictEqual(a, expected)
         }
+        return true
       }
     )
   )

@@ -16,6 +16,7 @@ Added in v1.0.0
 - [~~AnyC~~ (interface)](#anyc-interface)
 - [AnyProps (interface)](#anyprops-interface)
 - [ArrayC (interface)](#arrayc-interface)
+- [BigIntC (interface)](#bigintc-interface)
 - [BooleanC (interface)](#booleanc-interface)
 - [Brand (interface)](#brand-interface)
 - [BrandC (interface)](#brandc-interface)
@@ -88,6 +89,7 @@ Added in v1.0.0
 - [AnyDictionaryType (class)](#anydictionarytype-class)
 - [~~AnyType~~ (class)](#anytype-class)
 - [ArrayType (class)](#arraytype-class)
+- [BigIntType (class)](#biginttype-class)
 - [BooleanType (class)](#booleantype-class)
 - [DictionaryType (class)](#dictionarytype-class)
 - [ExactType (class)](#exacttype-class)
@@ -123,6 +125,7 @@ Added in v1.0.0
 - [UnknownRecord](#unknownrecord)
 - [appendContext](#appendcontext)
 - [array](#array)
+- [bigint](#bigint)
 - [boolean](#boolean)
 - [brand](#brand)
 - [exact](#exact)
@@ -211,6 +214,16 @@ export interface ArrayC<C extends Mixed> extends ArrayType<C, Array<TypeOf<C>>, 
 ```
 
 Added in v1.5.3
+
+# BigIntC (interface)
+
+**Signature**
+
+```ts
+export interface BigIntC extends BigIntType {}
+```
+
+Added in v2.1.0
 
 # BooleanC (interface)
 
@@ -1093,6 +1106,19 @@ export class ArrayType<C, A, O, I> {
 
 Added in v1.0.0
 
+# BigIntType (class)
+
+**Signature**
+
+```ts
+export class BigIntType {
+  constructor() { ... }
+  ...
+}
+```
+
+Added in v2.1.0
+
 # BooleanType (class)
 
 **Signature**
@@ -1641,6 +1667,16 @@ export const array = <C extends Mixed>(codec: C, name: string = `Array<${codec.n
 ```
 
 Added in v1.0.0
+
+# bigint
+
+**Signature**
+
+```ts
+export const bigint: BigIntC = ...
+```
+
+Added in v2.1.0
 
 # boolean
 
