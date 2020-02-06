@@ -371,6 +371,7 @@ export class BigIntType extends Type<bigint> {
   constructor() {
     super(
       'bigint',
+      // tslint:disable-next-line: valid-typeof
       (u): u is bigint => typeof u === 'bigint',
       (u, c) => (this.is(u) ? success(u) : failure(u, c)),
       identity
