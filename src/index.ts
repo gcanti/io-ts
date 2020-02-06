@@ -364,6 +364,31 @@ export interface NumberC extends NumberType {}
 export const number: NumberC = new NumberType()
 
 /**
+ * @since 2.0.7
+ */
+export class BigIntType extends Type<bigint> {
+  readonly _tag: 'BigIntType' = 'BigIntType'
+  constructor() {
+    super(
+      'bigint',
+      (u): u is bigint => typeof u === 'bigint',
+      (u, c) => (this.is(u) ? success(u) : failure(u, c)),
+      identity
+    )
+  }
+}
+
+/**
+ * @since 2.0.7
+ */
+export interface BigIntC extends BigIntType {}
+
+/**
+ * @since 2.0.7
+ */
+export const bigint: BigIntC = new BigIntType()
+
+/**
  * @since 1.0.0
  */
 export class BooleanType extends Type<boolean> {
