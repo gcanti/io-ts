@@ -128,6 +128,23 @@ describe('exact', () => {
       const T = t.exact(t.readonly(t.type({ foo: t.string })))
       assertSuccess(T.decode({ foo: 'foo', bar: 1 }), { foo: 'foo' })
     })
+
+    it('should strip additional properties (recursive)', () => {
+      type C = t.PartialC<{ rec: R }>
+      type R = t.ExactC<t.RecursiveType<C, t.TypeOf<C>, t.OutputOf<C>>>
+      const T: R = t.exact(t.recursion('T', () => t.partial({ rec: T })))
+      assertSuccess(T.decode({ a: 1, rec: { b: 2, rec: {} } }), { rec: { rec: {} } })
+    })
+
+    it('should strip additional properties (mutually recursive)', () => {
+      type C1 = t.PartialC<{ a: R2 }>
+      type C2 = t.PartialC<{ b: R1 }>
+      type R1 = t.ExactC<t.RecursiveType<C1, t.TypeOf<C1>, t.OutputOf<C1>>>
+      type R2 = t.ExactC<t.RecursiveType<C2, t.TypeOf<C2>, t.OutputOf<C2>>>
+      const T1: R1 = t.exact(t.recursion('T1', () => t.partial({ a: T2 })))
+      const T2: R2 = t.exact(t.recursion('T2', () => t.partial({ b: T1 })))
+      assertSuccess(T1.decode({ x: 1, a: { y: 2, b: { z: 3, a: {} } } }), { a: { b: { a: {} } } })
+    })
   })
 
   describe('encode', () => {
