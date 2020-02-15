@@ -213,15 +213,6 @@ const pushAll = <A>(xs: Array<A>, ys: Array<A>): void => {
   }
 }
 
-const getIsCodec = <T extends Any>(tag: string) => (codec: Any): codec is T => (codec as any)._tag === tag
-
-// tslint:disable-next-line: deprecation
-const isAnyCodec = getIsCodec<AnyType>('AnyType')
-
-const isInterfaceCodec = getIsCodec<InterfaceType<Props>>('InterfaceType')
-
-const isPartialCodec = getIsCodec<PartialType<Props>>('PartialType')
-
 //
 // basic types
 //
@@ -999,21 +990,80 @@ export type OutputOfDictionary<D extends Any, C extends Any> = { [K in OutputOf<
 export interface RecordC<D extends Mixed, C extends Mixed>
   extends DictionaryType<D, C, { [K in TypeOf<D>]: TypeOf<C> }, { [K in OutputOf<D>]: OutputOf<C> }, unknown> {}
 
-/**
- * @since 1.7.1
- */
-export const record = <D extends Mixed, C extends Mixed>(
+function enumerableRecord<D extends Mixed, C extends Mixed>(
+  keys: Array<string>,
   domain: D,
   codomain: C,
   name: string = `{ [K in ${domain.name}]: ${codomain.name} }`
-): RecordC<D, C> => {
+): RecordC<D, C> {
+  const len = keys.length
+  return new DictionaryType(
+    name,
+    (u): u is { [K in TypeOf<D>]: TypeOf<C> } => UnknownRecord.is(u) && keys.every(k => codomain.is(u[k])),
+    (u, c) =>
+      chain(UnknownRecord.validate(u, c), o => {
+        const a: { [key: string]: any } = {}
+        const errors: Errors = []
+        let changed: boolean = false
+        for (let i = 0; i < len; i++) {
+          const k = keys[i]
+          const ok = o[k]
+          const codomainResult = codomain.validate(ok, appendContext(c, k, codomain, ok))
+          if (isLeft(codomainResult)) {
+            pushAll(errors, codomainResult.left)
+          } else {
+            const vok = codomainResult.right
+            changed = changed || vok !== ok
+            a[k] = vok
+          }
+        }
+        return errors.length > 0 ? failures(errors) : success((changed || Object.keys(o).length !== len ? a : o) as any)
+      }),
+    codomain.encode === identity
+      ? identity
+      : (a: any) => {
+          const s: { [key: string]: any } = {}
+          for (let i = 0; i < len; i++) {
+            const k = keys[i]
+            s[k] = codomain.encode(a[k])
+          }
+          return s as any
+        },
+    domain,
+    codomain
+  )
+}
+
+/**
+ * @internal
+ */
+export function getDomainKeys<D extends Mixed>(domain: D): Record<string, unknown> | undefined {
+  if (isLiteralC(domain)) {
+    const literal = domain.value
+    if (string.is(literal)) {
+      return { [literal]: null }
+    }
+  } else if (isKeyofC(domain)) {
+    return domain.keys
+  } else if (isUnionC(domain)) {
+    const keys = domain.types.map(type => getDomainKeys(type))
+    return keys.some(undefinedType.is) ? undefined : Object.assign({}, ...keys)
+  }
+  return undefined
+}
+
+function nonEnumerableRecord<D extends Mixed, C extends Mixed>(
+  domain: D,
+  codomain: C,
+  name: string = `{ [K in ${domain.name}]: ${codomain.name} }`
+): RecordC<D, C> {
   return new DictionaryType(
     name,
     (u): u is { [K in TypeOf<D>]: TypeOf<C> } => {
       if (UnknownRecord.is(u)) {
         return Object.keys(u).every(k => domain.is(k) && codomain.is(u[k]))
       }
-      return isAnyCodec(codomain) && Array.isArray(u)
+      return isAnyC(codomain) && Array.isArray(u)
     },
     (u, c) => {
       if (UnknownRecord.is(u)) {
@@ -1044,7 +1094,7 @@ export const record = <D extends Mixed, C extends Mixed>(
         }
         return errors.length > 0 ? failures(errors) : success((changed ? a : u) as any)
       }
-      if (isAnyCodec(codomain) && Array.isArray(u)) {
+      if (isAnyC(codomain) && Array.isArray(u)) {
         return success(u)
       }
       return failure(u, c)
@@ -1064,6 +1114,16 @@ export const record = <D extends Mixed, C extends Mixed>(
     domain,
     codomain
   )
+}
+
+/**
+ * @since 1.7.1
+ */
+export function record<D extends Mixed, C extends Mixed>(domain: D, codomain: C, name?: string): RecordC<D, C> {
+  const keys = getDomainKeys(domain)
+  return keys
+    ? enumerableRecord(Object.keys(keys), domain, codomain, name)
+    : nonEnumerableRecord(domain, codomain, name)
 }
 
 /**
@@ -1628,9 +1688,9 @@ const stripKeys = (o: any, props: Props): unknown => {
 }
 
 const getExactTypeName = (codec: Any): string => {
-  if (isInterfaceCodec(codec)) {
+  if (isTypeC(codec)) {
     return `{| ${getNameFromProps(codec.props)} |}`
-  } else if (isPartialCodec(codec)) {
+  } else if (isPartialC(codec)) {
     return getPartialTypeName(`{| ${getNameFromProps(codec.props)} |}`)
   }
   return `Exact<${codec.name}>`
@@ -2109,12 +2169,25 @@ function intersectTags(a: Tags, b: Tags): Tags {
   return r
 }
 
+// tslint:disable-next-line: deprecation
+function isAnyC(codec: Any): codec is AnyC {
+  return (codec as any)._tag === 'AnyType'
+}
+
 function isLiteralC(codec: Any): codec is LiteralC<LiteralValue> {
   return (codec as any)._tag === 'LiteralType'
 }
 
+function isKeyofC(codec: Any): codec is KeyofC<Record<string, unknown>> {
+  return (codec as any)._tag === 'KeyofType'
+}
+
 function isTypeC(codec: Any): codec is TypeC<Props> {
   return (codec as any)._tag === 'InterfaceType'
+}
+
+function isPartialC(codec: Any): codec is PartialC<Props> {
+  return (codec as any)._tag === 'PartialType'
 }
 
 // tslint:disable-next-line: deprecation
