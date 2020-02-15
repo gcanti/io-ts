@@ -1882,11 +1882,7 @@ Added in v1.0.0
 **Signature**
 
 ```ts
-export const record = <D extends Mixed, C extends Mixed>(
-  domain: D,
-  codomain: C,
-  name: string = `{ [K in ${domain.name}]: ${codomain.name} }`
-): RecordC<D, C> => ...
+export function record<D extends Mixed, C extends Mixed>(domain: D, codomain: C, name?: string): RecordC<D, C> { ... }
 ```
 
 Added in v1.7.1
