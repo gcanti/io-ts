@@ -14,6 +14,11 @@
 **Note**: Gaps between patch versions are faulty/broken releases. **Note**: A feature tagged as Experimental is in a
 high state of flux, you're at risk of it changing without notice.
 
+# 2.1.2
+
+- **Polish**
+  - remove useless `hasOwnProperty` calls, closes #423 (@gcanti)
+
 # 2.1.1
 
 - **Bug Fix**

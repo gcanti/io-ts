@@ -29,6 +29,19 @@ describe('strict', () => {
       assert.strictEqual(T.is({ a: 1, b: 1 }), true)
       assert.strictEqual(T.is(undefined), false)
     })
+
+    it('#423', () => {
+      class A {
+        get a() {
+          return 'a'
+        }
+        get b() {
+          return 'b'
+        }
+      }
+      const T = t.strict({ a: t.string, b: t.string })
+      assert.strictEqual(T.is(new A()), true)
+    })
   })
 
   describe('decode', () => {
@@ -56,6 +69,19 @@ describe('strict', () => {
     it('should strip additional properties', () => {
       const T = t.strict({ foo: t.string })
       assertSuccess(T.decode({ foo: 'foo', bar: 1, baz: true }), { foo: 'foo' })
+    })
+
+    it('#423', () => {
+      class A {
+        get a() {
+          return 'a'
+        }
+        get b() {
+          return 'b'
+        }
+      }
+      const T = t.strict({ a: t.string, b: t.string })
+      assertSuccess(T.decode(new A()))
     })
   })
 
