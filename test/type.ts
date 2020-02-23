@@ -35,6 +35,19 @@ describe('type', () => {
       const T = t.type({ a: t.string })
       assert.strictEqual(T.is({ a: 'a', b: 1 }), true)
     })
+
+    it('#423', () => {
+      class A {
+        get a() {
+          return 'a'
+        }
+        get b() {
+          return 'b'
+        }
+      }
+      const T = t.type({ a: t.string, b: t.string })
+      assert.strictEqual(T.is(new A()), true)
+    })
   })
 
   describe('decode', () => {
@@ -74,6 +87,19 @@ describe('type', () => {
     it('should support the alias `interface`', () => {
       const T = t.interface({ a: t.string })
       assertSuccess(T.decode({ a: 'a' }))
+    })
+
+    it('#423', () => {
+      class A {
+        get a() {
+          return 'a'
+        }
+        get b() {
+          return 'b'
+        }
+      }
+      const T = t.type({ a: t.string, b: t.string })
+      assertSuccess(T.decode(new A()))
     })
   })
 
