@@ -385,25 +385,31 @@ Added in v1.8.1
 **Signature**
 
 ```ts
-export interface IntersectionC<CS extends [Mixed, Mixed, ...Array<Mixed>]>
+export interface IntersectionC<
+  CS extends
+    | [Mixed, Mixed, ...Mixed[]]
+    | [Mixed, Mixed, Mixed, ...Mixed[]]
+    | [Mixed, Mixed, Mixed, Mixed, ...Mixed[]]
+    | [Mixed, Mixed, Mixed, Mixed, Mixed, ...Mixed[]]
+>
   extends IntersectionType<
     CS,
-    CS extends { length: 2 }
+    CS extends [Mixed, Mixed]
       ? TypeOf<CS[0]> & TypeOf<CS[1]>
-      : CS extends { length: 3 }
+      : CS extends [Mixed, Mixed, Mixed]
       ? TypeOf<CS[0]> & TypeOf<CS[1]> & TypeOf<CS[2]>
-      : CS extends { length: 4 }
+      : CS extends [Mixed, Mixed, Mixed, Mixed]
       ? TypeOf<CS[0]> & TypeOf<CS[1]> & TypeOf<CS[2]> & TypeOf<CS[3]>
-      : CS extends { length: 5 }
+      : CS extends [Mixed, Mixed, Mixed, Mixed, Mixed]
       ? TypeOf<CS[0]> & TypeOf<CS[1]> & TypeOf<CS[2]> & TypeOf<CS[3]> & TypeOf<CS[4]>
       : unknown,
-    CS extends { length: 2 }
+    CS extends [Mixed, Mixed]
       ? OutputOf<CS[0]> & OutputOf<CS[1]>
-      : CS extends { length: 3 }
+      : CS extends [Mixed, Mixed, Mixed]
       ? OutputOf<CS[0]> & OutputOf<CS[1]> & OutputOf<CS[2]>
-      : CS extends { length: 4 }
+      : CS extends [Mixed, Mixed, Mixed, Mixed]
       ? OutputOf<CS[0]> & OutputOf<CS[1]> & OutputOf<CS[2]> & OutputOf<CS[3]>
-      : CS extends { length: 5 }
+      : CS extends [Mixed, Mixed, Mixed, Mixed, Mixed]
       ? OutputOf<CS[0]> & OutputOf<CS[1]> & OutputOf<CS[2]> & OutputOf<CS[3]> & OutputOf<CS[4]>
       : unknown,
     unknown
@@ -623,7 +629,7 @@ Added in v1.3.0
 
 ```ts
 export interface TaggedUnionC<Tag extends string, CS extends [Mixed, Mixed, ...Array<Mixed>]>  // tslint:disable-next-line: deprecation
-  extends TaggedUnionType<Tag, CS, TypeOf<CS[number]>, OutputOf<CS[number]>, unknown> {}
+  extends TaggedUnionType<Tag, CS, TypeOf<ElementOf<CS>>, OutputOf<ElementOf<CS>>, unknown> {}
 ```
 
 Added in v1.5.3
@@ -633,29 +639,36 @@ Added in v1.5.3
 **Signature**
 
 ```ts
-export interface TupleC<CS extends [Mixed, ...Array<Mixed>]>
+export interface TupleC<
+  CS extends
+    | [Mixed, ...Mixed[]]
+    | [Mixed, Mixed, ...Mixed[]]
+    | [Mixed, Mixed, Mixed, ...Mixed[]]
+    | [Mixed, Mixed, Mixed, Mixed, ...Mixed[]]
+    | [Mixed, Mixed, Mixed, Mixed, Mixed, ...Mixed[]]
+>
   extends TupleType<
     CS,
-    CS extends { length: 1 }
+    CS extends [Mixed]
       ? [TypeOf<CS[0]>]
-      : CS extends { length: 2 }
+      : CS extends [Mixed, Mixed]
       ? [TypeOf<CS[0]>, TypeOf<CS[1]>]
-      : CS extends { length: 3 }
+      : CS extends [Mixed, Mixed, Mixed]
       ? [TypeOf<CS[0]>, TypeOf<CS[1]>, TypeOf<CS[2]>]
-      : CS extends { length: 4 }
+      : CS extends [Mixed, Mixed, Mixed, Mixed]
       ? [TypeOf<CS[0]>, TypeOf<CS[1]>, TypeOf<CS[2]>, TypeOf<CS[3]>]
-      : CS extends { length: 5 }
+      : CS extends [Mixed, Mixed, Mixed, Mixed, Mixed]
       ? [TypeOf<CS[0]>, TypeOf<CS[1]>, TypeOf<CS[2]>, TypeOf<CS[3]>, TypeOf<CS[4]>]
       : unknown,
-    CS extends { length: 1 }
+    CS extends [Mixed]
       ? [OutputOf<CS[0]>]
-      : CS extends { length: 2 }
+      : CS extends [Mixed, Mixed]
       ? [OutputOf<CS[0]>, OutputOf<CS[1]>]
-      : CS extends { length: 3 }
+      : CS extends [Mixed, Mixed, Mixed]
       ? [OutputOf<CS[0]>, OutputOf<CS[1]>, OutputOf<CS[2]>]
-      : CS extends { length: 4 }
+      : CS extends [Mixed, Mixed, Mixed, Mixed]
       ? [OutputOf<CS[0]>, OutputOf<CS[1]>, OutputOf<CS[2]>, OutputOf<CS[3]>]
-      : CS extends { length: 5 }
+      : CS extends [Mixed, Mixed, Mixed, Mixed, Mixed]
       ? [OutputOf<CS[0]>, OutputOf<CS[1]>, OutputOf<CS[2]>, OutputOf<CS[3]>, OutputOf<CS[4]>]
       : unknown,
     unknown
@@ -691,7 +704,7 @@ Added in v1.5.3
 
 ```ts
 export interface UnionC<CS extends [Mixed, Mixed, ...Array<Mixed>]>
-  extends UnionType<CS, TypeOf<CS[number]>, OutputOf<CS[number]>, unknown> {}
+  extends UnionType<CS, TypeOf<ElementOf<CS>>, OutputOf<ElementOf<CS>>, unknown> {}
 ```
 
 Added in v1.5.3

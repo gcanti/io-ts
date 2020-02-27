@@ -1136,11 +1136,14 @@ export class UnionType<CS extends Array<Any>, A = any, O = A, I = unknown> exten
   }
 }
 
+// TODO: I'm not sure where the best place to place this is
+type ElementOf<T extends any[]> = T extends (infer R)[] ? R : never
+
 /**
  * @since 1.5.3
  */
 export interface UnionC<CS extends [Mixed, Mixed, ...Array<Mixed>]>
-  extends UnionType<CS, TypeOf<CS[number]>, OutputOf<CS[number]>, unknown> {}
+  extends UnionType<CS, TypeOf<ElementOf<CS>>, OutputOf<ElementOf<CS>>, unknown> {}
 
 const getUnionName = <CS extends [Mixed, Mixed, ...Array<Mixed>]>(codecs: CS): string => {
   return '(' + codecs.map(type => type.name).join(' | ') + ')'
@@ -1250,25 +1253,31 @@ export class IntersectionType<CS extends Array<Any>, A = any, O = A, I = unknown
 /**
  * @since 1.5.3
  */
-export interface IntersectionC<CS extends [Mixed, Mixed, ...Array<Mixed>]>
+export interface IntersectionC<
+  CS extends
+    | [Mixed, Mixed, ...Mixed[]]
+    | [Mixed, Mixed, Mixed, ...Mixed[]]
+    | [Mixed, Mixed, Mixed, Mixed, ...Mixed[]]
+    | [Mixed, Mixed, Mixed, Mixed, Mixed, ...Mixed[]]
+>
   extends IntersectionType<
     CS,
-    CS extends { length: 2 }
+    CS extends [Mixed, Mixed]
       ? TypeOf<CS[0]> & TypeOf<CS[1]>
-      : CS extends { length: 3 }
+      : CS extends [Mixed, Mixed, Mixed]
       ? TypeOf<CS[0]> & TypeOf<CS[1]> & TypeOf<CS[2]>
-      : CS extends { length: 4 }
+      : CS extends [Mixed, Mixed, Mixed, Mixed]
       ? TypeOf<CS[0]> & TypeOf<CS[1]> & TypeOf<CS[2]> & TypeOf<CS[3]>
-      : CS extends { length: 5 }
+      : CS extends [Mixed, Mixed, Mixed, Mixed, Mixed]
       ? TypeOf<CS[0]> & TypeOf<CS[1]> & TypeOf<CS[2]> & TypeOf<CS[3]> & TypeOf<CS[4]>
       : unknown,
-    CS extends { length: 2 }
+    CS extends [Mixed, Mixed]
       ? OutputOf<CS[0]> & OutputOf<CS[1]>
-      : CS extends { length: 3 }
+      : CS extends [Mixed, Mixed, Mixed]
       ? OutputOf<CS[0]> & OutputOf<CS[1]> & OutputOf<CS[2]>
-      : CS extends { length: 4 }
+      : CS extends [Mixed, Mixed, Mixed, Mixed]
       ? OutputOf<CS[0]> & OutputOf<CS[1]> & OutputOf<CS[2]> & OutputOf<CS[3]>
-      : CS extends { length: 5 }
+      : CS extends [Mixed, Mixed, Mixed, Mixed, Mixed]
       ? OutputOf<CS[0]> & OutputOf<CS[1]> & OutputOf<CS[2]> & OutputOf<CS[3]> & OutputOf<CS[4]>
       : unknown,
     unknown
@@ -1371,29 +1380,36 @@ export class TupleType<CS extends Array<Any>, A = any, O = A, I = unknown> exten
 /**
  * @since 1.5.3
  */
-export interface TupleC<CS extends [Mixed, ...Array<Mixed>]>
+export interface TupleC<
+  CS extends
+    | [Mixed, ...Mixed[]]
+    | [Mixed, Mixed, ...Mixed[]]
+    | [Mixed, Mixed, Mixed, ...Mixed[]]
+    | [Mixed, Mixed, Mixed, Mixed, ...Mixed[]]
+    | [Mixed, Mixed, Mixed, Mixed, Mixed, ...Mixed[]]
+>
   extends TupleType<
     CS,
-    CS extends { length: 1 }
+    CS extends [Mixed]
       ? [TypeOf<CS[0]>]
-      : CS extends { length: 2 }
+      : CS extends [Mixed, Mixed]
       ? [TypeOf<CS[0]>, TypeOf<CS[1]>]
-      : CS extends { length: 3 }
+      : CS extends [Mixed, Mixed, Mixed]
       ? [TypeOf<CS[0]>, TypeOf<CS[1]>, TypeOf<CS[2]>]
-      : CS extends { length: 4 }
+      : CS extends [Mixed, Mixed, Mixed, Mixed]
       ? [TypeOf<CS[0]>, TypeOf<CS[1]>, TypeOf<CS[2]>, TypeOf<CS[3]>]
-      : CS extends { length: 5 }
+      : CS extends [Mixed, Mixed, Mixed, Mixed, Mixed]
       ? [TypeOf<CS[0]>, TypeOf<CS[1]>, TypeOf<CS[2]>, TypeOf<CS[3]>, TypeOf<CS[4]>]
       : unknown,
-    CS extends { length: 1 }
+    CS extends [Mixed]
       ? [OutputOf<CS[0]>]
-      : CS extends { length: 2 }
+      : CS extends [Mixed, Mixed]
       ? [OutputOf<CS[0]>, OutputOf<CS[1]>]
-      : CS extends { length: 3 }
+      : CS extends [Mixed, Mixed, Mixed]
       ? [OutputOf<CS[0]>, OutputOf<CS[1]>, OutputOf<CS[2]>]
-      : CS extends { length: 4 }
+      : CS extends [Mixed, Mixed, Mixed, Mixed]
       ? [OutputOf<CS[0]>, OutputOf<CS[1]>, OutputOf<CS[2]>, OutputOf<CS[3]>]
-      : CS extends { length: 5 }
+      : CS extends [Mixed, Mixed, Mixed, Mixed, Mixed]
       ? [OutputOf<CS[0]>, OutputOf<CS[1]>, OutputOf<CS[2]>, OutputOf<CS[3]>, OutputOf<CS[4]>]
       : unknown,
     unknown
@@ -1582,7 +1598,7 @@ export class TaggedUnionType<
  * @deprecated
  */
 export interface TaggedUnionC<Tag extends string, CS extends [Mixed, Mixed, ...Array<Mixed>]>  // tslint:disable-next-line: deprecation
-  extends TaggedUnionType<Tag, CS, TypeOf<CS[number]>, OutputOf<CS[number]>, unknown> {}
+  extends TaggedUnionType<Tag, CS, TypeOf<ElementOf<CS>>, OutputOf<ElementOf<CS>>, unknown> {}
 
 /**
  * Use `union` instead

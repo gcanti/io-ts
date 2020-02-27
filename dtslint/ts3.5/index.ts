@@ -129,6 +129,10 @@ const Union3 = t.union([t.boolean, NumberFromString]) // $ExpectType UnionC<[Boo
 type Union3TypeTest = t.TypeOf<typeof Union3> // $ExpectType number | boolean
 type Union3OutputTest = t.OutputOf<typeof Union3> // $ExpectType string | boolean
 
+const UnionTup3 = t.union([t.boolean, t.number, t.literal('some_literal')]) // $ExpectType UnionC<[BooleanC, NumberC, LiteralC<"some_literal">]>
+type UnionTup3TypeTest = t.TypeOf<typeof UnionTup3> // $ExpectType number | boolean | "some_literal"
+type UnionTup3OutputTest = t.OutputOf<typeof UnionTup3> // $ExpectType number | boolean | "some_literal"
+
 //
 // intersection
 //
