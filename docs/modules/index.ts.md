@@ -385,13 +385,7 @@ Added in v1.8.1
 **Signature**
 
 ```ts
-export interface IntersectionC<
-  CS extends
-    | [Mixed, Mixed, ...Mixed[]]
-    | [Mixed, Mixed, Mixed, ...Mixed[]]
-    | [Mixed, Mixed, Mixed, Mixed, ...Mixed[]]
-    | [Mixed, Mixed, Mixed, Mixed, Mixed, ...Mixed[]]
->
+export interface IntersectionC<CS extends [Mixed, Mixed, ...Mixed[]]>
   extends IntersectionType<
     CS,
     CS extends [Mixed, Mixed]
@@ -639,14 +633,7 @@ Added in v1.5.3
 **Signature**
 
 ```ts
-export interface TupleC<
-  CS extends
-    | [Mixed, ...Mixed[]]
-    | [Mixed, Mixed, ...Mixed[]]
-    | [Mixed, Mixed, Mixed, ...Mixed[]]
-    | [Mixed, Mixed, Mixed, Mixed, ...Mixed[]]
-    | [Mixed, Mixed, Mixed, Mixed, Mixed, ...Mixed[]]
->
+export interface TupleC<CS extends [Mixed, ...Mixed[]]>
   extends TupleType<
     CS,
     CS extends [Mixed]

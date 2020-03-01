@@ -1253,13 +1253,7 @@ export class IntersectionType<CS extends Array<Any>, A = any, O = A, I = unknown
 /**
  * @since 1.5.3
  */
-export interface IntersectionC<
-  CS extends
-    | [Mixed, Mixed, ...Mixed[]]
-    | [Mixed, Mixed, Mixed, ...Mixed[]]
-    | [Mixed, Mixed, Mixed, Mixed, ...Mixed[]]
-    | [Mixed, Mixed, Mixed, Mixed, Mixed, ...Mixed[]]
->
+export interface IntersectionC<CS extends [Mixed, Mixed, ...Mixed[]]>
   extends IntersectionType<
     CS,
     CS extends [Mixed, Mixed]
@@ -1380,14 +1374,7 @@ export class TupleType<CS extends Array<Any>, A = any, O = A, I = unknown> exten
 /**
  * @since 1.5.3
  */
-export interface TupleC<
-  CS extends
-    | [Mixed, ...Mixed[]]
-    | [Mixed, Mixed, ...Mixed[]]
-    | [Mixed, Mixed, Mixed, ...Mixed[]]
-    | [Mixed, Mixed, Mixed, Mixed, ...Mixed[]]
-    | [Mixed, Mixed, Mixed, Mixed, Mixed, ...Mixed[]]
->
+export interface TupleC<CS extends [Mixed, ...Mixed[]]>
   extends TupleType<
     CS,
     CS extends [Mixed]
