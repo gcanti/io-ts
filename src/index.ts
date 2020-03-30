@@ -121,9 +121,7 @@ export class Type<A, O = A, I = unknown> implements Decoder<I, A>, Encoder<A, O>
     readonly validate: Validate<I, A>,
     /** converts a value of type A to a value of type O */
     readonly encode: Encode<A, O>
-  ) {
-    this.decode = this.decode.bind(this)
-  }
+  ) {}
 
   /**
    * @since 1.0.0
@@ -156,9 +154,7 @@ export class Type<A, O = A, I = unknown> implements Decoder<I, A>, Encoder<A, O>
    * a version of `validate` with a default context
    * @since 1.0.0
    */
-  decode(i: I): Validation<A> {
-    return this.validate(i, [{ key: '', type: this, actual: i }])
-  }
+  readonly decode = (i: I): Validation<A> => this.validate(i, [{ key: '', type: this, actual: i }])
 }
 
 /**
