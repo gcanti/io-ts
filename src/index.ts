@@ -798,7 +798,8 @@ export const type = <P extends Props>(props: P, name: string = getInterfaceTypeN
       if (UnknownRecord.is(u)) {
         for (let i = 0; i < len; i++) {
           const k = keys[i]
-          if (!types[i].is(u[k])) {
+          const uk = u[k]
+          if ((uk === undefined && !hasOwnProperty.call(u, k)) || !types[i].is(uk)) {
             return false
           }
         }

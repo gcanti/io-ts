@@ -31,6 +31,12 @@ describe('type', () => {
       assert.strictEqual(T.is([]), false)
     })
 
+    // #434
+    it('should return `false` on missing fields', () => {
+      const T = t.type({ a: t.unknown })
+      assert.strictEqual(T.is({}), false)
+    })
+
     it('should allow additional properties', () => {
       const T = t.type({ a: t.string })
       assert.strictEqual(T.is({ a: 'a', b: 1 }), true)
