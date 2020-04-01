@@ -73,9 +73,13 @@ describe('recursion', () => {
 
     it('should fail validating an invalid value', () => {
       assertFailure(T, 1, ['Invalid value 1 supplied to : T'])
-      assertFailure(T, {}, ['Invalid value undefined supplied to : T/a: number'])
+      assertFailure(T, {}, [
+        'Invalid value undefined supplied to : T/a: number',
+        'Invalid value undefined supplied to : T/b: (T | undefined | null)'
+      ])
       assertFailure(T, { a: 1, b: {} }, [
         'Invalid value undefined supplied to : T/b: (T | undefined | null)/0: T/a: number',
+        'Invalid value undefined supplied to : T/b: (T | undefined | null)/0: T/b: (T | undefined | null)',
         'Invalid value {} supplied to : T/b: (T | undefined | null)/1: undefined',
         'Invalid value {} supplied to : T/b: (T | undefined | null)/2: null'
       ])

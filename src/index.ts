@@ -798,7 +798,7 @@ export const type = <P extends Props>(props: P, name: string = getInterfaceTypeN
       if (UnknownRecord.is(u)) {
         for (let i = 0; i < len; i++) {
           const k = keys[i]
-          if (!types[i].is(u[k])) {
+          if (!(k in u) || !types[i].is(u[k])) {
             return false
           }
         }
@@ -814,12 +814,15 @@ export const type = <P extends Props>(props: P, name: string = getInterfaceTypeN
           const k = keys[i]
           const ak = a[k]
           const type = types[i]
-          const result = type.validate(ak, appendContext(c, k, type, ak))
+          const result =
+            ak === undefined && !(k in a)
+              ? failure(ak, appendContext(c, k, type, ak))
+              : type.validate(ak, appendContext(c, k, type, ak))
           if (isLeft(result)) {
             pushAll(errors, result.left)
           } else {
             const vak = result.right
-            if (vak !== ak || (vak === undefined && !hasOwnProperty.call(a, k))) {
+            if (vak !== ak || (vak === undefined && !(k in a))) {
               /* istanbul ignore next */
               if (a === o) {
                 a = { ...o }

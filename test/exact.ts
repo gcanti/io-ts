@@ -64,7 +64,7 @@ describe('exact', () => {
 
     it('should succeed validating an undefined field', () => {
       const T = t.exact(t.type({ foo: t.string, bar: t.union([t.string, t.undefined]) }))
-      assertSuccess(T.decode({ foo: 'foo' }))
+      assertSuccess(T.decode({ foo: 'foo', bar: undefined }))
     })
 
     it('should return the same reference if validation succeeded', () => {

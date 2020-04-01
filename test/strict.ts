@@ -30,7 +30,7 @@ describe('strict', () => {
       assert.strictEqual(T.is(undefined), false)
     })
 
-    it('#423', () => {
+    it('should allow properties to be satisified by getters - #423', () => {
       class A {
         get a() {
           return 'a'
@@ -52,7 +52,7 @@ describe('strict', () => {
 
     it('should succeed validating an undefined field', () => {
       const T = t.strict({ foo: t.string, bar: t.union([t.string, t.undefined]) })
-      assertSuccess(T.decode({ foo: 'foo' }))
+      assertSuccess(T.decode({ foo: 'foo', bar: undefined }))
     })
 
     it('should return the same reference if validation succeeded', () => {
