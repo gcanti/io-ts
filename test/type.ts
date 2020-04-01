@@ -44,8 +44,8 @@ describe('type', () => {
     [{ a: t.literal('YES') }, '{ a: "YES" }', { a: 'YES' }],
     [{ a: t.partial({ b: t.string, c: t.string }) }, '{ a: Partial<{ b: string, c:string }> }', { a: {} }],
     [
-      { a: t.partial({ b: t.string, c: t.string }) }, 
-      '{ a: Partial<{ b: string, c: string }> }', 
+      { a: t.partial({ b: t.string, c: t.string }) },
+      '{ a: Partial<{ b: string, c: string }> }',
       { a: { b: 'b', c: undefined } }
     ],
     [{ a: t.readonly(t.number) }, '{ a: Readonly<number> }', { a: 1 }],
@@ -60,18 +60,16 @@ describe('type', () => {
     [{ a: t.intersection([t.number, t.Int]) }, '{ a: (number & Int) }', { a: 1 }],
     [
       { a: t.brand(t.number, (n): n is t.Branded<number, { readonly Positive: unique symbol }> => n >= 0, 'Positive') },
-      '{ a: Positive }', 
+      '{ a: Positive }',
       { a: 1 }
     ],
     [{ a: t.keyof({ foo: null, bar: null }) }, '{ a: "foo" | "bar" }', { a: 'foo' }],
     [
-      { a: t.exact(t.type({ x: t.number, y: t.number })) }, 
-      '{ a: {| x: number, y: number |} }', 
-      { a: { x: 1, y: 2, z: 3 } }],
-    [
-      { a: t.strict({ x: t.number, y: t.number }) }, 
-      '{ a: {| x: number, y: number |} }', 
-      { a: { x: 1, y: 2, z: 3 } }]
+      { a: t.exact(t.type({ x: t.number, y: t.number })) },
+      '{ a: {| x: number, y: number |} }',
+      { a: { x: 1, y: 2, z: 3 } }
+    ],
+    [{ a: t.strict({ x: t.number, y: t.number }) }, '{ a: {| x: number, y: number |} }', { a: { x: 1, y: 2, z: 3 } }]
   ]
 
   describe('`is` should return `true` for', () => {
@@ -109,33 +107,63 @@ describe('type', () => {
     [{ a: t.bigint }, undefined, {}, ['Invalid value undefined supplied to : { a: bigint }/a: bigint']],
     [{ a: t.boolean }, undefined, { a: 1 }, ['Invalid value 1 supplied to : { a: boolean }/a: boolean']],
     [{ a: t.boolean }, undefined, {}, ['Invalid value undefined supplied to : { a: boolean }/a: boolean']],
-    [{ a: t.UnknownArray }, undefined, { a: 'a' }, ['Invalid value "a" supplied to : { a: UnknownArray }/a: UnknownArray']],
-    [{ a: t.UnknownArray }, undefined, {}, ['Invalid value undefined supplied to : { a: UnknownArray }/a: UnknownArray']],
     [
       { a: t.UnknownArray },
-      undefined, 
+      undefined,
+      { a: 'a' },
+      ['Invalid value "a" supplied to : { a: UnknownArray }/a: UnknownArray']
+    ],
+    [
+      { a: t.UnknownArray },
+      undefined,
+      {},
+      ['Invalid value undefined supplied to : { a: UnknownArray }/a: UnknownArray']
+    ],
+    [
+      { a: t.UnknownArray },
+      undefined,
       { a: undefined },
       ['Invalid value undefined supplied to : { a: UnknownArray }/a: UnknownArray']
     ],
-    [{ a: t.array(t.number) }, '{ a: Array<number> }', { a: 1 }, ['Invalid value 1 supplied to : { a: Array<number> }/a: Array<number>']],
-    [{ a: t.array(t.number) }, '{ a: Array<number> }', {}, ['Invalid value undefined supplied to : { a: Array<number> }/a: Array<number>']],
-    [{ a: t.UnknownRecord }, undefined, { a: [1] }, ['Invalid value [1] supplied to : { a: UnknownRecord }/a: UnknownRecord']],
-    [{ a: t.UnknownRecord }, undefined, {}, ['Invalid value undefined supplied to : { a: UnknownRecord }/a: UnknownRecord']],
+    [
+      { a: t.array(t.number) },
+      '{ a: Array<number> }',
+      { a: 1 },
+      ['Invalid value 1 supplied to : { a: Array<number> }/a: Array<number>']
+    ],
+    [
+      { a: t.array(t.number) },
+      '{ a: Array<number> }',
+      {},
+      ['Invalid value undefined supplied to : { a: Array<number> }/a: Array<number>']
+    ],
     [
       { a: t.UnknownRecord },
-      undefined, 
+      undefined,
+      { a: [1] },
+      ['Invalid value [1] supplied to : { a: UnknownRecord }/a: UnknownRecord']
+    ],
+    [
+      { a: t.UnknownRecord },
+      undefined,
+      {},
+      ['Invalid value undefined supplied to : { a: UnknownRecord }/a: UnknownRecord']
+    ],
+    [
+      { a: t.UnknownRecord },
+      undefined,
       { a: undefined },
       ['Invalid value undefined supplied to : { a: UnknownRecord }/a: UnknownRecord']
     ],
     [
       { a: t.record(t.string, t.string) },
-      '{ a: { [K in string]: string } }', 
+      '{ a: { [K in string]: string } }',
       { a: 1 },
       ['Invalid value 1 supplied to : { a: { [K in string]: string } }/a: { [K in string]: string }']
     ],
     [
       { a: t.record(t.string, t.string) },
-      '{ a: { [K in string]: string } }', 
+      '{ a: { [K in string]: string } }',
       {},
       ['Invalid value undefined supplied to : { a: { [K in string]: string } }/a: { [K in string]: string }']
     ],
@@ -145,7 +173,7 @@ describe('type', () => {
     [{ a: t.literal('YES') }, '{ a: "YES" }', {}, ['Invalid value undefined supplied to : { a: "YES" }/a: "YES"']],
     [
       { a: t.partial({ b: t.string, c: t.string }) },
-      '{ a: Partial<{ b: string, c: string }> }', 
+      '{ a: Partial<{ b: string, c: string }> }',
       { a: { b: 1 } },
       [
         'Invalid value 1 supplied to : ' +
@@ -154,7 +182,7 @@ describe('type', () => {
     ],
     [
       { a: t.partial({ b: t.string, c: t.string }) },
-      '{ a: Partial<{ b: string, c: string }> }', 
+      '{ a: Partial<{ b: string, c: string }> }',
       {},
       [
         'Invalid value undefined supplied to : ' +
@@ -163,31 +191,31 @@ describe('type', () => {
     ],
     [
       { a: t.readonly(t.number) },
-      '{ a: Readonly<number> }', 
+      '{ a: Readonly<number> }',
       { a: 'a' },
       ['Invalid value "a" supplied to : { a: Readonly<number> }/a: Readonly<number>']
     ],
     [
       { a: t.readonly(t.number) },
-      '{ a: Readonly<number> }', 
+      '{ a: Readonly<number> }',
       {},
       ['Invalid value undefined supplied to : { a: Readonly<number> }/a: Readonly<number>']
     ],
     [
       { a: t.readonlyArray(t.number) },
-      '{ a: ReadonlyArray<number> }', 
+      '{ a: ReadonlyArray<number> }',
       { a: 1 },
       ['Invalid value 1 supplied to : { a: ReadonlyArray<number> }/a: ReadonlyArray<number>']
     ],
     [
       { a: t.readonlyArray(t.number) },
-      '{ a: ReadonlyArray<number> }', 
+      '{ a: ReadonlyArray<number> }',
       {},
       ['Invalid value undefined supplied to : { a: ReadonlyArray<number> }/a: ReadonlyArray<number>']
     ],
     [
       { a: t.tuple([t.string, t.string]) },
-      '{ a: [string, string] }', 
+      '{ a: [string, string] }',
       { a: [1, 2] },
       [
         'Invalid value 1 supplied to : { a: [string, string] }/a: [string, string]/0: string',
@@ -196,13 +224,13 @@ describe('type', () => {
     ],
     [
       { a: t.tuple([t.string, t.string]) },
-      '{ a: [string, string] }', 
+      '{ a: [string, string] }',
       {},
       ['Invalid value undefined supplied to : { a: [string, string] }/a: [string, string]']
     ],
     [
       { a: t.union([t.string, t.number]), b: t.union([t.string, t.number]) },
-      '{ a: (string | number), b: (string | number) }', 
+      '{ a: (string | number), b: (string | number) }',
       { a: [1], b: ['b'] },
       [
         'Invalid value [1] supplied to : { a: (string | number), b: (string | number) }/a: (string | number)/0: string',
@@ -213,7 +241,7 @@ describe('type', () => {
     ],
     [
       { a: t.union([t.string, t.number]), b: t.union([t.string, t.number]) },
-      '{ a: (string | number), b: (string | number) }', 
+      '{ a: (string | number), b: (string | number) }',
       {},
       [
         'Invalid value undefined supplied to : { a: (string | number), b: (string | number) }/a: (string | number)',
@@ -222,7 +250,7 @@ describe('type', () => {
     ],
     [
       { a: t.intersection([t.number, t.Int]) },
-      '{ a: (number & Int) }', 
+      '{ a: (number & Int) }',
       { a: 'a' },
       [
         'Invalid value "a" supplied to : { a: (number & Int) }/a: (number & Int)/0: number',
@@ -231,37 +259,37 @@ describe('type', () => {
     ],
     [
       { a: t.intersection([t.number, t.Int]) },
-      '{ a: (number & Int) }', 
+      '{ a: (number & Int) }',
       {},
       ['Invalid value undefined supplied to : { a: (number & Int) }/a: (number & Int)']
     ],
     [
       { a: t.brand(t.number, (n): n is t.Branded<number, { readonly Positive: unique symbol }> => n >= 0, 'Positive') },
-      '{ a: Positive }', 
+      '{ a: Positive }',
       { a: 'a' },
       ['Invalid value "a" supplied to : { a: Positive }/a: Positive']
     ],
     [
       { a: t.brand(t.number, (n): n is t.Branded<number, { readonly Positive: unique symbol }> => n >= 0, 'Positive') },
-      '{ a: Positive }', 
+      '{ a: Positive }',
       {},
       ['Invalid value undefined supplied to : { a: Positive }/a: Positive']
     ],
     [
       { a: t.keyof({ foo: null, bar: null }) },
-      '{ a: "foo" | "bar" }', 
+      '{ a: "foo" | "bar" }',
       { a: 'baz' },
       ['Invalid value "baz" supplied to : { a: "foo" | "bar" }/a: "foo" | "bar"']
     ],
     [
       { a: t.keyof({ foo: null, bar: null }) },
-      '{ a: "foo" | "bar" }', 
+      '{ a: "foo" | "bar" }',
       {},
       ['Invalid value undefined supplied to : { a: "foo" | "bar" }/a: "foo" | "bar"']
     ],
     [
       { a: t.exact(t.type({ x: t.number, y: t.number })) },
-      '{ a: {| x: number, y: number |} }', 
+      '{ a: {| x: number, y: number |} }',
       { a: { x: 1, z: 3 } },
       [
         'Invalid value undefined supplied to : ' +
@@ -270,7 +298,7 @@ describe('type', () => {
     ],
     [
       { a: t.strict({ x: t.number, y: t.number }) },
-      '{ a: {| x: number, y: number |} }', 
+      '{ a: {| x: number, y: number |} }',
       {},
       ['Invalid value undefined supplied to : ' + '{ a: {| x: number, y: number |} }/a: {| x: number, y: number |}']
     ]
