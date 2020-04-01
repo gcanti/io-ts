@@ -71,12 +71,16 @@ describe('recursion', () => {
       assertStrictEqual(T.decode(value), value)
     })
 
-    it('should fail validating an invalid value', () => {
+    it('should fail validating { a: number, b: ( self | undefined | null) } for value 1', () => {
       assertFailure(T, 1, ['Invalid value 1 supplied to : T'])
+    })
+    it('should fail validating { a: number, b: ( self | undefined | null) } for value {}', () => {
       assertFailure(T, {}, [
         'Invalid value undefined supplied to : T/a: number',
         'Invalid value undefined supplied to : T/b: (T | undefined | null)'
       ])
+    })
+    it('should fail validating { a: number, b: ( self | undefined | null) } for value { a: 1, b: {} }', () => {
       assertFailure(T, { a: 1, b: {} }, [
         'Invalid value undefined supplied to : T/b: (T | undefined | null)/0: T/a: number',
         'Invalid value undefined supplied to : T/b: (T | undefined | null)/0: T/b: (T | undefined | null)',

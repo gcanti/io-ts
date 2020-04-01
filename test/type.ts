@@ -92,15 +92,10 @@ describe('type', () => {
     // [ props, name, value, messages ]
     [{ a: t.null }, undefined, { a: 'a' }, ['Invalid value "a" supplied to : { a: null }/a: null']],
     [{ a: t.null }, undefined, {}, ['Invalid value undefined supplied to : { a: null }/a: null']],
-    [{ a: t.null }, undefined, { a: undefined }, ['Invalid value undefined supplied to : { a: null }/a: null']],
-    [{ a: t.nullType }, undefined, { a: 'a' }, ['Invalid value "a" supplied to : { a: null }/a: null']],
-    [{ a: t.nullType }, undefined, {}, ['Invalid value undefined supplied to : { a: null }/a: null']],
     [{ a: t.nullType }, undefined, { a: undefined }, ['Invalid value undefined supplied to : { a: null }/a: null']],
     [{ a: t.undefined }, undefined, { a: 'a' }, ['Invalid value "a" supplied to : { a: undefined }/a: undefined']],
     [{ a: t.undefined }, undefined, {}, ['Invalid value undefined supplied to : { a: undefined }/a: undefined']],
     [{ a: t.void }, undefined, { a: 'a' }, ['Invalid value "a" supplied to : { a: void }/a: void']],
-    [{ a: t.void }, undefined, {}, ['Invalid value undefined supplied to : { a: void }/a: void']],
-    [{ a: t.voidType }, undefined, { a: 'a' }, ['Invalid value "a" supplied to : { a: void }/a: void']],
     [{ a: t.voidType }, undefined, {}, ['Invalid value undefined supplied to : { a: void }/a: void']],
     [{ a: t.unknown }, undefined, {}, ['Invalid value undefined supplied to : { a: unknown }/a: unknown']],
     [{ a: t.string }, undefined, 1, ['Invalid value 1 supplied to : { a: string }']],
@@ -266,21 +261,6 @@ describe('type', () => {
     ],
     [
       { a: t.exact(t.type({ x: t.number, y: t.number })) },
-      '{ a: {| x: number, y: number |} }', 
-      { a: { x: 1, z: 3 } },
-      [
-        'Invalid value undefined supplied to : ' +
-          '{ a: {| x: number, y: number |} }/a: {| x: number, y: number |}/y: number'
-      ]
-    ],
-    [
-      { a: t.exact(t.type({ x: t.number, y: t.number })) },
-      '{ a: {| x: number, y: number |} }', 
-      {},
-      ['Invalid value undefined supplied to : ' + '{ a: {| x: number, y: number |} }/a: {| x: number, y: number |}']
-    ],
-    [
-      { a: t.strict({ x: t.number, y: t.number }) },
       '{ a: {| x: number, y: number |} }', 
       { a: { x: 1, z: 3 } },
       [
