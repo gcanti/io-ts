@@ -159,7 +159,7 @@ describe('record', () => {
       assertStrictEqual(T1.decode(value1), value1)
       const T2 = t.record(
         // tslint:disable-next-line: deprecation
-        t.refinement(t.string, s => s.length >= 2),
+        t.refinement(t.string, (s) => s.length >= 2),
         t.number
       )
       const value2 = { aa: 1 }

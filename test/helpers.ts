@@ -12,7 +12,7 @@ export function assertStrictEqual<T>(result: t.Validation<T>, expected: any): vo
       () => {
         throw new Error(`${result} is not a right`)
       },
-      a => {
+      (a) => {
         assert.deepStrictEqual(a, expected)
       }
     )
@@ -27,7 +27,7 @@ export function assertSuccess<T>(result: t.Validation<T>, expected?: T): void {
       () => {
         throw new Error(`${result} is not a right`)
       },
-      a => {
+      (a) => {
         if (expected !== undefined) {
           assert.deepStrictEqual(a, expected)
         }
@@ -44,7 +44,7 @@ export function assertStrictSuccess<T>(result: t.Validation<T>, expected: T): vo
       () => {
         throw new Error(`${result} is not a right`)
       },
-      a => {
+      (a) => {
         /* istanbul ignore next */
         if (expected !== undefined) {
           assert.strictEqual(a, expected)
@@ -74,7 +74,7 @@ export const NumberFromString = new t.Type<number, string, unknown>(
   'NumberFromString',
   t.number.is,
   (u, c) =>
-    either.chain(t.string.validate(u, c), s => {
+    either.chain(t.string.validate(u, c), (s) => {
       const n = +s
       return isNaN(n) ? t.failure(u, c, 'cannot parse to a number') : t.success(n)
     }),
@@ -85,14 +85,14 @@ export const HyphenatedString = new t.Type<string, string, unknown>(
   'HyphenatedString',
   (v): v is string => t.string.is(v) && v.length === 3 && v[1] === '-',
   (u, c) =>
-    either.chain(t.string.validate(u, c), s => {
+    either.chain(t.string.validate(u, c), (s) => {
       if (s.length === 2) {
         return right(s[0] + '-' + s[1])
       } else {
         return t.failure(s, c)
       }
     }),
-  a => a[0] + a[2]
+  (a) => a[0] + a[2]
 )
 
 // tslint:disable-next-line: deprecation
@@ -105,7 +105,7 @@ export function withDefault<T extends t.Mixed>(
   return new t.Type(
     `withDefault(${type.name}, ${JSON.stringify(defaultValue)})`,
     type.is,
-    v => type.decode(v != null ? v : defaultValue),
+    (v) => type.decode(v != null ? v : defaultValue),
     type.encode
   )
 }

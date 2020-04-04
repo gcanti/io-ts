@@ -6,13 +6,13 @@ describe('refinement', () => {
   describe('name', () => {
     it('should assign a default name', () => {
       // tslint:disable-next-line: deprecation
-      const T = t.refinement(t.number, n => n >= 0)
+      const T = t.refinement(t.number, (n) => n >= 0)
       assert.strictEqual(T.name, '(number | <function1>)')
     })
 
     it('should accept a name', () => {
       // tslint:disable-next-line: deprecation
-      const T = t.refinement(t.number, n => n >= 0, 'T')
+      const T = t.refinement(t.number, (n) => n >= 0, 'T')
       assert.strictEqual(T.name, 'T')
     })
   })
@@ -28,7 +28,7 @@ describe('refinement', () => {
 
     it('should check a prismatic value', () => {
       // tslint:disable-next-line: deprecation
-      const T = t.refinement(NumberFromString, n => n % 1 === 0)
+      const T = t.refinement(NumberFromString, (n) => n % 1 === 0)
       assert.strictEqual(T.is(1.2), false)
       assert.strictEqual(T.is('a'), false)
       assert.strictEqual(T.is(1), true)
@@ -38,7 +38,7 @@ describe('refinement', () => {
   describe('decode', () => {
     it('should succeed validating a valid value', () => {
       // tslint:disable-next-line: deprecation
-      const T = t.refinement(t.number, n => n >= 0)
+      const T = t.refinement(t.number, (n) => n >= 0)
       assertSuccess(T.decode(0))
       assertSuccess(T.decode(1))
     })

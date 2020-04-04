@@ -50,7 +50,7 @@ describe('union', () => {
     it('should handle refinements', () => {
       const A = t.type({ type: t.literal('A'), a: t.number })
       // tslint:disable-next-line: deprecation
-      const B = t.refinement(A, x => x.a > 0)
+      const B = t.refinement(A, (x) => x.a > 0)
       const T = t.union([B, A])
       assertSuccess(T.decode({ type: 'A', a: -1 }))
     })
@@ -113,8 +113,8 @@ describe('union', () => {
           super(
             'DateT',
             (u): u is Date => u instanceof Date,
-            (u, c) => either.map(t.number.validate(u, c), n => new Date(n)),
-            a => a.valueOf()
+            (u, c) => either.map(t.number.validate(u, c), (n) => new Date(n)),
+            (a) => a.valueOf()
           )
         }
       }

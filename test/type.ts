@@ -130,7 +130,7 @@ describe('type', () => {
         () => {
           assert.ok(false)
         },
-        a => {
+        (a) => {
           assert.deepStrictEqual(a, { a: 's', b: 1 })
         }
       )
