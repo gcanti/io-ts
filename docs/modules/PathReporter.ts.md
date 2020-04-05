@@ -23,7 +23,7 @@ Added in v1.0.0
 **Signature**
 
 ```ts
-export const PathReporter: Reporter<Array<string>> = ...
+export declare const PathReporter: Reporter<string[]>
 ```
 
 Added in v1.0.0
@@ -33,7 +33,7 @@ Added in v1.0.0
 **Signature**
 
 ```ts
-export function failure(es: Array<ValidationError>): Array<string> { ... }
+export declare function failure(es: Array<ValidationError>): Array<string>
 ```
 
 Added in v1.0.0
@@ -43,7 +43,7 @@ Added in v1.0.0
 **Signature**
 
 ```ts
-export function success(): Array<string> { ... }
+export declare function success(): Array<string>
 ```
 
 Added in v1.0.0

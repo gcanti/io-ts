@@ -86,40 +86,73 @@ Added in v1.0.0
 - [Validation (type alias)](#validation-type-alias)
 - [~~mixed~~ (type alias)](#mixed-type-alias)
 - [AnyArrayType (class)](#anyarraytype-class)
+  - [\_tag (property)](#_tag-property)
 - [AnyDictionaryType (class)](#anydictionarytype-class)
+  - [\_tag (property)](#_tag-property-1)
 - [~~AnyType~~ (class)](#anytype-class)
+  - [\_tag (property)](#_tag-property-2)
 - [ArrayType (class)](#arraytype-class)
+  - [\_tag (property)](#_tag-property-3)
 - [BigIntType (class)](#biginttype-class)
+  - [\_tag (property)](#_tag-property-4)
 - [BooleanType (class)](#booleantype-class)
+  - [\_tag (property)](#_tag-property-5)
 - [DictionaryType (class)](#dictionarytype-class)
+  - [\_tag (property)](#_tag-property-6)
 - [ExactType (class)](#exacttype-class)
+  - [\_tag (property)](#_tag-property-7)
 - [~~FunctionType~~ (class)](#functiontype-class)
+  - [\_tag (property)](#_tag-property-8)
 - [InterfaceType (class)](#interfacetype-class)
+  - [\_tag (property)](#_tag-property-9)
 - [IntersectionType (class)](#intersectiontype-class)
+  - [\_tag (property)](#_tag-property-10)
 - [KeyofType (class)](#keyoftype-class)
+  - [\_tag (property)](#_tag-property-11)
 - [LiteralType (class)](#literaltype-class)
+  - [\_tag (property)](#_tag-property-12)
 - [~~NeverType~~ (class)](#nevertype-class)
+  - [\_tag (property)](#_tag-property-13)
 - [NullType (class)](#nulltype-class)
+  - [\_tag (property)](#_tag-property-14)
 - [NumberType (class)](#numbertype-class)
+  - [\_tag (property)](#_tag-property-15)
 - [~~ObjectType~~ (class)](#objecttype-class)
+  - [\_tag (property)](#_tag-property-16)
 - [PartialType (class)](#partialtype-class)
+  - [\_tag (property)](#_tag-property-17)
 - [ReadonlyArrayType (class)](#readonlyarraytype-class)
+  - [\_tag (property)](#_tag-property-18)
 - [ReadonlyType (class)](#readonlytype-class)
+  - [\_tag (property)](#_tag-property-19)
 - [RecursiveType (class)](#recursivetype-class)
+  - [\_tag (property)](#_tag-property-20)
+  - [type (property)](#type-property)
 - [RefinementType (class)](#refinementtype-class)
+  - [\_tag (property)](#_tag-property-21)
 - [~~StrictType~~ (class)](#stricttype-class)
+  - [\_tag (property)](#_tag-property-22)
 - [StringType (class)](#stringtype-class)
+  - [\_tag (property)](#_tag-property-23)
 - [~~TaggedUnionType~~ (class)](#taggeduniontype-class)
 - [TupleType (class)](#tupletype-class)
+  - [\_tag (property)](#_tag-property-24)
 - [Type (class)](#type-class)
   - [pipe (method)](#pipe-method)
   - [asDecoder (method)](#asdecoder-method)
   - [asEncoder (method)](#asencoder-method)
   - [decode (method)](#decode-method)
+  - [\_A (property)](#_a-property)
+  - [\_O (property)](#_o-property)
+  - [\_I (property)](#_i-property)
 - [UndefinedType (class)](#undefinedtype-class)
+  - [\_tag (property)](#_tag-property-25)
 - [UnionType (class)](#uniontype-class)
+  - [\_tag (property)](#_tag-property-26)
 - [UnknownType (class)](#unknowntype-class)
+  - [\_tag (property)](#_tag-property-27)
 - [VoidType (class)](#voidtype-class)
+  - [\_tag (property)](#_tag-property-28)
 - [Int](#int)
 - [UnknownArray](#unknownarray)
 - [UnknownRecord](#unknownrecord)
@@ -1053,10 +1086,19 @@ Added in v1.0.0
 **Signature**
 
 ```ts
-export class AnyArrayType {
-  constructor() { ... }
-  ...
+export declare class AnyArrayType {
+  constructor()
 }
+```
+
+Added in v1.0.0
+
+## \_tag (property)
+
+**Signature**
+
+```ts
+readonly _tag: "AnyArrayType"
 ```
 
 Added in v1.0.0
@@ -1066,10 +1108,19 @@ Added in v1.0.0
 **Signature**
 
 ```ts
-export class AnyDictionaryType {
-  constructor() { ... }
-  ...
+export declare class AnyDictionaryType {
+  constructor()
 }
+```
+
+Added in v1.0.0
+
+## \_tag (property)
+
+**Signature**
+
+```ts
+readonly _tag: "AnyDictionaryType"
 ```
 
 Added in v1.0.0
@@ -1079,10 +1130,19 @@ Added in v1.0.0
 **Signature**
 
 ```ts
-export class AnyType {
-  constructor() { ... }
-  ...
+export declare class AnyType {
+  constructor()
 }
+```
+
+Added in v1.0.0
+
+## \_tag (property)
+
+**Signature**
+
+```ts
+readonly _tag: "AnyType"
 ```
 
 Added in v1.0.0
@@ -1092,16 +1152,25 @@ Added in v1.0.0
 **Signature**
 
 ```ts
-export class ArrayType<C, A, O, I> {
+export declare class ArrayType<C, A, O, I> {
   constructor(
     name: string,
     is: ArrayType<C, A, O, I>['is'],
     validate: ArrayType<C, A, O, I>['validate'],
     encode: ArrayType<C, A, O, I>['encode'],
     readonly type: C
-  ) { ... }
-  ...
+  )
 }
+```
+
+Added in v1.0.0
+
+## \_tag (property)
+
+**Signature**
+
+```ts
+readonly _tag: "ArrayType"
 ```
 
 Added in v1.0.0
@@ -1111,23 +1180,41 @@ Added in v1.0.0
 **Signature**
 
 ```ts
-export class BigIntType {
-  constructor() { ... }
-  ...
+export declare class BigIntType {
+  constructor()
 }
 ```
 
 Added in v2.1.0
+
+## \_tag (property)
+
+**Signature**
+
+```ts
+readonly _tag: "BigIntType"
+```
+
+Added in v1.0.0
 
 # BooleanType (class)
 
 **Signature**
 
 ```ts
-export class BooleanType {
-  constructor() { ... }
-  ...
+export declare class BooleanType {
+  constructor()
 }
+```
+
+Added in v1.0.0
+
+## \_tag (property)
+
+**Signature**
+
+```ts
+readonly _tag: "BooleanType"
 ```
 
 Added in v1.0.0
@@ -1137,7 +1224,7 @@ Added in v1.0.0
 **Signature**
 
 ```ts
-export class DictionaryType<D, C, A, O, I> {
+export declare class DictionaryType<D, C, A, O, I> {
   constructor(
     name: string,
     is: DictionaryType<D, C, A, O, I>['is'],
@@ -1145,9 +1232,18 @@ export class DictionaryType<D, C, A, O, I> {
     encode: DictionaryType<D, C, A, O, I>['encode'],
     readonly domain: D,
     readonly codomain: C
-  ) { ... }
-  ...
+  )
 }
+```
+
+Added in v1.0.0
+
+## \_tag (property)
+
+**Signature**
+
+```ts
+readonly _tag: "DictionaryType"
 ```
 
 Added in v1.0.0
@@ -1157,29 +1253,47 @@ Added in v1.0.0
 **Signature**
 
 ```ts
-export class ExactType<C, A, O, I> {
+export declare class ExactType<C, A, O, I> {
   constructor(
     name: string,
     is: ExactType<C, A, O, I>['is'],
     validate: ExactType<C, A, O, I>['validate'],
     encode: ExactType<C, A, O, I>['encode'],
     readonly type: C
-  ) { ... }
-  ...
+  )
 }
 ```
 
 Added in v1.1.0
+
+## \_tag (property)
+
+**Signature**
+
+```ts
+readonly _tag: "ExactType"
+```
+
+Added in v1.0.0
 
 # ~~FunctionType~~ (class)
 
 **Signature**
 
 ```ts
-export class FunctionType {
-  constructor() { ... }
-  ...
+export declare class FunctionType {
+  constructor()
 }
+```
+
+Added in v1.0.0
+
+## \_tag (property)
+
+**Signature**
+
+```ts
+readonly _tag: "FunctionType"
 ```
 
 Added in v1.0.0
@@ -1189,16 +1303,25 @@ Added in v1.0.0
 **Signature**
 
 ```ts
-export class InterfaceType<P, A, O, I> {
+export declare class InterfaceType<P, A, O, I> {
   constructor(
     name: string,
     is: InterfaceType<P, A, O, I>['is'],
     validate: InterfaceType<P, A, O, I>['validate'],
     encode: InterfaceType<P, A, O, I>['encode'],
     readonly props: P
-  ) { ... }
-  ...
+  )
 }
+```
+
+Added in v1.0.0
+
+## \_tag (property)
+
+**Signature**
+
+```ts
+readonly _tag: "InterfaceType"
 ```
 
 Added in v1.0.0
@@ -1208,16 +1331,25 @@ Added in v1.0.0
 **Signature**
 
 ```ts
-export class IntersectionType<CS, A, O, I> {
+export declare class IntersectionType<CS, A, O, I> {
   constructor(
     name: string,
     is: IntersectionType<CS, A, O, I>['is'],
     validate: IntersectionType<CS, A, O, I>['validate'],
     encode: IntersectionType<CS, A, O, I>['encode'],
     readonly types: CS
-  ) { ... }
-  ...
+  )
 }
+```
+
+Added in v1.0.0
+
+## \_tag (property)
+
+**Signature**
+
+```ts
+readonly _tag: "IntersectionType"
 ```
 
 Added in v1.0.0
@@ -1227,16 +1359,25 @@ Added in v1.0.0
 **Signature**
 
 ```ts
-export class KeyofType<D> {
+export declare class KeyofType<D> {
   constructor(
     name: string,
     is: KeyofType<D>['is'],
     validate: KeyofType<D>['validate'],
     encode: KeyofType<D>['encode'],
     readonly keys: D
-  ) { ... }
-  ...
+  )
 }
+```
+
+Added in v1.0.0
+
+## \_tag (property)
+
+**Signature**
+
+```ts
+readonly _tag: "KeyofType"
 ```
 
 Added in v1.0.0
@@ -1246,16 +1387,25 @@ Added in v1.0.0
 **Signature**
 
 ```ts
-export class LiteralType<V> {
+export declare class LiteralType<V> {
   constructor(
     name: string,
     is: LiteralType<V>['is'],
     validate: LiteralType<V>['validate'],
     encode: LiteralType<V>['encode'],
     readonly value: V
-  ) { ... }
-  ...
+  )
 }
+```
+
+Added in v1.0.0
+
+## \_tag (property)
+
+**Signature**
+
+```ts
+readonly _tag: "LiteralType"
 ```
 
 Added in v1.0.0
@@ -1265,10 +1415,19 @@ Added in v1.0.0
 **Signature**
 
 ```ts
-export class NeverType {
-  constructor() { ... }
-  ...
+export declare class NeverType {
+  constructor()
 }
+```
+
+Added in v1.0.0
+
+## \_tag (property)
+
+**Signature**
+
+```ts
+readonly _tag: "NeverType"
 ```
 
 Added in v1.0.0
@@ -1278,10 +1437,19 @@ Added in v1.0.0
 **Signature**
 
 ```ts
-export class NullType {
-  constructor() { ... }
-  ...
+export declare class NullType {
+  constructor()
 }
+```
+
+Added in v1.0.0
+
+## \_tag (property)
+
+**Signature**
+
+```ts
+readonly _tag: "NullType"
 ```
 
 Added in v1.0.0
@@ -1291,10 +1459,19 @@ Added in v1.0.0
 **Signature**
 
 ```ts
-export class NumberType {
-  constructor() { ... }
-  ...
+export declare class NumberType {
+  constructor()
 }
+```
+
+Added in v1.0.0
+
+## \_tag (property)
+
+**Signature**
+
+```ts
+readonly _tag: "NumberType"
 ```
 
 Added in v1.0.0
@@ -1304,10 +1481,19 @@ Added in v1.0.0
 **Signature**
 
 ```ts
-export class ObjectType {
-  constructor() { ... }
-  ...
+export declare class ObjectType {
+  constructor()
 }
+```
+
+Added in v1.0.0
+
+## \_tag (property)
+
+**Signature**
+
+```ts
+readonly _tag: "ObjectType"
 ```
 
 Added in v1.0.0
@@ -1317,16 +1503,25 @@ Added in v1.0.0
 **Signature**
 
 ```ts
-export class PartialType<P, A, O, I> {
+export declare class PartialType<P, A, O, I> {
   constructor(
     name: string,
     is: PartialType<P, A, O, I>['is'],
     validate: PartialType<P, A, O, I>['validate'],
     encode: PartialType<P, A, O, I>['encode'],
     readonly props: P
-  ) { ... }
-  ...
+  )
 }
+```
+
+Added in v1.0.0
+
+## \_tag (property)
+
+**Signature**
+
+```ts
+readonly _tag: "PartialType"
 ```
 
 Added in v1.0.0
@@ -1336,16 +1531,25 @@ Added in v1.0.0
 **Signature**
 
 ```ts
-export class ReadonlyArrayType<C, A, O, I> {
+export declare class ReadonlyArrayType<C, A, O, I> {
   constructor(
     name: string,
     is: ReadonlyArrayType<C, A, O, I>['is'],
     validate: ReadonlyArrayType<C, A, O, I>['validate'],
     encode: ReadonlyArrayType<C, A, O, I>['encode'],
     readonly type: C
-  ) { ... }
-  ...
+  )
 }
+```
+
+Added in v1.0.0
+
+## \_tag (property)
+
+**Signature**
+
+```ts
+readonly _tag: "ReadonlyArrayType"
 ```
 
 Added in v1.0.0
@@ -1355,16 +1559,25 @@ Added in v1.0.0
 **Signature**
 
 ```ts
-export class ReadonlyType<C, A, O, I> {
+export declare class ReadonlyType<C, A, O, I> {
   constructor(
     name: string,
     is: ReadonlyType<C, A, O, I>['is'],
     validate: ReadonlyType<C, A, O, I>['validate'],
     encode: ReadonlyType<C, A, O, I>['encode'],
     readonly type: C
-  ) { ... }
-  ...
+  )
 }
+```
+
+Added in v1.0.0
+
+## \_tag (property)
+
+**Signature**
+
+```ts
+readonly _tag: "ReadonlyType"
 ```
 
 Added in v1.0.0
@@ -1374,16 +1587,35 @@ Added in v1.0.0
 **Signature**
 
 ```ts
-export class RecursiveType<C, A, O, I> {
+export declare class RecursiveType<C, A, O, I> {
   constructor(
     name: string,
     is: RecursiveType<C, A, O, I>['is'],
     validate: RecursiveType<C, A, O, I>['validate'],
     encode: RecursiveType<C, A, O, I>['encode'],
     public runDefinition: () => C
-  ) { ... }
-  ...
+  )
 }
+```
+
+Added in v1.0.0
+
+## \_tag (property)
+
+**Signature**
+
+```ts
+readonly _tag: "RecursiveType"
+```
+
+Added in v1.0.0
+
+## type (property)
+
+**Signature**
+
+```ts
+readonly type: C
 ```
 
 Added in v1.0.0
@@ -1393,7 +1625,7 @@ Added in v1.0.0
 **Signature**
 
 ```ts
-export class RefinementType<C, A, O, I> {
+export declare class RefinementType<C, A, O, I> {
   constructor(
     name: string,
     is: RefinementType<C, A, O, I>['is'],
@@ -1401,9 +1633,18 @@ export class RefinementType<C, A, O, I> {
     encode: RefinementType<C, A, O, I>['encode'],
     readonly type: C,
     readonly predicate: Predicate<A>
-  ) { ... }
-  ...
+  )
 }
+```
+
+Added in v1.0.0
+
+## \_tag (property)
+
+**Signature**
+
+```ts
+readonly _tag: "RefinementType"
 ```
 
 Added in v1.0.0
@@ -1413,7 +1654,7 @@ Added in v1.0.0
 **Signature**
 
 ```ts
-export class StrictType<P, A, O, I> {
+export declare class StrictType<P, A, O, I> {
   constructor(
     name: string,
     // tslint:disable-next-line: deprecation
@@ -1423,9 +1664,18 @@ export class StrictType<P, A, O, I> {
     // tslint:disable-next-line: deprecation
     encode: StrictType<P, A, O, I>['encode'],
     readonly props: P
-  ) { ... }
-  ...
+  )
 }
+```
+
+Added in v1.0.0
+
+## \_tag (property)
+
+**Signature**
+
+```ts
+readonly _tag: "StrictType"
 ```
 
 Added in v1.0.0
@@ -1435,10 +1685,19 @@ Added in v1.0.0
 **Signature**
 
 ```ts
-export class StringType {
-  constructor() { ... }
-  ...
+export declare class StringType {
+  constructor()
 }
+```
+
+Added in v1.0.0
+
+## \_tag (property)
+
+**Signature**
+
+```ts
+readonly _tag: "StringType"
 ```
 
 Added in v1.0.0
@@ -1448,7 +1707,7 @@ Added in v1.0.0
 **Signature**
 
 ```ts
-export class TaggedUnionType<Tag, CS, A, O, I> {
+export declare class TaggedUnionType<Tag, CS, A, O, I> {
   constructor(
     name: string,
     // tslint:disable-next-line: deprecation
@@ -1459,8 +1718,7 @@ export class TaggedUnionType<Tag, CS, A, O, I> {
     encode: TaggedUnionType<Tag, CS, A, O, I>['encode'],
     codecs: CS,
     readonly tag: Tag
-  ) { ... }
-  ...
+  )
 }
 ```
 
@@ -1471,16 +1729,25 @@ Added in v1.3.0
 **Signature**
 
 ```ts
-export class TupleType<CS, A, O, I> {
+export declare class TupleType<CS, A, O, I> {
   constructor(
     name: string,
     is: TupleType<CS, A, O, I>['is'],
     validate: TupleType<CS, A, O, I>['validate'],
     encode: TupleType<CS, A, O, I>['encode'],
     readonly types: CS
-  ) { ... }
-  ...
+  )
 }
+```
+
+Added in v1.0.0
+
+## \_tag (property)
+
+**Signature**
+
+```ts
+readonly _tag: "TupleType"
 ```
 
 Added in v1.0.0
@@ -1490,7 +1757,7 @@ Added in v1.0.0
 **Signature**
 
 ```ts
-export class Type<A, O, I> {
+export declare class Type<A, O, I> {
   constructor(
     /** a unique name for this codec */
     readonly name: string,
@@ -1500,8 +1767,7 @@ export class Type<A, O, I> {
     readonly validate: Validate<I, A>,
     /** converts a value of type A to a value of type O */
     readonly encode: Encode<A, O>
-  ) { ... }
-  ...
+  )
 }
 ```
 
@@ -1516,7 +1782,7 @@ pipe<B, IB, A extends IB, OB extends A>(
     this: Type<A, O, I>,
     ab: Type<B, OB, IB>,
     name: string = `pipe(${this.name}, ${ab.name})`
-  ): Type<B, O, I> { ... }
+  ): Type<B, O, I>
 ```
 
 Added in v1.0.0
@@ -1526,7 +1792,7 @@ Added in v1.0.0
 **Signature**
 
 ```ts
-asDecoder(): Decoder<I, A> { ... }
+asDecoder(): Decoder<I, A>
 ```
 
 Added in v1.0.0
@@ -1536,7 +1802,7 @@ Added in v1.0.0
 **Signature**
 
 ```ts
-asEncoder(): Encoder<A, O> { ... }
+asEncoder(): Encoder<A, O>
 ```
 
 Added in v1.0.0
@@ -1548,7 +1814,37 @@ a version of `validate` with a default context
 **Signature**
 
 ```ts
-decode(i: I): Validation<A> { ... }
+decode(i: I): Validation<A>
+```
+
+Added in v1.0.0
+
+## \_A (property)
+
+**Signature**
+
+```ts
+readonly _A: A
+```
+
+Added in v1.0.0
+
+## \_O (property)
+
+**Signature**
+
+```ts
+readonly _O: O
+```
+
+Added in v1.0.0
+
+## \_I (property)
+
+**Signature**
+
+```ts
+readonly _I: I
 ```
 
 Added in v1.0.0
@@ -1558,10 +1854,19 @@ Added in v1.0.0
 **Signature**
 
 ```ts
-export class UndefinedType {
-  constructor() { ... }
-  ...
+export declare class UndefinedType {
+  constructor()
 }
+```
+
+Added in v1.0.0
+
+## \_tag (property)
+
+**Signature**
+
+```ts
+readonly _tag: "UndefinedType"
 ```
 
 Added in v1.0.0
@@ -1571,16 +1876,25 @@ Added in v1.0.0
 **Signature**
 
 ```ts
-export class UnionType<CS, A, O, I> {
+export declare class UnionType<CS, A, O, I> {
   constructor(
     name: string,
     is: UnionType<CS, A, O, I>['is'],
     validate: UnionType<CS, A, O, I>['validate'],
     encode: UnionType<CS, A, O, I>['encode'],
     readonly types: CS
-  ) { ... }
-  ...
+  )
 }
+```
+
+Added in v1.0.0
+
+## \_tag (property)
+
+**Signature**
+
+```ts
+readonly _tag: "UnionType"
 ```
 
 Added in v1.0.0
@@ -1590,26 +1904,44 @@ Added in v1.0.0
 **Signature**
 
 ```ts
-export class UnknownType {
-  constructor() { ... }
-  ...
+export declare class UnknownType {
+  constructor()
 }
 ```
 
 Added in v1.5.0
+
+## \_tag (property)
+
+**Signature**
+
+```ts
+readonly _tag: "UnknownType"
+```
+
+Added in v1.0.0
 
 # VoidType (class)
 
 **Signature**
 
 ```ts
-export class VoidType {
-  constructor() { ... }
-  ...
+export declare class VoidType {
+  constructor()
 }
 ```
 
 Added in v1.2.0
+
+## \_tag (property)
+
+**Signature**
+
+```ts
+readonly _tag: "VoidType"
+```
+
+Added in v1.0.0
 
 # Int
 
@@ -1618,7 +1950,7 @@ A branded codec representing an integer
 **Signature**
 
 ```ts
-export const Int: BrandC<NumberC, IntBrand> = ...
+export declare const Int: BrandC<NumberC, IntBrand>
 ```
 
 Added in v1.8.1
@@ -1628,7 +1960,7 @@ Added in v1.8.1
 **Signature**
 
 ```ts
-export const UnknownArray: UnknownArrayC = ...
+export declare const UnknownArray: UnknownArrayC
 ```
 
 Added in v1.7.1
@@ -1638,7 +1970,7 @@ Added in v1.7.1
 **Signature**
 
 ```ts
-export const UnknownRecord: UnknownRecordC = ...
+export declare const UnknownRecord: UnknownRecordC
 ```
 
 Added in v1.7.1
@@ -1648,7 +1980,7 @@ Added in v1.7.1
 **Signature**
 
 ```ts
-export const appendContext = (c: Context, key: string, decoder: Decoder<any, any>, actual?: unknown): Context => ...
+export declare const appendContext: (c: Context, key: string, decoder: Decoder<any, any>, actual?: unknown) => Context
 ```
 
 Added in v1.0.0
@@ -1658,12 +1990,7 @@ Added in v1.0.0
 **Signature**
 
 ```ts
-export const array = <C extends Mixed>(codec: C, name: string = `Array<${codec.name}>`): ArrayC<C> =>
-  new ArrayType(
-    name,
-    (u): u is Array<TypeOf<C>> => UnknownArray.is(u) && u.every(codec.is),
-    (u, c) =>
-      chain(UnknownArray.validate(u, c), us => ...
+export declare const array: <C extends Mixed>(codec: C, name?: string) => ArrayC<C>
 ```
 
 Added in v1.0.0
@@ -1673,7 +2000,7 @@ Added in v1.0.0
 **Signature**
 
 ```ts
-export const bigint: BigIntC = ...
+export declare const bigint: BigIntC
 ```
 
 Added in v2.1.0
@@ -1683,7 +2010,7 @@ Added in v2.1.0
 **Signature**
 
 ```ts
-export const boolean: BooleanC = ...
+export declare const boolean: BooleanC
 ```
 
 Added in v1.0.0
@@ -1693,11 +2020,11 @@ Added in v1.0.0
 **Signature**
 
 ```ts
-export const brand = <C extends Any, N extends string, B extends { readonly [K in N]: symbol }>(
+export declare const brand: <C extends Any, N extends string, B extends { readonly [K in N]: symbol }>(
   codec: C,
-  predicate: Refinement<TypeOf<C>, Branded<TypeOf<C>, B>>,
+  predicate: Refinement<C['_A'], Branded<C['_A'], B>>,
   name: N
-): BrandC<C, B> => ...
+) => BrandC<C, B>
 ```
 
 Added in v1.8.1
@@ -1709,7 +2036,7 @@ Strips additional properties
 **Signature**
 
 ```ts
-export const exact = <C extends HasProps>(codec: C, name: string = getExactTypeName(codec)): ExactC<C> => ...
+export declare const exact: <C extends HasProps>(codec: C, name?: string) => ExactC<C>
 ```
 
 Added in v1.1.0
@@ -1719,7 +2046,7 @@ Added in v1.1.0
 **Signature**
 
 ```ts
-export const failure = <T>(value: unknown, context: Context, message?: string): Validation<T> => ...
+export declare const failure: <T>(value: unknown, context: Context, message?: string) => Either<Errors, T>
 ```
 
 Added in v1.0.0
@@ -1729,7 +2056,7 @@ Added in v1.0.0
 **Signature**
 
 ```ts
-export const failures: <T>(errors: Errors) => Validation<T> = ...
+export declare const failures: <T>(errors: Errors) => Either<Errors, T>
 ```
 
 Added in v1.0.0
@@ -1739,7 +2066,7 @@ Added in v1.0.0
 **Signature**
 
 ```ts
-export const getContextEntry = (key: string, decoder: Decoder<any, any>): ContextEntry => ...
+export declare const getContextEntry: (key: string, decoder: Decoder<any, any>) => ContextEntry
 ```
 
 Added in v1.0.0
@@ -1749,7 +2076,7 @@ Added in v1.0.0
 **Signature**
 
 ```ts
-export const getFunctionName = (f: Function): string => ...
+export declare const getFunctionName: (f: Function) => string
 ```
 
 Added in v1.0.0
@@ -1759,7 +2086,7 @@ Added in v1.0.0
 **Signature**
 
 ```ts
-export const identity = <A>(a: A): A => ...
+export declare const identity: <A>(a: A) => A
 ```
 
 Added in v1.0.0
@@ -1769,19 +2096,25 @@ Added in v1.0.0
 **Signature**
 
 ```ts
-export function intersection<A extends Mixed, B extends Mixed, C extends Mixed, D extends Mixed, E extends Mixed>(
-  codecs: [A, B, C, D, E],
-  name?: string
-): IntersectionC<[A, B, C, D, E]>
-export function intersection<A extends Mixed, B extends Mixed, C extends Mixed, D extends Mixed>(
+export declare function intersection<
+  A extends Mixed,
+  B extends Mixed,
+  C extends Mixed,
+  D extends Mixed,
+  E extends Mixed
+>(codecs: [A, B, C, D, E], name?: string): IntersectionC<[A, B, C, D, E]>
+export declare function intersection<A extends Mixed, B extends Mixed, C extends Mixed, D extends Mixed>(
   codecs: [A, B, C, D],
   name?: string
 ): IntersectionC<[A, B, C, D]>
-export function intersection<A extends Mixed, B extends Mixed, C extends Mixed>(
+export declare function intersection<A extends Mixed, B extends Mixed, C extends Mixed>(
   codecs: [A, B, C],
   name?: string
 ): IntersectionC<[A, B, C]>
-export function intersection<A extends Mixed, B extends Mixed>(codecs: [A, B], name?: string): IntersectionC<[A, B]> { ... }
+export declare function intersection<A extends Mixed, B extends Mixed>(
+  codecs: [A, B],
+  name?: string
+): IntersectionC<[A, B]>
 ```
 
 Added in v1.0.0
@@ -1791,12 +2124,7 @@ Added in v1.0.0
 **Signature**
 
 ```ts
-export const keyof = <D extends { [key: string]: unknown }>(
-  keys: D,
-  name: string = Object.keys(keys)
-    .map(k => JSON.stringify(k))
-    .join(' | ')
-): KeyofC<D> => ...
+export declare const keyof: <D extends { [key: string]: unknown }>(keys: D, name?: string) => KeyofC<D>
 ```
 
 Added in v1.0.0
@@ -1806,7 +2134,7 @@ Added in v1.0.0
 **Signature**
 
 ```ts
-export const literal = <V extends LiteralValue>(value: V, name: string = JSON.stringify(value)): LiteralC<V> => ...
+export declare const literal: <V extends LiteralValue>(value: V, name?: string) => LiteralC<V>
 ```
 
 Added in v1.0.0
@@ -1816,7 +2144,7 @@ Added in v1.0.0
 **Signature**
 
 ```ts
-NullC
+export declare const null: NullC
 ```
 
 Added in v1.0.0
@@ -1826,7 +2154,7 @@ Added in v1.0.0
 **Signature**
 
 ```ts
-export const nullType: NullC = ...
+export declare const nullType: NullC
 ```
 
 Added in v1.0.0
@@ -1836,7 +2164,7 @@ Added in v1.0.0
 **Signature**
 
 ```ts
-export const number: NumberC = ...
+export declare const number: NumberC
 ```
 
 Added in v1.0.0
@@ -1846,10 +2174,7 @@ Added in v1.0.0
 **Signature**
 
 ```ts
-export const partial = <P extends Props>(
-  props: P,
-  name: string = getPartialTypeName(getInterfaceTypeName(props))
-): PartialC<P> => ...
+export declare const partial: <P extends Props>(props: P, name?: string) => PartialC<P>
 ```
 
 Added in v1.0.0
@@ -1859,7 +2184,7 @@ Added in v1.0.0
 **Signature**
 
 ```ts
-export const readonly = <C extends Mixed>(codec: C, name: string = `Readonly<${codec.name}>`): ReadonlyC<C> => ...
+export declare const readonly: <C extends Mixed>(codec: C, name?: string) => ReadonlyC<C>
 ```
 
 Added in v1.0.0
@@ -1869,10 +2194,7 @@ Added in v1.0.0
 **Signature**
 
 ```ts
-export const readonlyArray = <C extends Mixed>(
-  codec: C,
-  name: string = `ReadonlyArray<${codec.name}>`
-): ReadonlyArrayC<C> => ...
+export declare const readonlyArray: <C extends Mixed>(codec: C, name?: string) => ReadonlyArrayC<C>
 ```
 
 Added in v1.0.0
@@ -1882,7 +2204,7 @@ Added in v1.0.0
 **Signature**
 
 ```ts
-export function record<D extends Mixed, C extends Mixed>(domain: D, codomain: C, name?: string): RecordC<D, C> { ... }
+export declare function record<D extends Mixed, C extends Mixed>(domain: D, codomain: C, name?: string): RecordC<D, C>
 ```
 
 Added in v1.7.1
@@ -1892,10 +2214,10 @@ Added in v1.7.1
 **Signature**
 
 ```ts
-export const recursion = <A, O = A, I = unknown, C extends Type<A, O, I> = Type<A, O, I>>(
+export declare const recursion: <A, O = A, I = unknown, C extends Type<A, O, I> = Type<A, O, I>>(
   name: string,
   definition: (self: C) => C
-): RecursiveType<C, A, O, I> => ...
+) => RecursiveType<C, A, O, I>
 ```
 
 Added in v1.0.0
@@ -1907,7 +2229,7 @@ Strips additional properties
 **Signature**
 
 ```ts
-export const strict = <P extends Props>(props: P, name?: string): ExactC<TypeC<P>> => ...
+export declare const strict: <P extends Props>(props: P, name?: string) => ExactC<TypeC<P>>
 ```
 
 Added in v1.0.0
@@ -1917,7 +2239,7 @@ Added in v1.0.0
 **Signature**
 
 ```ts
-export const string: StringC = ...
+export declare const string: StringC
 ```
 
 Added in v1.0.0
@@ -1927,7 +2249,7 @@ Added in v1.0.0
 **Signature**
 
 ```ts
-export const success: <T>(value: T) => Validation<T> = ...
+export declare const success: <T>(value: T) => Either<Errors, T>
 ```
 
 Added in v1.0.0
@@ -1937,20 +2259,20 @@ Added in v1.0.0
 **Signature**
 
 ```ts
-export function tuple<A extends Mixed, B extends Mixed, C extends Mixed, D extends Mixed, E extends Mixed>(
+export declare function tuple<A extends Mixed, B extends Mixed, C extends Mixed, D extends Mixed, E extends Mixed>(
   codecs: [A, B, C, D, E],
   name?: string
 ): TupleC<[A, B, C, D, E]>
-export function tuple<A extends Mixed, B extends Mixed, C extends Mixed, D extends Mixed>(
+export declare function tuple<A extends Mixed, B extends Mixed, C extends Mixed, D extends Mixed>(
   codecs: [A, B, C, D],
   name?: string
 ): TupleC<[A, B, C, D]>
-export function tuple<A extends Mixed, B extends Mixed, C extends Mixed>(
+export declare function tuple<A extends Mixed, B extends Mixed, C extends Mixed>(
   codecs: [A, B, C],
   name?: string
 ): TupleC<[A, B, C]>
-export function tuple<A extends Mixed, B extends Mixed>(codecs: [A, B], name?: string): TupleC<[A, B]>
-export function tuple<A extends Mixed>(codecs: [A], name?: string): TupleC<[A]> { ... }
+export declare function tuple<A extends Mixed, B extends Mixed>(codecs: [A, B], name?: string): TupleC<[A, B]>
+export declare function tuple<A extends Mixed>(codecs: [A], name?: string): TupleC<[A]>
 ```
 
 Added in v1.0.0
@@ -1960,7 +2282,7 @@ Added in v1.0.0
 **Signature**
 
 ```ts
-export const type = <P extends Props>(props: P, name: string = getInterfaceTypeName(props)): TypeC<P> => ...
+export declare const type: <P extends Props>(props: P, name?: string) => TypeC<P>
 ```
 
 Added in v1.0.0
@@ -1970,7 +2292,7 @@ Added in v1.0.0
 **Signature**
 
 ```ts
-UndefinedC
+export declare const undefined: UndefinedC
 ```
 
 Added in v1.0.0
@@ -1980,10 +2302,7 @@ Added in v1.0.0
 **Signature**
 
 ```ts
-export const union = <CS extends [Mixed, Mixed, ...Array<Mixed>]>(
-  codecs: CS,
-  name: string = getUnionName(codecs)
-): UnionC<CS> => ...
+export declare const union: <CS extends [Mixed, Mixed, ...Mixed[]]>(codecs: CS, name?: string) => UnionC<CS>
 ```
 
 Added in v1.0.0
@@ -1993,7 +2312,7 @@ Added in v1.0.0
 **Signature**
 
 ```ts
-export const unknown: UnknownC = ...
+export declare const unknown: UnknownC
 ```
 
 Added in v1.5.0
@@ -2003,7 +2322,7 @@ Added in v1.5.0
 **Signature**
 
 ```ts
-VoidC
+export declare const void: VoidC
 ```
 
 Added in v1.0.0
@@ -2013,7 +2332,7 @@ Added in v1.0.0
 **Signature**
 
 ```ts
-export const voidType: VoidC = ...
+export declare const voidType: VoidC
 ```
 
 Added in v1.2.0
@@ -2025,7 +2344,7 @@ Use `UnknownArray` instead
 **Signature**
 
 ```ts
-UnknownArrayC
+export declare const Array: UnknownArrayC
 ```
 
 Added in v1.0.0
@@ -2037,7 +2356,7 @@ Use `UnknownRecord` instead
 **Signature**
 
 ```ts
-export const Dictionary: UnknownRecordC = ...
+export declare const Dictionary: UnknownRecordC
 ```
 
 Added in v1.0.0
@@ -2047,7 +2366,7 @@ Added in v1.0.0
 **Signature**
 
 ```ts
-export const Function: FunctionC = ...
+export declare const Function: FunctionC
 ```
 
 Added in v1.0.0
@@ -2059,7 +2378,7 @@ Use `Int` instead
 **Signature**
 
 ```ts
-export const Integer: RefinementC<NumberC> = ...
+export declare const Integer: RefinementC<NumberC>
 ```
 
 Added in v1.0.0
@@ -2071,7 +2390,7 @@ Keeps the codec "kind"
 **Signature**
 
 ```ts
-export function alias<A, O, P, I>(
+export declare function alias<A, O, P, I>(
   codec: PartialType<P, A, O, I>
 ): <
   // tslint:disable-next-line: deprecation
@@ -2082,7 +2401,7 @@ export function alias<A, O, P, I>(
   PP extends Exact<P, PP> = P,
   II extends I = I
 >() => PartialType<PP, AA, OO, II>
-export function alias<A, O, P, I>(
+export declare function alias<A, O, P, I>(
   // tslint:disable-next-line: deprecation
   codec: StrictType<P, A, O, I>
 ): <
@@ -2095,7 +2414,7 @@ export function alias<A, O, P, I>(
   II extends I = I
 >() => // tslint:disable-next-line: deprecation
 StrictType<PP, AA, OO, II>
-export function alias<A, O, P, I>(
+export declare function alias<A, O, P, I>(
   codec: InterfaceType<P, A, O, I>
 ): <
   // tslint:disable-next-line: deprecation
@@ -2105,7 +2424,7 @@ export function alias<A, O, P, I>(
   // tslint:disable-next-line: deprecation
   PP extends Exact<P, PP> = P,
   II extends I = I
->() => InterfaceType<PP, AA, OO, II> { ... }
+>() => InterfaceType<PP, AA, OO, II>
 ```
 
 Added in v1.1.0
@@ -2117,7 +2436,7 @@ Use `unknown` instead
 **Signature**
 
 ```ts
-export const any: AnyC = ...
+export declare const any: AnyC
 ```
 
 Added in v1.0.0
@@ -2129,7 +2448,7 @@ Drops the codec "kind"
 **Signature**
 
 ```ts
-export function clean<A, O = A, I = unknown>(codec: Type<A, O, I>): Type<A, O, I> { ... }
+export declare function clean<A, O = A, I = unknown>(codec: Type<A, O, I>): Type<A, O, I>
 ```
 
 Added in v1.1.0
@@ -2141,7 +2460,7 @@ Use `record` instead
 **Signature**
 
 ```ts
-export const dictionary: typeof record = ...
+export declare const dictionary: typeof record
 ```
 
 Added in v1.0.0
@@ -2151,7 +2470,7 @@ Added in v1.0.0
 **Signature**
 
 ```ts
-export const getDefaultContext /* istanbul ignore next */ = (decoder: Decoder<any, any>): Context => ...
+export declare const getDefaultContext: (decoder: Decoder<any, any>) => Context
 ```
 
 Added in v1.0.0
@@ -2161,7 +2480,7 @@ Added in v1.0.0
 **Signature**
 
 ```ts
-export const getValidationError /* istanbul ignore next */ = (value: unknown, context: Context): ValidationError => ...
+export declare const getValidationError: (value: unknown, context: Context) => ValidationError
 ```
 
 Added in v1.0.0
@@ -2173,7 +2492,7 @@ Use `type` instead
 **Signature**
 
 ```ts
-<P extends Props>(props: P, name?: string) => TypeC<P>
+export declare const interface: <P extends Props>(props: P, name?: string) => TypeC<P>
 ```
 
 Added in v1.0.0
@@ -2183,7 +2502,7 @@ Added in v1.0.0
 **Signature**
 
 ```ts
-export const never: NeverC = ...
+export declare const never: NeverC
 ```
 
 Added in v1.0.0
@@ -2195,7 +2514,7 @@ Use `UnknownRecord` instead
 **Signature**
 
 ```ts
-export const object: ObjectC = ...
+export declare const object: ObjectC
 ```
 
 Added in v1.0.0
@@ -2207,12 +2526,12 @@ Use `brand` instead
 **Signature**
 
 ```ts
-export function refinement<C extends Any>(
+export declare function refinement<C extends Any>(
   codec: C,
   predicate: Predicate<TypeOf<C>>,
   name: string = `(${codec.name} | ${getFunctionName(predicate)})`
 ): // tslint:disable-next-line: deprecation
-RefinementC<C> { ... }
+RefinementC<C>
 ```
 
 Added in v1.0.0
@@ -2224,12 +2543,11 @@ Use `union` instead
 **Signature**
 
 ```ts
-export const taggedUnion = <Tag extends string, CS extends [Mixed, Mixed, ...Array<Mixed>]>(
+export declare const taggedUnion: <Tag extends string, CS extends [Mixed, Mixed, ...Mixed[]]>(
   tag: Tag,
   codecs: CS,
-  name: string = getUnionName(codecs)
-  // tslint:disable-next-line: deprecation
-): TaggedUnionC<Tag, CS> => ...
+  name?: string
+) => TaggedUnionC<Tag, CS>
 ```
 
 Added in v1.3.0

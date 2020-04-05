@@ -11,7 +11,7 @@ const BAA = new t.Type<number, string, string>(
     const n = parseFloat(s)
     return isNaN(n) ? t.failure(s, c) : t.success(n)
   },
-  n => String(n)
+  (n) => String(n)
 )
 
 const BAI = t.string.pipe(BAA, 'T')

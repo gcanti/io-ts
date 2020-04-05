@@ -59,7 +59,7 @@ describe('type', () => {
     ],
     [{ a: t.intersection([t.number, t.Int]) }, '{ a: (number & Int) }', { a: 1 }],
     [
-      { a: t.brand(t.number, (n): n is t.Branded<number, { readonly Positive: unique symbol }> => n >= 0, 'Positive') },
+      { a: t.brand(t.number, (n: any): n is t.Branded<number, { readonly Positive: unique symbol }> => n >= 0, 'Positive') },
       '{ a: Positive }',
       { a: 1 }
     ],
@@ -318,6 +318,12 @@ describe('type', () => {
   })
 
   describe('is', () => {
+    // #434
+    it('should return `false` on missing fields', () => {
+      const T = t.type({ a: t.unknown })
+      assert.strictEqual(T.is({}), false)
+    })
+
     it('should allow additional properties', () => {
       const T = t.type({ a: t.string })
       assert.strictEqual(T.is({ a: 'a', b: 1 }), true)
@@ -423,7 +429,7 @@ describe('type', () => {
         () => {
           assert.ok(false)
         },
-        a => {
+        (a) => {
           assert.deepStrictEqual(a, { a: 's', b: 1 })
         }
       )

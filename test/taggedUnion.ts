@@ -73,7 +73,7 @@ describe('taggedUnion', () => {
         type: 'B'
         forest: Array<B>
       }
-      const B = t.recursion<B>('B', Self =>
+      const B = t.recursion<B>('B', (Self) =>
         t.type({
           type: t.literal('B'),
           forest: t.array(Self)

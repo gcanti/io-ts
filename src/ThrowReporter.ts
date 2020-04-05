@@ -11,7 +11,7 @@ import { isLeft } from 'fp-ts/lib/Either'
  * @deprecated
  */
 export const ThrowReporter: Reporter<void> = {
-  report: validation => {
+  report: (validation) => {
     if (isLeft(validation)) {
       throw new Error(PathReporter.report(validation).join('\n'))
     }

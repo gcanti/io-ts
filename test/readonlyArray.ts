@@ -47,14 +47,14 @@ describe('readonlyArray', () => {
 
     it('should freeze the value', () => {
       const T = t.readonlyArray(t.number)
-      either.map(T.decode([1]), x => assert.ok(Object.isFrozen(x)))
+      either.map(T.decode([1]), (x) => assert.ok(Object.isFrozen(x)))
     })
 
     it('should not freeze in production', () => {
       const env = process.env.NODE_ENV
       process.env.NODE_ENV = 'production'
       const T = t.readonlyArray(t.number)
-      either.map(T.decode([1]), x => assert.ok(!Object.isFrozen(x)))
+      either.map(T.decode([1]), (x) => assert.ok(!Object.isFrozen(x)))
       process.env.NODE_ENV = env
     })
   })

@@ -6,7 +6,7 @@ type T = {
   a: number
   b: T | undefined | null
 }
-const T: t.Type<T> = t.recursion('T', self =>
+const T: t.Type<T> = t.recursion('T', (self) =>
   t.type({
     a: t.number,
     b: t.union([self, t.undefined, t.null])
@@ -20,7 +20,7 @@ describe('recursion', () => {
         a: number
         b: A | null
       }
-      const T: t.Type<A> = t.recursion('T', self =>
+      const T: t.Type<A> = t.recursion('T', (self) =>
         t.type({
           a: t.number,
           b: t.union([self, t.null])
@@ -39,7 +39,7 @@ describe('recursion', () => {
         a: string
         b: O | null
       }
-      const T: t.Type<A, O> = t.recursion('T', self =>
+      const T: t.Type<A, O> = t.recursion('T', (self) =>
         t.type({
           a: NumberFromString,
           b: t.union([self, t.null])
@@ -61,7 +61,7 @@ describe('recursion', () => {
         a: number
         b: T | null | undefined
       }
-      const T: t.Type<T> = t.recursion('T', self =>
+      const T: t.Type<T> = t.recursion('T', (self) =>
         t.type({
           a: t.number,
           b: t.union([self, t.undefined, t.null])
@@ -100,7 +100,7 @@ describe('recursion', () => {
         a: string
         b: O | null
       }
-      const T: t.Type<A, O> = t.recursion('T', self =>
+      const T: t.Type<A, O> = t.recursion('T', (self) =>
         t.type({
           a: NumberFromString,
           b: t.union([self, t.null])
@@ -116,7 +116,7 @@ describe('recursion', () => {
       a: number
       b: T | null
     }
-    const T = t.recursion<T>('T', self =>
+    const T = t.recursion<T>('T', (self) =>
       t.type({
         a: t.number,
         b: t.union([self, t.null])
