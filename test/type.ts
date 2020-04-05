@@ -59,7 +59,13 @@ describe('type', () => {
     ],
     [{ a: t.intersection([t.number, t.Int]) }, '{ a: (number & Int) }', { a: 1 }],
     [
-      { a: t.brand(t.number, (n: any): n is t.Branded<number, { readonly Positive: unique symbol }> => n >= 0, 'Positive') },
+      {
+        a: t.brand(
+          t.number,
+          (n: any): n is t.Branded<number, { readonly Positive: unique symbol }> => n >= 0,
+          'Positive'
+        )
+      },
       '{ a: Positive }',
       { a: 1 }
     ],
