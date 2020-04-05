@@ -94,39 +94,54 @@ describe('type', () => {
 
   const failureCases = [
     // [ props, name, value, messages ]
-    [{ a: t.null }, undefined, { a: 'a' }, ['Invalid value "a" supplied to : { a: null }/a: null']],
-    [{ a: t.null }, undefined, {}, ['Invalid value undefined supplied to : { a: null }/a: null']],
-    [{ a: t.nullType }, undefined, { a: undefined }, ['Invalid value undefined supplied to : { a: null }/a: null']],
-    [{ a: t.undefined }, undefined, { a: 'a' }, ['Invalid value "a" supplied to : { a: undefined }/a: undefined']],
-    [{ a: t.undefined }, undefined, {}, ['Invalid value undefined supplied to : { a: undefined }/a: undefined']],
-    [{ a: t.void }, undefined, { a: null }, ['Invalid value null supplied to : { a: void }/a: void']],
-    [{ a: t.unknown }, undefined, {}, ['Invalid value undefined supplied to : { a: unknown }/a: unknown']],
-    [{ a: t.string }, undefined, 1, ['Invalid value 1 supplied to : { a: string }']],
-    [{ a: t.string }, undefined, {}, ['Invalid value undefined supplied to : { a: string }/a: string']],
-    [{ a: t.string }, undefined, { a: undefined }, ['Invalid value undefined supplied to : { a: string }/a: string']],
-    [{ a: t.string }, undefined, { a: 1 }, ['Invalid value 1 supplied to : { a: string }/a: string']],
-    [{ a: t.string }, undefined, [], ['Invalid value [] supplied to : { a: string }']], // #407
-    [{ a: t.number }, undefined, { a: 'a' }, ['Invalid value "a" supplied to : { a: number }/a: number']],
-    [{ a: t.number }, undefined, {}, ['Invalid value undefined supplied to : { a: number }/a: number']],
-    [{ a: t.bigint }, undefined, { a: 'a' }, ['Invalid value "a" supplied to : { a: bigint }/a: bigint']],
-    [{ a: t.bigint }, undefined, {}, ['Invalid value undefined supplied to : { a: bigint }/a: bigint']],
-    [{ a: t.boolean }, undefined, { a: 1 }, ['Invalid value 1 supplied to : { a: boolean }/a: boolean']],
-    [{ a: t.boolean }, undefined, {}, ['Invalid value undefined supplied to : { a: boolean }/a: boolean']],
+    [{ a: t.null }, '{ a: null }', { a: 'a' }, ['Invalid value "a" supplied to : { a: null }/a: null']],
+    [{ a: t.null }, '{ a: null }', {}, ['Invalid value undefined supplied to : { a: null }/a: null']],
+    [{ a: t.nullType }, '{ a: null }', { a: undefined }, ['Invalid value undefined supplied to : { a: null }/a: null']],
+    [
+      { a: t.undefined },
+      '{ a: undefined }',
+      { a: 'a' },
+      ['Invalid value "a" supplied to : { a: undefined }/a: undefined']
+    ],
+    [
+      { a: t.undefined },
+      '{ a: undefined }',
+      {},
+      ['Invalid value undefined supplied to : { a: undefined }/a: undefined']
+    ],
+    [{ a: t.void }, '{ a: void }', { a: null }, ['Invalid value null supplied to : { a: void }/a: void']],
+    [{ a: t.unknown }, '{ a: unknown }', {}, ['Invalid value undefined supplied to : { a: unknown }/a: unknown']],
+    [{ a: t.string }, '{ a: string }', 1, ['Invalid value 1 supplied to : { a: string }']],
+    [{ a: t.string }, '{ a: string }', {}, ['Invalid value undefined supplied to : { a: string }/a: string']],
+    [
+      { a: t.string },
+      '{ a: string }',
+      { a: undefined },
+      ['Invalid value undefined supplied to : { a: string }/a: string']
+    ],
+    [{ a: t.string }, '{ a: string }', { a: 1 }, ['Invalid value 1 supplied to : { a: string }/a: string']],
+    [{ a: t.string }, '{ a: string }', [], ['Invalid value [] supplied to : { a: string }']], // #407
+    [{ a: t.number }, '{ a: number }', { a: 'a' }, ['Invalid value "a" supplied to : { a: number }/a: number']],
+    [{ a: t.number }, '{ a: number }', {}, ['Invalid value undefined supplied to : { a: number }/a: number']],
+    [{ a: t.bigint }, '{ a: bigint }', { a: 'a' }, ['Invalid value "a" supplied to : { a: bigint }/a: bigint']],
+    [{ a: t.bigint }, '{ a: bigint }', {}, ['Invalid value undefined supplied to : { a: bigint }/a: bigint']],
+    [{ a: t.boolean }, '{ a: boolean }', { a: 1 }, ['Invalid value 1 supplied to : { a: boolean }/a: boolean']],
+    [{ a: t.boolean }, '{ a: boolean }', {}, ['Invalid value undefined supplied to : { a: boolean }/a: boolean']],
     [
       { a: t.UnknownArray },
-      undefined,
+      '{ a: UnknownArray }',
       { a: 'a' },
       ['Invalid value "a" supplied to : { a: UnknownArray }/a: UnknownArray']
     ],
     [
       { a: t.UnknownArray },
-      undefined,
+      '{ a: UnknownArray }',
       {},
       ['Invalid value undefined supplied to : { a: UnknownArray }/a: UnknownArray']
     ],
     [
       { a: t.UnknownArray },
-      undefined,
+      '{ a: UnknownArray }',
       { a: undefined },
       ['Invalid value undefined supplied to : { a: UnknownArray }/a: UnknownArray']
     ],
@@ -144,19 +159,19 @@ describe('type', () => {
     ],
     [
       { a: t.UnknownRecord },
-      undefined,
+      '{ a: UnknownRecord }',
       { a: [1] },
       ['Invalid value [1] supplied to : { a: UnknownRecord }/a: UnknownRecord']
     ],
     [
       { a: t.UnknownRecord },
-      undefined,
+      '{ a: UnknownRecord }',
       {},
       ['Invalid value undefined supplied to : { a: UnknownRecord }/a: UnknownRecord']
     ],
     [
       { a: t.UnknownRecord },
-      undefined,
+      '{ a: UnknownRecord }',
       { a: undefined },
       ['Invalid value undefined supplied to : { a: UnknownRecord }/a: UnknownRecord']
     ],
