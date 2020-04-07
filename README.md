@@ -8,6 +8,7 @@ Table of contents
 <!-- START doctoc generated TOC please keep comment here to allow auto update -->
 <!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
 
+
 - [Installation](#installation)
 - [The idea](#the-idea)
 - [TypeScript integration](#typescript-integration)
