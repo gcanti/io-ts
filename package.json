@@ -53,7 +53,7 @@
     "import-path-rewrite": "github:gcanti/import-path-rewrite",
     "jest": "25.2.7",
     "mocha": "7.1.1",
-    "prettier": "2.0.3",
+    "prettier": "2.0.2",
     "rimraf": "3.0.2",
     "ts-jest": "25.3.1",
     "ts-node": "8.8.2",
