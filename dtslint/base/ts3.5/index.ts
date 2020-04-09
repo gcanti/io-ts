@@ -1,4 +1,4 @@
-import * as t from '../../src'
+import * as t from '../../../src'
 import { either } from 'fp-ts/lib/Either'
 
 //
@@ -238,9 +238,6 @@ type Tuple6OutputTest = t.OutputOf<typeof Tuple6> // $ExpectType [string, number
 const Tuple7 = t.tuple([t.string, t.number, t.boolean, t.null, t.undefined]) // $ExpectType TupleC<[StringC, NumberC, BooleanC, NullC, UndefinedC]>
 type Tuple7TypeTest = t.TypeOf<typeof Tuple7> // $ExpectType [string, number, boolean, null, undefined]
 type Tuple7OutputTest = t.OutputOf<typeof Tuple7> // $ExpectType [string, number, boolean, null, undefined]
-
-// $ExpectError
-const Tuple8 = t.tuple([t.string, t.string, t.string, t.string, t.string, t.string])
 
 //
 // partial
