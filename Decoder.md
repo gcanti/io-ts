@@ -1,8 +1,6 @@
 <!-- START doctoc generated TOC please keep comment here to allow auto update -->
 <!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
 
-**Table of Contents** _generated with [DocToc](https://github.com/thlorenz/doctoc)_
-
 - [Decoder interface](#decoder-interface)
 - [Combinators](#combinators)
   - [Built-in primitive decoders](#built-in-primitive-decoders)
@@ -216,6 +214,54 @@ export const MySum: D.Decoder<
   A: D.type({ type: D.literal('A'), a: D.string }),
   B: D.type({ type: D.literal('B'), b: D.number })
 })
+```
+
+## The `lazy` combinator
+
+The `lazy` combinator allows to define recursive and mutually recursive decoders
+
+**Recursive**
+
+```ts
+interface Category {
+  title: string
+  subcategory: null | Category
+}
+
+const Category: D.Decoder<Category> = D.lazy('Category', () =>
+  D.type({
+    title: D.string,
+    subcategory: D.nullable(Category)
+  })
+)
+```
+
+**Mutually recursive**
+
+```ts
+interface Foo {
+  foo: string
+  bar: null | Bar
+}
+
+interface Bar {
+  bar: number
+  foo: null | Foo
+}
+
+const Foo: D.Decoder<Foo> = D.lazy('Foo', () =>
+  D.type({
+    foo: D.string,
+    bar: D.nullable(Bar)
+  })
+)
+
+const Bar: D.Decoder<Bar> = D.lazy('Bar', () =>
+  D.type({
+    bar: D.number,
+    foo: D.nullable(Foo)
+  })
+)
 ```
 
 ## The `refinement` combinator
