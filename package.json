@@ -23,7 +23,7 @@
     "dtslint": "dtslint dtslint",
     "declaration": "tsc -p declaration/tsconfig.json",
     "mocha": "TS_NODE_CACHE=false mocha -r ts-node/register test/*.ts",
-    "doctoc": "doctoc README.md Type.md Decoder.md",
+    "doctoc": "doctoc README.md Type.md Decoder.md Encoder.md Codec.md",
     "docs": "docs-ts",
     "import-path-rewrite": "import-path-rewrite"
   },

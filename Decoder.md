@@ -2,8 +2,8 @@
 <!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
 
 - [Decoder interface](#decoder-interface)
+- [Built-in primitive decoders](#built-in-primitive-decoders)
 - [Combinators](#combinators)
-  - [Built-in primitive decoders](#built-in-primitive-decoders)
   - [The `literal` constructor](#the-literal-constructor)
   - [The `nullable` combinator](#the-nullable-combinator)
   - [The `type` combinator](#the-type-combinator)
@@ -13,6 +13,7 @@
   - [The `tuple` combinator](#the-tuple-combinator)
   - [The `intersection` combinator](#the-intersection-combinator)
   - [The `sum` combinator](#the-sum-combinator)
+  - [The `lazy` combinator](#the-lazy-combinator)
   - [The `refinement` combinator](#the-refinement-combinator)
   - [The `parse` combinator](#the-parse-combinator)
 - [Extracting static types from decoders](#extracting-static-types-from-decoders)
@@ -30,7 +31,7 @@ export interface Decoder<A> {
 
 **Example**
 
-A codec representing `string` can be defined as:
+A decoder representing `string` can be defined as
 
 ```ts
 import * as D from 'io-ts/lib/Decoder'
@@ -70,18 +71,18 @@ console.log(
 // => [ { value: 'cannot decode null, should be string', forest: [] } ]
 ```
 
+# Built-in primitive decoders
+
+- `never: Decoder<never>`
+- `string: Decoder<string>`
+- `number: Decoder<number>`
+- `boolean: Decoder<boolean>`
+- `UnknownArray: Decoder<Array<unknown>>`
+- `UnknownRecord: Decoder<Record<string, unknown>>`
+
 # Combinators
 
 We can combine these primitive decoders through _combinators_ to build composite types which represent entities like domain models, request payloads etc. in our applications.
-
-## Built-in primitive decoders
-
-- `never`
-- `string`
-- `number`
-- `boolean`
-- `UnknownArray`
-- `UnknownRecord`
 
 ## The `literal` constructor
 
