@@ -23,7 +23,7 @@ Note: [`fp-ts`](https://github.com/gcanti/fp-ts) is a peer dependency for `io-ts
 
 # Documentation
 
-- [API Reference](https://gcanti.github.io/io-ts/modules/)
+- [API Reference](https://gcanti.github.io/io-ts/docs/modules)
 
 ## Usage
 
