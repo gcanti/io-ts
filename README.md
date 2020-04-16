@@ -25,9 +25,15 @@ Note: [`fp-ts`](https://github.com/gcanti/fp-ts) is a peer dependency for `io-ts
 
 - [API Reference](https://gcanti.github.io/io-ts/modules/)
 
-**Usage**
+## Usage
 
-- [`Decoder` (experimental, version `2.2+`)](Decoder.md)
-- [`Encoder` (experimental, version `2.2+`)](Encoder.md)
-- [`Codec` (experimental, version `2.2+`)](Codec.md)
-- [`Type` (legacy)](Type.md)
+**Experimental features** (version `2.2+`)
+
+- [`Decoder`](Decoder.md)
+- [`Encoder`](Encoder.md)
+- [`Codec`](Codec.md)
+- [`Schema` (advanced feature)](Schema.md)
+
+**Stable** (old)
+
+- [`Type`](Type.md)
