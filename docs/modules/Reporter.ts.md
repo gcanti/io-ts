@@ -1,6 +1,6 @@
 ---
 title: Reporter.ts
-nav_order: 3
+nav_order: 7
 parent: Modules
 ---
 

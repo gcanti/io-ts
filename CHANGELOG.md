@@ -14,6 +14,11 @@
 **Note**: Gaps between patch versions are faulty/broken releases. **Note**: A feature tagged as Experimental is in a
 high state of flux, you're at risk of it changing without notice.
 
+# 2.2.0
+
+- **Experimental**
+  - add `Codec`, `Decoder`, `Encoder`, `Guard`, `Schema`, `Schemable`, `Tree` modules (@gcanti)
+
 # 2.1.3
 
 - **Polish**
