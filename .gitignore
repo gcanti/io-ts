@@ -1,7 +1,7 @@
 *.log
 node_modules
-# lib
-# es6
+lib
+es6
 dev
 coverage
 declaration/out/src
