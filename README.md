@@ -27,13 +27,15 @@ Note: [`fp-ts`](https://github.com/gcanti/fp-ts) is a peer dependency for `io-ts
 
 ## Usage
 
+**Stable features**
+
+- [`Type`](Type.md)
+
 **Experimental features** (version `2.2+`)
+
+Experimental features are published in order to get early feedback from the community, see these tracking [issues](https://github.com/gcanti/io-ts/issues?q=label%3Av2.2+) for further discussions and enhancements.
 
 - [`Decoder`](Decoder.md)
 - [`Encoder`](Encoder.md)
 - [`Codec`](Codec.md)
 - [`Schema` (advanced feature)](Schema.md)
-
-**Stable** (old)
-
-- [`Type`](Type.md)
