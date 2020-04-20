@@ -1,7 +1,7 @@
 {
   "name": "io-ts",
-  "version": "2.2.0",
-  "description": "TypeScript compatible runtime type system for IO validation",
+  "version": "2.2.1",
+  "description": "TypeScript runtime type system for IO decoding/encoding",
   "files": [
     "lib",
     "es6"
@@ -63,16 +63,16 @@
   },
   "tags": [
     "typescript",
-    "validation",
-    "inference",
-    "types",
-    "runtime"
+    "runtime",
+    "decoder",
+    "encoder",
+    "schema"
   ],
   "keywords": [
     "typescript",
-    "validation",
-    "inference",
-    "types",
-    "runtime"
+    "runtime",
+    "decoder",
+    "encoder",
+    "schema"
   ]
 }

@@ -341,5 +341,7 @@ if (isLeft(result)) {
 /*
 required property "name"
 └─ cannot decode undefined, should be string
+required property "age"
+└─ cannot decode undefined, should be number
 */
 ```

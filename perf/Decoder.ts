@@ -1,14 +1,14 @@
 import * as Benchmark from 'benchmark'
-import * as t from '../src'
+import * as t from '../src/Decoder'
 
 /*
-space-object (good) x 476,424 ops/sec ±0.45% (92 runs sampled)
-space-object (bad) x 434,563 ops/sec ±0.58% (87 runs sampled)
+space-object (good) x 662,359 ops/sec ±0.65% (88 runs sampled)
+space-object (bad) x 379,528 ops/sec ±0.56% (89 runs sampled)
 */
 
 const suite = new Benchmark.Suite()
 
-const Vector = t.tuple([t.number, t.number, t.number])
+const Vector = t.tuple(t.number, t.number, t.number)
 
 const Asteroid = t.type({
   type: t.literal('asteroid'),
@@ -24,12 +24,7 @@ const Planet = t.type({
   habitable: t.boolean
 })
 
-const Rank = t.keyof({
-  captain: null,
-  'first mate': null,
-  officer: null,
-  ensign: null
-})
+const Rank = t.literal('captain', 'first mate', 'officer', 'ensign')
 
 const CrewMember = t.type({
   name: t.string,
@@ -46,7 +41,11 @@ const Ship = t.type({
   crew: t.array(CrewMember)
 })
 
-const T = t.union([Asteroid, Planet, Ship])
+const T = t.sum('type')({
+  asteroid: Asteroid,
+  planet: Planet,
+  ship: Ship
+})
 
 const good = {
   type: 'ship',

@@ -75,11 +75,6 @@ describe('record', () => {
         assertSuccess(T.decode({ a: 1 }))
       })
 
-      it.skip('should strip additional properties', () => {
-        const T = t.record(t.string, t.number)
-        assertSuccess(T.decode({ a: 1, b: 'b' }), { a: 1 })
-      })
-
       it('should return the same reference while decoding isomorphic values', () => {
         const T = t.record(t.string, t.number)
         const value1 = { a: 1 }

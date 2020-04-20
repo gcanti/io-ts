@@ -26,7 +26,6 @@ Added in v2.2.0
 - [boolean](#boolean)
 - [decoder](#decoder)
 - [failure](#failure)
-- [failures](#failures)
 - [fromGuard](#fromguard)
 - [intersection](#intersection)
 - [lazy](#lazy)
@@ -191,19 +190,6 @@ Added in v2.2.0
 
 ```ts
 export declare function failure<A = never>(message: string): Either<NonEmptyArray<Tree<string>>, A>
-```
-
-Added in v2.2.0
-
-# failures
-
-**Signature**
-
-```ts
-export declare function failures<A = never>(
-  message: string,
-  errors: NonEmptyArray<Tree<string>>
-): Either<NonEmptyArray<Tree<string>>, A>
 ```
 
 Added in v2.2.0
