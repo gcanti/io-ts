@@ -56,14 +56,8 @@ export function failure<A = never>(message: string): Either<NonEmptyArray<Tree<s
   return left([tree(message)])
 }
 
-/**
- * @since 2.2.0
- */
-export function failures<A = never>(
-  message: string,
-  errors: NonEmptyArray<Tree<string>>
-): Either<NonEmptyArray<Tree<string>>, A> {
-  return left([tree(message, errors)])
+function isNotEmpty<A>(as: Array<A>): as is NonEmptyArray<A> {
+  return as.length > 0
 }
 
 /**
@@ -197,16 +191,17 @@ export function type<A>(properties: { [K in keyof A]: Decoder<A[K]> }): Decoder<
         return e
       } else {
         const r = e.right
-        let a: Partial<A> = {}
+        const a: Partial<A> = {}
+        const errors: Array<Tree<string>> = []
         for (const k in properties) {
           const e = properties[k].decode(r[k])
           if (isLeft(e)) {
-            return failures(`required property ${JSON.stringify(k)}`, e.left)
+            errors.push(tree(`required property ${JSON.stringify(k)}`, e.left))
           } else {
             a[k] = e.right
           }
         }
-        return success(a as A)
+        return isNotEmpty(errors) ? left(errors) : success(a as A)
       }
     }
   }
@@ -223,7 +218,8 @@ export function partial<A>(properties: { [K in keyof A]: Decoder<A[K]> }): Decod
         return e
       } else {
         const r = e.right
-        let a: Partial<A> = {}
+        const a: Partial<A> = {}
+        const errors: Array<Tree<string>> = []
         for (const k in properties) {
           // don't add missing properties
           if (k in r) {
@@ -234,14 +230,14 @@ export function partial<A>(properties: { [K in keyof A]: Decoder<A[K]> }): Decod
             } else {
               const e = properties[k].decode(rk)
               if (isLeft(e)) {
-                return failures(`optional property ${JSON.stringify(k)}`, e.left)
+                errors.push(tree(`optional property ${JSON.stringify(k)}`, e.left))
               } else {
                 a[k] = e.right
               }
             }
           }
         }
-        return success(a)
+        return isNotEmpty(errors) ? left(errors) : success(a)
       }
     }
   }
@@ -258,16 +254,17 @@ export function record<A>(codomain: Decoder<A>): Decoder<Record<string, A>> {
         return e
       } else {
         const r = e.right
-        let a: Record<string, A> = {}
+        const a: Record<string, A> = {}
+        const errors: Array<Tree<string>> = []
         for (const k in r) {
           const e = codomain.decode(r[k])
           if (isLeft(e)) {
-            return failures(`key ${JSON.stringify(k)}`, e.left)
+            errors.push(tree(`key ${JSON.stringify(k)}`, e.left))
           } else {
             a[k] = e.right
           }
         }
-        return success(a)
+        return isNotEmpty(errors) ? left(errors) : success(a)
       }
     }
   }
@@ -286,15 +283,16 @@ export function array<A>(items: Decoder<A>): Decoder<Array<A>> {
         const us = e.right
         const len = us.length
         const a: Array<A> = new Array(len)
+        const errors: Array<Tree<string>> = []
         for (let i = 0; i < len; i++) {
           const e = items.decode(us[i])
           if (isLeft(e)) {
-            return failures(`item ${i}`, e.left)
+            errors.push(tree(`item ${i}`, e.left))
           } else {
             a[i] = e.right
           }
         }
-        return success(a)
+        return isNotEmpty(errors) ? left(errors) : success(a)
       }
     }
   }
@@ -312,15 +310,16 @@ export function tuple<A extends ReadonlyArray<unknown>>(...components: { [K in k
       }
       const us = e.right
       const a: Array<unknown> = []
+      const errors: Array<Tree<string>> = []
       for (let i = 0; i < components.length; i++) {
         const e = components[i].decode(us[i])
         if (isLeft(e)) {
-          return failures(`component ${i}`, e.left)
+          errors.push(tree(`component ${i}`, e.left))
         } else {
           a.push(e.right)
         }
       }
-      return success(a as any)
+      return isNotEmpty(errors) ? left(errors) : success(a as any)
     }
   }
 }
@@ -398,8 +397,10 @@ export function sum<T extends string>(
         if (G.string.is(v) && v in members) {
           return (members as any)[v].decode(u)
         }
-        return failures(`required property ${JSON.stringify(tag)}`, [
-          tree(`cannot decode ${JSON.stringify(v)}, should be ${expected}`)
+        return left([
+          tree(`required property ${JSON.stringify(tag)}`, [
+            tree(`cannot decode ${JSON.stringify(v)}, should be ${expected}`)
+          ])
         ])
       }
     }

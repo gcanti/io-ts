@@ -215,6 +215,20 @@ describe('Codec', () => {
           left([D.tree('required property "a"', [D.tree('cannot decode 1, should be string')])])
         )
       })
+
+      it('should collect all errors', () => {
+        const codec = C.type({
+          a: C.string,
+          b: C.number
+        })
+        assert.deepStrictEqual(
+          codec.decode({}),
+          left([
+            D.tree('required property "a"', [D.tree('cannot decode undefined, should be string')]),
+            D.tree('required property "b"', [D.tree('cannot decode undefined, should be number')])
+          ])
+        )
+      })
     })
 
     describe('encode', () => {
@@ -265,6 +279,20 @@ describe('Codec', () => {
           left([D.tree('optional property "a"', [D.tree('cannot decode 1, should be string')])])
         )
       })
+
+      it('should collect all errors', () => {
+        const codec = C.partial({
+          a: C.string,
+          b: C.number
+        })
+        assert.deepStrictEqual(
+          codec.decode({ a: 1, b: 'b' }),
+          left([
+            D.tree('optional property "a"', [D.tree('cannot decode 1, should be string')]),
+            D.tree('optional property "b"', [D.tree('cannot decode "b", should be number')])
+          ])
+        )
+      })
     })
 
     describe('encode', () => {
@@ -311,6 +339,17 @@ describe('Codec', () => {
           left([D.tree('key "a"', [D.tree('cannot decode "a", should be number')])])
         )
       })
+
+      it('should collect all errors', () => {
+        const codec = C.record(C.number)
+        assert.deepStrictEqual(
+          codec.decode({ a: 'a', b: 'b' }),
+          left([
+            D.tree('key "a"', [D.tree('cannot decode "a", should be number')]),
+            D.tree('key "b"', [D.tree('cannot decode "b", should be number')])
+          ])
+        )
+      })
     })
 
     describe('encode', () => {
@@ -338,6 +377,17 @@ describe('Codec', () => {
         assert.deepStrictEqual(
           codec.decode([1]),
           left([D.tree('item 0', [D.tree('cannot decode 1, should be string')])])
+        )
+      })
+
+      it('should collect all errors', () => {
+        const codec = C.array(C.string)
+        assert.deepStrictEqual(
+          codec.decode([1, 2]),
+          left([
+            D.tree('item 0', [D.tree('cannot decode 1, should be string')]),
+            D.tree('item 1', [D.tree('cannot decode 2, should be string')])
+          ])
         )
       })
     })
@@ -374,6 +424,17 @@ describe('Codec', () => {
         assert.deepStrictEqual(
           codec.decode([1, 2]),
           left([D.tree('component 0', [D.tree('cannot decode 1, should be string')])])
+        )
+      })
+
+      it('should collect all errors', () => {
+        const codec = C.tuple(C.string, C.number)
+        assert.deepStrictEqual(
+          codec.decode([1, 'a']),
+          left([
+            D.tree('component 0', [D.tree('cannot decode 1, should be string')]),
+            D.tree('component 1', [D.tree('cannot decode "a", should be number')])
+          ])
         )
       })
 
