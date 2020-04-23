@@ -118,7 +118,7 @@ console.log(isRight(Person.decode({ name: 'name' }))) // => false
 The `type` combinator will strip additional fields while decoding
 
 ```ts
-console.log(Person.decode({ name: 'name', age: 42, remeberMe: true }))
+console.log(Person.decode({ name: 'name', age: 42, rememberMe: true }))
 // => { _tag: 'Right', right: { name: 'name', age: 42 } }
 ```
 
@@ -139,7 +139,7 @@ console.log(isRight(Person.decode({ name: 'name' }))) // => true
 The `partial` combinator will strip additional fields while decoding
 
 ```ts
-console.log(Person.decode({ name: 'name', remeberMe: true }))
+console.log(Person.decode({ name: 'name', rememberMe: true }))
 // => { _tag: 'Right', right: { name: 'name' } }
 ```
 
