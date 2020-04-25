@@ -12,6 +12,7 @@ Added in v2.2.0
 
 <h2 class="text-delta">Table of contents</h2>
 
+- [DecodeError (interface)](#decodeerror-interface)
 - [Decoder (interface)](#decoder-interface)
 - [TypeOf (type alias)](#typeof-type-alias)
 - [URI (type alias)](#uri-type-alias)
@@ -28,6 +29,7 @@ Added in v2.2.0
 - [failure](#failure)
 - [fromGuard](#fromguard)
 - [intersection](#intersection)
+- [isNotEmpty](#isnotempty)
 - [lazy](#lazy)
 - [literal](#literal)
 - [map](#map)
@@ -49,13 +51,23 @@ Added in v2.2.0
 
 ---
 
+# DecodeError (interface)
+
+**Signature**
+
+```ts
+export interface DecodeError extends NonEmptyArray<Tree<string>> {}
+```
+
+Added in v2.2.2
+
 # Decoder (interface)
 
 **Signature**
 
 ```ts
 export interface Decoder<A> {
-  readonly decode: (u: unknown) => Either<NonEmptyArray<Tree<string>>, A>
+  readonly decode: (u: unknown) => Either<DecodeError, A>
 }
 ```
 
@@ -189,7 +201,7 @@ Added in v2.2.0
 **Signature**
 
 ```ts
-export declare function failure<A = never>(message: string): Either<NonEmptyArray<Tree<string>>, A>
+export declare function failure<A = never>(message: string): Either<DecodeError, A>
 ```
 
 Added in v2.2.0
@@ -213,6 +225,16 @@ export declare function intersection<A, B>(left: Decoder<A>, right: Decoder<B>):
 ```
 
 Added in v2.2.0
+
+# isNotEmpty
+
+**Signature**
+
+```ts
+export declare function isNotEmpty<A>(as: ReadonlyArray<A>): as is NonEmptyArray<A>
+```
+
+Added in v2.2.2
 
 # lazy
 
@@ -333,7 +355,7 @@ Added in v2.2.0
 **Signature**
 
 ```ts
-export declare function success<A>(a: A): Either<NonEmptyArray<Tree<string>>, A>
+export declare function success<A>(a: A): Either<DecodeError, A>
 ```
 
 Added in v2.2.0
@@ -401,7 +423,7 @@ Added in v2.2.0
 ```ts
 export declare function withExpected<A>(
   decoder: Decoder<A>,
-  expected: (actual: unknown, nea: NonEmptyArray<Tree<string>>) => NonEmptyArray<Tree<string>>
+  expected: (actual: unknown, e: DecodeError) => DecodeError
 ): Decoder<A>
 ```
 

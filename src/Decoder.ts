@@ -15,10 +15,15 @@ import { Schemable, memoize, WithUnion, Literal } from './Schemable'
 // -------------------------------------------------------------------------------------
 
 /**
+ * @since 2.2.2
+ */
+export interface DecodeError extends NonEmptyArray<Tree<string>> {}
+
+/**
  * @since 2.2.0
  */
 export interface Decoder<A> {
-  readonly decode: (u: unknown) => Either<NonEmptyArray<Tree<string>>, A>
+  readonly decode: (u: unknown) => Either<DecodeError, A>
 }
 
 /**
@@ -45,18 +50,21 @@ export function tree<A>(value: A, forest: Forest<A> = empty): Tree<A> {
 /**
  * @since 2.2.0
  */
-export function success<A>(a: A): Either<NonEmptyArray<Tree<string>>, A> {
+export function success<A>(a: A): Either<DecodeError, A> {
   return right(a)
 }
 
 /**
  * @since 2.2.0
  */
-export function failure<A = never>(message: string): Either<NonEmptyArray<Tree<string>>, A> {
+export function failure<A = never>(message: string): Either<DecodeError, A> {
   return left([tree(message)])
 }
 
-function isNotEmpty<A>(as: Array<A>): as is NonEmptyArray<A> {
+/**
+ * @since 2.2.2
+ */
+export function isNotEmpty<A>(as: ReadonlyArray<A>): as is NonEmptyArray<A> {
   return as.length > 0
 }
 
@@ -123,7 +131,7 @@ export const UnknownRecord: Decoder<Record<string, unknown>> = fromGuard(G.Unkno
  */
 export function withExpected<A>(
   decoder: Decoder<A>,
-  expected: (actual: unknown, nea: NonEmptyArray<Tree<string>>) => NonEmptyArray<Tree<string>>
+  expected: (actual: unknown, e: DecodeError) => DecodeError
 ): Decoder<A> {
   return {
     decode: (u) =>
@@ -423,16 +431,16 @@ export function union<A extends ReadonlyArray<unknown>>(
       if (isRight(e)) {
         return e
       } else {
-        const forest: NonEmptyArray<Tree<string>> = [tree(`member 0`, e.left)]
+        const errors: DecodeError = [tree(`member 0`, e.left)]
         for (let i = 1; i < len; i++) {
           const e = members[i].decode(u)
           if (isRight(e)) {
             return e
           } else {
-            forest.push(tree(`member ${i}`, e.left))
+            errors.push(tree(`member ${i}`, e.left))
           }
         }
-        return left(forest)
+        return left(errors)
       }
     }
   }
