@@ -52,6 +52,19 @@ describe('Guard', () => {
       const guard = G.type({ a: undef })
       assert.strictEqual(guard.is({}), false)
     })
+
+    it('should support getters', () => {
+      class A {
+        get a() {
+          return 'a'
+        }
+        get b() {
+          return 'b'
+        }
+      }
+      const guard = G.type({ a: G.string, b: G.string })
+      assert.deepStrictEqual(guard.is(new A()), true)
+    })
   })
 
   describe('partial', () => {
@@ -72,6 +85,19 @@ describe('Guard', () => {
       const guard = G.partial({ a: G.string, b: G.number })
       assert.strictEqual(guard.is(undefined), false)
       assert.strictEqual(guard.is({ a: 'a', b: 'b' }), false)
+    })
+
+    it('should support getters', () => {
+      class A {
+        get a() {
+          return 'a'
+        }
+        get b() {
+          return 'b'
+        }
+      }
+      const guard = G.partial({ a: G.string, b: G.string })
+      assert.deepStrictEqual(guard.is(new A()), true)
     })
   })
 

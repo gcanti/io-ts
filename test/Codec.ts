@@ -229,6 +229,19 @@ describe('Codec', () => {
           ])
         )
       })
+
+      it('should support getters', () => {
+        class A {
+          get a() {
+            return 'a'
+          }
+          get b() {
+            return 'b'
+          }
+        }
+        const codec = C.type({ a: C.string, b: C.string })
+        assert.deepStrictEqual(codec.decode(new A()), right({ a: 'a', b: 'b' }))
+      })
     })
 
     describe('encode', () => {
@@ -292,6 +305,19 @@ describe('Codec', () => {
             D.tree('optional property "b"', [D.tree('cannot decode "b", should be number')])
           ])
         )
+      })
+
+      it('should support getters', () => {
+        class A {
+          get a() {
+            return 'a'
+          }
+          get b() {
+            return 'b'
+          }
+        }
+        const codec = C.partial({ a: C.string, b: C.string })
+        assert.deepStrictEqual(codec.decode(new A()), right({ a: 'a', b: 'b' }))
       })
     })
 
