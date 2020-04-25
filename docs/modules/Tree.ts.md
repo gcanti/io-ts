@@ -21,7 +21,7 @@ Added in v2.2.0
 **Signature**
 
 ```ts
-export declare function draw(es: NonEmptyArray<Tree<string>>): string
+export declare function draw(e: DecodeError): string
 ```
 
 Added in v2.2.0

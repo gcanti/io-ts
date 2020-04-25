@@ -1,12 +1,12 @@
 /**
  * @since 2.2.0
  */
-import { drawTree, Tree } from 'fp-ts/lib/Tree'
-import { NonEmptyArray } from 'fp-ts/lib/NonEmptyArray'
+import { drawTree } from 'fp-ts/lib/Tree'
+import { DecodeError } from './Decoder'
 
 /**
  * @since 2.2.0
  */
-export function draw(es: NonEmptyArray<Tree<string>>): string {
-  return es.map(drawTree).join('\n')
+export function draw(e: DecodeError): string {
+  return e.map(drawTree).join('\n')
 }

@@ -2,8 +2,6 @@
  * @since 2.2.0
  */
 import { Invariant1 } from 'fp-ts/lib/Invariant'
-import { NonEmptyArray } from 'fp-ts/lib/NonEmptyArray'
-import { Tree } from 'fp-ts/lib/Tree'
 import * as D from './Decoder'
 import * as E from './Encoder'
 import { Schemable, Literal } from './Schemable'
@@ -81,7 +79,7 @@ export const UnknownRecord: Codec<Record<string, unknown>> = make(D.decoder.Unkn
  */
 export function withExpected<A>(
   codec: Codec<A>,
-  expected: (actual: unknown, nea: NonEmptyArray<Tree<string>>) => NonEmptyArray<Tree<string>>
+  expected: (actual: unknown, e: D.DecodeError) => D.DecodeError
 ): Codec<A> {
   return make(D.withExpected(codec, expected), codec)
 }

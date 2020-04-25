@@ -267,7 +267,7 @@ Added in v2.2.0
 ```ts
 export declare function withExpected<A>(
   codec: Codec<A>,
-  expected: (actual: unknown, nea: NonEmptyArray<Tree<string>>) => NonEmptyArray<Tree<string>>
+  expected: (actual: unknown, e: D.DecodeError) => D.DecodeError
 ): Codec<A>
 ```
 
