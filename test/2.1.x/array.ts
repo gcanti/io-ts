@@ -1,5 +1,5 @@
 import * as assert from 'assert'
-import * as t from '../src/index'
+import * as t from '../../src/index'
 import { assertFailure, assertStrictEqual, assertStrictSuccess, assertSuccess, NumberFromString } from './helpers'
 
 describe('array', () => {

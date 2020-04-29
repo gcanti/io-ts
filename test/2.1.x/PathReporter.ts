@@ -1,6 +1,6 @@
 import * as assert from 'assert'
-import * as t from '../src'
-import { PathReporter } from '../src/PathReporter'
+import * as t from '../../src'
+import { PathReporter } from '../../src/PathReporter'
 import { NumberFromString } from './helpers'
 
 describe('PathReporter', () => {

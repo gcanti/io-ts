@@ -1,6 +1,6 @@
 import * as assert from 'assert'
-import * as t from '../src'
-import { ThrowReporter } from '../src/ThrowReporter'
+import * as t from '../../src'
+import { ThrowReporter } from '../../src/ThrowReporter'
 
 describe('ThrowReporter', () => {
   it('should throw on invalid inputs', () => {

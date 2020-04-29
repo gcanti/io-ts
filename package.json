@@ -21,7 +21,6 @@
     "prepublish": "npm run build",
     "perf": "ts-node perf/index",
     "dtslint": "dtslint dtslint",
-    "declaration": "tsc -p declaration/tsconfig.json",
     "mocha": "TS_NODE_CACHE=false mocha -r ts-node/register test/*.ts",
     "doctoc": "doctoc README.md Type.md Decoder.md Encoder.md Codec.md",
     "docs": "docs-ts",
