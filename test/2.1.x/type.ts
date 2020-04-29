@@ -1,7 +1,7 @@
 import * as assert from 'assert'
 import { fold } from 'fp-ts/lib/Either'
 import { pipe } from 'fp-ts/lib/pipeable'
-import * as t from '../src/index'
+import * as t from '../../src/index'
 import { assertFailure, assertStrictEqual, assertSuccess, NumberFromString } from './helpers'
 
 describe('type', () => {

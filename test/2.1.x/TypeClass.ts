@@ -1,7 +1,7 @@
 import * as assert from 'assert'
 import { Either, fold, right } from 'fp-ts/lib/Either'
 import { pipe } from 'fp-ts/lib/pipeable'
-import * as t from '../src/index'
+import * as t from '../../src/index'
 import { assertFailure, assertSuccess } from './helpers'
 
 const BAA = new t.Type<number, string, string>(

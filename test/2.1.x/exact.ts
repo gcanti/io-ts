@@ -1,4 +1,4 @@
-import * as t from '../src/index'
+import * as t from '../../src/index'
 import { assertSuccess, assertFailure, assertStrictEqual, NumberFromString } from './helpers'
 import * as assert from 'assert'
 
