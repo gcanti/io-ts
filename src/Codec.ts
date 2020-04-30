@@ -15,7 +15,7 @@ import { Schemable, Literal } from './Schemable'
 /**
  * Laws:
  *
- * 1. `pipe(codec.decode(u), E.fold(() => u, codec.encode) = u` for all `u` in `unknown`
+ * 1. `pipe(codec.decode(u), E.fold(() => u, codec.encode)) = u` for all `u` in `unknown`
  * 2. `codec.decode(codec.encode(a)) = E.right(a)` for all `a` in `A`
  *
  * @since 2.2.0
