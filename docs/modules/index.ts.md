@@ -666,31 +666,33 @@ Added in v1.5.3
 **Signature**
 
 ```ts
-export interface TupleC<CS extends [Mixed, ...Array<Mixed>]>
+export interface TupleC<CS extends readonly [Mixed, ...Array<Mixed>]>
   extends TupleType<
     CS,
-    CS extends { length: 1 }
+    CS extends { readonly length: 1 }
       ? [TypeOf<CS[0]>]
-      : CS extends { length: 2 }
+      : CS extends { readonly length: 2 }
       ? [TypeOf<CS[0]>, TypeOf<CS[1]>]
-      : CS extends { length: 3 }
+      : CS extends { readonly length: 3 }
       ? [TypeOf<CS[0]>, TypeOf<CS[1]>, TypeOf<CS[2]>]
-      : CS extends { length: 4 }
+      : CS extends { readonly length: 4 }
       ? [TypeOf<CS[0]>, TypeOf<CS[1]>, TypeOf<CS[2]>, TypeOf<CS[3]>]
-      : CS extends { length: 5 }
+      : CS extends { readonly length: 5 }
       ? [TypeOf<CS[0]>, TypeOf<CS[1]>, TypeOf<CS[2]>, TypeOf<CS[3]>, TypeOf<CS[4]>]
       : unknown,
-    CS extends { length: 1 }
+    // : { [K in keyof CS]: CS[K] extends Mixed ? TypeOf<CS[K]> : unknown },
+    CS extends { readonly length: 1 }
       ? [OutputOf<CS[0]>]
-      : CS extends { length: 2 }
+      : CS extends { readonly length: 2 }
       ? [OutputOf<CS[0]>, OutputOf<CS[1]>]
-      : CS extends { length: 3 }
+      : CS extends { readonly length: 3 }
       ? [OutputOf<CS[0]>, OutputOf<CS[1]>, OutputOf<CS[2]>]
-      : CS extends { length: 4 }
+      : CS extends { readonly length: 4 }
       ? [OutputOf<CS[0]>, OutputOf<CS[1]>, OutputOf<CS[2]>, OutputOf<CS[3]>]
-      : CS extends { length: 5 }
+      : CS extends { readonly length: 5 }
       ? [OutputOf<CS[0]>, OutputOf<CS[1]>, OutputOf<CS[2]>, OutputOf<CS[3]>, OutputOf<CS[4]>]
       : unknown,
+    // : { [K in keyof CS]: CS[K] extends Mixed ? OutputOf<CS[K]> : unknown },
     unknown
   > {}
 ```
@@ -2259,20 +2261,10 @@ Added in v1.0.0
 **Signature**
 
 ```ts
-export declare function tuple<A extends Mixed, B extends Mixed, C extends Mixed, D extends Mixed, E extends Mixed>(
-  codecs: [A, B, C, D, E],
-  name?: string
-): TupleC<[A, B, C, D, E]>
-export declare function tuple<A extends Mixed, B extends Mixed, C extends Mixed, D extends Mixed>(
-  codecs: [A, B, C, D],
-  name?: string
-): TupleC<[A, B, C, D]>
-export declare function tuple<A extends Mixed, B extends Mixed, C extends Mixed>(
-  codecs: [A, B, C],
-  name?: string
-): TupleC<[A, B, C]>
-export declare function tuple<A extends Mixed, B extends Mixed>(codecs: [A, B], name?: string): TupleC<[A, B]>
-export declare function tuple<A extends Mixed>(codecs: [A], name?: string): TupleC<[A]>
+export declare function tuple<CS extends readonly [Mixed, ...Array<Mixed>]>(
+  codecs: CS,
+  name: string = `[${codecs.map((type) => type.name).join(', ')}]`
+): TupleC<CS>
 ```
 
 Added in v1.0.0

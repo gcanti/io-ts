@@ -20,7 +20,7 @@
     "build": "npm run clean && tsc && tsc -p tsconfig.es6.json && npm run import-path-rewrite",
     "prepublish": "npm run build",
     "perf": "ts-node perf/index",
-    "dtslint": "dtslint dtslint",
+    "dtslint": "dtslint dtslint/base && dtslint dtslint/after3.8",
     "declaration": "tsc -p declaration/tsconfig.json",
     "mocha": "TS_NODE_CACHE=false mocha -r ts-node/register test/*.ts",
     "doctoc": "doctoc README.md Type.md Decoder.md Encoder.md Codec.md",
