@@ -30,7 +30,7 @@ describe('strict', () => {
       assert.strictEqual(T.is(undefined), false)
     })
 
-    it('#423', () => {
+    it('should allow properties to be satisified by getters - #423', () => {
       class A {
         get a() {
           return 'a'
@@ -42,6 +42,26 @@ describe('strict', () => {
       const T = t.strict({ a: t.string, b: t.string })
       assert.strictEqual(T.is(new A()), true)
     })
+
+    it('should return false for a missing undefined property ', () => {
+      const T = t.strict({ a: t.string, b: t.undefined })
+      assert.strictEqual(T.is({ a: 'a' }), false)
+    })
+
+    it('should return false for a missing unknown property ', () => {
+      const T = t.strict({ a: t.string, b: t.unknown })
+      assert.strictEqual(T.is({ a: 'a' }), false)
+    })
+
+    it('should return true for a missing undefined property that is optional', () => {
+      const T = t.intersection([t.type({ a: t.string }), t.partial({ b: t.undefined })])
+      assert.strictEqual(T.is({ a: 'a' }), true)
+    })
+
+    it('should return true for a missing unknown property that is optional', () => {
+      const T = t.intersection([t.type({ a: t.string }), t.partial({ b: t.unknown })])
+      assert.strictEqual(T.is({ a: 'a' }), true)
+    })
   })
 
   describe('decode', () => {
@@ -52,7 +72,7 @@ describe('strict', () => {
 
     it('should succeed validating an undefined field', () => {
       const T = t.strict({ foo: t.string, bar: t.union([t.string, t.undefined]) })
-      assertSuccess(T.decode({ foo: 'foo' }))
+      assertSuccess(T.decode({ foo: 'foo', bar: undefined }))
     })
 
     it('should return the same reference if validation succeeded', () => {
@@ -64,6 +84,26 @@ describe('strict', () => {
     it('should fail validating an invalid value', () => {
       const T = t.strict({ foo: t.string })
       assertFailure(T, { foo: 1 }, ['Invalid value 1 supplied to : {| foo: string |}/foo: string'])
+    })
+
+    it('should fail validating a missing undefined value', () => {
+      const T = t.strict({ a: t.string, b: t.undefined })
+      assertFailure(T, { a: 'a' }, ['Invalid value undefined supplied to : {| a: string, b: undefined |}/b: undefined'])
+    })
+
+    it('should fail validating a missing unknown value', () => {
+      const T = t.strict({ a: t.string, b: t.unknown })
+      assertFailure(T, { a: 'a' }, ['Invalid value undefined supplied to : {| a: string, b: unknown |}/b: unknown'])
+    })
+
+    it('should succeed validating a missing undefined value that is optional', () => {
+      const T = t.intersection([t.type({ a: t.string }), t.partial({ b: t.unknown })])
+      assertSuccess(T.decode({ a: 'a' }))
+    })
+
+    it('should succeed validating a missing unknown value that is optional', () => {
+      const T = t.intersection([t.type({ a: t.string }), t.partial({ b: t.unknown })])
+      assertSuccess(T.decode({ a: 'a' }))
     })
 
     it('should strip additional properties', () => {
