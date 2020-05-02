@@ -21,6 +21,7 @@ describe('Eq', () => {
     const eq = E.UnknownRecord
     assert.deepStrictEqual(eq.equals({}, {}), true)
     assert.deepStrictEqual(eq.equals({ a: 1 }, { a: 1 }), true)
+    assert.deepStrictEqual(eq.equals({ a: 1 }, { a: 2 }), true)
     assert.deepStrictEqual(eq.equals({ a: 1 }, { a: 1, b: true }), false)
     assert.deepStrictEqual(eq.equals({ a: 1, b: true }, { a: 1 }), false)
   })
