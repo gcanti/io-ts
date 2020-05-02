@@ -17,6 +17,7 @@
 # 2.2.2
 
 - **Experimental**
+  - add `Eq` module (@gcanti)
   - `Decoder`
     - add `DecodeError` interface (@gcanti)
 
