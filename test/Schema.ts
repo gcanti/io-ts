@@ -4,6 +4,7 @@ import * as G from '../src/Guard'
 import * as D from '../src/Decoder'
 import * as E from '../src/Encoder'
 import * as C from '../src/Codec'
+import * as Eq from '../src/Eq'
 import * as A from './Arbitrary'
 import * as fc from 'fast-check'
 import * as assert from 'assert'
@@ -21,14 +22,19 @@ function check<A>(schema: Schema<A>): void {
   const arb = schema(A.arbitrary)
   const codec = schema(C.codec)
   const guard = schema(G.guard)
-  // decoders and guards should be aligned
-  fc.assert(fc.property(arb, (a) => guard.is(a) && isRight(codec.decode(a))))
+  const eq = schema(Eq.eq)
+  // decoders, guards and eqs should be aligned
+  fc.assert(fc.property(arb, (a) => isRight(codec.decode(a)) && guard.is(a) && eq.equals(a, a)))
   // laws
   fc.assert(fc.property(arb, (a) => isRight(codec.decode(codec.encode(a)))))
   fc.assert(
     fc.property(arb, (u) => {
       const a = codec.decode(u)
-      return isRight(a) && isDeepStrictEqual(codec.encode(a.right), u)
+      if (isRight(a)) {
+        const o = a.right
+        return isDeepStrictEqual(codec.encode(o), u) && eq.equals(o, u)
+      }
+      return false
     })
   )
 }
