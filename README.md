@@ -8,6 +8,7 @@
 
 - [Installation](#installation)
 - [Documentation](#documentation)
+  - [Usage](#usage)
 
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
 
@@ -38,4 +39,5 @@ Experimental features are published in order to get early feedback from the comm
 - [`Decoder`](Decoder.md)
 - [`Encoder`](Encoder.md)
 - [`Codec`](Codec.md)
+- [`Eq`](Eq.md)
 - [`Schema` (advanced feature)](Schema.md)
