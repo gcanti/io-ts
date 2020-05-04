@@ -13,6 +13,7 @@ Added in v2.2.0
 <h2 class="text-delta">Table of contents</h2>
 
 - [Codec (interface)](#codec-interface)
+- [TypeOf (type alias)](#typeof-type-alias)
 - [URI (type alias)](#uri-type-alias)
 - [URI](#uri)
 - [UnknownArray](#unknownarray)
@@ -51,6 +52,16 @@ export interface Codec<A> extends D.Decoder<A>, E.Encoder<A> {}
 ```
 
 Added in v2.2.0
+
+# TypeOf (type alias)
+
+**Signature**
+
+```ts
+export type TypeOf<C> = C extends Codec<infer A> ? A : never
+```
+
+Added in v2.2.2
 
 # URI (type alias)
 

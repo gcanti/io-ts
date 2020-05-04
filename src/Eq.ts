@@ -7,6 +7,11 @@ import * as R from 'fp-ts/lib/Record'
 import * as S from './Schemable'
 import Eq = E.Eq
 
+/**
+ * @since 2.2.2
+ */
+export type TypeOf<E> = E extends Eq<infer A> ? A : never
+
 // -------------------------------------------------------------------------------------
 // primitives
 // -------------------------------------------------------------------------------------
