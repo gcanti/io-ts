@@ -20,6 +20,11 @@ import { Schemable, Literal } from './Schemable'
  */
 export interface Codec<A> extends D.Decoder<A>, E.Encoder<A> {}
 
+/**
+ * @since 2.2.2
+ */
+export type TypeOf<C> = C extends Codec<infer A> ? A : never
+
 // -------------------------------------------------------------------------------------
 // constructors
 // -------------------------------------------------------------------------------------

@@ -12,6 +12,7 @@ Added in v2.2.2
 
 <h2 class="text-delta">Table of contents</h2>
 
+- [TypeOf (type alias)](#typeof-type-alias)
 - [UnknownArray](#unknownarray)
 - [UnknownRecord](#unknownrecord)
 - [array](#array)
@@ -29,6 +30,16 @@ Added in v2.2.2
 - [type](#type)
 
 ---
+
+# TypeOf (type alias)
+
+**Signature**
+
+```ts
+export type TypeOf<E> = E extends Eq<infer A> ? A : never
+```
+
+Added in v2.2.2
 
 # UnknownArray
 
