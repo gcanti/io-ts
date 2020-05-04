@@ -18,8 +18,14 @@
 
 - **Experimental**
   - add `Eq` module (@gcanti)
+  - `Codec`
+    - add `TypeOf` operator (@gcanti)
   - `Decoder`
     - add `DecodeError` interface (@gcanti)
+  - `Encoder`
+    - add `TypeOf` operator (@gcanti)
+  - `Guard`
+    - add `TypeOf` operator (@gcanti)
 
 # 2.2.1
 

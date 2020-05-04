@@ -18,6 +18,11 @@ export interface Encoder<A> {
   readonly encode: (a: A) => unknown
 }
 
+/**
+ * @since 2.2.2
+ */
+export type TypeOf<E> = E extends Encoder<infer A> ? A : never
+
 // -------------------------------------------------------------------------------------
 // primitives
 // -------------------------------------------------------------------------------------

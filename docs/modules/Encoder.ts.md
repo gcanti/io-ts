@@ -13,6 +13,7 @@ Added in v2.2.0
 <h2 class="text-delta">Table of contents</h2>
 
 - [Encoder (interface)](#encoder-interface)
+- [TypeOf (type alias)](#typeof-type-alias)
 - [URI (type alias)](#uri-type-alias)
 - [URI](#uri)
 - [array](#array)
@@ -41,6 +42,16 @@ export interface Encoder<A> {
 ```
 
 Added in v2.2.0
+
+# TypeOf (type alias)
+
+**Signature**
+
+```ts
+export type TypeOf<E> = E extends Encoder<infer A> ? A : never
+```
+
+Added in v2.2.2
 
 # URI (type alias)
 
