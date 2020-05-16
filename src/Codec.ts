@@ -4,7 +4,7 @@
 import { Invariant1 } from 'fp-ts/lib/Invariant'
 import * as D from './Decoder'
 import * as E from './Encoder'
-import { Schemable1, Literal } from './Schemable'
+import { Literal, Schemable1, WithRefinement1 } from './Schemable'
 
 // -------------------------------------------------------------------------------------
 // model
@@ -186,7 +186,7 @@ declare module 'fp-ts/lib/HKT' {
 /**
  * @since 2.2.0
  */
-export const codec: Invariant1<URI> & Schemable1<URI> = {
+export const codec: Invariant1<URI> & Schemable1<URI> & WithRefinement1<URI> = {
   URI,
   imap: (fa, f, g) => make(D.decoder.map(fa, f), E.encoder.contramap(fa, g)),
   literal,
@@ -203,5 +203,6 @@ export const codec: Invariant1<URI> & Schemable1<URI> = {
   tuple: tuple as Schemable1<URI>['tuple'],
   intersection,
   sum,
-  lazy
+  lazy,
+  refinement: refinement as WithRefinement1<URI>['refinement']
 }

@@ -14,6 +14,8 @@ Added in v2.2.0
 
 - [Schemable (interface)](#schemable-interface)
 - [Schemable1 (interface)](#schemable1-interface)
+- [WithRefinement (interface)](#withrefinement-interface)
+- [WithRefinement1 (interface)](#withrefinement1-interface)
 - [WithUnion (interface)](#withunion-interface)
 - [WithUnion1 (interface)](#withunion1-interface)
 - [Literal (type alias)](#literal-type-alias)
@@ -74,6 +76,30 @@ export interface Schemable1<S extends URIS> {
     tag: T
   ) => <A>(members: { [K in keyof A]: Kind<S, A[K] & Record<T, K>> }) => Kind<S, A[keyof A]>
   readonly lazy: <A>(id: string, f: () => Kind<S, A>) => Kind<S, A>
+}
+```
+
+Added in v2.2.3
+
+# WithRefinement (interface)
+
+**Signature**
+
+```ts
+export interface WithRefinement<S extends URIS> {
+  readonly refinement: <A, B extends A>(from: HKT<S, A>, refinement: (a: A) => a is B, expected: string) => HKT<S, B>
+}
+```
+
+Added in v2.2.3
+
+# WithRefinement1 (interface)
+
+**Signature**
+
+```ts
+export interface WithRefinement1<S extends URIS> {
+  readonly refinement: <A, B extends A>(from: Kind<S, A>, refinement: (a: A) => a is B, expected: string) => Kind<S, B>
 }
 ```
 
