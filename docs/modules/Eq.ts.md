@@ -13,6 +13,7 @@ Added in v2.2.2
 <h2 class="text-delta">Table of contents</h2>
 
 - [TypeOf (type alias)](#typeof-type-alias)
+- [URI (type alias)](#uri-type-alias)
 - [UnknownArray](#unknownarray)
 - [UnknownRecord](#unknownrecord)
 - [array](#array)
@@ -40,6 +41,16 @@ export type TypeOf<E> = E extends Eq<infer A> ? A : never
 ```
 
 Added in v2.2.2
+
+# URI (type alias)
+
+**Signature**
+
+```ts
+export type URI = E.URI
+```
+
+Added in v2.2.3
 
 # UnknownArray
 

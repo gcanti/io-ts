@@ -8,6 +8,11 @@ import * as S from './Schemable'
 import Eq = E.Eq
 
 /**
+ * @since 2.2.3
+ */
+export type URI = E.URI
+
+/**
  * @since 2.2.2
  */
 export type TypeOf<E> = E extends Eq<infer A> ? A : never
