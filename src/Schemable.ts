@@ -59,7 +59,7 @@ export interface Schemable1<S extends URIS> {
 /**
  * @since 2.2.3
  */
-export interface WithUnion<S extends URIS> {
+export interface WithUnion<S> {
   readonly union: <A extends ReadonlyArray<unknown>>(...members: { [K in keyof A]: HKT<S, A[K]> }) => HKT<S, A[number]>
 }
 
@@ -75,7 +75,7 @@ export interface WithUnion1<S extends URIS> {
 /**
  * @since 2.2.3
  */
-export interface WithRefinement<S extends URIS> {
+export interface WithRefinement<S> {
   readonly refinement: <A, B extends A>(from: HKT<S, A>, refinement: (a: A) => a is B, expected: string) => HKT<S, B>
 }
 
