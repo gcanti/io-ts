@@ -1,5 +1,11 @@
 import * as D from '../../src/Decoder'
-import { make, Schema } from '../../src/Schema'
+import { make, Schema, TypeOf } from '../../src/Schema'
+
+//
+// TypeOf
+//
+export const Person = make((S) => S.type({ name: S.string, age: S.number }))
+export type Person = TypeOf<typeof Person> // $ExpectType { name: string; age: number; }
 
 //
 // literal

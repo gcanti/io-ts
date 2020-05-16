@@ -199,6 +199,7 @@ describe('union', () => {
         }
       )
       assert.strictEqual(
+        // @ts-expect-error
         t.getTags(t.intersection([t.type({ a: t.literal('a') }), t.type({ a: t.literal('b') })])),
         t.emptyTags
       )

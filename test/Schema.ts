@@ -1,13 +1,11 @@
-import { isRight, right } from 'fp-ts/lib/Either'
-import { Schema, make } from '../src/Schema'
-import * as G from '../src/Guard'
-import * as D from '../src/Decoder'
-import * as E from '../src/Encoder'
+import * as assert from 'assert'
+import * as fc from 'fast-check'
+import { isRight } from 'fp-ts/lib/Either'
 import * as C from '../src/Codec'
 import * as Eq from '../src/Eq'
+import * as G from '../src/Guard'
+import { interpreter, make, Schema } from '../src/Schema'
 import * as A from './Arbitrary'
-import * as fc from 'fast-check'
-import * as assert from 'assert'
 
 function isDeepStrictEqual(actual: unknown, expected: unknown): boolean {
   try {
@@ -19,10 +17,10 @@ function isDeepStrictEqual(actual: unknown, expected: unknown): boolean {
 }
 
 function check<A>(schema: Schema<A>): void {
-  const arb = schema(A.arbitrary)
-  const codec = schema(C.codec)
-  const guard = schema(G.guard)
-  const eq = schema(Eq.eq)
+  const arb = interpreter(A.arbitrary)(schema)
+  const codec = interpreter(C.codec)(schema)
+  const guard = interpreter(G.guard)(schema)
+  const eq = interpreter(Eq.eq)(schema)
   // decoders, guards and eqs should be aligned
   fc.assert(fc.property(arb, (a) => isRight(codec.decode(a)) && guard.is(a) && eq.equals(a, a)))
   // laws
@@ -39,30 +37,6 @@ function check<A>(schema: Schema<A>): void {
   )
 }
 describe('Schemable', () => {
-  const Person = make((S) =>
-    S.type({
-      name: S.string,
-      age: S.number
-    })
-  )
-
-  it('should handle decoders', () => {
-    assert.deepStrictEqual(Person(D.decoder).decode({ name: 'name', age: 46 }), right({ name: 'name', age: 46 }))
-  })
-
-  it('should handle encoders', () => {
-    assert.deepStrictEqual(Person(E.encoder).encode({ name: 'name', age: 46 }), { name: 'name', age: 46 })
-  })
-
-  it('should handle guards', () => {
-    assert.deepStrictEqual(Person(G.guard).is({ name: 'name', age: 46 }), true)
-  })
-
-  it('should handle codecs', () => {
-    assert.deepStrictEqual(Person(C.codec).decode({ name: 'name', age: 46 }), right({ name: 'name', age: 46 }))
-    assert.deepStrictEqual(Person(E.encoder).encode({ name: 'name', age: 46 }), { name: 'name', age: 46 })
-  })
-
   it('string', () => {
     check(make((S) => S.string))
   })

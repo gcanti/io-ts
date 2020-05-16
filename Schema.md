@@ -33,11 +33,11 @@ export const Person = S.make((S) =>
   })
 )
 
-export const decoderPerson = Person(D.decoder)
-export const encoderPerson = Person(E.encoder)
-export const codecPerson = Person(C.codec)
-export const guardPerson = Person(G.guard)
-export const eqPerson = Person(Eq.eq)
+export const decoderPerson = S.interpreter(D.decoder)(Person)
+export const encoderPerson = S.interpreter(E.encoder)(Person)
+export const codecPerson = S.interpreter(C.codec)(Person)
+export const guardPerson = S.interpreter(G.guard)(Person)
+export const eqPerson = S.interpreter(Eq.eq)(Person)
 ```
 
 # How to extend the built-in `Schema`
@@ -57,10 +57,13 @@ export type Int = number & IntBrand
 Now we must define a custom `MySchemable` type class containing a new member `Int`...
 
 ```ts
-import { Kind, URIS } from 'fp-ts/lib/HKT'
-import * as S from 'io-ts/lib/Schemable'
+import { Kind, URIS, HKT } from 'fp-ts/lib/HKT'
 
-export interface MySchemable<S extends URIS> extends S.Schemable<S> {
+export interface MySchemable<S> extends S.Schemable<S> {
+  readonly Int: HKT<S, Int>
+}
+
+export interface MySchemable1<S extends URIS> extends S.Schemable1<S> {
   readonly Int: Kind<S, Int>
 }
 ```
@@ -69,7 +72,7 @@ export interface MySchemable<S extends URIS> extends S.Schemable<S> {
 
 ```ts
 export interface MySchema<A> {
-  <S extends URIS>(S: MySchemable<S>): Kind<S, A>
+  <S>(S: MySchemable<S>): HKT<S, A>
 }
 
 export function make<A>(f: MySchema<A>): MySchema<A> {
@@ -77,21 +80,26 @@ export function make<A>(f: MySchema<A>): MySchema<A> {
 }
 ```
 
-Finally we must define an instance of `MySchemable` for `Decoder`
+Finally we must define an instance of `MySchemable1` for `Decoder` and an interpreter
 
 ```ts
 import * as D from 'io-ts/lib/Decoder'
 
-export const mydecoder: MySchemable<D.URI> = {
+export const mydecoder: MySchemable1<D.URI> = {
   ...D.decoder,
   Int: D.refinement(D.number, (n): n is Int => Number.isInteger(n), 'Int')
+}
+
+export function interpreter<S extends URIS>(S: MySchemable1<S>): <A>(schema: MySchema<A>) => Kind<S, A>
+export function interpreter<S>(S: MySchemable<S>): <A>(schema: MySchema<A>) => HKT<S, A> {
+  return (schema) => schema(S)
 }
 ```
 
 Now we can define a schema leveraging the new `Int` capability
 
 ```ts
-const Person = make((S) =>
+export const Person = make((S) =>
   S.type({
     name: S.string,
     age: S.Int
@@ -104,7 +112,7 @@ const Person: MySchema<{
 }>
 */
 
-const decoderPerson = Person(mydecoder)
+export const decoderPerson = interpreter(mydecoder)(Person)
 /*
 const decoderPerson: D.Decoder<{
     name: string;

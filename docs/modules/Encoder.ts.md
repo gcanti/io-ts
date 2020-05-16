@@ -98,7 +98,7 @@ Added in v2.2.0
 **Signature**
 
 ```ts
-export declare const encoder: Contravariant1<'Encoder'> & Schemable<'Encoder'>
+export declare const encoder: Contravariant1<'Encoder'> & Schemable1<'Encoder'>
 ```
 
 Added in v2.2.0

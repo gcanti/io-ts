@@ -112,7 +112,7 @@ declare module 'fp-ts/lib/HKT' {
   }
 }
 
-export const arbitrary: S.Schemable<URI> & S.WithUnion<URI> = {
+export const arbitrary: S.Schemable1<URI> & S.WithUnion1<URI> = {
   URI,
   literal,
   string,
@@ -125,7 +125,7 @@ export const arbitrary: S.Schemable<URI> & S.WithUnion<URI> = {
   partial,
   record,
   array,
-  tuple: tuple as S.Schemable<URI>['tuple'],
+  tuple: tuple as S.Schemable1<URI>['tuple'],
   intersection,
   sum,
   lazy: (_, f) => lazy(f),

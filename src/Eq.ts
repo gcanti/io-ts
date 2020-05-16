@@ -148,7 +148,7 @@ export function lazy<A>(f: () => Eq<A>): Eq<A> {
 /**
  * @since 2.2.2
  */
-export const eq: typeof E.eq & S.Schemable<E.URI> = {
+export const eq: typeof E.eq & S.Schemable1<E.URI> = {
   ...E.eq,
   literal: () => E.eqStrict,
   string,
