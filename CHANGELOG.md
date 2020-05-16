@@ -17,6 +17,7 @@
 # 2.2.3
 
 - **Experimental**
+  - add `Type` experimental module, #464 (@gcanti)
   - `Schemable`
     - rename `Schemable` interface to `Schemable1` (@gcanti)
     - rename `WithUnion` interface to `WithUnion1` (@gcanti)
