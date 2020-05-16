@@ -8,7 +8,7 @@ import { NonEmptyArray } from 'fp-ts/lib/NonEmptyArray'
 import { pipe, pipeable } from 'fp-ts/lib/pipeable'
 import { Tree, Forest } from 'fp-ts/lib/Tree'
 import * as G from './Guard'
-import { Schemable, memoize, WithUnion, Literal } from './Schemable'
+import { Schemable1, memoize, WithUnion1, Literal } from './Schemable'
 
 // -------------------------------------------------------------------------------------
 // model
@@ -469,7 +469,7 @@ declare module 'fp-ts/lib/HKT' {
 /**
  * @since 2.2.0
  */
-export const decoder: Applicative1<URI> & Alternative1<URI> & Schemable<URI> & WithUnion<URI> = {
+export const decoder: Applicative1<URI> & Alternative1<URI> & Schemable1<URI> & WithUnion1<URI> = {
   URI,
   map: (fa, f) => ({
     decode: (u) => either.map(fa.decode(u), f)
@@ -495,7 +495,7 @@ export const decoder: Applicative1<URI> & Alternative1<URI> & Schemable<URI> & W
   partial,
   record,
   array,
-  tuple: tuple as Schemable<URI>['tuple'],
+  tuple: tuple as Schemable1<URI>['tuple'],
   intersection,
   sum,
   lazy,

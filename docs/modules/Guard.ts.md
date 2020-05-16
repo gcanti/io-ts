@@ -125,7 +125,7 @@ Added in v2.2.0
 **Signature**
 
 ```ts
-export declare const guard: Schemable<'Guard'> & WithUnion<'Guard'>
+export declare const guard: Schemable1<'Guard'> & WithUnion1<'Guard'>
 ```
 
 Added in v2.2.0

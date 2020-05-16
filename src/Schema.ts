@@ -1,14 +1,14 @@
 /**
  * @since 2.2.0
  */
-import { Kind, URIS } from 'fp-ts/lib/HKT'
-import { Schemable, memoize } from './Schemable'
+import { HKT, URIS, Kind } from 'fp-ts/lib/HKT'
+import { memoize, Schemable, Schemable1 } from './Schemable'
 
 /**
  * @since 2.2.0
  */
 export interface Schema<A> {
-  <S extends URIS>(S: Schemable<S>): Kind<S, A>
+  <S>(S: Schemable<S>): HKT<S, A>
 }
 
 /**
@@ -19,6 +19,14 @@ export type TypeOf<S> = S extends Schema<infer A> ? A : never
 /**
  * @since 2.2.0
  */
-export function make<A>(f: Schema<A>): Schema<A> {
-  return memoize(f)
+export function make<A>(schema: Schema<A>): Schema<A> {
+  return memoize(schema)
+}
+
+/**
+ * @since 2.2.3
+ */
+export function interpreter<S extends URIS>(S: Schemable1<S>): <A>(schema: Schema<A>) => Kind<S, A>
+export function interpreter<S>(S: Schemable<S>): <A>(schema: Schema<A>) => HKT<S, A> {
+  return (schema) => schema(S)
 }

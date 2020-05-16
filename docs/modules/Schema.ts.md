@@ -14,6 +14,7 @@ Added in v2.2.0
 
 - [Schema (interface)](#schema-interface)
 - [TypeOf (type alias)](#typeof-type-alias)
+- [interpreter](#interpreter)
 - [make](#make)
 
 ---
@@ -24,7 +25,7 @@ Added in v2.2.0
 
 ```ts
 export interface Schema<A> {
-  <S extends URIS>(S: Schemable<S>): Kind<S, A>
+  <S>(S: Schemable<S>): HKT<S, A>
 }
 ```
 
@@ -40,12 +41,22 @@ export type TypeOf<S> = S extends Schema<infer A> ? A : never
 
 Added in v2.2.0
 
+# interpreter
+
+**Signature**
+
+```ts
+export declare function interpreter<S extends URIS>(S: Schemable1<S>): <A>(schema: Schema<A>) => Kind<S, A>
+```
+
+Added in v2.2.3
+
 # make
 
 **Signature**
 
 ```ts
-export declare function make<A>(f: Schema<A>): Schema<A>
+export declare function make<A>(schema: Schema<A>): Schema<A>
 ```
 
 Added in v2.2.0

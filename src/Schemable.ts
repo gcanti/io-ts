@@ -1,7 +1,7 @@
 /**
  * @since 2.2.0
  */
-import { Kind, URIS } from 'fp-ts/lib/HKT'
+import { Kind, URIS, HKT } from 'fp-ts/lib/HKT'
 
 /**
  * @since 2.2.0
@@ -9,9 +9,33 @@ import { Kind, URIS } from 'fp-ts/lib/HKT'
 export type Literal = string | number | boolean | null
 
 /**
- * @since 2.2.0
+ * @since 2.2.3
  */
-export interface Schemable<S extends URIS> {
+export interface Schemable<S> {
+  readonly URI: S
+  readonly literal: <A extends ReadonlyArray<Literal>>(...values: A) => HKT<S, A[number]>
+  readonly string: HKT<S, string>
+  readonly number: HKT<S, number>
+  readonly boolean: HKT<S, boolean>
+  readonly UnknownArray: HKT<S, Array<unknown>>
+  readonly UnknownRecord: HKT<S, Record<string, unknown>>
+  readonly nullable: <A>(or: HKT<S, A>) => HKT<S, null | A>
+  readonly type: <A>(properties: { [K in keyof A]: HKT<S, A[K]> }) => HKT<S, A>
+  readonly partial: <A>(properties: { [K in keyof A]: HKT<S, A[K]> }) => HKT<S, Partial<A>>
+  readonly record: <A>(codomain: HKT<S, A>) => HKT<S, Record<string, A>>
+  readonly array: <A>(items: HKT<S, A>) => HKT<S, Array<A>>
+  readonly tuple: <A extends ReadonlyArray<unknown>>(...components: { [K in keyof A]: HKT<S, A[K]> }) => HKT<S, A>
+  readonly intersection: <A, B>(left: HKT<S, A>, right: HKT<S, B>) => HKT<S, A & B>
+  readonly sum: <T extends string>(
+    tag: T
+  ) => <A>(members: { [K in keyof A]: HKT<S, A[K] & Record<T, K>> }) => HKT<S, A[keyof A]>
+  readonly lazy: <A>(id: string, f: () => HKT<S, A>) => HKT<S, A>
+}
+
+/**
+ * @since 2.2.3
+ */
+export interface Schemable1<S extends URIS> {
   readonly URI: S
   readonly literal: <A extends ReadonlyArray<Literal>>(...values: A) => Kind<S, A[number]>
   readonly string: Kind<S, string>
@@ -33,9 +57,16 @@ export interface Schemable<S extends URIS> {
 }
 
 /**
- * @since 2.2.0
+ * @since 2.2.3
  */
 export interface WithUnion<S extends URIS> {
+  readonly union: <A extends ReadonlyArray<unknown>>(...members: { [K in keyof A]: HKT<S, A[K]> }) => HKT<S, A[number]>
+}
+
+/**
+ * @since 2.2.3
+ */
+export interface WithUnion1<S extends URIS> {
   readonly union: <A extends ReadonlyArray<unknown>>(
     ...members: { [K in keyof A]: Kind<S, A[K]> }
   ) => Kind<S, A[number]>

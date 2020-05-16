@@ -128,7 +128,7 @@ Added in v2.2.0
 **Signature**
 
 ```ts
-export declare const codec: Invariant1<'Codec'> & Schemable<'Codec'>
+export declare const codec: Invariant1<'Codec'> & Schemable1<'Codec'>
 ```
 
 Added in v2.2.0

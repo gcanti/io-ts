@@ -14,6 +14,20 @@
 **Note**: Gaps between patch versions are faulty/broken releases.
 **Note**: A feature tagged as Experimental is in a high state of flux, you're at risk of it changing without notice.
 
+# 2.2.3
+
+- **Experimental**
+  - `Schemable`
+    - rename `Schemable` interface to `Schemable1` (@gcanti)
+    - rename `WithUnion` interface to `WithUnion1` (@gcanti)
+    - add `Schemable` interface (@gcanti)
+    - add `WithUnion` interface (@gcanti)
+  - `Schema`
+    - refactoring with the new `Schemable` interface (@gcanti)
+    - add `interpreter` function (@gcanti)
+- **Internal**
+  - upgrade to `typescript@3.9.2` (@gcanti)
+
 # 2.2.2
 
 - **Experimental**

@@ -4,7 +4,7 @@
 import { Contravariant1 } from 'fp-ts/lib/Contravariant'
 import { identity } from 'fp-ts/lib/function'
 import { pipeable } from 'fp-ts/lib/pipeable'
-import { Schemable, memoize } from './Schemable'
+import { Schemable1, memoize } from './Schemable'
 import { intersect } from './Decoder'
 
 // -------------------------------------------------------------------------------------
@@ -170,7 +170,7 @@ declare module 'fp-ts/lib/HKT' {
 /**
  * @since 2.2.0
  */
-export const encoder: Contravariant1<URI> & Schemable<URI> = {
+export const encoder: Contravariant1<URI> & Schemable1<URI> = {
   URI,
   contramap: (fa, f) => ({
     encode: (b) => fa.encode(f(b))

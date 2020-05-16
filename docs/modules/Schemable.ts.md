@@ -13,7 +13,9 @@ Added in v2.2.0
 <h2 class="text-delta">Table of contents</h2>
 
 - [Schemable (interface)](#schemable-interface)
+- [Schemable1 (interface)](#schemable1-interface)
 - [WithUnion (interface)](#withunion-interface)
+- [WithUnion1 (interface)](#withunion1-interface)
 - [Literal (type alias)](#literal-type-alias)
 - [memoize](#memoize)
 
@@ -24,7 +26,36 @@ Added in v2.2.0
 **Signature**
 
 ```ts
-export interface Schemable<S extends URIS> {
+export interface Schemable<S> {
+  readonly URI: S
+  readonly literal: <A extends ReadonlyArray<Literal>>(...values: A) => HKT<S, A[number]>
+  readonly string: HKT<S, string>
+  readonly number: HKT<S, number>
+  readonly boolean: HKT<S, boolean>
+  readonly UnknownArray: HKT<S, Array<unknown>>
+  readonly UnknownRecord: HKT<S, Record<string, unknown>>
+  readonly nullable: <A>(or: HKT<S, A>) => HKT<S, null | A>
+  readonly type: <A>(properties: { [K in keyof A]: HKT<S, A[K]> }) => HKT<S, A>
+  readonly partial: <A>(properties: { [K in keyof A]: HKT<S, A[K]> }) => HKT<S, Partial<A>>
+  readonly record: <A>(codomain: HKT<S, A>) => HKT<S, Record<string, A>>
+  readonly array: <A>(items: HKT<S, A>) => HKT<S, Array<A>>
+  readonly tuple: <A extends ReadonlyArray<unknown>>(...components: { [K in keyof A]: HKT<S, A[K]> }) => HKT<S, A>
+  readonly intersection: <A, B>(left: HKT<S, A>, right: HKT<S, B>) => HKT<S, A & B>
+  readonly sum: <T extends string>(
+    tag: T
+  ) => <A>(members: { [K in keyof A]: HKT<S, A[K] & Record<T, K>> }) => HKT<S, A[keyof A]>
+  readonly lazy: <A>(id: string, f: () => HKT<S, A>) => HKT<S, A>
+}
+```
+
+Added in v2.2.3
+
+# Schemable1 (interface)
+
+**Signature**
+
+```ts
+export interface Schemable1<S extends URIS> {
   readonly URI: S
   readonly literal: <A extends ReadonlyArray<Literal>>(...values: A) => Kind<S, A[number]>
   readonly string: Kind<S, string>
@@ -46,7 +77,7 @@ export interface Schemable<S extends URIS> {
 }
 ```
 
-Added in v2.2.0
+Added in v2.2.3
 
 # WithUnion (interface)
 
@@ -54,13 +85,25 @@ Added in v2.2.0
 
 ```ts
 export interface WithUnion<S extends URIS> {
+  readonly union: <A extends ReadonlyArray<unknown>>(...members: { [K in keyof A]: HKT<S, A[K]> }) => HKT<S, A[number]>
+}
+```
+
+Added in v2.2.3
+
+# WithUnion1 (interface)
+
+**Signature**
+
+```ts
+export interface WithUnion1<S extends URIS> {
   readonly union: <A extends ReadonlyArray<unknown>>(
     ...members: { [K in keyof A]: Kind<S, A[K]> }
   ) => Kind<S, A[number]>
 }
 ```
 
-Added in v2.2.0
+Added in v2.2.3
 
 # Literal (type alias)
 
