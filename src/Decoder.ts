@@ -6,9 +6,9 @@ import { Applicative1 } from 'fp-ts/lib/Applicative'
 import { Either, either, isLeft, isRight, left, mapLeft, right } from 'fp-ts/lib/Either'
 import { NonEmptyArray } from 'fp-ts/lib/NonEmptyArray'
 import { pipe, pipeable } from 'fp-ts/lib/pipeable'
-import { Tree, Forest } from 'fp-ts/lib/Tree'
+import { Forest, Tree } from 'fp-ts/lib/Tree'
 import * as G from './Guard'
-import { Schemable1, memoize, WithUnion1, Literal } from './Schemable'
+import { Literal, memoize, Schemable1, WithRefinement1, WithUnion1 } from './Schemable'
 
 // -------------------------------------------------------------------------------------
 // model
@@ -469,7 +469,11 @@ declare module 'fp-ts/lib/HKT' {
 /**
  * @since 2.2.0
  */
-export const decoder: Applicative1<URI> & Alternative1<URI> & Schemable1<URI> & WithUnion1<URI> = {
+export const decoder: Applicative1<URI> &
+  Alternative1<URI> &
+  Schemable1<URI> &
+  WithUnion1<URI> &
+  WithRefinement1<URI> = {
   URI,
   map: (fa, f) => ({
     decode: (u) => either.map(fa.decode(u), f)
@@ -499,7 +503,8 @@ export const decoder: Applicative1<URI> & Alternative1<URI> & Schemable1<URI> & 
   intersection,
   sum,
   lazy,
-  union
+  union,
+  refinement: refinement as WithRefinement1<URI>['refinement']
 }
 
 const { alt, ap, apFirst, apSecond, map } = pipeable(decoder)

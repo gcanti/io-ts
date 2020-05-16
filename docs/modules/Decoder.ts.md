@@ -191,7 +191,8 @@ Added in v2.2.0
 export declare const decoder: Applicative1<'Decoder'> &
   Alternative1<'Decoder'> &
   Schemable1<'Decoder'> &
-  WithUnion1<'Decoder'>
+  WithUnion1<'Decoder'> &
+  WithRefinement1<'Decoder'>
 ```
 
 Added in v2.2.0

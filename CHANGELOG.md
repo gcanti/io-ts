@@ -22,6 +22,7 @@
     - rename `WithUnion` interface to `WithUnion1` (@gcanti)
     - add `Schemable` interface (@gcanti)
     - add `WithUnion` interface (@gcanti)
+    - add `WithRefinement` / `WithRefinement1` interfaces (@gcanti)
   - `Schema`
     - refactoring with the new `Schemable` interface (@gcanti)
     - add `interpreter` function (@gcanti)

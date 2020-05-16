@@ -79,4 +79,16 @@ describe('Eq', () => {
     assert.strictEqual(eq.equals({ _tag: 'A', a: 'a' }, { _tag: 'A', a: 'b' }), false)
     assert.strictEqual(eq.equals({ _tag: 'B', b: 1 }, { _tag: 'B', b: 2 }), false)
   })
+
+  it('refinement', () => {
+    interface NonEmptyStringBrand {
+      readonly NonEmptyString: unique symbol
+    }
+    type NonEmptyString = string & NonEmptyStringBrand
+    const eq = E.eq.refinement(E.string, (s): s is NonEmptyString => s.length > 0, 'NonEmptyString')
+    const a: NonEmptyString = 'a' as any
+    const b: NonEmptyString = 'b' as any
+    assert.deepStrictEqual(eq.equals(a, a), true)
+    assert.deepStrictEqual(eq.equals(a, b), false)
+  })
 })

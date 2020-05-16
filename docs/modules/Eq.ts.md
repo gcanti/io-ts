@@ -97,7 +97,7 @@ Added in v2.2.2
 **Signature**
 
 ```ts
-export declare const eq: Contravariant1<'Eq'> & S.Schemable1<'Eq'>
+export declare const eq: Contravariant1<'Eq'> & Schemable1<'Eq'> & WithRefinement1<'Eq'>
 ```
 
 Added in v2.2.2
