@@ -18,6 +18,7 @@
 
 - **Experimental**
   - add `Type` experimental module, #464 (@gcanti)
+  - add `PEncoder` experimental module, #469 (@gcanti)
   - `Schemable`
     - rename `Schemable` interface to `Schemable1` (@gcanti)
     - rename `WithUnion` interface to `WithUnion1` (@gcanti)
