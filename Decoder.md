@@ -211,8 +211,13 @@ export const MySum: D.Decoder<
       type: 'B'
       b: number
     }
+  //        v--- tag name
 > = D.sum('type')({
+  //           +----- all union members in the dictionary must own a field named like the chosen tag ("type" in this case)
+  //           |
+  //           v               v----- this value must be equal to its corresponding dictionary key ("A" in this case)
   A: D.type({ type: D.literal('A'), a: D.string }),
+  //                           v----- this value must be equal to its corresponding dictionary key ("B" in this case)
   B: D.type({ type: D.literal('B'), b: D.number })
 })
 ```
