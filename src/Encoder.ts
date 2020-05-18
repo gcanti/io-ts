@@ -43,7 +43,7 @@ export const id: Encoder<unknown> = {
  */
 export function nullable<A>(or: Encoder<A>): Encoder<null | A> {
   return {
-    encode: (a) => (a === null ? a : or.encode(a))
+    encode: (a) => (a === null ? null : or.encode(a))
   }
 }
 
@@ -74,7 +74,7 @@ export function partial<A>(properties: { [K in keyof A]: Encoder<A[K]> }): Encod
         // don't add missing properties
         if (k in a) {
           // don't strip undefined properties
-          o[k] = v === undefined ? v : properties[k].encode(v)
+          o[k] = v === undefined ? undefined : properties[k].encode(v)
         }
       }
       return o
