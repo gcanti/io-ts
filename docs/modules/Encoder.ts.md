@@ -78,7 +78,7 @@ Added in v2.2.0
 **Signature**
 
 ```ts
-export declare function array<A>(items: Encoder<A>): Encoder<Array<A>>
+export declare const array: <A>(items: Encoder<A>) => Encoder<A[]>
 ```
 
 Added in v2.2.0
@@ -118,7 +118,7 @@ Added in v2.2.0
 **Signature**
 
 ```ts
-export declare function intersection<A, B>(left: Encoder<A>, right: Encoder<B>): Encoder<A & B>
+export declare const intersection: <A, B>(left: Encoder<A>, right: Encoder<B>) => Encoder<A & B>
 ```
 
 Added in v2.2.0
@@ -128,7 +128,7 @@ Added in v2.2.0
 **Signature**
 
 ```ts
-export declare function lazy<A>(f: () => Encoder<A>): Encoder<A>
+export declare const lazy: <A>(f: () => Encoder<A>) => Encoder<A>
 ```
 
 Added in v2.2.0
@@ -138,7 +138,7 @@ Added in v2.2.0
 **Signature**
 
 ```ts
-export declare function nullable<A>(or: Encoder<A>): Encoder<null | A>
+export declare const nullable: <A>(or: Encoder<A>) => Encoder<A>
 ```
 
 Added in v2.2.0
@@ -148,7 +148,7 @@ Added in v2.2.0
 **Signature**
 
 ```ts
-export declare function partial<A>(properties: { [K in keyof A]: Encoder<A[K]> }): Encoder<Partial<A>>
+export declare const partial: <A>(properties: { [K in keyof A]: Encoder<A[K]> }) => Encoder<Partial<A>>
 ```
 
 Added in v2.2.0
@@ -158,7 +158,7 @@ Added in v2.2.0
 **Signature**
 
 ```ts
-export declare function record<A>(codomain: Encoder<A>): Encoder<Record<string, A>>
+export declare const record: <A>(codomain: Encoder<A>) => Encoder<Record<string, A>>
 ```
 
 Added in v2.2.0
@@ -168,9 +168,9 @@ Added in v2.2.0
 **Signature**
 
 ```ts
-export declare function sum<T extends string>(
+export declare const sum: <T extends string>(
   tag: T
-): <A>(members: { [K in keyof A]: Encoder<A[K] & Record<T, K>> }) => Encoder<A[keyof A]>
+) => <A>(members: { [K in keyof A]: Encoder<A[K] & Record<T, K>> }) => Encoder<A[keyof A]>
 ```
 
 Added in v2.2.0
@@ -180,9 +180,9 @@ Added in v2.2.0
 **Signature**
 
 ```ts
-export declare function tuple<A extends ReadonlyArray<unknown>>(
+export declare const tuple: <A extends readonly unknown[]>(
   ...components: { [K in keyof A]: Encoder<A[K]> }
-): Encoder<A>
+) => Encoder<A>
 ```
 
 Added in v2.2.0
@@ -192,7 +192,7 @@ Added in v2.2.0
 **Signature**
 
 ```ts
-export declare function type<A>(properties: { [K in keyof A]: Encoder<A[K]> }): Encoder<A>
+export declare const type: <A>(properties: { [K in keyof A]: Encoder<A[K]> }) => Encoder<A>
 ```
 
 Added in v2.2.0
