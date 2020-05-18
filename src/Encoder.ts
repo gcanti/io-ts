@@ -4,8 +4,8 @@
 import { Contravariant1 } from 'fp-ts/lib/Contravariant'
 import { identity } from 'fp-ts/lib/function'
 import { pipeable } from 'fp-ts/lib/pipeable'
-import { Schemable1, memoize } from './Schemable'
-import { intersect } from './Decoder'
+import * as PE from './PEncoder'
+import { Schemable1 } from './Schemable'
 
 // -------------------------------------------------------------------------------------
 // model
@@ -41,111 +41,51 @@ export const id: Encoder<unknown> = {
 /**
  * @since 2.2.0
  */
-export function nullable<A>(or: Encoder<A>): Encoder<null | A> {
-  return {
-    encode: (a) => (a === null ? null : or.encode(a))
-  }
-}
+export const nullable: <A>(or: Encoder<A>) => Encoder<null | A> = PE.nullable
 
 /**
  * @since 2.2.0
  */
-export function type<A>(properties: { [K in keyof A]: Encoder<A[K]> }): Encoder<A> {
-  return {
-    encode: (a) => {
-      const o: Record<string, unknown> = {}
-      for (const k in properties) {
-        o[k] = properties[k].encode(a[k])
-      }
-      return o
-    }
-  }
-}
+export const type: <A>(properties: { [K in keyof A]: Encoder<A[K]> }) => Encoder<A> = PE.type as any
 
 /**
  * @since 2.2.0
  */
-export function partial<A>(properties: { [K in keyof A]: Encoder<A[K]> }): Encoder<Partial<A>> {
-  return {
-    encode: (a) => {
-      const o: Record<string, unknown> = {}
-      for (const k in properties) {
-        const v: A[Extract<keyof A, string>] | undefined = a[k]
-        // don't add missing properties
-        if (k in a) {
-          // don't strip undefined properties
-          o[k] = v === undefined ? undefined : properties[k].encode(v)
-        }
-      }
-      return o
-    }
-  }
-}
+export const partial: <A>(properties: { [K in keyof A]: Encoder<A[K]> }) => Encoder<Partial<A>> = PE.partial as any
 
 /**
  * @since 2.2.0
  */
-export function record<A>(codomain: Encoder<A>): Encoder<Record<string, A>> {
-  return {
-    encode: (r) => {
-      const o: Record<string, unknown> = {}
-      for (const k in r) {
-        o[k] = codomain.encode(r[k])
-      }
-      return o
-    }
-  }
-}
+export const record: <A>(codomain: Encoder<A>) => Encoder<Record<string, A>> = PE.record
 
 /**
  * @since 2.2.0
  */
-export function array<A>(items: Encoder<A>): Encoder<Array<A>> {
-  return {
-    encode: (as) => as.map(items.encode)
-  }
-}
+export const array: <A>(items: Encoder<A>) => Encoder<Array<A>> = PE.array
 
 /**
  * @since 2.2.0
  */
-export function tuple<A extends ReadonlyArray<unknown>>(...components: { [K in keyof A]: Encoder<A[K]> }): Encoder<A> {
-  return {
-    encode: (as) => components.map((c, i) => c.encode(as[i]))
-  }
-}
+export const tuple: <A extends ReadonlyArray<unknown>>(
+  ...components: { [K in keyof A]: Encoder<A[K]> }
+) => Encoder<A> = PE.tuple as any
 
 /**
  * @since 2.2.0
  */
-export function intersection<A, B>(left: Encoder<A>, right: Encoder<B>): Encoder<A & B> {
-  return {
-    encode: (ab) => intersect(left.encode(ab), right.encode(ab))
-  }
-}
+export const intersection: <A, B>(left: Encoder<A>, right: Encoder<B>) => Encoder<A & B> = PE.intersection
 
 /**
  * @since 2.2.0
  */
-export function sum<T extends string>(
+export const sum: <T extends string>(
   tag: T
-): <A>(members: { [K in keyof A]: Encoder<A[K] & Record<T, K>> }) => Encoder<A[keyof A]> {
-  return (members: Record<string, Encoder<any>>) => {
-    return {
-      encode: (a: Record<string, any>) => members[a[tag]].encode(a)
-    }
-  }
-}
+) => <A>(members: { [K in keyof A]: Encoder<A[K] & Record<T, K>> }) => Encoder<A[keyof A]> = PE.sum as any
 
 /**
  * @since 2.2.0
  */
-export function lazy<A>(f: () => Encoder<A>): Encoder<A> {
-  const get = memoize<void, Encoder<A>>(f)
-  return {
-    encode: (a) => get().encode(a)
-  }
-}
+export const lazy: <A>(f: () => Encoder<A>) => Encoder<A> = PE.lazy
 
 // -------------------------------------------------------------------------------------
 // instances
@@ -172,9 +112,7 @@ declare module 'fp-ts/lib/HKT' {
  */
 export const encoder: Contravariant1<URI> & Schemable1<URI> = {
   URI,
-  contramap: (fa, f) => ({
-    encode: (b) => fa.encode(f(b))
-  }),
+  contramap: PE.pencoder.contramap,
   literal: () => id,
   string: id,
   number: id,
