@@ -2,7 +2,7 @@
  * @since 2.2.3
  */
 import * as t from './index'
-import { Literal, Schemable1, WithUnion1, WithRefinement1 } from './Schemable'
+import { Literal, Schemable1, WithUnion1, WithRefinement1, WithUnknownContainers1 } from './Schemable'
 
 // -------------------------------------------------------------------------------------
 // model
@@ -160,14 +160,12 @@ declare module 'fp-ts/lib/HKT' {
 /**
  * @since 2.2.3
  */
-export const instance: Schemable1<URI> & WithUnion1<URI> & WithRefinement1<URI> = {
+export const instance: Schemable1<URI> & WithUnknownContainers1<URI> & WithUnion1<URI> & WithRefinement1<URI> = {
   URI,
   literal,
   string,
   number,
   boolean,
-  UnknownArray,
-  UnknownRecord,
   nullable,
   type,
   partial,
@@ -177,6 +175,8 @@ export const instance: Schemable1<URI> & WithUnion1<URI> & WithRefinement1<URI> 
   intersection,
   sum,
   lazy,
+  UnknownArray,
+  UnknownRecord,
   union,
   refinement: refinement as WithRefinement1<URI>['refinement']
 }

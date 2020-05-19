@@ -191,6 +191,7 @@ Added in v2.2.0
 export declare const decoder: Applicative1<'io-ts/Decoder'> &
   Alternative1<'io-ts/Decoder'> &
   Schemable1<'io-ts/Decoder'> &
+  WithUnknownContainers1<'io-ts/Decoder'> &
   WithUnion1<'io-ts/Decoder'> &
   WithRefinement1<'io-ts/Decoder'>
 ```

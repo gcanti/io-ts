@@ -3,7 +3,6 @@
  */
 import { Contravariant1 } from 'fp-ts/lib/Contravariant'
 import { identity } from 'fp-ts/lib/function'
-import { pipeable } from 'fp-ts/lib/pipeable'
 import * as PE from './PEncoder'
 import { Schemable1 } from './Schemable'
 
@@ -117,8 +116,6 @@ export const encoder: Contravariant1<URI> & Schemable1<URI> = {
   string: id,
   number: id,
   boolean: id,
-  UnknownArray: id,
-  UnknownRecord: id,
   nullable,
   type,
   partial,
@@ -130,11 +127,7 @@ export const encoder: Contravariant1<URI> & Schemable1<URI> = {
   lazy: (_, f) => lazy(f)
 }
 
-const { contramap } = pipeable(encoder)
-
-export {
-  /**
-   * @since 2.2.0
-   */
-  contramap
-}
+/**
+ * @since 2.2.0
+ */
+export const contramap: <A, B>(f: (b: B) => A) => (fa: Encoder<A>) => Encoder<B> = PE.contramap

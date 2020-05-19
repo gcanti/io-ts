@@ -19,12 +19,15 @@
 - **Experimental**
   - add `Type` experimental module, #464 (@gcanti)
   - add `PEncoder` experimental module, #469 (@gcanti)
+  - add `JsonEncoder` experimental module (@gcanti)
   - `Schemable`
     - rename `Schemable` interface to `Schemable1` (@gcanti)
     - rename `WithUnion` interface to `WithUnion1` (@gcanti)
     - add `Schemable` interface (@gcanti)
     - add `WithUnion` interface (@gcanti)
     - add `WithRefinement` / `WithRefinement1` interfaces (@gcanti)
+    - add `WithUnknownContainers` / `WithUnknownContainers1` interfaces (@gcanti)
+      - move `UnknownArray` and `UnknownRecord` to `WithUnknownContainers` (@gcanti)
   - `Schema`
     - refactoring with the new `Schemable` interface (@gcanti)
     - add `interpreter` function (@gcanti)

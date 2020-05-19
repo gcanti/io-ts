@@ -2,7 +2,6 @@
  * @since 2.2.3
  */
 import { Contravariant2 } from 'fp-ts/lib/Contravariant'
-import { pipeable } from 'fp-ts/lib/pipeable'
 import { intersect } from './Decoder'
 import { memoize } from './Schemable'
 import { identity } from 'fp-ts/lib/function'
@@ -190,11 +189,8 @@ export const pencoder: Contravariant2<URI> = {
   })
 }
 
-const { contramap } = pipeable(pencoder)
-
-export {
-  /**
-   * @since 2.2.3
-   */
-  contramap
-}
+/**
+ * @since 2.2.3
+ */
+export const contramap: <A, B>(f: (b: B) => A) => <E>(fa: PEncoder<E, A>) => PEncoder<E, B> = (f) => (fa) =>
+  pencoder.contramap(fa, f)

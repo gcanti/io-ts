@@ -1,6 +1,6 @@
 ---
 title: Schemable.ts
-nav_order: 11
+nav_order: 12
 parent: Modules
 ---
 
@@ -18,6 +18,8 @@ Added in v2.2.0
 - [WithRefinement1 (interface)](#withrefinement1-interface)
 - [WithUnion (interface)](#withunion-interface)
 - [WithUnion1 (interface)](#withunion1-interface)
+- [WithUnknownContainers (interface)](#withunknowncontainers-interface)
+- [WithUnknownContainers1 (interface)](#withunknowncontainers1-interface)
 - [Literal (type alias)](#literal-type-alias)
 - [memoize](#memoize)
 
@@ -34,8 +36,6 @@ export interface Schemable<S> {
   readonly string: HKT<S, string>
   readonly number: HKT<S, number>
   readonly boolean: HKT<S, boolean>
-  readonly UnknownArray: HKT<S, Array<unknown>>
-  readonly UnknownRecord: HKT<S, Record<string, unknown>>
   readonly nullable: <A>(or: HKT<S, A>) => HKT<S, null | A>
   readonly type: <A>(properties: { [K in keyof A]: HKT<S, A[K]> }) => HKT<S, A>
   readonly partial: <A>(properties: { [K in keyof A]: HKT<S, A[K]> }) => HKT<S, Partial<A>>
@@ -63,8 +63,6 @@ export interface Schemable1<S extends URIS> {
   readonly string: Kind<S, string>
   readonly number: Kind<S, number>
   readonly boolean: Kind<S, boolean>
-  readonly UnknownArray: Kind<S, Array<unknown>>
-  readonly UnknownRecord: Kind<S, Record<string, unknown>>
   readonly nullable: <A>(or: Kind<S, A>) => Kind<S, null | A>
   readonly type: <A>(properties: { [K in keyof A]: Kind<S, A[K]> }) => Kind<S, A>
   readonly partial: <A>(properties: { [K in keyof A]: Kind<S, A[K]> }) => Kind<S, Partial<A>>
@@ -126,6 +124,32 @@ export interface WithUnion1<S extends URIS> {
   readonly union: <A extends ReadonlyArray<unknown>>(
     ...members: { [K in keyof A]: Kind<S, A[K]> }
   ) => Kind<S, A[number]>
+}
+```
+
+Added in v2.2.3
+
+# WithUnknownContainers (interface)
+
+**Signature**
+
+```ts
+export interface WithUnknownContainers<S> {
+  readonly UnknownArray: HKT<S, Array<unknown>>
+  readonly UnknownRecord: HKT<S, Record<string, unknown>>
+}
+```
+
+Added in v2.2.3
+
+# WithUnknownContainers1 (interface)
+
+**Signature**
+
+```ts
+export interface WithUnknownContainers1<S extends URIS> {
+  readonly UnknownArray: Kind<S, Array<unknown>>
+  readonly UnknownRecord: Kind<S, Record<string, unknown>>
 }
 ```
 
