@@ -1,6 +1,6 @@
 ---
 title: JsonEncoder.ts
-nav_order: 7
+nav_order: 8
 parent: Modules
 ---
 
@@ -81,7 +81,7 @@ Added in v2.2.3
 **Signature**
 
 ```ts
-export type TypeOf<E> = E extends JsonEncoder<infer A> ? A : never
+export type TypeOf<E> = E.TypeOf<E>
 ```
 
 Added in v2.2.3

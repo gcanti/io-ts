@@ -6,17 +6,19 @@ parent: Modules
 
 # Encoder overview
 
-Added in v2.2.0
+Added in v2.2.3
 
 ---
 
 <h2 class="text-delta">Table of contents</h2>
 
 - [Encoder (interface)](#encoder-interface)
+- [OutputOf (type alias)](#outputof-type-alias)
 - [TypeOf (type alias)](#typeof-type-alias)
 - [URI (type alias)](#uri-type-alias)
 - [URI](#uri)
 - [array](#array)
+- [compose](#compose)
 - [contramap](#contramap)
 - [encoder](#encoder)
 - [id](#id)
@@ -36,22 +38,32 @@ Added in v2.2.0
 **Signature**
 
 ```ts
-export interface Encoder<A> {
-  readonly encode: (a: A) => unknown
+export interface Encoder<O, A> {
+  readonly encode: (a: A) => O
 }
 ```
 
-Added in v2.2.0
+Added in v2.2.3
+
+# OutputOf (type alias)
+
+**Signature**
+
+```ts
+export type OutputOf<E> = E extends Encoder<infer O, any> ? O : never
+```
+
+Added in v2.2.3
 
 # TypeOf (type alias)
 
 **Signature**
 
 ```ts
-export type TypeOf<E> = E extends Encoder<infer A> ? A : never
+export type TypeOf<E> = E extends Encoder<any, infer A> ? A : never
 ```
 
-Added in v2.2.2
+Added in v2.2.3
 
 # URI (type alias)
 
@@ -61,7 +73,7 @@ Added in v2.2.2
 export type URI = typeof URI
 ```
 
-Added in v2.2.0
+Added in v2.2.3
 
 # URI
 
@@ -71,128 +83,142 @@ Added in v2.2.0
 export declare const URI: 'io-ts/Encoder'
 ```
 
-Added in v2.2.0
+Added in v2.2.3
 
 # array
 
 **Signature**
 
 ```ts
-export declare const array: <A>(items: Encoder<A>) => Encoder<A[]>
+export declare function array<O, A>(items: Encoder<O, A>): Encoder<Array<O>, Array<A>>
 ```
 
-Added in v2.2.0
+Added in v2.2.3
+
+# compose
+
+**Signature**
+
+```ts
+export declare const compose: <E, A>(ea: Encoder<E, A>) => <B>(ab: Encoder<A, B>) => Encoder<E, B>
+```
+
+Added in v2.2.3
 
 # contramap
 
 **Signature**
 
 ```ts
-export declare const contramap: <A, B>(f: (b: B) => A) => (fa: Encoder<A>) => Encoder<B>
+export declare const contramap: <A, B>(f: (b: B) => A) => <E>(fa: Encoder<E, A>) => Encoder<E, B>
 ```
 
-Added in v2.2.0
+Added in v2.2.3
 
 # encoder
 
 **Signature**
 
 ```ts
-export declare const encoder: Contravariant1<'io-ts/Encoder'> & Schemable1<'io-ts/Encoder'>
+export declare const encoder: Contravariant2<'io-ts/Encoder'> & Category2<'io-ts/Encoder'>
 ```
 
-Added in v2.2.0
+Added in v2.2.3
 
 # id
 
 **Signature**
 
 ```ts
-export declare const id: Encoder<unknown>
+export declare function id<A>(): Encoder<A, A>
 ```
 
-Added in v2.2.0
+Added in v2.2.3
 
 # intersection
 
 **Signature**
 
 ```ts
-export declare const intersection: <A, B>(left: Encoder<A>, right: Encoder<B>) => Encoder<A & B>
+export declare function intersection<O, A, P, B>(left: Encoder<O, A>, right: Encoder<P, B>): Encoder<O & P, A & B>
 ```
 
-Added in v2.2.0
+Added in v2.2.3
 
 # lazy
 
 **Signature**
 
 ```ts
-export declare const lazy: <A>(f: () => Encoder<A>) => Encoder<A>
+export declare function lazy<O, A>(f: () => Encoder<O, A>): Encoder<O, A>
 ```
 
-Added in v2.2.0
+Added in v2.2.3
 
 # nullable
 
 **Signature**
 
 ```ts
-export declare const nullable: <A>(or: Encoder<A>) => Encoder<A>
+export declare function nullable<O, A>(or: Encoder<O, A>): Encoder<null | O, null | A>
 ```
 
-Added in v2.2.0
+Added in v2.2.3
 
 # partial
 
 **Signature**
 
 ```ts
-export declare const partial: <A>(properties: { [K in keyof A]: Encoder<A[K]> }) => Encoder<Partial<A>>
+export declare function partial<P extends Record<string, Encoder<any, any>>>(
+  properties: P
+): Encoder<Partial<{ [K in keyof P]: OutputOf<P[K]> }>, Partial<{ [K in keyof P]: TypeOf<P[K]> }>>
 ```
 
-Added in v2.2.0
+Added in v2.2.3
 
 # record
 
 **Signature**
 
 ```ts
-export declare const record: <A>(codomain: Encoder<A>) => Encoder<Record<string, A>>
+export declare function record<O, A>(codomain: Encoder<O, A>): Encoder<Record<string, O>, Record<string, A>>
 ```
 
-Added in v2.2.0
+Added in v2.2.3
 
 # sum
 
 **Signature**
 
 ```ts
-export declare const sum: <T extends string>(
+export declare function sum<T extends string>(
   tag: T
-) => <A>(members: { [K in keyof A]: Encoder<A[K] & Record<T, K>> }) => Encoder<A[keyof A]>
+): <M extends Record<string, Encoder<any, any>>>(members: M) => Encoder<OutputOf<M[keyof M]>, TypeOf<M[keyof M]>>
 ```
 
-Added in v2.2.0
+Added in v2.2.3
 
 # tuple
 
 **Signature**
 
 ```ts
-export declare const tuple: <A extends readonly unknown[]>(
-  ...components: { [K in keyof A]: Encoder<A[K]> }
-) => Encoder<A>
+export declare function tuple<C extends ReadonlyArray<Encoder<any, any>>>(
+  ...components: C
+): Encoder<{ [K in keyof C]: OutputOf<C[K]> }, { [K in keyof C]: TypeOf<C[K]> }>
 ```
 
-Added in v2.2.0
+Added in v2.2.3
 
 # type
 
 **Signature**
 
 ```ts
-export declare const type: <A>(properties: { [K in keyof A]: Encoder<A[K]> }) => Encoder<A>
+export declare function type<P extends Record<string, Encoder<any, any>>>(
+  properties: P
+): Encoder<{ [K in keyof P]: OutputOf<P[K]> }, { [K in keyof P]: TypeOf<P[K]> }>
 ```
 
-Added in v2.2.0
+Added in v2.2.3

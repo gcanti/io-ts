@@ -1,7 +1,7 @@
 import * as assert from 'assert'
 import * as fc from 'fast-check'
 import { isRight } from 'fp-ts/lib/Either'
-import * as C from '../src/Codec'
+import * as JC from '../src/JsonCodec'
 import * as Eq from '../src/Eq'
 import * as G from '../src/Guard'
 import { Schema, interpreter, make } from '../src/Schema'
@@ -19,7 +19,7 @@ function isDeepStrictEqual(actual: unknown, expected: unknown): boolean {
 
 function check<A>(schema: Schema<A>): void {
   const arb = interpreter(A.arbitrary)(schema)
-  const codec = interpreter(C.codec)(schema)
+  const codec = interpreter(JC.jsonCodec)(schema)
   const guard = interpreter(G.guard)(schema)
   const eq = interpreter(Eq.eq)(schema)
   const encoder = interpreter(JE.jsonEncoder)(schema)
