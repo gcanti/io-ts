@@ -144,7 +144,7 @@ export function union<A extends ReadonlyArray<unknown>>(...members: { [K in keyo
 /**
  * @since 2.2.3
  */
-export const URI = 'Type'
+export const URI = 'io-ts/Type'
 
 /**
  * @since 2.2.3
@@ -153,7 +153,7 @@ export type URI = typeof URI
 
 declare module 'fp-ts/lib/HKT' {
   interface URItoKind<A> {
-    readonly Type: Type<A>
+    readonly [URI]: Type<A>
   }
 }
 

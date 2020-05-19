@@ -98,7 +98,7 @@ Added in v2.2.0
 **Signature**
 
 ```ts
-export declare const URI: 'Decoder'
+export declare const URI: 'io-ts/Decoder'
 ```
 
 Added in v2.2.0
@@ -188,11 +188,11 @@ Added in v2.2.0
 **Signature**
 
 ```ts
-export declare const decoder: Applicative1<'Decoder'> &
-  Alternative1<'Decoder'> &
-  Schemable1<'Decoder'> &
-  WithUnion1<'Decoder'> &
-  WithRefinement1<'Decoder'>
+export declare const decoder: Applicative1<'io-ts/Decoder'> &
+  Alternative1<'io-ts/Decoder'> &
+  Schemable1<'io-ts/Decoder'> &
+  WithUnion1<'io-ts/Decoder'> &
+  WithRefinement1<'io-ts/Decoder'>
 ```
 
 Added in v2.2.0

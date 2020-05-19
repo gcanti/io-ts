@@ -61,7 +61,7 @@ Added in v2.2.3
 **Signature**
 
 ```ts
-export declare const URI: 'Type'
+export declare const URI: 'io-ts/Type'
 ```
 
 Added in v2.2.3
@@ -111,7 +111,7 @@ Added in v2.2.3
 **Signature**
 
 ```ts
-export declare const instance: Schemable1<'Type'> & WithUnion1<'Type'> & WithRefinement1<'Type'>
+export declare const instance: Schemable1<'io-ts/Type'> & WithUnion1<'io-ts/Type'> & WithRefinement1<'io-ts/Type'>
 ```
 
 Added in v2.2.3

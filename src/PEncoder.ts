@@ -167,7 +167,7 @@ export function lazy<O, A>(f: () => PEncoder<O, A>): PEncoder<O, A> {
 /**
  * @since 2.2.3
  */
-export const URI = 'PEncoder'
+export const URI = 'io-ts/PEncoder'
 
 /**
  * @since 2.2.3
@@ -176,7 +176,7 @@ export type URI = typeof URI
 
 declare module 'fp-ts/lib/HKT' {
   interface URItoKind2<E, A> {
-    readonly PEncoder: PEncoder<E, A>
+    readonly [URI]: PEncoder<E, A>
   }
 }
 

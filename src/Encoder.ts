@@ -94,7 +94,7 @@ export const lazy: <A>(f: () => Encoder<A>) => Encoder<A> = PE.lazy
 /**
  * @since 2.2.0
  */
-export const URI = 'Encoder'
+export const URI = 'io-ts/Encoder'
 
 /**
  * @since 2.2.0
@@ -103,7 +103,7 @@ export type URI = typeof URI
 
 declare module 'fp-ts/lib/HKT' {
   interface URItoKind<A> {
-    readonly Encoder: Encoder<A>
+    readonly [URI]: Encoder<A>
   }
 }
 

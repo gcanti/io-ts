@@ -212,7 +212,7 @@ export function lazy<A>(f: () => Guard<A>): Guard<A> {
 /**
  * @since 2.2.0
  */
-export const URI = 'Guard'
+export const URI = 'io-ts/Guard'
 
 /**
  * @since 2.2.0
@@ -221,7 +221,7 @@ export type URI = typeof URI
 
 declare module 'fp-ts/lib/HKT' {
   interface URItoKind<A> {
-    readonly Guard: Guard<A>
+    readonly [URI]: Guard<A>
   }
 }
 
