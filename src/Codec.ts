@@ -170,7 +170,7 @@ export function lazy<A>(id: string, f: () => Codec<A>): Codec<A> {
 /**
  * @since 2.2.0
  */
-export const URI = 'Codec'
+export const URI = 'io-ts/Codec'
 
 /**
  * @since 2.2.0
@@ -179,7 +179,7 @@ export type URI = typeof URI
 
 declare module 'fp-ts/lib/HKT' {
   interface URItoKind<A> {
-    readonly Codec: Codec<A>
+    readonly [URI]: Codec<A>
   }
 }
 

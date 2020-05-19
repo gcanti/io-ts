@@ -68,7 +68,7 @@ Added in v2.2.0
 **Signature**
 
 ```ts
-export declare const URI: 'Encoder'
+export declare const URI: 'io-ts/Encoder'
 ```
 
 Added in v2.2.0
@@ -98,7 +98,7 @@ Added in v2.2.0
 **Signature**
 
 ```ts
-export declare const encoder: Contravariant1<'Encoder'> & Schemable1<'Encoder'>
+export declare const encoder: Contravariant1<'io-ts/Encoder'> & Schemable1<'io-ts/Encoder'>
 ```
 
 Added in v2.2.0

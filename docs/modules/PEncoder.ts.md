@@ -79,7 +79,7 @@ Added in v2.2.3
 **Signature**
 
 ```ts
-export declare const URI: 'PEncoder'
+export declare const URI: 'io-ts/PEncoder'
 ```
 
 Added in v2.2.3
@@ -161,7 +161,7 @@ Added in v2.2.3
 **Signature**
 
 ```ts
-export declare const pencoder: Contravariant2<'PEncoder'>
+export declare const pencoder: Contravariant2<'io-ts/PEncoder'>
 ```
 
 Added in v2.2.3

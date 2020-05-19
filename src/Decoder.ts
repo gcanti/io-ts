@@ -453,7 +453,7 @@ export function union<A extends ReadonlyArray<unknown>>(
 /**
  * @since 2.2.0
  */
-export const URI = 'Decoder'
+export const URI = 'io-ts/Decoder'
 
 /**
  * @since 2.2.0
@@ -462,7 +462,7 @@ export type URI = typeof URI
 
 declare module 'fp-ts/lib/HKT' {
   interface URItoKind<A> {
-    readonly Decoder: Decoder<A>
+    readonly [URI]: Decoder<A>
   }
 }
 

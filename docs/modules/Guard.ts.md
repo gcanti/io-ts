@@ -75,7 +75,7 @@ Added in v2.2.0
 **Signature**
 
 ```ts
-export declare const URI: 'Guard'
+export declare const URI: 'io-ts/Guard'
 ```
 
 Added in v2.2.0
@@ -125,7 +125,7 @@ Added in v2.2.0
 **Signature**
 
 ```ts
-export declare const guard: Schemable1<'Guard'> & WithUnion1<'Guard'> & WithRefinement1<'Guard'>
+export declare const guard: Schemable1<'io-ts/Guard'> & WithUnion1<'io-ts/Guard'> & WithRefinement1<'io-ts/Guard'>
 ```
 
 Added in v2.2.0
