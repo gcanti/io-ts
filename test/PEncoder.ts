@@ -17,6 +17,11 @@ describe('PEncoder', () => {
     })
   })
 
+  it('contramap', () => {
+    const encoder = PE.contramap((s: string) => s.length)(NumberToString)
+    assert.deepStrictEqual(encoder.encode('aaa'), '3')
+  })
+
   it('nullable', () => {
     const encoder = PE.nullable(NumberToString)
     assert.deepStrictEqual(encoder.encode(1), '1')

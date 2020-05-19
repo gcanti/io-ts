@@ -128,7 +128,10 @@ Added in v2.2.0
 **Signature**
 
 ```ts
-export declare const codec: Invariant1<'io-ts/Codec'> & Schemable1<'io-ts/Codec'> & WithRefinement1<'io-ts/Codec'>
+export declare const codec: Invariant1<'io-ts/Codec'> &
+  Schemable1<'io-ts/Codec'> &
+  WithUnknownContainers1<'io-ts/Codec'> &
+  WithRefinement1<'io-ts/Codec'>
 ```
 
 Added in v2.2.0

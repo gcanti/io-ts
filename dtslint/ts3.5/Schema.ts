@@ -1,5 +1,16 @@
 import * as D from '../../src/Decoder'
-import { make, Schema, TypeOf } from '../../src/Schema'
+import { Schemable, WithUnknownContainers, memoize, WithRefinement, WithUnion } from '../../src/Schemable'
+import { HKT } from 'fp-ts/lib/HKT'
+
+interface Schema<A> {
+  <S>(S: Schemable<S> & WithUnknownContainers<S> & WithRefinement<S> & WithUnion<S>): HKT<S, A>
+}
+
+export type TypeOf<S> = S extends Schema<infer A> ? A : never
+
+function make<A>(f: Schema<A>): Schema<A> {
+  return memoize(f)
+}
 
 //
 // TypeOf
@@ -26,16 +37,6 @@ make((S) => S.number) // $ExpectType Schema<number>
 // boolean
 //
 make((S) => S.boolean) // $ExpectType Schema<boolean>
-
-//
-// UnknownArray
-//
-make((S) => S.UnknownArray) // $ExpectType Schema<unknown[]>
-
-//
-// UnknownRecord
-//
-make((S) => S.UnknownRecord) // $ExpectType Schema<Record<string, unknown>>
 
 //
 // nullable
@@ -113,7 +114,26 @@ const B: Schema<B> = make((S) =>
 )
 
 //
+// UnknownArray
+//
+make((S) => S.UnknownArray) // $ExpectType Schema<unknown[]>
+
+//
+// UnknownRecord
+//
+make((S) => S.UnknownRecord) // $ExpectType Schema<Record<string, unknown>>
+
+//
+// refinement
+//
+interface PositiveBrand {
+  readonly Positive: unique symbol
+}
+type Positive = number & PositiveBrand
+make((S) => S.refinement(S.number, (n): n is Positive => n > 0, 'Positive'))
+
+//
 // union
 //
-D.union(D.string) // $ExpectType Decoder<string>
-D.union(D.string, D.number) // $ExpectType Decoder<string | number>
+make((S) => S.union(S.string)) // $ExpectType Schema<string>
+make((S) => S.union(S.string, S.number)) // $ExpectType Schema<string | number>

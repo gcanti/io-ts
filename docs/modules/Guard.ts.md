@@ -125,7 +125,10 @@ Added in v2.2.0
 **Signature**
 
 ```ts
-export declare const guard: Schemable1<'io-ts/Guard'> & WithUnion1<'io-ts/Guard'> & WithRefinement1<'io-ts/Guard'>
+export declare const guard: Schemable1<'io-ts/Guard'> &
+  WithUnknownContainers1<'io-ts/Guard'> &
+  WithUnion1<'io-ts/Guard'> &
+  WithRefinement1<'io-ts/Guard'>
 ```
 
 Added in v2.2.0

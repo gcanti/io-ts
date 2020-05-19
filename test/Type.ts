@@ -5,21 +5,30 @@ import { Kind, URIS, HKT } from 'fp-ts/lib/HKT'
 import * as t from '../src'
 import * as D from '../src/Decoder'
 import * as G from '../src/Guard'
-import { memoize, Schemable, WithUnion, Schemable1, WithUnion1 } from '../src/Schemable'
+import {
+  memoize,
+  Schemable,
+  WithUnion,
+  Schemable1,
+  WithUnion1,
+  WithUnknownContainers,
+  WithUnknownContainers1
+} from '../src/Schemable'
 import * as T from '../src/Type'
 import * as A from './Arbitrary'
 
 interface Schema<A> {
-  <S>(S: Schemable<S> & WithUnion<S>): HKT<S, A>
+  <S>(S: Schemable<S> & WithUnknownContainers<S> & WithUnion<S>): HKT<S, A>
 }
 
 function make<A>(f: Schema<A>): Schema<A> {
   return memoize(f)
 }
 
-function interpreter<S extends URIS>(S: Schemable1<S> & WithUnion1<S>): <A>(schema: Schema<A>) => Kind<S, A>
-function interpreter<S>(S: Schemable<S> & WithUnion<S>): <A>(schema: Schema<A>) => HKT<S, A> {
-  return (schema) => schema(S)
+function interpreter<S extends URIS>(
+  S: Schemable1<S> & WithUnknownContainers1<S> & WithUnion1<S>
+): <A>(schema: Schema<A>) => Kind<S, A> {
+  return (schema: any) => schema(S)
 }
 
 function check<A>(schema: Schema<A>, type: t.Type<A>): void {

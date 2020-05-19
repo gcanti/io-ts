@@ -4,7 +4,7 @@
 import * as A from 'fp-ts/lib/Array'
 import * as E from 'fp-ts/lib/Eq'
 import * as R from 'fp-ts/lib/Record'
-import { memoize, Schemable1, WithRefinement1 } from './Schemable'
+import { memoize, Schemable1, WithRefinement1, WithUnknownContainers1 } from './Schemable'
 import Eq = E.Eq
 
 /**
@@ -153,14 +153,12 @@ export function lazy<A>(f: () => Eq<A>): Eq<A> {
 /**
  * @since 2.2.2
  */
-export const eq: typeof E.eq & Schemable1<E.URI> & WithRefinement1<E.URI> = {
+export const eq: typeof E.eq & Schemable1<E.URI> & WithUnknownContainers1<E.URI> & WithRefinement1<E.URI> = {
   ...E.eq,
   literal: () => E.eqStrict,
   string,
   number,
   boolean,
-  UnknownArray,
-  UnknownRecord,
   nullable,
   type,
   partial,
@@ -170,5 +168,7 @@ export const eq: typeof E.eq & Schemable1<E.URI> & WithRefinement1<E.URI> = {
   intersection,
   sum,
   lazy: (_, f) => lazy(f),
+  UnknownArray,
+  UnknownRecord,
   refinement: (from) => from
 }

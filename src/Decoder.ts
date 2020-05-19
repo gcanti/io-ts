@@ -8,7 +8,7 @@ import { NonEmptyArray } from 'fp-ts/lib/NonEmptyArray'
 import { pipe, pipeable } from 'fp-ts/lib/pipeable'
 import { Forest, Tree } from 'fp-ts/lib/Tree'
 import * as G from './Guard'
-import { Literal, memoize, Schemable1, WithRefinement1, WithUnion1 } from './Schemable'
+import { Literal, memoize, Schemable1, WithRefinement1, WithUnion1, WithUnknownContainers1 } from './Schemable'
 
 // -------------------------------------------------------------------------------------
 // model
@@ -472,6 +472,7 @@ declare module 'fp-ts/lib/HKT' {
 export const decoder: Applicative1<URI> &
   Alternative1<URI> &
   Schemable1<URI> &
+  WithUnknownContainers1<URI> &
   WithUnion1<URI> &
   WithRefinement1<URI> = {
   URI,
@@ -492,8 +493,6 @@ export const decoder: Applicative1<URI> &
   string,
   number,
   boolean,
-  UnknownArray,
-  UnknownRecord,
   nullable,
   type,
   partial,
@@ -503,6 +502,8 @@ export const decoder: Applicative1<URI> &
   intersection,
   sum,
   lazy,
+  UnknownArray,
+  UnknownRecord,
   union,
   refinement: refinement as WithRefinement1<URI>['refinement']
 }

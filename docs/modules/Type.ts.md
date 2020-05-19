@@ -1,6 +1,6 @@
 ---
 title: Type.ts
-nav_order: 13
+nav_order: 14
 parent: Modules
 ---
 
@@ -111,7 +111,10 @@ Added in v2.2.3
 **Signature**
 
 ```ts
-export declare const instance: Schemable1<'io-ts/Type'> & WithUnion1<'io-ts/Type'> & WithRefinement1<'io-ts/Type'>
+export declare const instance: Schemable1<'io-ts/Type'> &
+  WithUnknownContainers1<'io-ts/Type'> &
+  WithUnion1<'io-ts/Type'> &
+  WithRefinement1<'io-ts/Type'>
 ```
 
 Added in v2.2.3

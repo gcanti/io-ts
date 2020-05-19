@@ -4,7 +4,7 @@
 import { Invariant1 } from 'fp-ts/lib/Invariant'
 import * as D from './Decoder'
 import * as E from './Encoder'
-import { Literal, Schemable1, WithRefinement1 } from './Schemable'
+import { Literal, Schemable1, WithRefinement1, WithUnknownContainers1 } from './Schemable'
 
 // -------------------------------------------------------------------------------------
 // model
@@ -68,12 +68,12 @@ export const boolean: Codec<boolean> = make(D.decoder.boolean, E.encoder.boolean
 /**
  * @since 2.2.0
  */
-export const UnknownArray: Codec<Array<unknown>> = make(D.decoder.UnknownArray, E.encoder.UnknownArray)
+export const UnknownArray: Codec<Array<unknown>> = make(D.decoder.UnknownArray, E.id)
 
 /**
  * @since 2.2.0
  */
-export const UnknownRecord: Codec<Record<string, unknown>> = make(D.decoder.UnknownRecord, E.encoder.UnknownRecord)
+export const UnknownRecord: Codec<Record<string, unknown>> = make(D.decoder.UnknownRecord, E.id)
 
 // -------------------------------------------------------------------------------------
 // combinators
@@ -186,15 +186,13 @@ declare module 'fp-ts/lib/HKT' {
 /**
  * @since 2.2.0
  */
-export const codec: Invariant1<URI> & Schemable1<URI> & WithRefinement1<URI> = {
+export const codec: Invariant1<URI> & Schemable1<URI> & WithUnknownContainers1<URI> & WithRefinement1<URI> = {
   URI,
   imap: (fa, f, g) => make(D.decoder.map(fa, f), E.encoder.contramap(fa, g)),
   literal,
   string,
   number,
   boolean,
-  UnknownArray,
-  UnknownRecord,
   nullable,
   type,
   partial,
@@ -204,5 +202,7 @@ export const codec: Invariant1<URI> & Schemable1<URI> & WithRefinement1<URI> = {
   intersection,
   sum,
   lazy,
+  UnknownArray,
+  UnknownRecord,
   refinement: refinement as WithRefinement1<URI>['refinement']
 }
