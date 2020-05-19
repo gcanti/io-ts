@@ -26,7 +26,6 @@ export function make<A>(schema: Schema<A>): Schema<A> {
 /**
  * @since 2.2.3
  */
-export function interpreter<S extends URIS>(S: Schemable1<S>): <A>(schema: Schema<A>) => Kind<S, A>
-export function interpreter<S>(S: Schemable<S>): <A>(schema: Schema<A>) => HKT<S, A> {
-  return (schema) => schema(S)
+export function interpreter<S extends URIS>(S: Schemable1<S>): <A>(schema: Schema<A>) => Kind<S, A> {
+  return (schema: any) => schema(S)
 }
