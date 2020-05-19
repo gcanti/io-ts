@@ -3,7 +3,7 @@
  */
 import { Contravariant1 } from 'fp-ts/lib/Contravariant'
 import { identity } from 'fp-ts/lib/function'
-import * as PE from './PEncoder'
+import * as E from './Encoder'
 import { Schemable1 } from './Schemable'
 
 // -------------------------------------------------------------------------------------
@@ -35,7 +35,7 @@ export interface JsonEncoder<A> {
 /**
  * @since 2.2.3
  */
-export type TypeOf<E> = E extends JsonEncoder<infer A> ? A : never
+export type TypeOf<E> = E.TypeOf<E>
 
 // -------------------------------------------------------------------------------------
 // primitives
@@ -55,53 +55,53 @@ export const id: JsonEncoder<Json> = {
 /**
  * @since 2.2.3
  */
-export const nullable: <A>(or: JsonEncoder<A>) => JsonEncoder<null | A> = PE.nullable
+export const nullable: <A>(or: JsonEncoder<A>) => JsonEncoder<null | A> = E.nullable
 
 /**
  * @since 2.2.3
  */
-export const type: <A>(properties: { [K in keyof A]: JsonEncoder<A[K]> }) => JsonEncoder<A> = PE.type as any
+export const type: <A>(properties: { [K in keyof A]: JsonEncoder<A[K]> }) => JsonEncoder<A> = E.type as any
 
 /**
  * @since 2.2.3
  */
 export const partial: <A>(
   properties: { [K in keyof A]: JsonEncoder<A[K]> }
-) => JsonEncoder<Partial<A>> = PE.partial as any
+) => JsonEncoder<Partial<A>> = E.partial as any
 
 /**
  * @since 2.2.3
  */
-export const record: <A>(codomain: JsonEncoder<A>) => JsonEncoder<Record<string, A>> = PE.record
+export const record: <A>(codomain: JsonEncoder<A>) => JsonEncoder<Record<string, A>> = E.record
 
 /**
  * @since 2.2.3
  */
-export const array: <A>(items: JsonEncoder<A>) => JsonEncoder<Array<A>> = PE.array
+export const array: <A>(items: JsonEncoder<A>) => JsonEncoder<Array<A>> = E.array
 
 /**
  * @since 2.2.3
  */
 export const tuple: <A extends ReadonlyArray<unknown>>(
   ...components: { [K in keyof A]: JsonEncoder<A[K]> }
-) => JsonEncoder<A> = PE.tuple as any
+) => JsonEncoder<A> = E.tuple as any
 
 /**
  * @since 2.2.3
  */
-export const intersection: <A, B>(left: JsonEncoder<A>, right: JsonEncoder<B>) => JsonEncoder<A & B> = PE.intersection
+export const intersection: <A, B>(left: JsonEncoder<A>, right: JsonEncoder<B>) => JsonEncoder<A & B> = E.intersection
 
 /**
  * @since 2.2.3
  */
 export const sum: <T extends string>(
   tag: T
-) => <A>(members: { [K in keyof A]: JsonEncoder<A[K] & Record<T, K>> }) => JsonEncoder<A[keyof A]> = PE.sum as any
+) => <A>(members: { [K in keyof A]: JsonEncoder<A[K] & Record<T, K>> }) => JsonEncoder<A[keyof A]> = E.sum as any
 
 /**
  * @since 2.2.3
  */
-export const lazy: <A>(f: () => JsonEncoder<A>) => JsonEncoder<A> = PE.lazy
+export const lazy: <A>(f: () => JsonEncoder<A>) => JsonEncoder<A> = E.lazy
 
 // -------------------------------------------------------------------------------------
 // instances
@@ -128,7 +128,7 @@ declare module 'fp-ts/lib/HKT' {
  */
 export const jsonEncoder: Contravariant1<URI> & Schemable1<URI> = {
   URI,
-  contramap: PE.pencoder.contramap,
+  contramap: E.encoder.contramap,
   literal: () => id,
   string: id,
   number: id,
@@ -147,4 +147,4 @@ export const jsonEncoder: Contravariant1<URI> & Schemable1<URI> = {
 /**
  * @since 2.2.3
  */
-export const contramap: <A, B>(f: (b: B) => A) => (fa: JsonEncoder<A>) => JsonEncoder<B> = PE.contramap
+export const contramap: <A, B>(f: (b: B) => A) => (fa: JsonEncoder<A>) => JsonEncoder<B> = E.contramap

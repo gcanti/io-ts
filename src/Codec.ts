@@ -1,10 +1,11 @@
 /**
- * @since 2.2.0
+ * @since 2.2.3
  */
-import { Invariant1 } from 'fp-ts/lib/Invariant'
+import { Invariant2 } from 'fp-ts/lib/Invariant'
 import * as D from './Decoder'
 import * as E from './Encoder'
-import { Literal, Schemable1, WithRefinement1, WithUnknownContainers1 } from './Schemable'
+import { Literal } from './Schemable'
+import { identity } from 'fp-ts/lib/function'
 
 // -------------------------------------------------------------------------------------
 // model
@@ -16,23 +17,28 @@ import { Literal, Schemable1, WithRefinement1, WithUnknownContainers1 } from './
  * 1. `pipe(codec.decode(u), E.fold(() => u, codec.encode)) = u` for all `u` in `unknown`
  * 2. `codec.decode(codec.encode(a)) = E.right(a)` for all `a` in `A`
  *
- * @since 2.2.0
+ * @since 2.2.3
  */
-export interface Codec<A> extends D.Decoder<A>, E.Encoder<A> {}
+export interface Codec<O, A> extends D.Decoder<A>, E.Encoder<O, A> {}
 
 /**
- * @since 2.2.2
+ * @since 2.2.3
  */
-export type TypeOf<C> = C extends Codec<infer A> ? A : never
+export type TypeOf<C> = E.TypeOf<C>
+
+/**
+ * @since 2.2.3
+ */
+export type OutputOf<C> = E.OutputOf<C>
 
 // -------------------------------------------------------------------------------------
 // constructors
 // -------------------------------------------------------------------------------------
 
 /**
- * @since 2.2.0
+ * @since 2.2.3
  */
-export function make<A>(decoder: D.Decoder<A>, encoder: E.Encoder<A>): Codec<A> {
+export function make<O, A>(decoder: D.Decoder<A>, encoder: E.Encoder<O, A>): Codec<O, A> {
   return {
     decode: decoder.decode,
     encode: encoder.encode
@@ -40,10 +46,20 @@ export function make<A>(decoder: D.Decoder<A>, encoder: E.Encoder<A>): Codec<A> 
 }
 
 /**
- * @since 2.2.0
+ * @since 2.2.3
  */
-export function literal<A extends ReadonlyArray<Literal>>(...values: A): Codec<A[number]> {
-  return make(D.decoder.literal(...values), E.encoder.literal(...values))
+export function fromDecoder<A>(decoder: D.Decoder<A>): Codec<A, A> {
+  return {
+    decode: decoder.decode,
+    encode: identity
+  }
+}
+
+/**
+ * @since 2.2.3
+ */
+export function literal<A extends ReadonlyArray<Literal>>(...values: A): Codec<A[number], A[number]> {
+  return fromDecoder(D.literal(...values))
 }
 
 // -------------------------------------------------------------------------------------
@@ -51,116 +67,129 @@ export function literal<A extends ReadonlyArray<Literal>>(...values: A): Codec<A
 // -------------------------------------------------------------------------------------
 
 /**
- * @since 2.2.0
+ * @since 2.2.3
  */
-export const string: Codec<string> = make(D.decoder.string, E.encoder.string)
+export const string: Codec<string, string> = fromDecoder(D.string)
 
 /**
- * @since 2.2.0
+ * @since 2.2.3
  */
-export const number: Codec<number> = make(D.decoder.number, E.encoder.number)
+export const number: Codec<number, number> = fromDecoder(D.number)
 
 /**
- * @since 2.2.0
+ * @since 2.2.3
  */
-export const boolean: Codec<boolean> = make(D.decoder.boolean, E.encoder.boolean)
+export const boolean: Codec<boolean, boolean> = fromDecoder(D.boolean)
 
 /**
- * @since 2.2.0
+ * @since 2.2.3
  */
-export const UnknownArray: Codec<Array<unknown>> = make(D.decoder.UnknownArray, E.id)
+export const UnknownArray: Codec<Array<unknown>, Array<unknown>> = fromDecoder(D.UnknownArray)
 
 /**
- * @since 2.2.0
+ * @since 2.2.3
  */
-export const UnknownRecord: Codec<Record<string, unknown>> = make(D.decoder.UnknownRecord, E.id)
+export const UnknownRecord: Codec<Record<string, unknown>, Record<string, unknown>> = fromDecoder(D.UnknownRecord)
 
 // -------------------------------------------------------------------------------------
 // combinators
 // -------------------------------------------------------------------------------------
 
 /**
- * @since 2.2.0
+ * @since 2.2.3
  */
-export function withExpected<A>(
-  codec: Codec<A>,
+export function withExpected<O, A>(
+  codec: Codec<O, A>,
   expected: (actual: unknown, e: D.DecodeError) => D.DecodeError
-): Codec<A> {
+): Codec<O, A> {
   return make(D.withExpected(codec, expected), codec)
 }
 
 /**
- * @since 2.2.0
+ * @since 2.2.3
  */
-export function refinement<A, B extends A>(from: Codec<A>, refinement: (a: A) => a is B, expected: string): Codec<B> {
+export function refinement<O, A, B extends A>(
+  from: Codec<O, A>,
+  refinement: (a: A) => a is B,
+  expected: string
+): Codec<O, B> {
   return make(D.refinement(from, refinement, expected), from)
 }
 
 /**
- * @since 2.2.0
+ * @since 2.2.3
  */
-export function nullable<A>(or: Codec<A>): Codec<null | A> {
-  return make(D.decoder.nullable(or), E.encoder.nullable(or))
+export function nullable<O, A>(or: Codec<O, A>): Codec<null | O, null | A> {
+  return make(D.nullable(or), E.nullable(or))
 }
 
 /**
- * @since 2.2.0
+ * @since 2.2.3
  */
-export function type<A>(properties: { [K in keyof A]: Codec<A[K]> }): Codec<A> {
-  return make(D.decoder.type(properties), E.encoder.type(properties))
+export function type<P extends Record<string, Codec<any, any>>>(
+  properties: P
+): Codec<{ [K in keyof P]: OutputOf<P[K]> }, { [K in keyof P]: TypeOf<P[K]> }> {
+  const decoder: D.Decoder<{ [K in keyof P]: TypeOf<P[K]> }> = D.type(properties) as any
+  return make(decoder, E.type(properties))
 }
 
 /**
- * @since 2.2.0
+ * @since 2.2.3
  */
-export function partial<A>(properties: { [K in keyof A]: Codec<A[K]> }): Codec<Partial<A>> {
-  return make(D.decoder.partial(properties), E.encoder.partial(properties))
+export function partial<P extends Record<string, Codec<any, any>>>(
+  properties: P
+): Codec<Partial<{ [K in keyof P]: OutputOf<P[K]> }>, Partial<{ [K in keyof P]: TypeOf<P[K]> }>> {
+  return make(D.partial(properties), E.partial(properties))
 }
 
 /**
- * @since 2.2.0
+ * @since 2.2.3
  */
-export function record<A>(codomain: Codec<A>): Codec<Record<string, A>> {
-  return make(D.decoder.record(codomain), E.encoder.record(codomain))
+export function record<O, A>(codomain: Codec<O, A>): Codec<Record<string, O>, Record<string, A>> {
+  return make(D.record(codomain), E.record(codomain))
 }
 
 /**
- * @since 2.2.0
+ * @since 2.2.3
  */
-export function array<A>(items: Codec<A>): Codec<Array<A>> {
-  return make(D.decoder.array(items), E.encoder.array(items))
+export function array<O, A>(items: Codec<O, A>): Codec<Array<O>, Array<A>> {
+  return make(D.array(items), E.array(items))
 }
 
 /**
- * @since 2.2.0
+ * @since 2.2.3
  */
-export function tuple<A extends ReadonlyArray<unknown>>(...components: { [K in keyof A]: Codec<A[K]> }): Codec<A> {
-  return make(D.decoder.tuple<A>(...(components as any)), E.encoder.tuple<A>(...(components as any)))
+export function tuple<C extends ReadonlyArray<Codec<any, any>>>(
+  ...components: C
+): Codec<{ [K in keyof C]: OutputOf<C[K]> }, { [K in keyof C]: TypeOf<C[K]> }> {
+  const decoder: D.Decoder<{ [K in keyof C]: TypeOf<C[K]> }> = D.tuple(...components) as any
+  const encoder = E.tuple(...components)
+  return make(decoder, encoder)
 }
 
 /**
- * @since 2.2.0
+ * @since 2.2.3
  */
-export function intersection<A, B>(left: Codec<A>, right: Codec<B>): Codec<A & B> {
-  return make(D.decoder.intersection(left, right), E.encoder.intersection(left, right))
+export function intersection<O, A, P, B>(left: Codec<O, A>, right: Codec<P, B>): Codec<O & P, A & B> {
+  return make(D.intersection(left, right), E.intersection(left, right))
 }
 
 /**
- * @since 2.2.0
+ * @since 2.2.3
  */
 export function sum<T extends string>(
   tag: T
-): <A>(members: { [K in keyof A]: Codec<A[K] & Record<T, K>> }) => Codec<A[keyof A]> {
-  const sumD = D.decoder.sum(tag)
-  const sumE = E.encoder.sum(tag)
+): <M extends Record<string, Codec<any, any>>>(members: M) => Codec<OutputOf<M[keyof M]>, TypeOf<M[keyof M]>> {
+  const sumD = D.sum(tag)
+  const sumE = E.sum(tag)
   return (members) => make(sumD(members), sumE(members))
 }
 
 /**
- * @since 2.2.0
+ * @since 2.2.3
  */
-export function lazy<A>(id: string, f: () => Codec<A>): Codec<A> {
-  return make(D.decoder.lazy(id, f), E.encoder.lazy(id, f))
+export function lazy<O, A>(id: string, f: () => Codec<O, A>): Codec<O, A> {
+  return make(D.lazy(id, f), E.lazy(f))
 }
 
 // -------------------------------------------------------------------------------------
@@ -168,41 +197,25 @@ export function lazy<A>(id: string, f: () => Codec<A>): Codec<A> {
 // -------------------------------------------------------------------------------------
 
 /**
- * @since 2.2.0
+ * @since 2.2.3
  */
 export const URI = 'io-ts/Codec'
 
 /**
- * @since 2.2.0
+ * @since 2.2.3
  */
 export type URI = typeof URI
 
 declare module 'fp-ts/lib/HKT' {
-  interface URItoKind<A> {
-    readonly [URI]: Codec<A>
+  interface URItoKind2<E, A> {
+    readonly [URI]: Codec<E, A>
   }
 }
 
 /**
- * @since 2.2.0
+ * @since 2.2.3
  */
-export const codec: Invariant1<URI> & Schemable1<URI> & WithUnknownContainers1<URI> & WithRefinement1<URI> = {
+export const codec: Invariant2<URI> = {
   URI,
-  imap: (fa, f, g) => make(D.decoder.map(fa, f), E.encoder.contramap(fa, g)),
-  literal,
-  string,
-  number,
-  boolean,
-  nullable,
-  type,
-  partial,
-  record,
-  array,
-  tuple: tuple as Schemable1<URI>['tuple'],
-  intersection,
-  sum,
-  lazy,
-  UnknownArray,
-  UnknownRecord,
-  refinement: refinement as WithRefinement1<URI>['refinement']
+  imap: (fa, f, g) => make(D.decoder.map(fa, f), E.encoder.contramap(fa, g))
 }

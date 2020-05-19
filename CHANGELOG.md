@@ -18,7 +18,9 @@
 
 - **Experimental**
   - add `Type` experimental module, #464 (@gcanti)
-  - add `PEncoder` experimental module, #469 (@gcanti)
+  - restore the `O` type parameter to `Encoder`, #469 (@gcanti)
+  - add the `O` type parameter to `Codec` (@gcanti)
+  - add `JsonCodec` experimental module (@gcanti)
   - add `JsonEncoder` experimental module (@gcanti)
   - `Schemable`
     - rename `Schemable` interface to `Schemable1` (@gcanti)

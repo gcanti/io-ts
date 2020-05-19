@@ -3,9 +3,8 @@ import { left, right } from 'fp-ts/lib/Either'
 import * as C from '../src/Codec'
 import * as D from '../src/Decoder'
 import * as G from '../src/Guard'
-import * as E from '../src/Encoder'
 
-const NumberFromString: C.Codec<number> = C.make(
+const NumberFromString: C.Codec<string, number> = C.make(
   D.parse(D.string, (s) => {
     const n = parseFloat(s)
     return isNaN(n) ? left(`cannot decode ${JSON.stringify(s)}, should be parsable into a number`) : right(n)
@@ -17,18 +16,18 @@ interface PositiveBrand {
   readonly Positive: unique symbol
 }
 type Positive = number & PositiveBrand
-const Positive: C.Codec<Positive> = C.refinement(C.number, (n): n is Positive => n > 0, 'Positive')
+const Positive: C.Codec<number, Positive> = C.refinement(C.number, (n): n is Positive => n > 0, 'Positive')
 
 interface IntBrand {
   readonly Int: unique symbol
 }
 type Int = number & IntBrand
-const Int: C.Codec<Int> = C.refinement(C.number, (n): n is Int => Number.isInteger(n), 'Int')
+const Int: C.Codec<number, Int> = C.refinement(C.number, (n): n is Int => Number.isInteger(n), 'Int')
 
 const undefinedGuard: G.Guard<undefined> = {
   is: (u): u is undefined => u === undefined
 }
-const undef: C.Codec<undefined> = C.make(D.fromGuard(undefinedGuard, 'undefined'), E.id)
+const undef: C.Codec<undefined, undefined> = C.fromDecoder(D.fromGuard(undefinedGuard, 'undefined'))
 
 describe('Codec', () => {
   describe('codec', () => {
@@ -572,8 +571,12 @@ describe('Codec', () => {
       a: number
       b?: A
     }
+    interface AOut {
+      a: string
+      b?: AOut
+    }
 
-    const codec: C.Codec<A> = C.lazy('A', () =>
+    const codec: C.Codec<AOut, A> = C.lazy('A', () =>
       C.intersection(C.type({ a: NumberFromString }), C.partial({ b: codec }))
     )
 
