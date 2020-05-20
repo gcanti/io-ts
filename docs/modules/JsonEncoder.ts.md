@@ -203,7 +203,7 @@ Added in v2.2.3
 ```ts
 export declare const sum: <T extends string>(
   tag: T
-) => <A>(members: { [K in keyof A]: JsonEncoder<A[K] & Record<T, K>> }) => JsonEncoder<A[keyof A]>
+) => <A>(members: { [K in keyof A]: JsonEncoder<A[K]> }) => JsonEncoder<A[keyof A]>
 ```
 
 Added in v2.2.3

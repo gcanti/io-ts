@@ -386,9 +386,7 @@ export function lazy<A>(id: string, f: () => Decoder<A>): Decoder<A> {
 /**
  * @since 2.2.0
  */
-export function sum<T extends string>(
-  tag: T
-): <A>(members: { [K in keyof A]: Decoder<A[K] & Record<T, K>> }) => Decoder<A[keyof A]> {
+export function sum<T extends string>(tag: T): <A>(members: { [K in keyof A]: Decoder<A[K]> }) => Decoder<A[keyof A]> {
   return (members) => {
     const keys = Object.keys(members)
     if (keys.length === 0) {

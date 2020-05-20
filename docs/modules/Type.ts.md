@@ -218,9 +218,7 @@ Added in v2.2.3
 **Signature**
 
 ```ts
-export declare function sum<T extends string>(
-  _tag: T
-): <A>(members: { [K in keyof A]: Type<A[K] & Record<T, K>> }) => Type<A[keyof A]>
+export declare function sum<T extends string>(_tag: T): <A>(members: { [K in keyof A]: Type<A[K]> }) => Type<A[keyof A]>
 ```
 
 Added in v2.2.3

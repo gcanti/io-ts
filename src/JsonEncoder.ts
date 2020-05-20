@@ -96,7 +96,7 @@ export const intersection: <A, B>(left: JsonEncoder<A>, right: JsonEncoder<B>) =
  */
 export const sum: <T extends string>(
   tag: T
-) => <A>(members: { [K in keyof A]: JsonEncoder<A[K] & Record<T, K>> }) => JsonEncoder<A[keyof A]> = E.sum as any
+) => <A>(members: { [K in keyof A]: JsonEncoder<A[K]> }) => JsonEncoder<A[keyof A]> = E.sum as any
 
 /**
  * @since 2.2.3

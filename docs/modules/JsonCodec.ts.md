@@ -224,7 +224,7 @@ Added in v2.2.3
 ```ts
 export declare const sum: <T extends string>(
   tag: T
-) => <A>(members: { [K in keyof A]: JsonCodec<A[K] & Record<T, K>> }) => JsonCodec<A[keyof A]>
+) => <A>(members: { [K in keyof A]: JsonCodec<A[K]> }) => JsonCodec<A[keyof A]>
 ```
 
 Added in v2.2.3

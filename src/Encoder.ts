@@ -143,9 +143,9 @@ export function intersection<O, A, P, B>(left: Encoder<O, A>, right: Encoder<P, 
 export function sum<T extends string>(
   tag: T
 ): <M extends Record<string, Encoder<any, any>>>(members: M) => Encoder<OutputOf<M[keyof M]>, TypeOf<M[keyof M]>> {
-  return (members: Record<string, Encoder<any, any>>) => {
+  return (members) => {
     return {
-      encode: (a: Record<string, any>) => members[a[tag]].encode(a)
+      encode: (a) => members[a[tag]].encode(a)
     }
   }
 }

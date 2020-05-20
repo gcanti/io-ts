@@ -240,7 +240,7 @@ Added in v2.2.0
 ```ts
 export declare function sum<T extends string>(
   tag: T
-): <A>(members: { [K in keyof A]: Guard<A[K] & Record<T, K>> }) => Guard<A[keyof A]>
+): <A>(members: { [K in keyof A]: Guard<A[K]> }) => Guard<A[keyof A]>
 ```
 
 Added in v2.2.0
