@@ -34,6 +34,7 @@ Added in v2.2.0
 - [never](#never)
 - [nullable](#nullable)
 - [number](#number)
+- [of](#of)
 - [parse](#parse)
 - [partial](#partial)
 - [record](#record)
@@ -275,6 +276,16 @@ export declare const number: Decoder<number>
 ```
 
 Added in v2.2.0
+
+# of
+
+**Signature**
+
+```ts
+export declare function of<A>(a: A): Decoder<A>
+```
+
+Added in v2.2.3
 
 # parse
 
