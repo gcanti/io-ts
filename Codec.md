@@ -2,8 +2,6 @@
 <!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
 
 - [Codec interface](#codec-interface)
-- [Built-in primitive codecs](#built-in-primitive-codecs)
-- [Combinators](#combinators)
 
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
 
@@ -27,34 +25,17 @@ You can build a new codec using the `make` helper
 ```ts
 import * as C from 'io-ts/lib/Codec'
 import * as D from 'io-ts/lib/Decoder'
+import * as E from 'io-ts/lib/Encoder'
 import { left, right } from 'fp-ts/lib/Either'
 
-const NumberFromString: C.Codec<number> = C.make(
-  D.parse(D.string, (s) => {
-    const n = parseFloat(s)
-    return isNaN(n) ? left(`cannot decode ${JSON.stringify(s)}, should be parsable into a number`) : right(n)
-  }),
-  { encode: String }
-)
+const decoder: D.Decoder<number> = D.parse(D.string, (s) => {
+  const n = parseFloat(s)
+  return isNaN(n) ? left(`cannot decode ${JSON.stringify(s)}, should be parsable into a number`) : right(n)
+})
+
+const encoder: E.Encoder<string, unknown> = {
+  encode: String
+}
+
+export const NumberFromString: C.Codec<string, number> = C.make(decoder, encoder)
 ```
-
-# Built-in primitive codecs
-
-- `string: Decoder<string>`
-- `number: Decoder<number>`
-- `boolean: Decoder<boolean>`
-- `UnknownArray: Decoder<Array<unknown>>`
-- `UnknownRecord: Decoder<Record<string, unknown>>`
-
-# Combinators
-
-- `literal`
-- `nullable`
-- `type`
-- `partial`
-- `record`
-- `array`
-- `tuple`
-- `intersection`
-- `sum`
-- `lazy`
