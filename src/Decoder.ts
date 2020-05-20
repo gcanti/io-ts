@@ -31,10 +31,6 @@ export interface Decoder<A> {
  */
 export type TypeOf<D> = D extends Decoder<infer A> ? A : never
 
-// -------------------------------------------------------------------------------------
-// constructors
-// -------------------------------------------------------------------------------------
-
 const empty: Array<never> = []
 
 /**
@@ -66,6 +62,19 @@ export function failure<A = never>(message: string): Either<DecodeError, A> {
  */
 export function isNotEmpty<A>(as: ReadonlyArray<A>): as is NonEmptyArray<A> {
   return as.length > 0
+}
+
+// -------------------------------------------------------------------------------------
+// constructors
+// -------------------------------------------------------------------------------------
+
+/**
+ * @since 2.2.3
+ */
+export function of<A>(a: A): Decoder<A> {
+  return {
+    decode: () => success(a)
+  }
 }
 
 /**
@@ -506,9 +515,7 @@ export const decoder: Applicative1<URI> &
   WithRefinement1<URI> = {
   URI,
   map: map_,
-  of: (a) => ({
-    decode: () => success(a)
-  }),
+  of,
   ap: ap_,
   alt: alt_,
   zero: () => never,
