@@ -68,6 +68,8 @@ const sum = E.sum('_tag')
 // $ExpectType Encoder<{ _tag: "A"; a: string; } | { _tag: "B"; b: number; }, { _tag: "A"; a: number; } | { _tag: "B"; b: boolean; }>
 sum({ A: S1, B: S2 })
 
+const S3 = E.type({ _tag: E.id<'C'>(), c: E.id<string>() })
+
 //
 // lazy
 //

@@ -124,9 +124,7 @@ export function lazy<A>(id: string, f: () => Type<A>): Type<A> {
 /**
  * @since 2.2.3
  */
-export function sum<T extends string>(
-  _tag: T
-): <A>(members: { [K in keyof A]: Type<A[K] & Record<T, K>> }) => Type<A[keyof A]> {
+export function sum<T extends string>(_tag: T): <A>(members: { [K in keyof A]: Type<A[K]> }) => Type<A[keyof A]> {
   return (members) => t.union(Object.values(members) as any)
 }
 

@@ -123,9 +123,7 @@ export function intersection<A, B>(left: Eq<A>, right: Eq<B>): Eq<A & B> {
 /**
  * @since 2.2.2
  */
-export function sum<T extends string>(
-  tag: T
-): <A>(members: { [K in keyof A]: Eq<A[K] & Record<T, K>> }) => Eq<A[keyof A]> {
+export function sum<T extends string>(tag: T): <A>(members: { [K in keyof A]: Eq<A[K]> }) => Eq<A[keyof A]> {
   return (members: Record<string, Eq<any>>) => {
     return {
       equals: (x: Record<string, any>, y: Record<string, any>) => {

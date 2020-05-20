@@ -122,7 +122,7 @@ export const intersection: <A, B>(left: JsonCodec<A>, right: JsonCodec<B>) => Js
  */
 export const sum: <T extends string>(
   tag: T
-) => <A>(members: { [K in keyof A]: JsonCodec<A[K] & Record<T, K>> }) => JsonCodec<A[keyof A]> = C.sum as any
+) => <A>(members: { [K in keyof A]: JsonCodec<A[K]> }) => JsonCodec<A[keyof A]> = C.sum as any
 
 /**
  * @since 2.2.3
