@@ -104,6 +104,15 @@ export const sum: <T extends string>(
 export const lazy: <A>(f: () => JsonEncoder<A>) => JsonEncoder<A> = E.lazy
 
 // -------------------------------------------------------------------------------------
+// pipeables
+// -------------------------------------------------------------------------------------
+
+/**
+ * @since 2.2.3
+ */
+export const contramap: <A, B>(f: (b: B) => A) => (fa: JsonEncoder<A>) => JsonEncoder<B> = E.contramap
+
+// -------------------------------------------------------------------------------------
 // instances
 // -------------------------------------------------------------------------------------
 
@@ -143,8 +152,3 @@ export const jsonEncoder: Contravariant1<URI> & Schemable1<URI> = {
   sum,
   lazy: (_, f) => lazy(f)
 }
-
-/**
- * @since 2.2.3
- */
-export const contramap: <A, B>(f: (b: B) => A) => (fa: JsonEncoder<A>) => JsonEncoder<B> = E.contramap

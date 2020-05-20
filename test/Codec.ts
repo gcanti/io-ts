@@ -3,6 +3,7 @@ import { left, right } from 'fp-ts/lib/Either'
 import * as C from '../src/Codec'
 import * as D from '../src/Decoder'
 import * as G from '../src/Guard'
+import { pipe } from 'fp-ts/lib/pipeable'
 
 const NumberFromString: C.Codec<string, number> = C.make(
   D.parse(D.string, (s) => {
@@ -40,6 +41,18 @@ describe('Codec', () => {
       assert.deepStrictEqual(codec.decode('a'), right({ value: 'a' }))
       assert.deepStrictEqual(codec.encode({ value: 'a' }), 'a')
     })
+  })
+
+  it('imap', () => {
+    const codec = pipe(
+      C.string,
+      C.imap(
+        (s) => ({ value: s }),
+        ({ value }) => value
+      )
+    )
+    assert.deepStrictEqual(codec.decode('a'), right({ value: 'a' }))
+    assert.deepStrictEqual(codec.encode({ value: 'a' }), 'a')
   })
 
   describe('withExpected', () => {

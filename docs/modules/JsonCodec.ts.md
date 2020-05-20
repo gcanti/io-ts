@@ -18,6 +18,7 @@ Added in v2.2.3
 - [URI](#uri)
 - [array](#array)
 - [boolean](#boolean)
+- [imap](#imap)
 - [intersection](#intersection)
 - [jsonCodec](#jsoncodec)
 - [lazy](#lazy)
@@ -97,6 +98,16 @@ Added in v2.2.3
 
 ```ts
 export declare const boolean: JsonCodec<boolean>
+```
+
+Added in v2.2.3
+
+# imap
+
+**Signature**
+
+```ts
+export declare const imap: <A, B>(f: (a: A) => B, g: (b: B) => A) => (fa: JsonCodec<A>) => JsonCodec<B>
 ```
 
 Added in v2.2.3

@@ -21,8 +21,6 @@ Added in v2.2.0
 - [UnknownRecord](#unknownrecord)
 - [alt](#alt)
 - [ap](#ap)
-- [apFirst](#apfirst)
-- [apSecond](#apsecond)
 - [array](#array)
 - [boolean](#boolean)
 - [decoder](#decoder)
@@ -139,26 +137,6 @@ Added in v2.2.0
 
 ```ts
 export declare const ap: <A>(fa: Decoder<A>) => <B>(fab: Decoder<(a: A) => B>) => Decoder<B>
-```
-
-Added in v2.2.0
-
-# apFirst
-
-**Signature**
-
-```ts
-export declare const apFirst: <B>(fb: Decoder<B>) => <A>(fa: Decoder<A>) => Decoder<A>
-```
-
-Added in v2.2.0
-
-# apSecond
-
-**Signature**
-
-```ts
-export declare const apSecond: <B>(fb: Decoder<B>) => <A>(fa: Decoder<A>) => Decoder<B>
 ```
 
 Added in v2.2.0
