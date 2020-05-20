@@ -5,7 +5,7 @@ import { Alternative1 } from 'fp-ts/lib/Alternative'
 import { Applicative1 } from 'fp-ts/lib/Applicative'
 import { Either, either, isLeft, isRight, left, mapLeft, right } from 'fp-ts/lib/Either'
 import { NonEmptyArray } from 'fp-ts/lib/NonEmptyArray'
-import { pipe, pipeable } from 'fp-ts/lib/pipeable'
+import { pipe } from 'fp-ts/lib/pipeable'
 import { Forest, Tree } from 'fp-ts/lib/Tree'
 import * as G from './Guard'
 import { Literal, memoize, Schemable1, WithRefinement1, WithUnion1, WithUnknownContainers1 } from './Schemable'
@@ -445,6 +445,37 @@ export function union<A extends ReadonlyArray<unknown>>(
 }
 
 // -------------------------------------------------------------------------------------
+// pipeables
+// -------------------------------------------------------------------------------------
+
+/**
+ * @since 2.2.0
+ */
+export const alt: <A>(that: () => Decoder<A>) => (fa: Decoder<A>) => Decoder<A> = (that) => (fa) => alt_(fa, that)
+
+const alt_: <A>(fx: Decoder<A>, fy: () => Decoder<A>) => Decoder<A> = (fx, fy) => ({
+  decode: (u) => either.alt(fx.decode(u), () => fy().decode(u))
+})
+
+/**
+ * @since 2.2.0
+ */
+export const ap: <A>(fa: Decoder<A>) => <B>(fab: Decoder<(a: A) => B>) => Decoder<B> = (fa) => (fab) => ap_(fab, fa)
+
+const ap_: <A, B>(fab: Decoder<(a: A) => B>, fa: Decoder<A>) => Decoder<B> = (fab, fa) => ({
+  decode: (u) => either.ap(fab.decode(u), fa.decode(u))
+})
+
+/**
+ * @since 2.2.0
+ */
+export const map: <A, B>(f: (a: A) => B) => (fa: Decoder<A>) => Decoder<B> = (f) => (fa) => map_(fa, f)
+
+const map_: <A, B>(fa: Decoder<A>, f: (a: A) => B) => Decoder<B> = (fa, f) => ({
+  decode: (u) => either.map(fa.decode(u), f)
+})
+
+// -------------------------------------------------------------------------------------
 // instances
 // -------------------------------------------------------------------------------------
 
@@ -474,18 +505,12 @@ export const decoder: Applicative1<URI> &
   WithUnion1<URI> &
   WithRefinement1<URI> = {
   URI,
-  map: (fa, f) => ({
-    decode: (u) => either.map(fa.decode(u), f)
-  }),
+  map: map_,
   of: (a) => ({
     decode: () => success(a)
   }),
-  ap: (fab, fa) => ({
-    decode: (u) => either.ap(fab.decode(u), fa.decode(u))
-  }),
-  alt: (fx, fy) => ({
-    decode: (u) => either.alt(fx.decode(u), () => fy().decode(u))
-  }),
+  ap: ap_,
+  alt: alt_,
   zero: () => never,
   literal,
   string,
@@ -504,29 +529,4 @@ export const decoder: Applicative1<URI> &
   UnknownRecord,
   union,
   refinement: refinement as WithRefinement1<URI>['refinement']
-}
-
-const { alt, ap, apFirst, apSecond, map } = pipeable(decoder)
-
-export {
-  /**
-   * @since 2.2.0
-   */
-  alt,
-  /**
-   * @since 2.2.0
-   */
-  ap,
-  /**
-   * @since 2.2.0
-   */
-  apFirst,
-  /**
-   * @since 2.2.0
-   */
-  apSecond,
-  /**
-   * @since 2.2.0
-   */
-  map
 }

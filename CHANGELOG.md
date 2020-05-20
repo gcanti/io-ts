@@ -34,7 +34,7 @@
     - refactoring with the new `Schemable` interface (@gcanti)
     - add `interpreter` function (@gcanti)
 - **Internal**
-  - upgrade to `typescript@3.9.2` (@gcanti)
+  - upgrade to `typescript@3.9.3` (@gcanti)
 
 # 2.2.2
 

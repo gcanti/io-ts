@@ -193,6 +193,19 @@ export function lazy<O, A>(id: string, f: () => Codec<O, A>): Codec<O, A> {
 }
 
 // -------------------------------------------------------------------------------------
+// pipeables
+// -------------------------------------------------------------------------------------
+
+/**
+ * @since 2.2.3
+ */
+export const imap: <E, A, B>(f: (a: A) => B, g: (b: B) => A) => (fa: Codec<E, A>) => Codec<E, B> = (f, g) => (fa) =>
+  imap_(fa, f, g)
+
+const imap_: <E, A, B>(fa: Codec<E, A>, f: (a: A) => B, g: (b: B) => A) => Codec<E, B> = (fa, f, g) =>
+  make(D.decoder.map(fa, f), E.encoder.contramap(fa, g))
+
+// -------------------------------------------------------------------------------------
 // instances
 // -------------------------------------------------------------------------------------
 
@@ -217,5 +230,5 @@ declare module 'fp-ts/lib/HKT' {
  */
 export const codec: Invariant2<URI> = {
   URI,
-  imap: (fa, f, g) => make(D.decoder.map(fa, f), E.encoder.contramap(fa, g))
+  imap: imap_
 }

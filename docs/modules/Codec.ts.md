@@ -23,6 +23,7 @@ Added in v2.2.3
 - [boolean](#boolean)
 - [codec](#codec)
 - [fromDecoder](#fromdecoder)
+- [imap](#imap)
 - [intersection](#intersection)
 - [lazy](#lazy)
 - [literal](#literal)
@@ -151,6 +152,16 @@ Added in v2.2.3
 
 ```ts
 export declare function fromDecoder<A>(decoder: D.Decoder<A>): Codec<A, A>
+```
+
+Added in v2.2.3
+
+# imap
+
+**Signature**
+
+```ts
+export declare const imap: <E, A, B>(f: (a: A) => B, g: (b: B) => A) => (fa: Codec<E, A>) => Codec<E, B>
 ```
 
 Added in v2.2.3
