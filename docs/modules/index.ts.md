@@ -555,12 +555,7 @@ Added in v1.5.3
 
 ```ts
 export interface ReadonlyC<C extends Mixed>
-  extends ReadonlyType<
-    C,
-    { readonly [K in keyof TypeOf<C>]: TypeOf<C>[K] },
-    { readonly [K in keyof OutputOf<C>]: OutputOf<C>[K] },
-    unknown
-  > {}
+  extends ReadonlyType<C, Readonly<TypeOf<C>>, Readonly<OutputOf<C>>, unknown> {}
 ```
 
 Added in v1.5.3
