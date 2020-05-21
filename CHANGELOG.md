@@ -16,6 +16,8 @@
 
 # 2.2.3
 
+- **Polish**
+  - use the built-in `Readonly` type in `readonly` combinator, closes #472 (@gcanti)
 - **Experimental**
   - split instances (@gcanti)
   - add `Type` experimental module, #464 (@gcanti)

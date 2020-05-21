@@ -18,7 +18,7 @@ export const NumberFromString = new t.Type<number, string, unknown>(
   'NumberFromString',
   t.number.is,
   (u, c) =>
-    either.chain(t.string.validate(u, c), s => {
+    either.chain(t.string.validate(u, c), (s) => {
       const n = parseFloat(s)
       return isNaN(n) ? t.failure(s, c) : t.success(n)
     }),
@@ -63,11 +63,11 @@ type Keyof1OutputTest = t.OutputOf<typeof Keyof1> // $ExpectType "a" | "b"
 // refinement
 //
 
-const Refinement1 = t.refinement(t.number, n => n % 2 === 0) // $ExpectType RefinementC<NumberC>
+const Refinement1 = t.refinement(t.number, (n) => n % 2 === 0) // $ExpectType RefinementC<NumberC>
 type Refinement1TypeTest = t.TypeOf<typeof Refinement1> // $ExpectType number
 type Refinement1OutputTest = t.OutputOf<typeof Refinement1> // $ExpectType number
 
-const Refinement2 = t.refinement(NumberFromString, n => n % 2 === 0) // $ExpectType RefinementC<Type<number, string, unknown>>
+const Refinement2 = t.refinement(NumberFromString, (n) => n % 2 === 0) // $ExpectType RefinementC<Type<number, string, unknown>>
 type Refinement2TypeTest = t.TypeOf<typeof Refinement2> // $ExpectType number
 type Refinement2OutputTest = t.OutputOf<typeof Refinement2> // $ExpectType string
 
@@ -266,6 +266,10 @@ const Readonly2 = t.readonly(t.type({ a: NumberFromString })) // $ExpectType Rea
 type Readonly2TypeTest = Equals<t.TypeOf<typeof Readonly2>, { readonly a: number }> // $ExpectType "T"
 type Readonly2OutputTest = Equals<t.OutputOf<typeof Readonly2>, { readonly a: string }> // $ExpectType "T"
 
+const Readonly3 = t.readonly(t.tuple([t.string, NumberFromString]))
+type Readonly3TypeTest = Equals<t.TypeOf<typeof Readonly3>, Readonly<[string, number]>> // $ExpectType "T"
+type Readonly3OutputTest = Equals<t.OutputOf<typeof Readonly3>, Readonly<[string, string]>> // $ExpectType "T"
+
 //
 // readonlyArray
 //
@@ -316,14 +320,14 @@ interface TaggedUnion2_B {
   a: TaggedUnion2_A | undefined
 }
 
-const TaggedUnion2_A: t.RecursiveType<any, TaggedUnion2_A> = t.recursion<TaggedUnion2_A>('TaggedUnion2_A', _ =>
+const TaggedUnion2_A: t.RecursiveType<any, TaggedUnion2_A> = t.recursion<TaggedUnion2_A>('TaggedUnion2_A', (_) =>
   t.type({
     type: t.literal('a'),
     b: t.union([TaggedUnion2_B, t.undefined])
   })
 )
 
-const TaggedUnion2_B: t.RecursiveType<any, TaggedUnion2_B> = t.recursion<TaggedUnion2_B>('TaggedUnion2_B', _ =>
+const TaggedUnion2_B: t.RecursiveType<any, TaggedUnion2_B> = t.recursion<TaggedUnion2_B>('TaggedUnion2_B', (_) =>
   t.type({
     type: t.literal('b'),
     a: t.union([TaggedUnion2_A, t.undefined])
@@ -432,7 +436,7 @@ function f(generable: Generable): string {
   switch (generable._tag) {
     case 'InterfaceType':
       return Object.keys(generable.props)
-        .map(k => f(generable.props[k]))
+        .map((k) => f(generable.props[k]))
         .join('/')
     case 'StringType':
       return 'StringC'
@@ -497,7 +501,7 @@ interface Rec {
   b: Rec | undefined
 }
 
-const Rec = t.recursion<Rec, Rec, t.mixed, GenerableInterface>('T', self =>
+const Rec = t.recursion<Rec, Rec, t.mixed, GenerableInterface>('T', (self) =>
   t.type({
     a: t.number,
     b: t.union([self, t.undefined])
