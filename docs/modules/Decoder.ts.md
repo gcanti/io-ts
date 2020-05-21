@@ -20,12 +20,16 @@ Added in v2.2.0
 - [UnknownArray](#unknownarray)
 - [UnknownRecord](#unknownrecord)
 - [alt](#alt)
+- [altDecoder](#altdecoder)
+- [alternativeDecoder](#alternativedecoder)
 - [ap](#ap)
+- [applicativeDecoder](#applicativedecoder)
+- [applyDecoder](#applydecoder)
 - [array](#array)
 - [boolean](#boolean)
-- [decoder](#decoder)
 - [failure](#failure)
 - [fromGuard](#fromguard)
+- [functorDecoder](#functordecoder)
 - [intersection](#intersection)
 - [isNotEmpty](#isnotempty)
 - [lazy](#lazy)
@@ -39,6 +43,7 @@ Added in v2.2.0
 - [partial](#partial)
 - [record](#record)
 - [refinement](#refinement)
+- [schemableDecoder](#schemabledecoder)
 - [string](#string)
 - [success](#success)
 - [sum](#sum)
@@ -132,6 +137,26 @@ export declare const alt: <A>(that: () => Decoder<A>) => (fa: Decoder<A>) => Dec
 
 Added in v2.2.0
 
+# altDecoder
+
+**Signature**
+
+```ts
+export declare const altDecoder: Alt1<'io-ts/Decoder'>
+```
+
+Added in v2.2.3
+
+# alternativeDecoder
+
+**Signature**
+
+```ts
+export declare const alternativeDecoder: Alternative1<'io-ts/Decoder'>
+```
+
+Added in v2.2.3
+
 # ap
 
 **Signature**
@@ -141,6 +166,26 @@ export declare const ap: <A>(fa: Decoder<A>) => <B>(fab: Decoder<(a: A) => B>) =
 ```
 
 Added in v2.2.0
+
+# applicativeDecoder
+
+**Signature**
+
+```ts
+export declare const applicativeDecoder: Applicative1<'io-ts/Decoder'>
+```
+
+Added in v2.2.3
+
+# applyDecoder
+
+**Signature**
+
+```ts
+export declare const applyDecoder: Apply1<'io-ts/Decoder'>
+```
+
+Added in v2.2.3
 
 # array
 
@@ -158,21 +203,6 @@ Added in v2.2.0
 
 ```ts
 export declare const boolean: Decoder<boolean>
-```
-
-Added in v2.2.0
-
-# decoder
-
-**Signature**
-
-```ts
-export declare const decoder: Applicative1<'io-ts/Decoder'> &
-  Alternative1<'io-ts/Decoder'> &
-  Schemable1<'io-ts/Decoder'> &
-  WithUnknownContainers1<'io-ts/Decoder'> &
-  WithUnion1<'io-ts/Decoder'> &
-  WithRefinement1<'io-ts/Decoder'>
 ```
 
 Added in v2.2.0
@@ -196,6 +226,16 @@ export declare function fromGuard<A>(guard: G.Guard<A>, expected: string): Decod
 ```
 
 Added in v2.2.0
+
+# functorDecoder
+
+**Signature**
+
+```ts
+export declare const functorDecoder: Functor1<'io-ts/Decoder'>
+```
+
+Added in v2.2.3
 
 # intersection
 
@@ -330,6 +370,19 @@ export declare function refinement<A, B extends A>(
 ```
 
 Added in v2.2.0
+
+# schemableDecoder
+
+**Signature**
+
+```ts
+export declare const schemableDecoder: Schemable1<'io-ts/Decoder'> &
+  WithUnknownContainers1<'io-ts/Decoder'> &
+  WithUnion1<'io-ts/Decoder'> &
+  WithRefinement1<'io-ts/Decoder'>
+```
+
+Added in v2.2.3
 
 # string
 

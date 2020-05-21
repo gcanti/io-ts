@@ -18,11 +18,11 @@ function isDeepStrictEqual(actual: unknown, expected: unknown): boolean {
 }
 
 function check<A>(schema: Schema<A>): void {
-  const arb = interpreter(A.arbitrary)(schema)
-  const codec = interpreter(JC.jsonCodec)(schema)
-  const guard = interpreter(G.guard)(schema)
-  const eq = interpreter(Eq.eq)(schema)
-  const encoder = interpreter(JE.jsonEncoder)(schema)
+  const arb = interpreter(A.schemableArbitrary)(schema)
+  const codec = interpreter(JC.schemableJsonCodec)(schema)
+  const guard = interpreter(G.schemableGuard)(schema)
+  const eq = interpreter(Eq.schemableEq)(schema)
+  const encoder = interpreter(JE.schemableJsonEncoder)(schema)
   // decoders, guards and eqs should be aligned
   fc.assert(fc.property(arb, (a) => isRight(codec.decode(a)) && guard.is(a) && eq.equals(a, a)))
   // laws

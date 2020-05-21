@@ -18,13 +18,13 @@ Added in v2.2.2
 - [UnknownRecord](#unknownrecord)
 - [array](#array)
 - [boolean](#boolean)
-- [eq](#eq)
 - [intersection](#intersection)
 - [lazy](#lazy)
 - [nullable](#nullable)
 - [number](#number)
 - [partial](#partial)
 - [record](#record)
+- [schemableEq](#schemableeq)
 - [string](#string)
 - [sum](#sum)
 - [tuple](#tuple)
@@ -92,16 +92,6 @@ export declare const boolean: E.Eq<boolean>
 
 Added in v2.2.2
 
-# eq
-
-**Signature**
-
-```ts
-export declare const eq: Contravariant1<'Eq'> & Schemable1<'Eq'> & WithUnknownContainers1<'Eq'> & WithRefinement1<'Eq'>
-```
-
-Added in v2.2.2
-
 # intersection
 
 **Signature**
@@ -161,6 +151,16 @@ export declare const record: <A>(codomain: E.Eq<A>) => E.Eq<Record<string, A>>
 ```
 
 Added in v2.2.2
+
+# schemableEq
+
+**Signature**
+
+```ts
+export declare const schemableEq: Schemable1<'Eq'> & WithUnknownContainers1<'Eq'> & WithRefinement1<'Eq'>
+```
+
+Added in v2.2.3
 
 # string
 

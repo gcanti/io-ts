@@ -20,7 +20,7 @@ Added in v2.2.3
 - [boolean](#boolean)
 - [imap](#imap)
 - [intersection](#intersection)
-- [jsonCodec](#jsoncodec)
+- [invariantJsonCodec](#invariantjsoncodec)
 - [lazy](#lazy)
 - [literal](#literal)
 - [make](#make)
@@ -29,6 +29,7 @@ Added in v2.2.3
 - [partial](#partial)
 - [record](#record)
 - [refinement](#refinement)
+- [schemableJsonCodec](#schemablejsoncodec)
 - [string](#string)
 - [sum](#sum)
 - [tuple](#tuple)
@@ -122,14 +123,12 @@ export declare const intersection: <A, B>(left: JsonCodec<A>, right: JsonCodec<B
 
 Added in v2.2.3
 
-# jsonCodec
+# invariantJsonCodec
 
 **Signature**
 
 ```ts
-export declare const jsonCodec: Invariant1<'io-ts/JsonCodec'> &
-  Schemable1<'io-ts/JsonCodec'> &
-  WithRefinement1<'io-ts/JsonCodec'>
+export declare const invariantJsonCodec: Invariant1<'io-ts/JsonCodec'>
 ```
 
 Added in v2.2.3
@@ -214,6 +213,16 @@ export declare const refinement: <A, B extends A>(
   refinement: (a: A) => a is B,
   expected: string
 ) => JsonCodec<B>
+```
+
+Added in v2.2.3
+
+# schemableJsonCodec
+
+**Signature**
+
+```ts
+export declare const schemableJsonCodec: Schemable1<'io-ts/JsonCodec'> & WithRefinement1<'io-ts/JsonCodec'>
 ```
 
 Added in v2.2.3

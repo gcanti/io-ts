@@ -17,6 +17,7 @@
 # 2.2.3
 
 - **Experimental**
+  - split instances (@gcanti)
   - add `Type` experimental module, #464 (@gcanti)
   - restore the `O` type parameter to `Encoder`, #469 (@gcanti)
   - add the `O` type parameter to `Codec` (@gcanti)

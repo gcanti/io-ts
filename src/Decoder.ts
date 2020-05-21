@@ -9,6 +9,9 @@ import { pipe } from 'fp-ts/lib/pipeable'
 import { Forest, Tree } from 'fp-ts/lib/Tree'
 import * as G from './Guard'
 import { Literal, memoize, Schemable1, WithRefinement1, WithUnion1, WithUnknownContainers1 } from './Schemable'
+import { Functor1 } from 'fp-ts/lib/Functor'
+import { Alt1 } from 'fp-ts/lib/Alt'
+import { Apply1 } from 'fp-ts/lib/Apply'
 
 // -------------------------------------------------------------------------------------
 // model
@@ -94,7 +97,7 @@ export function literal<A extends ReadonlyArray<Literal>>(...values: A): Decoder
     return never
   }
   const expected = values.map((value) => JSON.stringify(value)).join(' | ')
-  return fromGuard(G.guard.literal(...values), expected)
+  return fromGuard(G.schemableGuard.literal(...values), expected)
 }
 
 // -------------------------------------------------------------------------------------
@@ -505,20 +508,61 @@ declare module 'fp-ts/lib/HKT' {
 }
 
 /**
- * @since 2.2.0
+ * @since 2.2.3
  */
-export const decoder: Applicative1<URI> &
-  Alternative1<URI> &
-  Schemable1<URI> &
-  WithUnknownContainers1<URI> &
-  WithUnion1<URI> &
-  WithRefinement1<URI> = {
+export const functorDecoder: Functor1<URI> = {
+  URI,
+  map: map_
+}
+
+/**
+ * @since 2.2.3
+ */
+export const applyDecoder: Apply1<URI> = {
+  URI,
+  map: map_,
+  ap: ap_
+}
+
+/**
+ * @since 2.2.3
+ */
+export const applicativeDecoder: Applicative1<URI> = {
+  URI,
+  map: map_,
+  of,
+  ap: ap_
+}
+
+/**
+ * @since 2.2.3
+ */
+export const altDecoder: Alt1<URI> = {
+  URI,
+  map: map_,
+  alt: alt_
+}
+
+/**
+ * @since 2.2.3
+ */
+export const alternativeDecoder: Alternative1<URI> = {
   URI,
   map: map_,
   of,
   ap: ap_,
   alt: alt_,
-  zero: () => never,
+  zero: () => never
+}
+
+/**
+ * @since 2.2.3
+ */
+export const schemableDecoder: Schemable1<URI> &
+  WithUnknownContainers1<URI> &
+  WithUnion1<URI> &
+  WithRefinement1<URI> = {
+  URI,
   literal,
   string,
   number,

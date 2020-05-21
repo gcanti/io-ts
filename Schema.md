@@ -21,8 +21,8 @@ export interface Schema<A> {
 ```ts
 import * as S from 'io-ts/lib/Schema'
 import * as D from 'io-ts/lib/Decoder'
-import * as E from 'io-ts/lib/Encoder'
-import * as C from 'io-ts/lib/Codec'
+import * as JE from 'io-ts/lib/JsonEncoder'
+import * as JC from 'io-ts/lib/JsonCodec'
 import * as G from 'io-ts/lib/Guard'
 import * as Eq from 'io-ts/lib/Eq'
 
@@ -33,11 +33,11 @@ export const Person = S.make((S) =>
   })
 )
 
-export const decoderPerson = S.interpreter(D.decoder)(Person)
-export const encoderPerson = S.interpreter(E.encoder)(Person)
-export const codecPerson = S.interpreter(C.codec)(Person)
-export const guardPerson = S.interpreter(G.guard)(Person)
-export const eqPerson = S.interpreter(Eq.eq)(Person)
+export const decoderPerson = S.interpreter(D.schemableDecoder)(Person)
+export const encoderPerson = S.interpreter(JE.schemableJsonEncoder)(Person)
+export const codecPerson = S.interpreter(JC.schemableJsonCodec)(Person)
+export const guardPerson = S.interpreter(G.schemableGuard)(Person)
+export const eqPerson = S.interpreter(Eq.schemableEq)(Person)
 ```
 
 # How to extend the built-in `Schema`
@@ -85,8 +85,8 @@ Finally we must define an instance of `MySchemable1` for `Decoder` and an interp
 ```ts
 import * as D from 'io-ts/lib/Decoder'
 
-export const mydecoder: MySchemable1<D.URI> = {
-  ...D.decoder,
+export const mySchemable: MySchemable1<D.URI> = {
+  ...D.schemableDecoder,
   Int: D.refinement(D.number, (n): n is Int => Number.isInteger(n), 'Int')
 }
 
@@ -112,7 +112,7 @@ const Person: MySchema<{
 }>
 */
 
-export const decoderPerson = interpreter(mydecoder)(Person)
+export const decoderPerson = interpreter(mySchemable)(Person)
 /*
 const decoderPerson: D.Decoder<{
     name: string;

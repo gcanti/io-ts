@@ -203,7 +203,7 @@ export const imap: <E, A, B>(f: (a: A) => B, g: (b: B) => A) => (fa: Codec<E, A>
   imap_(fa, f, g)
 
 const imap_: <E, A, B>(fa: Codec<E, A>, f: (a: A) => B, g: (b: B) => A) => Codec<E, B> = (fa, f, g) =>
-  make(D.decoder.map(fa, f), E.encoder.contramap(fa, g))
+  make(D.functorDecoder.map(fa, f), E.contravariantEncoder.contramap(fa, g))
 
 // -------------------------------------------------------------------------------------
 // instances
@@ -228,7 +228,7 @@ declare module 'fp-ts/lib/HKT' {
 /**
  * @since 2.2.3
  */
-export const codec: Invariant2<URI> = {
+export const invariantCodec: Invariant2<URI> = {
   URI,
   imap: imap_
 }

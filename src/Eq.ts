@@ -153,10 +153,10 @@ export function lazy<A>(f: () => Eq<A>): Eq<A> {
 // -------------------------------------------------------------------------------------
 
 /**
- * @since 2.2.2
+ * @since 2.2.3
  */
-export const eq: typeof E.eq & Schemable1<E.URI> & WithUnknownContainers1<E.URI> & WithRefinement1<E.URI> = {
-  ...E.eq,
+export const schemableEq: Schemable1<E.URI> & WithUnknownContainers1<E.URI> & WithRefinement1<E.URI> = {
+  URI: E.URI,
   literal: () => E.eqStrict,
   string,
   number,

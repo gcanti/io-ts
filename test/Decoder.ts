@@ -14,13 +14,13 @@ describe('Decoder', () => {
     })
 
     it('of', () => {
-      const decoder = D.decoder.of(1)
+      const decoder = D.applicativeDecoder.of(1)
       assert.deepStrictEqual(decoder.decode(1), E.right(1))
       assert.deepStrictEqual(decoder.decode('a'), E.right(1))
     })
 
     it('ap', () => {
-      const fab = D.decoder.of((s: string): number => s.length)
+      const fab = D.applicativeDecoder.of((s: string): number => s.length)
       const fa = D.string
       assert.deepStrictEqual(pipe(fab, D.ap(fa)).decode('aaa'), E.right(3))
     })
@@ -35,7 +35,7 @@ describe('Decoder', () => {
     })
 
     it('zero', () => {
-      const decoder = D.decoder.zero()
+      const decoder = D.alternativeDecoder.zero()
       assert.deepStrictEqual(decoder.decode(null), E.left([D.tree('cannot decode null, should be never')]))
     })
   })
