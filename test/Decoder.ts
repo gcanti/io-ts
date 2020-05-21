@@ -4,27 +4,23 @@ import { pipe } from 'fp-ts/lib/pipeable'
 import * as D from '../src/Decoder'
 
 describe('Decoder', () => {
-  describe('decoder', () => {
+  it('of', () => {
+    const decoder = D.of(1)
+    assert.deepStrictEqual(decoder.decode('aaa'), E.right(1))
+  })
+
+  describe('functorDecoder', () => {
     it('map', () => {
       const decoder = pipe(
         D.string,
         D.map((s) => s.length)
       )
+      assert.deepStrictEqual(decoder.decode(null), E.left([D.tree('cannot decode null, should be string')]))
       assert.deepStrictEqual(decoder.decode('aaa'), E.right(3))
     })
+  })
 
-    it('of', () => {
-      const decoder = D.applicativeDecoder.of(1)
-      assert.deepStrictEqual(decoder.decode(1), E.right(1))
-      assert.deepStrictEqual(decoder.decode('a'), E.right(1))
-    })
-
-    it('ap', () => {
-      const fab = D.applicativeDecoder.of((s: string): number => s.length)
-      const fa = D.string
-      assert.deepStrictEqual(pipe(fab, D.ap(fa)).decode('aaa'), E.right(3))
-    })
-
+  describe('altDecoder', () => {
     it('alt', () => {
       const decoder = pipe(
         D.string,
@@ -32,11 +28,6 @@ describe('Decoder', () => {
       )
       assert.deepStrictEqual(decoder.decode('a'), E.right('a'))
       assert.deepStrictEqual(decoder.decode(1), E.right('1'))
-    })
-
-    it('zero', () => {
-      const decoder = D.alternativeDecoder.zero()
-      assert.deepStrictEqual(decoder.decode(null), E.left([D.tree('cannot decode null, should be never')]))
     })
   })
 
