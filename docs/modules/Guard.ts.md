@@ -20,7 +20,6 @@ Added in v2.2.0
 - [UnknownRecord](#unknownrecord)
 - [array](#array)
 - [boolean](#boolean)
-- [guard](#guard)
 - [intersection](#intersection)
 - [lazy](#lazy)
 - [literal](#literal)
@@ -30,6 +29,7 @@ Added in v2.2.0
 - [partial](#partial)
 - [record](#record)
 - [refinement](#refinement)
+- [schemableGuard](#schemableguard)
 - [string](#string)
 - [sum](#sum)
 - [tuple](#tuple)
@@ -116,19 +116,6 @@ Added in v2.2.0
 
 ```ts
 export declare const boolean: Guard<boolean>
-```
-
-Added in v2.2.0
-
-# guard
-
-**Signature**
-
-```ts
-export declare const guard: Schemable1<'io-ts/Guard'> &
-  WithUnknownContainers1<'io-ts/Guard'> &
-  WithUnion1<'io-ts/Guard'> &
-  WithRefinement1<'io-ts/Guard'>
 ```
 
 Added in v2.2.0
@@ -222,6 +209,19 @@ export declare function refinement<A, B extends A>(from: Guard<A>, refinement: (
 ```
 
 Added in v2.2.0
+
+# schemableGuard
+
+**Signature**
+
+```ts
+export declare const schemableGuard: Schemable1<'io-ts/Guard'> &
+  WithUnknownContainers1<'io-ts/Guard'> &
+  WithUnion1<'io-ts/Guard'> &
+  WithRefinement1<'io-ts/Guard'>
+```
+
+Added in v2.2.3
 
 # string
 

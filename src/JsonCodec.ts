@@ -161,9 +161,16 @@ declare module 'fp-ts/lib/HKT' {
 /**
  * @since 2.2.3
  */
-export const jsonCodec: Invariant1<URI> & Schemable1<URI> & WithRefinement1<URI> = {
+export const invariantJsonCodec: Invariant1<URI> = {
   URI,
-  imap: C.codec.imap,
+  imap: C.invariantCodec.imap
+}
+
+/**
+ * @since 2.2.3
+ */
+export const schemableJsonCodec: Schemable1<URI> & WithRefinement1<URI> = {
+  URI,
   literal,
   string,
   number,

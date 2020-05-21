@@ -168,7 +168,7 @@ export function lazy<O, A>(f: () => Encoder<O, A>): Encoder<O, A> {
  * @since 2.2.3
  */
 export const contramap: <A, B>(f: (b: B) => A) => <E>(fa: Encoder<E, A>) => Encoder<E, B> = (f) => (fa) =>
-  encoder.contramap(fa, f)
+  contramap_(fa, f)
 
 const contramap_: <E, A, B>(fa: Encoder<E, A>, f: (b: B) => A) => Encoder<E, B> = (fa, f) => ({
   encode: (b) => fa.encode(f(b))
@@ -178,7 +178,7 @@ const contramap_: <E, A, B>(fa: Encoder<E, A>, f: (b: B) => A) => Encoder<E, B> 
  * @since 2.2.3
  */
 export const compose: <E, A>(ea: Encoder<E, A>) => <B>(ab: Encoder<A, B>) => Encoder<E, B> = (ea) => (ab) =>
-  encoder.compose(ab, ea)
+  compose_(ab, ea)
 
 const compose_: <E, A, B>(ab: Encoder<A, B>, la: Encoder<E, A>) => Encoder<E, B> = (ab, ea) => ({
   encode: (b) => ea.encode(ab.encode(b))
@@ -207,9 +207,16 @@ declare module 'fp-ts/lib/HKT' {
 /**
  * @since 2.2.3
  */
-export const encoder: Contravariant2<URI> & Category2<URI> = {
+export const contravariantEncoder: Contravariant2<URI> = {
   URI,
-  contramap: contramap_,
+  contramap: contramap_
+}
+
+/**
+ * @since 2.2.3
+ */
+export const categoryEncoder: Category2<URI> = {
+  URI,
   compose: compose_,
   id
 }

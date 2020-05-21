@@ -32,10 +32,10 @@ function interpreter<S extends URIS>(
 }
 
 function check<A>(schema: Schema<A>, type: t.Type<A>): void {
-  const arb = interpreter(A.arbitrary)(schema)
-  const decoder = interpreter(D.decoder)(schema)
-  const guard = interpreter(G.guard)(schema)
-  const itype = interpreter(T.instance)(schema)
+  const arb = interpreter(A.schemableArbitrary)(schema)
+  const decoder = interpreter(D.schemableDecoder)(schema)
+  const guard = interpreter(G.schemableGuard)(schema)
+  const itype = interpreter(T.schemableType)(schema)
   // decoder and type should be aligned
   fc.assert(fc.property(arb, (a) => isRight(decoder.decode(a)) === isRight(type.decode(a))))
   // interpreted type and type should be aligned

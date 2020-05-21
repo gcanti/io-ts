@@ -21,13 +21,14 @@ Added in v2.2.3
 - [URI](#uri)
 - [array](#array)
 - [contramap](#contramap)
+- [contravariantJsonEncoder](#contravariantjsonencoder)
 - [id](#id)
 - [intersection](#intersection)
-- [jsonEncoder](#jsonencoder)
 - [lazy](#lazy)
 - [nullable](#nullable)
 - [partial](#partial)
 - [record](#record)
+- [schemableJsonEncoder](#schemablejsonencoder)
 - [sum](#sum)
 - [tuple](#tuple)
 - [type](#type)
@@ -126,6 +127,16 @@ export declare const contramap: <A, B>(f: (b: B) => A) => (fa: JsonEncoder<A>) =
 
 Added in v2.2.3
 
+# contravariantJsonEncoder
+
+**Signature**
+
+```ts
+export declare const contravariantJsonEncoder: Contravariant1<'io-ts/JsonEncoder'>
+```
+
+Added in v2.2.3
+
 # id
 
 **Signature**
@@ -142,16 +153,6 @@ Added in v2.2.3
 
 ```ts
 export declare const intersection: <A, B>(left: JsonEncoder<A>, right: JsonEncoder<B>) => JsonEncoder<A & B>
-```
-
-Added in v2.2.3
-
-# jsonEncoder
-
-**Signature**
-
-```ts
-export declare const jsonEncoder: Contravariant1<'io-ts/JsonEncoder'> & Schemable1<'io-ts/JsonEncoder'>
 ```
 
 Added in v2.2.3
@@ -192,6 +193,16 @@ Added in v2.2.3
 
 ```ts
 export declare const record: <A>(codomain: JsonEncoder<A>) => JsonEncoder<Record<string, A>>
+```
+
+Added in v2.2.3
+
+# schemableJsonEncoder
+
+**Signature**
+
+```ts
+export declare const schemableJsonEncoder: Schemable1<'io-ts/JsonEncoder'>
 ```
 
 Added in v2.2.3

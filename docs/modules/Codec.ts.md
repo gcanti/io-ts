@@ -21,10 +21,10 @@ Added in v2.2.3
 - [UnknownRecord](#unknownrecord)
 - [array](#array)
 - [boolean](#boolean)
-- [codec](#codec)
 - [fromDecoder](#fromdecoder)
 - [imap](#imap)
 - [intersection](#intersection)
+- [invariantCodec](#invariantcodec)
 - [lazy](#lazy)
 - [literal](#literal)
 - [make](#make)
@@ -136,16 +136,6 @@ export declare const boolean: Codec<boolean, boolean>
 
 Added in v2.2.3
 
-# codec
-
-**Signature**
-
-```ts
-export declare const codec: Invariant2<'io-ts/Codec'>
-```
-
-Added in v2.2.3
-
 # fromDecoder
 
 **Signature**
@@ -172,6 +162,16 @@ Added in v2.2.3
 
 ```ts
 export declare function intersection<O, A, P, B>(left: Codec<O, A>, right: Codec<P, B>): Codec<O & P, A & B>
+```
+
+Added in v2.2.3
+
+# invariantCodec
+
+**Signature**
+
+```ts
+export declare const invariantCodec: Invariant2<'io-ts/Codec'>
 ```
 
 Added in v2.2.3

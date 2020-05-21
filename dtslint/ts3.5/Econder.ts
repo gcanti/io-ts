@@ -9,7 +9,7 @@ const BooleanToNumber: E.Encoder<number, boolean> = {
   encode: (b) => (b ? 1 : 0)
 }
 
-export const Person = E.type({ name: E.encoder.id<string>(), age: NumberToString })
+export const Person = E.type({ name: E.categoryEncoder.id<string>(), age: NumberToString })
 
 //
 // TypeOf

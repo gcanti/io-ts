@@ -18,9 +18,10 @@ Added in v2.2.3
 - [URI (type alias)](#uri-type-alias)
 - [URI](#uri)
 - [array](#array)
+- [categoryEncoder](#categoryencoder)
 - [compose](#compose)
 - [contramap](#contramap)
-- [encoder](#encoder)
+- [contravariantEncoder](#contravariantencoder)
 - [id](#id)
 - [intersection](#intersection)
 - [lazy](#lazy)
@@ -95,6 +96,16 @@ export declare function array<O, A>(items: Encoder<O, A>): Encoder<Array<O>, Arr
 
 Added in v2.2.3
 
+# categoryEncoder
+
+**Signature**
+
+```ts
+export declare const categoryEncoder: Category2<'io-ts/Encoder'>
+```
+
+Added in v2.2.3
+
 # compose
 
 **Signature**
@@ -115,12 +126,12 @@ export declare const contramap: <A, B>(f: (b: B) => A) => <E>(fa: Encoder<E, A>)
 
 Added in v2.2.3
 
-# encoder
+# contravariantEncoder
 
 **Signature**
 
 ```ts
-export declare const encoder: Contravariant2<'io-ts/Encoder'> & Category2<'io-ts/Encoder'>
+export declare const contravariantEncoder: Contravariant2<'io-ts/Encoder'>
 ```
 
 Added in v2.2.3

@@ -19,7 +19,6 @@ Added in v2.2.3
 - [UnknownRecord](#unknownrecord)
 - [array](#array)
 - [boolean](#boolean)
-- [instance](#instance)
 - [intersection](#intersection)
 - [lazy](#lazy)
 - [literal](#literal)
@@ -28,6 +27,7 @@ Added in v2.2.3
 - [partial](#partial)
 - [record](#record)
 - [refinement](#refinement)
+- [schemableType](#schemabletype)
 - [string](#string)
 - [sum](#sum)
 - [tuple](#tuple)
@@ -102,19 +102,6 @@ Added in v2.2.3
 
 ```ts
 export declare const boolean: Type<boolean>
-```
-
-Added in v2.2.3
-
-# instance
-
-**Signature**
-
-```ts
-export declare const instance: Schemable1<'io-ts/Type'> &
-  WithUnknownContainers1<'io-ts/Type'> &
-  WithUnion1<'io-ts/Type'> &
-  WithRefinement1<'io-ts/Type'>
 ```
 
 Added in v2.2.3
@@ -199,6 +186,19 @@ export declare function refinement<A, B extends A>(
   refinement: (a: A) => a is B,
   expected: string
 ): Type<B>
+```
+
+Added in v2.2.3
+
+# schemableType
+
+**Signature**
+
+```ts
+export declare const schemableType: Schemable1<'io-ts/Type'> &
+  WithUnknownContainers1<'io-ts/Type'> &
+  WithUnion1<'io-ts/Type'> &
+  WithRefinement1<'io-ts/Type'>
 ```
 
 Added in v2.2.3
