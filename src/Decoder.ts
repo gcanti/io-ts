@@ -1,9 +1,7 @@
 /**
  * @since 2.2.0
  */
-import { Alternative1 } from 'fp-ts/lib/Alternative'
-import { Applicative1 } from 'fp-ts/lib/Applicative'
-import { Either, either, isLeft, isRight, left, mapLeft, right } from 'fp-ts/lib/Either'
+import { Either, isLeft, isRight, left, mapLeft, right } from 'fp-ts/lib/Either'
 import { NonEmptyArray } from 'fp-ts/lib/NonEmptyArray'
 import { pipe } from 'fp-ts/lib/pipeable'
 import { Forest, Tree } from 'fp-ts/lib/Tree'
@@ -11,7 +9,6 @@ import * as G from './Guard'
 import { Literal, memoize, Schemable1, WithRefinement1, WithUnion1, WithUnknownContainers1 } from './Schemable'
 import { Functor1 } from 'fp-ts/lib/Functor'
 import { Alt1 } from 'fp-ts/lib/Alt'
-import { Apply1 } from 'fp-ts/lib/Apply'
 
 // -------------------------------------------------------------------------------------
 // model
@@ -33,6 +30,10 @@ export interface Decoder<A> {
  * @since 2.2.0
  */
 export type TypeOf<D> = D extends Decoder<infer A> ? A : never
+
+// -------------------------------------------------------------------------------------
+// DecodeError
+// -------------------------------------------------------------------------------------
 
 const empty: Array<never> = []
 
@@ -463,28 +464,25 @@ export function union<A extends ReadonlyArray<unknown>>(
 /**
  * @since 2.2.0
  */
-export const alt: <A>(that: () => Decoder<A>) => (fa: Decoder<A>) => Decoder<A> = (that) => (fa) => alt_(fa, that)
-
-const alt_: <A>(fx: Decoder<A>, fy: () => Decoder<A>) => Decoder<A> = (fx, fy) => ({
-  decode: (u) => either.alt(fx.decode(u), () => fy().decode(u))
-})
-
-/**
- * @since 2.2.0
- */
-export const ap: <A>(fa: Decoder<A>) => <B>(fab: Decoder<(a: A) => B>) => Decoder<B> = (fa) => (fab) => ap_(fab, fa)
-
-const ap_: <A, B>(fab: Decoder<(a: A) => B>, fa: Decoder<A>) => Decoder<B> = (fab, fa) => ({
-  decode: (u) => either.ap(fab.decode(u), fa.decode(u))
-})
-
-/**
- * @since 2.2.0
- */
 export const map: <A, B>(f: (a: A) => B) => (fa: Decoder<A>) => Decoder<B> = (f) => (fa) => map_(fa, f)
 
 const map_: <A, B>(fa: Decoder<A>, f: (a: A) => B) => Decoder<B> = (fa, f) => ({
-  decode: (u) => either.map(fa.decode(u), f)
+  decode: (u) => {
+    const e = fa.decode(u)
+    return isLeft(e) ? e : right(f(e.right))
+  }
+})
+
+/**
+ * @since 2.2.0
+ */
+export const alt: <A>(that: () => Decoder<A>) => (fa: Decoder<A>) => Decoder<A> = (that) => (fa) => alt_(fa, that)
+
+const alt_: <A>(fx: Decoder<A>, fy: () => Decoder<A>) => Decoder<A> = (fx, fy) => ({
+  decode: (u) => {
+    const e = fx.decode(u)
+    return isLeft(e) ? fy().decode(u) : e
+  }
 })
 
 // -------------------------------------------------------------------------------------
@@ -518,41 +516,10 @@ export const functorDecoder: Functor1<URI> = {
 /**
  * @since 2.2.3
  */
-export const applyDecoder: Apply1<URI> = {
-  URI,
-  map: map_,
-  ap: ap_
-}
-
-/**
- * @since 2.2.3
- */
-export const applicativeDecoder: Applicative1<URI> = {
-  URI,
-  map: map_,
-  of,
-  ap: ap_
-}
-
-/**
- * @since 2.2.3
- */
 export const altDecoder: Alt1<URI> = {
   URI,
   map: map_,
   alt: alt_
-}
-
-/**
- * @since 2.2.3
- */
-export const alternativeDecoder: Alternative1<URI> = {
-  URI,
-  map: map_,
-  of,
-  ap: ap_,
-  alt: alt_,
-  zero: () => never
 }
 
 /**

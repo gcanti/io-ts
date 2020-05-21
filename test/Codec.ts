@@ -31,7 +31,7 @@ const undefinedGuard: G.Guard<undefined> = {
 const undef: C.Codec<undefined, undefined> = C.fromDecoder(D.fromGuard(undefinedGuard, 'undefined'))
 
 describe('Codec', () => {
-  describe('codec', () => {
+  describe('invariantCodec', () => {
     it('imap', () => {
       const codec = C.invariantCodec.imap(
         C.string,

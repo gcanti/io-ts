@@ -21,10 +21,6 @@ Added in v2.2.0
 - [UnknownRecord](#unknownrecord)
 - [alt](#alt)
 - [altDecoder](#altdecoder)
-- [alternativeDecoder](#alternativedecoder)
-- [ap](#ap)
-- [applicativeDecoder](#applicativedecoder)
-- [applyDecoder](#applydecoder)
 - [array](#array)
 - [boolean](#boolean)
 - [failure](#failure)
@@ -143,46 +139,6 @@ Added in v2.2.0
 
 ```ts
 export declare const altDecoder: Alt1<'io-ts/Decoder'>
-```
-
-Added in v2.2.3
-
-# alternativeDecoder
-
-**Signature**
-
-```ts
-export declare const alternativeDecoder: Alternative1<'io-ts/Decoder'>
-```
-
-Added in v2.2.3
-
-# ap
-
-**Signature**
-
-```ts
-export declare const ap: <A>(fa: Decoder<A>) => <B>(fab: Decoder<(a: A) => B>) => Decoder<B>
-```
-
-Added in v2.2.0
-
-# applicativeDecoder
-
-**Signature**
-
-```ts
-export declare const applicativeDecoder: Applicative1<'io-ts/Decoder'>
-```
-
-Added in v2.2.3
-
-# applyDecoder
-
-**Signature**
-
-```ts
-export declare const applyDecoder: Apply1<'io-ts/Decoder'>
 ```
 
 Added in v2.2.3
