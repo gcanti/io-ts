@@ -1,11 +1,8 @@
 /**
  * @since 1.0.0
  */
-import { Either, either, isLeft, left, right } from 'fp-ts/lib/Either'
+import { Either, isLeft, left, right } from 'fp-ts/lib/Either'
 import { Predicate, Refinement } from 'fp-ts/lib/function'
-
-const map = either.map
-const chain = either.chain
 
 /**
  * @since 1.0.0
@@ -145,7 +142,13 @@ export class Type<A, O = A, I = unknown> implements Decoder<I, A>, Encoder<A, O>
     return new Type(
       name,
       ab.is,
-      (i, c) => chain(this.validate(i, c), (a) => ab.validate(a, c)),
+      (i, c) => {
+        const e = this.validate(i, c)
+        if (isLeft(e)) {
+          return e
+        }
+        return ab.validate(e.right, c)
+      },
       this.encode === identity && ab.encode === identity ? (identity as any) : (b) => this.encode(ab.encode(b))
     )
   }
@@ -755,28 +758,32 @@ export const array = <C extends Mixed>(codec: C, name: string = `Array<${codec.n
   new ArrayType(
     name,
     (u): u is Array<TypeOf<C>> => UnknownArray.is(u) && u.every(codec.is),
-    (u, c) =>
-      chain(UnknownArray.validate(u, c), (us) => {
-        const len = us.length
-        let as: Array<TypeOf<C>> = us
-        const errors: Errors = []
-        for (let i = 0; i < len; i++) {
-          const ui = us[i]
-          const result = codec.validate(ui, appendContext(c, String(i), codec, ui))
-          if (isLeft(result)) {
-            pushAll(errors, result.left)
-          } else {
-            const ai = result.right
-            if (ai !== ui) {
-              if (as === us) {
-                as = us.slice()
-              }
-              as[i] = ai
+    (u, c) => {
+      const e = UnknownArray.validate(u, c)
+      if (isLeft(e)) {
+        return e
+      }
+      const us = e.right
+      const len = us.length
+      let as: Array<TypeOf<C>> = us
+      const errors: Errors = []
+      for (let i = 0; i < len; i++) {
+        const ui = us[i]
+        const result = codec.validate(ui, appendContext(c, String(i), codec, ui))
+        if (isLeft(result)) {
+          pushAll(errors, result.left)
+        } else {
+          const ai = result.right
+          if (ai !== ui) {
+            if (as === us) {
+              as = us.slice()
             }
+            as[i] = ai
           }
         }
-        return errors.length > 0 ? failures(errors) : success(as)
-      }),
+      }
+      return errors.length > 0 ? failures(errors) : success(as)
+    },
     codec.encode === identity ? identity : (a) => a.map(codec.encode),
     codec
   )
@@ -870,30 +877,34 @@ export const type = <P extends Props>(props: P, name: string = getInterfaceTypeN
       }
       return false
     },
-    (u, c) =>
-      chain(UnknownRecord.validate(u, c), (o) => {
-        let a = o
-        const errors: Errors = []
-        for (let i = 0; i < len; i++) {
-          const k = keys[i]
-          const ak = a[k]
-          const type = types[i]
-          const result = type.validate(ak, appendContext(c, k, type, ak))
-          if (isLeft(result)) {
-            pushAll(errors, result.left)
-          } else {
-            const vak = result.right
-            if (vak !== ak || (vak === undefined && !hasOwnProperty.call(a, k))) {
-              /* istanbul ignore next */
-              if (a === o) {
-                a = { ...o }
-              }
-              a[k] = vak
+    (u, c) => {
+      const e = UnknownRecord.validate(u, c)
+      if (isLeft(e)) {
+        return e
+      }
+      const o = e.right
+      let a = o
+      const errors: Errors = []
+      for (let i = 0; i < len; i++) {
+        const k = keys[i]
+        const ak = a[k]
+        const type = types[i]
+        const result = type.validate(ak, appendContext(c, k, type, ak))
+        if (isLeft(result)) {
+          pushAll(errors, result.left)
+        } else {
+          const vak = result.right
+          if (vak !== ak || (vak === undefined && !hasOwnProperty.call(a, k))) {
+            /* istanbul ignore next */
+            if (a === o) {
+              a = { ...o }
             }
+            a[k] = vak
           }
         }
-        return errors.length > 0 ? failures(errors) : success(a as any)
-      }),
+      }
+      return errors.length > 0 ? failures(errors) : success(a as any)
+    },
     useIdentity(types)
       ? identity
       : (a) => {
@@ -975,32 +986,36 @@ export const partial = <P extends Props>(
       }
       return false
     },
-    (u, c) =>
-      chain(UnknownRecord.validate(u, c), (o) => {
-        let a = o
-        const errors: Errors = []
-        for (let i = 0; i < len; i++) {
-          const k = keys[i]
-          const ak = a[k]
-          const type = props[k]
-          const result = type.validate(ak, appendContext(c, k, type, ak))
-          if (isLeft(result)) {
-            if (ak !== undefined) {
-              pushAll(errors, result.left)
+    (u, c) => {
+      const e = UnknownRecord.validate(u, c)
+      if (isLeft(e)) {
+        return e
+      }
+      const o = e.right
+      let a = o
+      const errors: Errors = []
+      for (let i = 0; i < len; i++) {
+        const k = keys[i]
+        const ak = a[k]
+        const type = props[k]
+        const result = type.validate(ak, appendContext(c, k, type, ak))
+        if (isLeft(result)) {
+          if (ak !== undefined) {
+            pushAll(errors, result.left)
+          }
+        } else {
+          const vak = result.right
+          if (vak !== ak) {
+            /* istanbul ignore next */
+            if (a === o) {
+              a = { ...o }
             }
-          } else {
-            const vak = result.right
-            if (vak !== ak) {
-              /* istanbul ignore next */
-              if (a === o) {
-                a = { ...o }
-              }
-              a[k] = vak
-            }
+            a[k] = vak
           }
         }
-        return errors.length > 0 ? failures(errors) : success(a as any)
-      }),
+      }
+      return errors.length > 0 ? failures(errors) : success(a as any)
+    },
     useIdentity(types)
       ? identity
       : (a) => {
@@ -1064,25 +1079,29 @@ function enumerableRecord<D extends Mixed, C extends Mixed>(
   return new DictionaryType(
     name,
     (u): u is { [K in TypeOf<D>]: TypeOf<C> } => UnknownRecord.is(u) && keys.every((k) => codomain.is(u[k])),
-    (u, c) =>
-      chain(UnknownRecord.validate(u, c), (o) => {
-        const a: { [key: string]: any } = {}
-        const errors: Errors = []
-        let changed: boolean = false
-        for (let i = 0; i < len; i++) {
-          const k = keys[i]
-          const ok = o[k]
-          const codomainResult = codomain.validate(ok, appendContext(c, k, codomain, ok))
-          if (isLeft(codomainResult)) {
-            pushAll(errors, codomainResult.left)
-          } else {
-            const vok = codomainResult.right
-            changed = changed || vok !== ok
-            a[k] = vok
-          }
+    (u, c) => {
+      const e = UnknownRecord.validate(u, c)
+      if (isLeft(e)) {
+        return e
+      }
+      const o = e.right
+      const a: { [key: string]: any } = {}
+      const errors: Errors = []
+      let changed: boolean = false
+      for (let i = 0; i < len; i++) {
+        const k = keys[i]
+        const ok = o[k]
+        const codomainResult = codomain.validate(ok, appendContext(c, k, codomain, ok))
+        if (isLeft(codomainResult)) {
+          pushAll(errors, codomainResult.left)
+        } else {
+          const vok = codomainResult.right
+          changed = changed || vok !== ok
+          a[k] = vok
         }
-        return errors.length > 0 ? failures(errors) : success((changed || Object.keys(o).length !== len ? a : o) as any)
-      }),
+      }
+      return errors.length > 0 ? failures(errors) : success((changed || Object.keys(o).length !== len ? a : o) as any)
+    },
     codomain.encode === identity
       ? identity
       : (a: any) => {
@@ -1248,15 +1267,19 @@ export const union = <CS extends [Mixed, Mixed, ...Array<Mixed>]>(
         }
         return false
       },
-      (u, c) =>
-        chain(UnknownRecord.validate(u, c), (r) => {
-          const i = find(r[tag])
-          if (i === undefined) {
-            return failure(u, c)
-          }
-          const codec = codecs[i]
-          return codec.validate(r, appendContext(c, String(i), codec, r))
-        }),
+      (u, c) => {
+        const e = UnknownRecord.validate(u, c)
+        if (isLeft(e)) {
+          return e
+        }
+        const r = e.right
+        const i = find(r[tag])
+        if (i === undefined) {
+          return failure(u, c)
+        }
+        const codec = codecs[i]
+        return codec.validate(r, appendContext(c, String(i), codec, r))
+      },
       useIdentity(codecs)
         ? identity
         : (a) => {
@@ -1503,29 +1526,33 @@ export function tuple<CS extends [Mixed, ...Array<Mixed>]>(
   return new TupleType(
     name,
     (u): u is any => UnknownArray.is(u) && u.length === len && codecs.every((type, i) => type.is(u[i])),
-    (u, c) =>
-      chain(UnknownArray.validate(u, c), (us) => {
-        let as: Array<any> = us.length > len ? us.slice(0, len) : us // strip additional components
-        const errors: Errors = []
-        for (let i = 0; i < len; i++) {
-          const a = us[i]
-          const type = codecs[i]
-          const result = type.validate(a, appendContext(c, String(i), type, a))
-          if (isLeft(result)) {
-            pushAll(errors, result.left)
-          } else {
-            const va = result.right
-            if (va !== a) {
-              /* istanbul ignore next */
-              if (as === us) {
-                as = us.slice()
-              }
-              as[i] = va
+    (u, c) => {
+      const e = UnknownArray.validate(u, c)
+      if (isLeft(e)) {
+        return e
+      }
+      const us = e.right
+      let as: Array<any> = us.length > len ? us.slice(0, len) : us // strip additional components
+      const errors: Errors = []
+      for (let i = 0; i < len; i++) {
+        const a = us[i]
+        const type = codecs[i]
+        const result = type.validate(a, appendContext(c, String(i), type, a))
+        if (isLeft(result)) {
+          pushAll(errors, result.left)
+        } else {
+          const va = result.right
+          if (va !== a) {
+            /* istanbul ignore next */
+            if (as === us) {
+              as = us.slice()
             }
+            as[i] = va
           }
         }
-        return errors.length > 0 ? failures(errors) : success(as)
-      }),
+      }
+      return errors.length > 0 ? failures(errors) : success(as)
+    },
     useIdentity(codecs) ? identity : (a) => codecs.map((type, i) => type.encode(a[i])),
     codecs
   )
@@ -1563,13 +1590,17 @@ export const readonly = <C extends Mixed>(codec: C, name: string = `Readonly<${c
   return new ReadonlyType(
     name,
     codec.is,
-    (u, c) =>
-      map(codec.validate(u, c), (x) => {
-        if (process.env.NODE_ENV !== 'production') {
-          return Object.freeze(x)
-        }
-        return x
-      }),
+    (u, c) => {
+      const e = codec.validate(u, c)
+      if (isLeft(e)) {
+        return e
+      }
+      const x = e.right
+      if (process.env.NODE_ENV !== 'production') {
+        return right(Object.freeze(x))
+      }
+      return right(x)
+    },
     codec.encode === identity ? identity : codec.encode,
     codec
   )
@@ -1611,13 +1642,17 @@ export const readonlyArray = <C extends Mixed>(
   return new ReadonlyArrayType(
     name,
     arrayType.is,
-    (u, c) =>
-      map(arrayType.validate(u, c), (x) => {
-        if (process.env.NODE_ENV !== 'production') {
-          return Object.freeze(x)
-        }
-        return x
-      }),
+    (u, c) => {
+      const e = arrayType.validate(u, c)
+      if (isLeft(e)) {
+        return e
+      }
+      const x = e.right
+      if (process.env.NODE_ENV !== 'production') {
+        return right(Object.freeze(x))
+      }
+      return right(x)
+    },
     arrayType.encode as any,
     codec
   )
@@ -1782,7 +1817,17 @@ export const exact = <C extends HasProps>(codec: C, name: string = getExactTypeN
   return new ExactType(
     name,
     codec.is,
-    (u, c) => chain(UnknownRecord.validate(u, c), () => map(codec.validate(u, c), (a) => stripKeys(a, props))),
+    (u, c) => {
+      const e = UnknownRecord.validate(u, c)
+      if (isLeft(e)) {
+        return e
+      }
+      const ce = codec.validate(u, c)
+      if (isLeft(ce)) {
+        return ce
+      }
+      return right(stripKeys(ce.right, props))
+    },
     (a) => codec.encode(stripKeys(a, props)),
     codec
   )
@@ -1981,7 +2026,14 @@ RefinementC<C> {
   return new RefinementType(
     name,
     (u): u is TypeOf<C> => codec.is(u) && predicate(u),
-    (i, c) => chain(codec.validate(i, c), (a) => (predicate(a) ? success(a) : failure(a, c))),
+    (i, c) => {
+      const e = codec.validate(i, c)
+      if (isLeft(e)) {
+        return e
+      }
+      const a = e.right
+      return predicate(a) ? success(a) : failure(a, c)
+    },
     codec.encode,
     codec,
     predicate
