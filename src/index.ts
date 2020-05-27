@@ -1,11 +1,8 @@
 /**
  * @since 1.0.0
  */
-import { Either, either, isLeft, left, right } from 'fp-ts/lib/Either'
+import { Either, map, chain, isLeft, left, right } from 'fp-ts/lib/Either'
 import { Predicate, Refinement } from 'fp-ts/lib/function'
-
-const map = either.map
-const chain = either.chain
 
 /**
  * @since 1.0.0
@@ -145,7 +142,7 @@ export class Type<A, O = A, I = unknown> implements Decoder<I, A>, Encoder<A, O>
     return new Type(
       name,
       ab.is,
-      (i, c) => chain(this.validate(i, c), (a) => ab.validate(a, c)),
+      (i, c) => chain((a: A) => ab.validate(a, c))(this.validate(i, c)),
       this.encode === identity && ab.encode === identity ? (identity as any) : (b) => this.encode(ab.encode(b))
     )
   }
@@ -756,7 +753,7 @@ export const array = <C extends Mixed>(codec: C, name: string = `Array<${codec.n
     name,
     (u): u is Array<TypeOf<C>> => UnknownArray.is(u) && u.every(codec.is),
     (u, c) =>
-      chain(UnknownArray.validate(u, c), (us) => {
+      chain<Errors, unknown[], C['_A'][]>((us) => {
         const len = us.length
         let as: Array<TypeOf<C>> = us
         const errors: Errors = []
@@ -776,7 +773,7 @@ export const array = <C extends Mixed>(codec: C, name: string = `Array<${codec.n
           }
         }
         return errors.length > 0 ? failures(errors) : success(as)
-      }),
+      })(UnknownArray.validate(u, c)),
     codec.encode === identity ? identity : (a) => a.map(codec.encode),
     codec
   )
@@ -871,7 +868,7 @@ export const type = <P extends Props>(props: P, name: string = getInterfaceTypeN
       return false
     },
     (u, c) =>
-      chain(UnknownRecord.validate(u, c), (o) => {
+      chain<Errors, { [key: string]: unknown }, any>((o) => {
         let a = o
         const errors: Errors = []
         for (let i = 0; i < len; i++) {
@@ -893,7 +890,7 @@ export const type = <P extends Props>(props: P, name: string = getInterfaceTypeN
           }
         }
         return errors.length > 0 ? failures(errors) : success(a as any)
-      }),
+      })(UnknownRecord.validate(u, c)),
     useIdentity(types)
       ? identity
       : (a) => {
@@ -976,7 +973,7 @@ export const partial = <P extends Props>(
       return false
     },
     (u, c) =>
-      chain(UnknownRecord.validate(u, c), (o) => {
+      chain<Errors, { [key: string]: unknown }, any>((o) => {
         let a = o
         const errors: Errors = []
         for (let i = 0; i < len; i++) {
@@ -1000,7 +997,7 @@ export const partial = <P extends Props>(
           }
         }
         return errors.length > 0 ? failures(errors) : success(a as any)
-      }),
+      })(UnknownRecord.validate(u, c)),
     useIdentity(types)
       ? identity
       : (a) => {
@@ -1065,7 +1062,7 @@ function enumerableRecord<D extends Mixed, C extends Mixed>(
     name,
     (u): u is { [K in TypeOf<D>]: TypeOf<C> } => UnknownRecord.is(u) && keys.every((k) => codomain.is(u[k])),
     (u, c) =>
-      chain(UnknownRecord.validate(u, c), (o) => {
+      chain<Errors, { [key: string]: unknown }, any>((o) => {
         const a: { [key: string]: any } = {}
         const errors: Errors = []
         let changed: boolean = false
@@ -1082,7 +1079,7 @@ function enumerableRecord<D extends Mixed, C extends Mixed>(
           }
         }
         return errors.length > 0 ? failures(errors) : success((changed || Object.keys(o).length !== len ? a : o) as any)
-      }),
+      })(UnknownRecord.validate(u, c)),
     codomain.encode === identity
       ? identity
       : (a: any) => {
@@ -1249,14 +1246,14 @@ export const union = <CS extends [Mixed, Mixed, ...Array<Mixed>]>(
         return false
       },
       (u, c) =>
-        chain(UnknownRecord.validate(u, c), (r) => {
+        chain<Errors, { [key: string]: unknown }, any>((r) => {
           const i = find(r[tag])
           if (i === undefined) {
             return failure(u, c)
           }
           const codec = codecs[i]
           return codec.validate(r, appendContext(c, String(i), codec, r))
-        }),
+        })(UnknownRecord.validate(u, c)),
       useIdentity(codecs)
         ? identity
         : (a) => {
@@ -1504,7 +1501,7 @@ export function tuple<CS extends [Mixed, ...Array<Mixed>]>(
     name,
     (u): u is any => UnknownArray.is(u) && u.length === len && codecs.every((type, i) => type.is(u[i])),
     (u, c) =>
-      chain(UnknownArray.validate(u, c), (us) => {
+      chain<Errors, unknown[], any>((us) => {
         let as: Array<any> = us.length > len ? us.slice(0, len) : us // strip additional components
         const errors: Errors = []
         for (let i = 0; i < len; i++) {
@@ -1525,7 +1522,7 @@ export function tuple<CS extends [Mixed, ...Array<Mixed>]>(
           }
         }
         return errors.length > 0 ? failures(errors) : success(as)
-      }),
+      })(UnknownArray.validate(u, c)),
     useIdentity(codecs) ? identity : (a) => codecs.map((type, i) => type.encode(a[i])),
     codecs
   )
@@ -1564,12 +1561,12 @@ export const readonly = <C extends Mixed>(codec: C, name: string = `Readonly<${c
     name,
     codec.is,
     (u, c) =>
-      map(codec.validate(u, c), (x) => {
+      map<any, any>((x) => {
         if (process.env.NODE_ENV !== 'production') {
           return Object.freeze(x)
         }
         return x
-      }),
+      })(codec.validate(u, c)),
     codec.encode === identity ? identity : codec.encode,
     codec
   )
@@ -1612,12 +1609,12 @@ export const readonlyArray = <C extends Mixed>(
     name,
     arrayType.is,
     (u, c) =>
-      map(arrayType.validate(u, c), (x) => {
+      map<C['_A'][], readonly C['_A'][]>((x) => {
         if (process.env.NODE_ENV !== 'production') {
           return Object.freeze(x)
         }
         return x
-      }),
+      })(arrayType.validate(u, c)),
     arrayType.encode as any,
     codec
   )
@@ -1782,7 +1779,10 @@ export const exact = <C extends HasProps>(codec: C, name: string = getExactTypeN
   return new ExactType(
     name,
     codec.is,
-    (u, c) => chain(UnknownRecord.validate(u, c), () => map(codec.validate(u, c), (a) => stripKeys(a, props))),
+    (u, c) =>
+      chain<Errors, { [key: string]: unknown }, unknown>(() =>
+        map<any, unknown>((a) => stripKeys(a, props))(codec.validate(u, c))
+      )(UnknownRecord.validate(u, c)),
     (a) => codec.encode(stripKeys(a, props)),
     codec
   )
@@ -1981,7 +1981,7 @@ RefinementC<C> {
   return new RefinementType(
     name,
     (u): u is TypeOf<C> => codec.is(u) && predicate(u),
-    (i, c) => chain(codec.validate(i, c), (a) => (predicate(a) ? success(a) : failure(a, c))),
+    (i, c) => chain<Errors, any, any>((a) => (predicate(a) ? success(a) : failure(a, c)))(codec.validate(i, c)),
     codec.encode,
     codec,
     predicate
