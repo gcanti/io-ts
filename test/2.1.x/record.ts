@@ -216,6 +216,7 @@ describe('record', () => {
         const T = t.record(t.literal('a'), t.string)
         assertSuccess(T.decode({ a: 'a' }), { a: 'a' })
         assertSuccess(T.decode({ a: 'a', b: 1 }), { a: 'a' })
+        assertFailure(T, null, ['Invalid value null supplied to : { [K in "a"]: string }'])
         assertFailure(T, {}, ['Invalid value undefined supplied to : { [K in "a"]: string }/a: string'])
         assertFailure(T, { a: 1 }, ['Invalid value 1 supplied to : { [K in "a"]: string }/a: string'])
       })
