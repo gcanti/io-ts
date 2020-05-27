@@ -121,6 +121,18 @@ type User = {
 
 The advantage of using `io-ts` to define the runtime type is that we can validate the type at runtime, and we can also extract the corresponding static type, so we don’t have to define it twice.
 
+Static types can be extracted from codecs using the `TypeOf` operator:
+
+```ts
+type User = t.TypeOf<typeof User>
+
+// same as
+type User = {
+  userId: number
+  name: string
+}
+```
+
 ## Error reporters
 
 A reporter implements the following interface
