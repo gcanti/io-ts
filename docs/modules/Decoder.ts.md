@@ -298,7 +298,9 @@ Added in v2.2.0
 **Signature**
 
 ```ts
-export declare function partial<A>(properties: { [K in keyof A]: Decoder<A[K]> }): Decoder<Partial<A>>
+export declare function partial<A>(
+  properties: { [K in keyof A]: Decoder<A[K]> }
+): Decoder<Partial<{ [K in keyof A]: A[K] }>>
 ```
 
 Added in v2.2.0
@@ -399,7 +401,7 @@ Added in v2.2.0
 **Signature**
 
 ```ts
-export declare function type<A>(properties: { [K in keyof A]: Decoder<A[K]> }): Decoder<A>
+export declare function type<A>(properties: { [K in keyof A]: Decoder<A[K]> }): Decoder<{ [K in keyof A]: A[K] }>
 ```
 
 Added in v2.2.0

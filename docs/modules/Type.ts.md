@@ -161,7 +161,7 @@ Added in v2.2.3
 **Signature**
 
 ```ts
-export declare function partial<A>(properties: { [K in keyof A]: Type<A[K]> }): Type<Partial<A>>
+export declare function partial<A>(properties: { [K in keyof A]: Type<A[K]> }): Type<Partial<{ [K in keyof A]: A[K] }>>
 ```
 
 Added in v2.2.3
@@ -238,7 +238,7 @@ Added in v2.2.3
 **Signature**
 
 ```ts
-export declare function type<A>(properties: { [K in keyof A]: Type<A[K]> }): Type<A>
+export declare function type<A>(properties: { [K in keyof A]: Type<A[K]> }): Type<{ [K in keyof A]: A[K] }>
 ```
 
 Added in v2.2.3

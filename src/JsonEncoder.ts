@@ -42,10 +42,12 @@ export type TypeOf<E> = E.TypeOf<E>
 // -------------------------------------------------------------------------------------
 
 /**
- * @since 2.2.3
+ * @since 2.2.5
  */
-export const id: JsonEncoder<Json> = {
-  encode: identity
+export function id<A extends Json>(): JsonEncoder<A> {
+  return {
+    encode: identity
+  }
 }
 
 // -------------------------------------------------------------------------------------
@@ -60,14 +62,16 @@ export const nullable: <A>(or: JsonEncoder<A>) => JsonEncoder<null | A> = E.null
 /**
  * @since 2.2.3
  */
-export const type: <A>(properties: { [K in keyof A]: JsonEncoder<A[K]> }) => JsonEncoder<A> = E.type as any
+export const type: <A>(
+  properties: { [K in keyof A]: JsonEncoder<A[K]> }
+) => JsonEncoder<{ [K in keyof A]: A[K] }> = E.type as any
 
 /**
  * @since 2.2.3
  */
 export const partial: <A>(
   properties: { [K in keyof A]: JsonEncoder<A[K]> }
-) => JsonEncoder<Partial<A>> = E.partial as any
+) => JsonEncoder<Partial<{ [K in keyof A]: A[K] }>> = E.partial as any
 
 /**
  * @since 2.2.3
@@ -145,10 +149,10 @@ export const contravariantJsonEncoder: Contravariant1<URI> = {
  */
 export const schemableJsonEncoder: Schemable1<URI> = {
   URI,
-  literal: () => id,
-  string: id,
-  number: id,
-  boolean: id,
+  literal: () => id(),
+  string: id(),
+  number: id(),
+  boolean: id(),
   nullable,
   type,
   partial,

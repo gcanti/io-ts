@@ -103,7 +103,7 @@ export function nullable<A>(or: Guard<A>): Guard<null | A> {
 /**
  * @since 2.2.0
  */
-export function type<A>(properties: { [K in keyof A]: Guard<A[K]> }): Guard<A> {
+export function type<A>(properties: { [K in keyof A]: Guard<A[K]> }): Guard<{ [K in keyof A]: A[K] }> {
   return refinement(UnknownRecord, (r): r is {
     [K in keyof A]: A[K]
   } => {
@@ -119,7 +119,7 @@ export function type<A>(properties: { [K in keyof A]: Guard<A[K]> }): Guard<A> {
 /**
  * @since 2.2.0
  */
-export function partial<A>(properties: { [K in keyof A]: Guard<A[K]> }): Guard<Partial<A>> {
+export function partial<A>(properties: { [K in keyof A]: Guard<A[K]> }): Guard<Partial<{ [K in keyof A]: A[K] }>> {
   return refinement(UnknownRecord, (r): r is Partial<A> => {
     for (const k in properties) {
       const v = r[k]
