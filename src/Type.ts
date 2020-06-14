@@ -75,14 +75,14 @@ export function nullable<A>(or: Type<A>): Type<null | A> {
 /**
  * @since 2.2.3
  */
-export function type<A>(properties: { [K in keyof A]: Type<A[K]> }): Type<A> {
+export function type<A>(properties: { [K in keyof A]: Type<A[K]> }): Type<{ [K in keyof A]: A[K] }> {
   return t.type(properties) as any
 }
 
 /**
  * @since 2.2.3
  */
-export function partial<A>(properties: { [K in keyof A]: Type<A[K]> }): Type<Partial<A>> {
+export function partial<A>(properties: { [K in keyof A]: Type<A[K]> }): Type<Partial<{ [K in keyof A]: A[K] }>> {
   return t.partial(properties)
 }
 

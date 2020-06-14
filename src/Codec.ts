@@ -139,7 +139,9 @@ export function type<P extends Record<string, Codec<any, any>>>(
 export function partial<P extends Record<string, Codec<any, any>>>(
   properties: P
 ): Codec<Partial<{ [K in keyof P]: OutputOf<P[K]> }>, Partial<{ [K in keyof P]: TypeOf<P[K]> }>> {
-  return make(D.partial(properties), E.partial(properties))
+  // these tow `any`s are required to make typescript@3.5 compile
+  //                               vvvvvv                          vvvvvv
+  return make(D.partial(properties as any), E.partial(properties)) as any
 }
 
 /**

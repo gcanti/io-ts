@@ -142,10 +142,10 @@ Added in v2.2.3
 **Signature**
 
 ```ts
-export declare const id: JsonEncoder<Json>
+export declare function id<A extends Json>(): JsonEncoder<A>
 ```
 
-Added in v2.2.3
+Added in v2.2.5
 
 # intersection
 
@@ -182,7 +182,9 @@ Added in v2.2.3
 **Signature**
 
 ```ts
-export declare const partial: <A>(properties: { [K in keyof A]: JsonEncoder<A[K]> }) => JsonEncoder<Partial<A>>
+export declare const partial: <A>(
+  properties: { [K in keyof A]: JsonEncoder<A[K]> }
+) => JsonEncoder<Partial<{ [K in keyof A]: A[K] }>>
 ```
 
 Added in v2.2.3
@@ -236,7 +238,9 @@ Added in v2.2.3
 **Signature**
 
 ```ts
-export declare const type: <A>(properties: { [K in keyof A]: JsonEncoder<A[K]> }) => JsonEncoder<A>
+export declare const type: <A>(
+  properties: { [K in keyof A]: JsonEncoder<A[K]> }
+) => JsonEncoder<{ [K in keyof A]: A[K] }>
 ```
 
 Added in v2.2.3

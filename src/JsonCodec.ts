@@ -88,12 +88,16 @@ export const nullable: <A>(or: JsonCodec<A>) => JsonCodec<null | A> = C.nullable
 /**
  * @since 2.2.3
  */
-export const type: <A>(properties: { [K in keyof A]: JsonCodec<A[K]> }) => JsonCodec<A> = C.type as any
+export const type: <A>(
+  properties: { [K in keyof A]: JsonCodec<A[K]> }
+) => JsonCodec<{ [K in keyof A]: A[K] }> = C.type as any
 
 /**
  * @since 2.2.3
  */
-export const partial: <A>(properties: { [K in keyof A]: JsonCodec<A[K]> }) => JsonCodec<Partial<A>> = C.partial as any
+export const partial: <A>(
+  properties: { [K in keyof A]: JsonCodec<A[K]> }
+) => JsonCodec<Partial<{ [K in keyof A]: A[K] }>> = C.partial as any
 
 /**
  * @since 2.2.3

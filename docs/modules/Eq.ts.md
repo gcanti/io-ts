@@ -137,7 +137,7 @@ Added in v2.2.2
 **Signature**
 
 ```ts
-export declare function partial<A>(properties: { [K in keyof A]: Eq<A[K]> }): Eq<Partial<A>>
+export declare function partial<A>(properties: { [K in keyof A]: Eq<A[K]> }): Eq<Partial<{ [K in keyof A]: A[K] }>>
 ```
 
 Added in v2.2.2
@@ -197,7 +197,7 @@ Added in v2.2.2
 **Signature**
 
 ```ts
-export declare const type: <A>(eqs: { [K in keyof A]: E.Eq<A[K]> }) => E.Eq<A>
+export declare const type: <A>(eqs: { [K in keyof A]: E.Eq<A[K]> }) => E.Eq<{ [K in keyof A]: A[K] }>
 ```
 
 Added in v2.2.2

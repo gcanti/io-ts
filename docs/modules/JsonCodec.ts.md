@@ -188,7 +188,9 @@ Added in v2.2.3
 **Signature**
 
 ```ts
-export declare const partial: <A>(properties: { [K in keyof A]: JsonCodec<A[K]> }) => JsonCodec<Partial<A>>
+export declare const partial: <A>(
+  properties: { [K in keyof A]: JsonCodec<A[K]> }
+) => JsonCodec<Partial<{ [K in keyof A]: A[K] }>>
 ```
 
 Added in v2.2.3
@@ -266,7 +268,7 @@ Added in v2.2.3
 **Signature**
 
 ```ts
-export declare const type: <A>(properties: { [K in keyof A]: JsonCodec<A[K]> }) => JsonCodec<A>
+export declare const type: <A>(properties: { [K in keyof A]: JsonCodec<A[K]> }) => JsonCodec<{ [K in keyof A]: A[K] }>
 ```
 
 Added in v2.2.3

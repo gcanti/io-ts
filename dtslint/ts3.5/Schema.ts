@@ -1,4 +1,3 @@
-import * as D from '../../src/Decoder'
 import { Schemable, WithUnknownContainers, memoize, WithRefinement, WithUnion } from '../../src/Schemable'
 import { HKT } from 'fp-ts/lib/HKT'
 
@@ -15,8 +14,8 @@ function make<A>(f: Schema<A>): Schema<A> {
 //
 // TypeOf
 //
-export const Person = make((S) => S.type({ name: S.string, age: S.number }))
-export type Person = TypeOf<typeof Person> // $ExpectType { name: string; age: number; }
+export const OfTest = make((S) => S.type({ a: S.string, b: S.type({ c: S.number }) }))
+export type OfTest = TypeOf<typeof OfTest> // $ExpectType { a: string; b: { c: number; }; }
 
 //
 // literal
@@ -46,12 +45,12 @@ make((S) => S.nullable(S.string)) // $ExpectType Schema<string | null>
 //
 // type
 //
-make((S) => S.type({ a: S.string })) // $ExpectType Schema<{ a: string; }>
+make((S) => S.type({ a: S.string, b: S.type({ c: S.number }) })) // $ExpectType Schema<{ a: string; b: { c: number; }; }>
 
 //
 // partial
 //
-make((S) => S.partial({ a: S.string })) // $ExpectType Schema<Partial<{ a: string; }>>
+make((S) => S.partial({ a: S.string, b: S.partial({ c: S.number }) })) // $ExpectType Schema<Partial<{ a: string; b: Partial<{ c: number; }>; }>>
 
 //
 // record

@@ -74,12 +74,12 @@ export function nullable<A>(or: Eq<A>): Eq<null | A> {
 /**
  * @since 2.2.2
  */
-export const type: <A>(eqs: { [K in keyof A]: Eq<A[K]> }) => Eq<A> = E.getStructEq
+export const type: <A>(eqs: { [K in keyof A]: Eq<A[K]> }) => Eq<{ [K in keyof A]: A[K] }> = E.getStructEq
 
 /**
  * @since 2.2.2
  */
-export function partial<A>(properties: { [K in keyof A]: Eq<A[K]> }): Eq<Partial<A>> {
+export function partial<A>(properties: { [K in keyof A]: Eq<A[K]> }): Eq<Partial<{ [K in keyof A]: A[K] }>> {
   return {
     equals: (x, y) => {
       for (const k in properties) {

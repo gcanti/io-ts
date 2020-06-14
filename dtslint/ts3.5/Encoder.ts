@@ -1,5 +1,4 @@
 import * as E from '../../src/Encoder'
-import { identity } from 'fp-ts/lib/function'
 
 const NumberToString: E.Encoder<string, number> = {
   encode: String
@@ -9,17 +8,17 @@ const BooleanToNumber: E.Encoder<number, boolean> = {
   encode: (b) => (b ? 1 : 0)
 }
 
-export const Person = E.type({ name: E.categoryEncoder.id<string>(), age: NumberToString })
+export const OfTest = E.type({ a: E.id<string>(), b: E.type({ c: NumberToString }) })
 
 //
 // TypeOf
 //
-export type Person = E.TypeOf<typeof Person> // $ExpectType { name: string; age: number; }
+export type OfTest = E.TypeOf<typeof OfTest> // $ExpectType { a: string; b: { c: number; }; }
 
 //
 // OutputOf
 //
-export type PersonOut = E.OutputOf<typeof Person> // $ExpectType { name: string; age: string; }
+export type OfTestOutput = E.OutputOf<typeof OfTest> // $ExpectType { a: string; b: { c: string; }; }
 
 //
 // nullable
@@ -29,12 +28,12 @@ E.nullable(NumberToString) // $ExpectType Encoder<string | null, number | null>
 //
 // type
 //
-E.type({ a: NumberToString }) // $ExpectType Encoder<{ a: string; }, { a: number; }>
+E.type({ a: E.type({ b: NumberToString }) }) // $ExpectType Encoder<{ a: { b: string; }; }, { a: { b: number; }; }>
 
 //
 // partial
 //
-E.partial({ a: NumberToString }) // $ExpectType Encoder<Partial<{ a: string; }>, Partial<{ a: number; }>>
+E.partial({ a: E.partial({ b: NumberToString }) }) // $ExpectType Encoder<Partial<{ a: Partial<{ b: string; }>; }>, Partial<{ a: Partial<{ b: number; }>; }>>
 
 //
 // record

@@ -204,7 +204,7 @@ export function nullable<A>(or: Decoder<A>): Decoder<null | A> {
 /**
  * @since 2.2.0
  */
-export function type<A>(properties: { [K in keyof A]: Decoder<A[K]> }): Decoder<A> {
+export function type<A>(properties: { [K in keyof A]: Decoder<A[K]> }): Decoder<{ [K in keyof A]: A[K] }> {
   return {
     decode: (u) => {
       const e = UnknownRecord.decode(u)
@@ -231,7 +231,7 @@ export function type<A>(properties: { [K in keyof A]: Decoder<A[K]> }): Decoder<
 /**
  * @since 2.2.0
  */
-export function partial<A>(properties: { [K in keyof A]: Decoder<A[K]> }): Decoder<Partial<A>> {
+export function partial<A>(properties: { [K in keyof A]: Decoder<A[K]> }): Decoder<Partial<{ [K in keyof A]: A[K] }>> {
   return {
     decode: (u) => {
       const e = UnknownRecord.decode(u)
