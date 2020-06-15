@@ -4,7 +4,7 @@ nav_order: 9
 parent: Modules
 ---
 
-# PathReporter overview
+## PathReporter overview
 
 Added in v1.0.0
 
@@ -12,13 +12,16 @@ Added in v1.0.0
 
 <h2 class="text-delta">Table of contents</h2>
 
-- [PathReporter](#pathreporter)
-- [failure](#failure)
-- [success](#success)
+- [utils](#utils)
+  - [PathReporter](#pathreporter)
+  - [failure](#failure)
+  - [success](#success)
 
 ---
 
-# PathReporter
+# utils
+
+## PathReporter
 
 **Signature**
 
@@ -28,7 +31,7 @@ export declare const PathReporter: Reporter<string[]>
 
 Added in v1.0.0
 
-# failure
+## failure
 
 **Signature**
 
@@ -38,7 +41,7 @@ export declare function failure(es: Array<ValidationError>): Array<string>
 
 Added in v1.0.0
 
-# success
+## success
 
 **Signature**
 

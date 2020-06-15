@@ -8,11 +8,16 @@ import { Literal, memoize, Schemable1, WithRefinement1, WithUnion1, WithUnknownC
 // -------------------------------------------------------------------------------------
 
 /**
+ * @category model
  * @since 2.2.0
  */
 export interface Guard<A> {
   is: (u: unknown) => u is A
 }
+
+// -------------------------------------------------------------------------------------
+// utils
+// -------------------------------------------------------------------------------------
 
 /**
  * @since 2.2.2
@@ -24,6 +29,7 @@ export type TypeOf<G> = G extends Guard<infer A> ? A : never
 // -------------------------------------------------------------------------------------
 
 /**
+ * @category constructors
  * @since 2.2.0
  */
 export function literal<A extends ReadonlyArray<Literal>>(...values: A): Guard<A[number]> {
@@ -37,6 +43,7 @@ export function literal<A extends ReadonlyArray<Literal>>(...values: A): Guard<A
 // -------------------------------------------------------------------------------------
 
 /**
+ * @category primitives
  * @since 2.2.0
  */
 export const never: Guard<never> = {
@@ -44,6 +51,7 @@ export const never: Guard<never> = {
 }
 
 /**
+ * @category primitives
  * @since 2.2.0
  */
 export const string: Guard<string> = {
@@ -51,6 +59,7 @@ export const string: Guard<string> = {
 }
 
 /**
+ * @category primitives
  * @since 2.2.0
  */
 export const number: Guard<number> = {
@@ -58,6 +67,7 @@ export const number: Guard<number> = {
 }
 
 /**
+ * @category primitives
  * @since 2.2.0
  */
 export const boolean: Guard<boolean> = {
@@ -65,6 +75,7 @@ export const boolean: Guard<boolean> = {
 }
 
 /**
+ * @category primitives
  * @since 2.2.0
  */
 export const UnknownArray: Guard<Array<unknown>> = {
@@ -72,6 +83,7 @@ export const UnknownArray: Guard<Array<unknown>> = {
 }
 
 /**
+ * @category primitives
  * @since 2.2.0
  */
 export const UnknownRecord: Guard<Record<string, unknown>> = {
@@ -83,6 +95,7 @@ export const UnknownRecord: Guard<Record<string, unknown>> = {
 // -------------------------------------------------------------------------------------
 
 /**
+ * @category combinators
  * @since 2.2.0
  */
 export function refinement<A, B extends A>(from: Guard<A>, refinement: (a: A) => a is B): Guard<B> {
@@ -92,6 +105,7 @@ export function refinement<A, B extends A>(from: Guard<A>, refinement: (a: A) =>
 }
 
 /**
+ * @category combinators
  * @since 2.2.0
  */
 export function nullable<A>(or: Guard<A>): Guard<null | A> {
@@ -101,6 +115,7 @@ export function nullable<A>(or: Guard<A>): Guard<null | A> {
 }
 
 /**
+ * @category combinators
  * @since 2.2.0
  */
 export function type<A>(properties: { [K in keyof A]: Guard<A[K]> }): Guard<{ [K in keyof A]: A[K] }> {
@@ -117,6 +132,7 @@ export function type<A>(properties: { [K in keyof A]: Guard<A[K]> }): Guard<{ [K
 }
 
 /**
+ * @category combinators
  * @since 2.2.0
  */
 export function partial<A>(properties: { [K in keyof A]: Guard<A[K]> }): Guard<Partial<{ [K in keyof A]: A[K] }>> {
@@ -132,6 +148,7 @@ export function partial<A>(properties: { [K in keyof A]: Guard<A[K]> }): Guard<P
 }
 
 /**
+ * @category combinators
  * @since 2.2.0
  */
 export function record<A>(codomain: Guard<A>): Guard<Record<string, A>> {
@@ -146,6 +163,7 @@ export function record<A>(codomain: Guard<A>): Guard<Record<string, A>> {
 }
 
 /**
+ * @category combinators
  * @since 2.2.0
  */
 export function array<A>(items: Guard<A>): Guard<Array<A>> {
@@ -153,6 +171,7 @@ export function array<A>(items: Guard<A>): Guard<Array<A>> {
 }
 
 /**
+ * @category combinators
  * @since 2.2.0
  */
 export function tuple<A extends ReadonlyArray<unknown>>(...components: { [K in keyof A]: Guard<A[K]> }): Guard<A> {
@@ -162,6 +181,7 @@ export function tuple<A extends ReadonlyArray<unknown>>(...components: { [K in k
 }
 
 /**
+ * @category combinators
  * @since 2.2.0
  */
 export function intersection<A, B>(left: Guard<A>, right: Guard<B>): Guard<A & B> {
@@ -171,6 +191,7 @@ export function intersection<A, B>(left: Guard<A>, right: Guard<B>): Guard<A & B
 }
 
 /**
+ * @category combinators
  * @since 2.2.0
  */
 export function union<A extends ReadonlyArray<unknown>>(...members: { [K in keyof A]: Guard<A[K]> }): Guard<A[number]> {
@@ -180,6 +201,7 @@ export function union<A extends ReadonlyArray<unknown>>(...members: { [K in keyo
 }
 
 /**
+ * @category combinators
  * @since 2.2.0
  */
 export function sum<T extends string>(tag: T): <A>(members: { [K in keyof A]: Guard<A[K]> }) => Guard<A[keyof A]> {
@@ -194,6 +216,7 @@ export function sum<T extends string>(tag: T): <A>(members: { [K in keyof A]: Gu
 }
 
 /**
+ * @category combinators
  * @since 2.2.0
  */
 export function lazy<A>(f: () => Guard<A>): Guard<A> {
@@ -208,11 +231,13 @@ export function lazy<A>(f: () => Guard<A>): Guard<A> {
 // -------------------------------------------------------------------------------------
 
 /**
+ * @category instances
  * @since 2.2.0
  */
 export const URI = 'io-ts/Guard'
 
 /**
+ * @category instances
  * @since 2.2.0
  */
 export type URI = typeof URI
@@ -224,6 +249,7 @@ declare module 'fp-ts/lib/HKT' {
 }
 
 /**
+ * @category instances
  * @since 2.2.3
  */
 export const schemableGuard: Schemable1<URI> & WithUnknownContainers1<URI> & WithUnion1<URI> & WithRefinement1<URI> = {

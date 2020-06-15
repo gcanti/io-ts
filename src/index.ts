@@ -4,7 +4,12 @@
 import { Either, isLeft, left, right } from 'fp-ts/lib/Either'
 import { Predicate, Refinement } from 'fp-ts/lib/function'
 
+// -------------------------------------------------------------------------------------
+// model
+// -------------------------------------------------------------------------------------
+
 /**
+ * @category Model
  * @since 1.0.0
  */
 export interface ContextEntry {
@@ -15,11 +20,13 @@ export interface ContextEntry {
 }
 
 /**
+ * @category Model
  * @since 1.0.0
  */
 export interface Context extends ReadonlyArray<ContextEntry> {}
 
 /**
+ * @category Model
  * @since 1.0.0
  */
 export interface ValidationError {
@@ -32,31 +39,37 @@ export interface ValidationError {
 }
 
 /**
+ * @category Model
  * @since 1.0.0
  */
 export interface Errors extends Array<ValidationError> {}
 
 /**
+ * @category Model
  * @since 1.0.0
  */
 export type Validation<A> = Either<Errors, A>
 
 /**
+ * @category Model
  * @since 1.0.0
  */
 export type Is<A> = (u: unknown) => u is A
 
 /**
+ * @category Model
  * @since 1.0.0
  */
 export type Validate<I, A> = (i: I, context: Context) => Validation<A>
 
 /**
+ * @category Model
  * @since 1.0.0
  */
 export type Decode<I, A> = (i: I) => Validation<A>
 
 /**
+ * @category Model
  * @since 1.0.0
  */
 export type Encode<A, O> = (a: A) => O
@@ -87,6 +100,7 @@ export type InputOf<C extends Any> = C['_I']
 export type OutputOf<C extends Any> = C['_O']
 
 /**
+ * @category Model
  * @since 1.0.0
  */
 export interface Decoder<I, A> {
@@ -96,6 +110,7 @@ export interface Decoder<I, A> {
 }
 
 /**
+ * @category Model
  * @since 1.0.0
  */
 export interface Encoder<A, O> {
@@ -103,6 +118,7 @@ export interface Encoder<A, O> {
 }
 
 /**
+ * @category Model
  * @since 1.0.0
  */
 export class Type<A, O = A, I = unknown> implements Decoder<I, A>, Encoder<A, O> {
@@ -225,9 +241,9 @@ const pushAll = <A>(xs: Array<A>, ys: Array<A>): void => {
   }
 }
 
-//
-// basic types
-//
+// -------------------------------------------------------------------------------------
+// primitives
+// -------------------------------------------------------------------------------------
 
 /**
  * @since 1.0.0
@@ -253,6 +269,7 @@ export class NullType extends Type<null> {
 export interface NullC extends NullType {}
 
 /**
+ * @category Primitives
  * @since 1.0.0
  */
 export const nullType: NullC = new NullType()
@@ -301,6 +318,7 @@ export class VoidType extends Type<void> {
 export interface VoidC extends VoidType {}
 
 /**
+ * @category Primitives
  * @since 1.2.0
  */
 export const voidType: VoidC = new VoidType()
@@ -324,6 +342,7 @@ export class UnknownType extends Type<unknown> {
 export interface UnknownC extends UnknownType {}
 
 /**
+ * @category Primitives
  * @since 1.5.0
  */
 export const unknown: UnknownC = new UnknownType()
@@ -352,6 +371,7 @@ export class StringType extends Type<string> {
 export interface StringC extends StringType {}
 
 /**
+ * @category Primitives
  * @since 1.0.0
  */
 export const string: StringC = new StringType()
@@ -380,6 +400,7 @@ export class NumberType extends Type<number> {
 export interface NumberC extends NumberType {}
 
 /**
+ * @category Primitives
  * @since 1.0.0
  */
 export const number: NumberC = new NumberType()
@@ -409,6 +430,7 @@ export class BigIntType extends Type<bigint> {
 export interface BigIntC extends BigIntType {}
 
 /**
+ * @category Primitives
  * @since 2.1.0
  */
 export const bigint: BigIntC = new BigIntType()
@@ -437,6 +459,7 @@ export class BooleanType extends Type<boolean> {
 export interface BooleanC extends BooleanType {}
 
 /**
+ * @category Primitives
  * @since 1.0.0
  */
 export const boolean: BooleanC = new BooleanType()
@@ -460,6 +483,7 @@ export class AnyArrayType extends Type<Array<unknown>> {
 export interface UnknownArrayC extends AnyArrayType {}
 
 /**
+ * @category Primitives
  * @since 1.7.1
  */
 export const UnknownArray: UnknownArrayC = new AnyArrayType()
@@ -486,6 +510,7 @@ export class AnyDictionaryType extends Type<{ [key: string]: unknown }> {
 }
 
 /**
+ * @category Primitives
  * @since 1.7.1
  */
 export const UnknownRecord: UnknownRecordC = new AnyDictionaryType()
@@ -496,6 +521,7 @@ export const UnknownRecord: UnknownRecordC = new AnyDictionaryType()
 export interface UnknownRecordC extends AnyDictionaryType {}
 
 /**
+ * @category deprecated
  * @since 1.0.0
  * @deprecated
  */
@@ -516,6 +542,7 @@ export class FunctionType extends Type<Function> {
 }
 
 /**
+ * @category deprecated
  * @since 1.5.3
  * @deprecated
  */
@@ -523,6 +550,7 @@ export class FunctionType extends Type<Function> {
 export interface FunctionC extends FunctionType {}
 
 /**
+ * @category deprecated
  * @since 1.0.0
  * @deprecated
  */
@@ -568,7 +596,12 @@ export type Branded<A, B> = A & Brand<B>
  */
 export interface BrandC<C extends Any, B> extends RefinementType<C, Branded<TypeOf<C>, B>, OutputOf<C>, InputOf<C>> {}
 
+// -------------------------------------------------------------------------------------
+// combinators
+// -------------------------------------------------------------------------------------
+
 /**
+ * @category Combinators
  * @since 1.8.1
  */
 export const brand = <C extends Any, N extends string, B extends { readonly [K in N]: symbol }>(
@@ -589,6 +622,8 @@ export interface IntBrand {
 
 /**
  * A branded codec representing an integer
+ *
+ * @category Primitives
  * @since 1.8.1
  */
 export const Int = brand(number, (n): n is Branded<number, IntBrand> => Number.isInteger(n), 'Int')
@@ -625,6 +660,7 @@ export class LiteralType<V extends LiteralValue> extends Type<V> {
 export interface LiteralC<V extends LiteralValue> extends LiteralType<V> {}
 
 /**
+ * @category Combinators
  * @since 1.0.0
  */
 export const literal = <V extends LiteralValue>(value: V, name: string = JSON.stringify(value)): LiteralC<V> => {
@@ -659,6 +695,7 @@ const hasOwnProperty = Object.prototype.hasOwnProperty
 export interface KeyofC<D extends { [key: string]: unknown }> extends KeyofType<D> {}
 
 /**
+ * @category Combinators
  * @since 1.0.0
  */
 export const keyof = <D extends { [key: string]: unknown }>(
@@ -703,6 +740,7 @@ Object.defineProperty(RecursiveType.prototype, 'type', {
 })
 
 /**
+ * @category Combinators
  * @since 1.0.0
  */
 export const recursion = <A, O = A, I = unknown, C extends Type<A, O, I> = Type<A, O, I>>(
@@ -752,6 +790,7 @@ export class ArrayType<C extends Any, A = any, O = A, I = unknown> extends Type<
 export interface ArrayC<C extends Mixed> extends ArrayType<C, Array<TypeOf<C>>, Array<OutputOf<C>>, unknown> {}
 
 /**
+ * @category Combinators
  * @since 1.0.0
  */
 export const array = <C extends Mixed>(codec: C, name: string = `Array<${codec.name}>`): ArrayC<C> =>
@@ -856,6 +895,7 @@ const getInterfaceTypeName = (props: Props): string => {
 }
 
 /**
+ * @category Combinators
  * @since 1.0.0
  */
 export const type = <P extends Props>(props: P, name: string = getInterfaceTypeName(props)): TypeC<P> => {
@@ -962,6 +1002,7 @@ const getPartialTypeName = (inner: string): string => {
 }
 
 /**
+ * @category Combinators
  * @since 1.0.0
  */
 export const partial = <P extends Props>(
@@ -1200,6 +1241,7 @@ function nonEnumerableRecord<D extends Mixed, C extends Mixed>(
 }
 
 /**
+ * @category Combinators
  * @since 1.7.1
  */
 export function record<D extends Mixed, C extends Mixed>(domain: D, codomain: C, name?: string): RecordC<D, C> {
@@ -1239,6 +1281,7 @@ const getUnionName = <CS extends [Mixed, Mixed, ...Array<Mixed>]>(codecs: CS): s
 }
 
 /**
+ * @category Combinators
  * @since 1.0.0
  */
 export const union = <CS extends [Mixed, Mixed, ...Array<Mixed>]>(
@@ -1401,6 +1444,7 @@ const mergeAll = (base: any, us: Array<any>): any => {
 }
 
 /**
+ * @category Combinators
  * @since 1.0.0
  */
 export function intersection<A extends Mixed, B extends Mixed, C extends Mixed, D extends Mixed, E extends Mixed>(
@@ -1502,6 +1546,7 @@ export interface TupleC<CS extends [Mixed, ...Array<Mixed>]>
   > {}
 
 /**
+ * @category Combinators
  * @since 1.0.0
  */
 export function tuple<A extends Mixed, B extends Mixed, C extends Mixed, D extends Mixed, E extends Mixed>(
@@ -1584,6 +1629,7 @@ export interface ReadonlyC<C extends Mixed>
   extends ReadonlyType<C, Readonly<TypeOf<C>>, Readonly<OutputOf<C>>, unknown> {}
 
 /**
+ * @category Combinators
  * @since 1.0.0
  */
 export const readonly = <C extends Mixed>(codec: C, name: string = `Readonly<${codec.name}>`): ReadonlyC<C> => {
@@ -1632,6 +1678,7 @@ export interface ReadonlyArrayC<C extends Mixed>
   extends ReadonlyArrayType<C, ReadonlyArray<TypeOf<C>>, ReadonlyArray<OutputOf<C>>, unknown> {}
 
 /**
+ * @category Combinators
  * @since 1.0.0
  */
 export const readonlyArray = <C extends Mixed>(
@@ -1660,6 +1707,8 @@ export const readonlyArray = <C extends Mixed>(
 
 /**
  * Strips additional properties
+ *
+ * @category Combinators
  * @since 1.0.0
  */
 export const strict = <P extends Props>(props: P, name?: string): ExactC<TypeC<P>> => {
@@ -1667,6 +1716,7 @@ export const strict = <P extends Props>(props: P, name?: string): ExactC<TypeC<P
 }
 
 /**
+ * @category deprecated
  * @since 1.3.0
  * @deprecated
  */
@@ -1693,6 +1743,7 @@ export class TaggedUnionType<
 }
 
 /**
+ * @category deprecated
  * @since 1.5.3
  * @deprecated
  */
@@ -1702,6 +1753,7 @@ export interface TaggedUnionC<Tag extends string, CS extends [Mixed, Mixed, ...A
 /**
  * Use `union` instead
  *
+ * @category deprecated
  * @since 1.3.0
  * @deprecated
  */
@@ -1850,6 +1902,8 @@ export {
 export {
   /**
    * Use `UnknownArray` instead
+   *
+   * @category deprecated
    * @deprecated
    * @since 1.0.0
    */
@@ -1859,6 +1913,8 @@ export {
 export {
   /**
    * Use `type` instead
+   *
+   * @category deprecated
    * @deprecated
    * @since 1.0.0
    */
@@ -1877,12 +1933,15 @@ export {
 
 /**
  * Use `unknown` instead
+ *
+ * @category deprecated
  * @since 1.0.0
  * @deprecated
  */
 export type mixed = unknown
 
 /**
+ * @category deprecated
  * @since 1.0.0
  * @deprecated
  */
@@ -1892,6 +1951,7 @@ export const getValidationError /* istanbul ignore next */ = (value: unknown, co
 })
 
 /**
+ * @category deprecated
  * @since 1.0.0
  * @deprecated
  */
@@ -1900,6 +1960,7 @@ export const getDefaultContext /* istanbul ignore next */ = (decoder: Decoder<an
 ]
 
 /**
+ * @category deprecated
  * @since 1.0.0
  * @deprecated
  */
@@ -1922,6 +1983,7 @@ export class NeverType extends Type<never> {
 }
 
 /**
+ * @category deprecated
  * @since 1.5.3
  * @deprecated
  */
@@ -1929,6 +1991,7 @@ export class NeverType extends Type<never> {
 export interface NeverC extends NeverType {}
 
 /**
+ * @category deprecated
  * @since 1.0.0
  * @deprecated
  */
@@ -1936,6 +1999,7 @@ export interface NeverC extends NeverType {}
 export const never: NeverC = new NeverType()
 
 /**
+ * @category deprecated
  * @since 1.0.0
  * @deprecated
  */
@@ -1950,6 +2014,7 @@ export class AnyType extends Type<any> {
 }
 
 /**
+ * @category deprecated
  * @since 1.5.3
  * @deprecated
  */
@@ -1958,6 +2023,8 @@ export interface AnyC extends AnyType {}
 
 /**
  * Use `unknown` instead
+ *
+ * @category deprecated
  * @since 1.0.0
  * @deprecated
  */
@@ -1966,12 +2033,15 @@ export const any: AnyC = new AnyType()
 
 /**
  * Use `UnknownRecord` instead
+ *
+ * @category deprecated
  * @since 1.0.0
  * @deprecated
  */
 export const Dictionary: UnknownRecordC = UnknownRecord
 
 /**
+ * @category deprecated
  * @since 1.0.0
  * @deprecated
  */
@@ -1991,6 +2061,7 @@ export class ObjectType extends Type<object> {
 }
 
 /**
+ * @category deprecated
  * @since 1.5.3
  * @deprecated
  */
@@ -1999,6 +2070,8 @@ export interface ObjectC extends ObjectType {}
 
 /**
  * Use `UnknownRecord` instead
+ *
+ * @category deprecated
  * @since 1.0.0
  * @deprecated
  */
@@ -2007,6 +2080,8 @@ export const object: ObjectC = new ObjectType()
 
 /**
  * Use `BrandC` instead
+ *
+ * @category deprecated
  * @since 1.5.3
  * @deprecated
  */
@@ -2014,6 +2089,8 @@ export interface RefinementC<C extends Any> extends RefinementType<C, TypeOf<C>,
 
 /**
  * Use `brand` instead
+ *
+ * @category deprecated
  * @since 1.0.0
  * @deprecated
  */
@@ -2042,6 +2119,8 @@ RefinementC<C> {
 
 /**
  * Use `Int` instead
+ *
+ * @category deprecated
  * @since 1.0.0
  * @deprecated
  */
@@ -2050,6 +2129,8 @@ export const Integer = refinement(number, Number.isInteger, 'Integer')
 
 /**
  * Use `record` instead
+ *
+ * @category deprecated
  * @since 1.0.0
  * @deprecated
  */
@@ -2057,12 +2138,15 @@ export const dictionary: typeof record = record
 
 /**
  * used in `intersection` as a workaround for #234
+ *
+ * @category deprecated
  * @since 1.4.2
  * @deprecated
  */
 export type Compact<A> = { [K in keyof A]: A[K] }
 
 /**
+ * @category deprecated
  * @since 1.0.0
  * @deprecated
  */
@@ -2086,6 +2170,7 @@ export class StrictType<P, A = any, O = A, I = unknown> extends Type<A, O, I> {
 }
 
 /**
+ * @category deprecated
  * @since 1.5.3
  * @deprecated
  */
@@ -2093,23 +2178,30 @@ export interface StrictC<P extends Props>  // tslint:disable-next-line: deprecat
   extends StrictType<P, { [K in keyof P]: TypeOf<P[K]> }, { [K in keyof P]: OutputOf<P[K]> }, unknown> {}
 
 /**
+ * @category deprecated
  * @since 1.3.0
  * @deprecated
  */
 export type TaggedProps<Tag extends string> = { [K in Tag]: LiteralType<any> }
+
 /**
+ * @category deprecated
  * @since 1.3.0
  * @deprecated
  */
 // tslint:disable-next-line: deprecation
 export interface TaggedRefinement<Tag extends string, A, O = A> extends RefinementType<Tagged<Tag>, A, O> {}
+
 /**
+ * @category deprecated
  * @since 1.3.0
  * @deprecated
  */
 // tslint:disable-next-line: deprecation
 export interface TaggedUnion<Tag extends string, A, O = A> extends UnionType<Array<Tagged<Tag>>, A, O> {}
+
 /**
+ * @category deprecated
  * @since 1.3.0
  * @deprecated
  */
@@ -2144,19 +2236,25 @@ export type TaggedIntersectionArgument<Tag extends string> =
   | [Mixed, Mixed, Mixed, Tagged<Tag>, Mixed]
   // tslint:disable-next-line: deprecation
   | [Mixed, Mixed, Mixed, Mixed, Tagged<Tag>]
+
 /**
+ * @category deprecated
  * @since 1.3.0
  * @deprecated
  */
 export interface TaggedIntersection<Tag extends string, A, O = A>  // tslint:disable-next-line: deprecation
   extends IntersectionType<TaggedIntersectionArgument<Tag>, A, O> {}
+
 /**
+ * @category deprecated
  * @since 1.3.0
  * @deprecated
  */
 // tslint:disable-next-line: deprecation
 export interface TaggedExact<Tag extends string, A, O = A> extends ExactType<Tagged<Tag>, A, O> {}
+
 /**
+ * @category deprecated
  * @since 1.3.0
  * @deprecated
  */
@@ -2177,6 +2275,8 @@ export type Tagged<Tag extends string, A = any, O = A> =
 
 /**
  * Drops the codec "kind"
+ *
+ * @category deprecated
  * @since 1.1.0
  * @deprecated
  */
@@ -2185,12 +2285,14 @@ export function clean<A, O = A, I = unknown>(codec: Type<A, O, I>): Type<A, O, I
 }
 
 /**
+ * @category deprecated
  * @since 1.0.0
  * @deprecated
  */
 export type PropsOf<T extends { props: any }> = T['props']
 
 /**
+ * @category deprecated
  * @since 1.1.0
  * @deprecated
  */
@@ -2199,6 +2301,8 @@ export type Exact<T, X extends T> = T &
 
 /**
  * Keeps the codec "kind"
+ *
+ * @category deprecated
  * @since 1.1.0
  * @deprecated
  */

@@ -4,7 +4,7 @@ nav_order: 8
 parent: Modules
 ---
 
-# JsonEncoder overview
+## JsonEncoder overview
 
 Added in v2.2.3
 
@@ -12,112 +12,38 @@ Added in v2.2.3
 
 <h2 class="text-delta">Table of contents</h2>
 
-- [JsonArray (interface)](#jsonarray-interface)
-- [JsonEncoder (interface)](#jsonencoder-interface)
-- [Json (type alias)](#json-type-alias)
-- [JsonObject (type alias)](#jsonobject-type-alias)
-- [TypeOf (type alias)](#typeof-type-alias)
-- [URI (type alias)](#uri-type-alias)
-- [URI](#uri)
-- [array](#array)
-- [contramap](#contramap)
-- [contravariantJsonEncoder](#contravariantjsonencoder)
-- [id](#id)
-- [intersection](#intersection)
-- [lazy](#lazy)
-- [nullable](#nullable)
-- [partial](#partial)
-- [record](#record)
-- [schemableJsonEncoder](#schemablejsonencoder)
-- [sum](#sum)
-- [tuple](#tuple)
-- [type](#type)
+- [Contravariant](#contravariant)
+  - [contramap](#contramap)
+- [combinators](#combinators)
+  - [array](#array)
+  - [intersection](#intersection)
+  - [lazy](#lazy)
+  - [nullable](#nullable)
+  - [partial](#partial)
+  - [record](#record)
+  - [sum](#sum)
+  - [tuple](#tuple)
+  - [type](#type)
+- [instances](#instances)
+  - [URI](#uri)
+  - [URI (type alias)](#uri-type-alias)
+  - [contravariantJsonEncoder](#contravariantjsonencoder)
+  - [schemableJsonEncoder](#schemablejsonencoder)
+- [model](#model)
+  - [Json (type alias)](#json-type-alias)
+  - [JsonArray (interface)](#jsonarray-interface)
+  - [JsonEncoder (interface)](#jsonencoder-interface)
+  - [JsonObject (type alias)](#jsonobject-type-alias)
+- [primitives](#primitives)
+  - [id](#id)
+- [utils](#utils)
+  - [TypeOf (type alias)](#typeof-type-alias)
 
 ---
 
-# JsonArray (interface)
+# Contravariant
 
-**Signature**
-
-```ts
-export interface JsonArray extends Array<Json> {}
-```
-
-Added in v2.2.3
-
-# JsonEncoder (interface)
-
-**Signature**
-
-```ts
-export interface JsonEncoder<A> {
-  readonly encode: (a: A) => Json
-}
-```
-
-Added in v2.2.3
-
-# Json (type alias)
-
-**Signature**
-
-```ts
-export type Json = null | string | number | boolean | JsonObject | JsonArray
-```
-
-Added in v2.2.3
-
-# JsonObject (type alias)
-
-**Signature**
-
-```ts
-export type JsonObject = { [key: string]: Json }
-```
-
-Added in v2.2.3
-
-# TypeOf (type alias)
-
-**Signature**
-
-```ts
-export type TypeOf<E> = E.TypeOf<E>
-```
-
-Added in v2.2.3
-
-# URI (type alias)
-
-**Signature**
-
-```ts
-export type URI = typeof URI
-```
-
-Added in v2.2.3
-
-# URI
-
-**Signature**
-
-```ts
-export declare const URI: 'io-ts/JsonEncoder'
-```
-
-Added in v2.2.3
-
-# array
-
-**Signature**
-
-```ts
-export declare const array: <A>(items: JsonEncoder<A>) => JsonEncoder<A[]>
-```
-
-Added in v2.2.3
-
-# contramap
+## contramap
 
 **Signature**
 
@@ -127,27 +53,19 @@ export declare const contramap: <A, B>(f: (b: B) => A) => (fa: JsonEncoder<A>) =
 
 Added in v2.2.3
 
-# contravariantJsonEncoder
+# combinators
+
+## array
 
 **Signature**
 
 ```ts
-export declare const contravariantJsonEncoder: Contravariant1<'io-ts/JsonEncoder'>
+export declare const array: <A>(items: JsonEncoder<A>) => JsonEncoder<A[]>
 ```
 
 Added in v2.2.3
 
-# id
-
-**Signature**
-
-```ts
-export declare function id<A extends Json>(): JsonEncoder<A>
-```
-
-Added in v2.2.5
-
-# intersection
+## intersection
 
 **Signature**
 
@@ -157,7 +75,7 @@ export declare const intersection: <A, B>(left: JsonEncoder<A>, right: JsonEncod
 
 Added in v2.2.3
 
-# lazy
+## lazy
 
 **Signature**
 
@@ -167,7 +85,7 @@ export declare const lazy: <A>(f: () => JsonEncoder<A>) => JsonEncoder<A>
 
 Added in v2.2.3
 
-# nullable
+## nullable
 
 **Signature**
 
@@ -177,7 +95,7 @@ export declare const nullable: <A>(or: JsonEncoder<A>) => JsonEncoder<A>
 
 Added in v2.2.3
 
-# partial
+## partial
 
 **Signature**
 
@@ -189,7 +107,7 @@ export declare const partial: <A>(
 
 Added in v2.2.3
 
-# record
+## record
 
 **Signature**
 
@@ -199,17 +117,7 @@ export declare const record: <A>(codomain: JsonEncoder<A>) => JsonEncoder<Record
 
 Added in v2.2.3
 
-# schemableJsonEncoder
-
-**Signature**
-
-```ts
-export declare const schemableJsonEncoder: Schemable1<'io-ts/JsonEncoder'>
-```
-
-Added in v2.2.3
-
-# sum
+## sum
 
 **Signature**
 
@@ -221,7 +129,7 @@ export declare const sum: <T extends string>(
 
 Added in v2.2.3
 
-# tuple
+## tuple
 
 **Signature**
 
@@ -233,7 +141,7 @@ export declare const tuple: <A extends readonly unknown[]>(
 
 Added in v2.2.3
 
-# type
+## type
 
 **Signature**
 
@@ -241,6 +149,116 @@ Added in v2.2.3
 export declare const type: <A>(
   properties: { [K in keyof A]: JsonEncoder<A[K]> }
 ) => JsonEncoder<{ [K in keyof A]: A[K] }>
+```
+
+Added in v2.2.3
+
+# instances
+
+## URI
+
+**Signature**
+
+```ts
+export declare const URI: 'io-ts/JsonEncoder'
+```
+
+Added in v2.2.3
+
+## URI (type alias)
+
+**Signature**
+
+```ts
+export type URI = typeof URI
+```
+
+Added in v2.2.3
+
+## contravariantJsonEncoder
+
+**Signature**
+
+```ts
+export declare const contravariantJsonEncoder: Contravariant1<'io-ts/JsonEncoder'>
+```
+
+Added in v2.2.3
+
+## schemableJsonEncoder
+
+**Signature**
+
+```ts
+export declare const schemableJsonEncoder: Schemable1<'io-ts/JsonEncoder'>
+```
+
+Added in v2.2.3
+
+# model
+
+## Json (type alias)
+
+**Signature**
+
+```ts
+export type Json = null | string | number | boolean | JsonObject | JsonArray
+```
+
+Added in v2.2.3
+
+## JsonArray (interface)
+
+**Signature**
+
+```ts
+export interface JsonArray extends Array<Json> {}
+```
+
+Added in v2.2.3
+
+## JsonEncoder (interface)
+
+**Signature**
+
+```ts
+export interface JsonEncoder<A> {
+  readonly encode: (a: A) => Json
+}
+```
+
+Added in v2.2.3
+
+## JsonObject (type alias)
+
+**Signature**
+
+```ts
+export type JsonObject = { [key: string]: Json }
+```
+
+Added in v2.2.3
+
+# primitives
+
+## id
+
+**Signature**
+
+```ts
+export declare function id<A extends Json>(): JsonEncoder<A>
+```
+
+Added in v2.2.5
+
+# utils
+
+## TypeOf (type alias)
+
+**Signature**
+
+```ts
+export type TypeOf<E> = E.TypeOf<E>
 ```
 
 Added in v2.2.3

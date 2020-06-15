@@ -7,6 +7,10 @@ import * as R from 'fp-ts/lib/Record'
 import { memoize, Schemable1, WithRefinement1, WithUnknownContainers1 } from './Schemable'
 import Eq = E.Eq
 
+// -------------------------------------------------------------------------------------
+// utils
+// -------------------------------------------------------------------------------------
+
 /**
  * @since 2.2.3
  */
@@ -22,26 +26,31 @@ export type TypeOf<E> = E extends Eq<infer A> ? A : never
 // -------------------------------------------------------------------------------------
 
 /**
+ * @category primitives
  * @since 2.2.2
  */
 export const string: Eq<string> = E.eqString
 
 /**
+ * @category primitives
  * @since 2.2.2
  */
 export const number: Eq<number> = E.eqNumber
 
 /**
+ * @category primitives
  * @since 2.2.2
  */
 export const boolean: Eq<boolean> = E.eqBoolean
 
 /**
+ * @category primitives
  * @since 2.2.2
  */
 export const UnknownArray: Eq<Array<unknown>> = E.fromEquals((x, y) => x.length === y.length)
 
 /**
+ * @category primitives
  * @since 2.2.2
  */
 export const UnknownRecord: Eq<Record<string, unknown>> = E.fromEquals((x, y) => {
@@ -63,6 +72,7 @@ export const UnknownRecord: Eq<Record<string, unknown>> = E.fromEquals((x, y) =>
 // -------------------------------------------------------------------------------------
 
 /**
+ * @category combinators
  * @since 2.2.2
  */
 export function nullable<A>(or: Eq<A>): Eq<null | A> {
@@ -72,11 +82,13 @@ export function nullable<A>(or: Eq<A>): Eq<null | A> {
 }
 
 /**
+ * @category combinators
  * @since 2.2.2
  */
 export const type: <A>(eqs: { [K in keyof A]: Eq<A[K]> }) => Eq<{ [K in keyof A]: A[K] }> = E.getStructEq
 
 /**
+ * @category combinators
  * @since 2.2.2
  */
 export function partial<A>(properties: { [K in keyof A]: Eq<A[K]> }): Eq<Partial<{ [K in keyof A]: A[K] }>> {
@@ -95,16 +107,19 @@ export function partial<A>(properties: { [K in keyof A]: Eq<A[K]> }): Eq<Partial
 }
 
 /**
+ * @category combinators
  * @since 2.2.2
  */
 export const record: <A>(codomain: Eq<A>) => Eq<Record<string, A>> = R.getEq
 
 /**
+ * @category combinators
  * @since 2.2.2
  */
 export const array: <A>(eq: Eq<A>) => Eq<Array<A>> = A.getEq
 
 /**
+ * @category combinators
  * @since 2.2.2
  */
 export const tuple: <A extends ReadonlyArray<unknown>>(
@@ -112,6 +127,7 @@ export const tuple: <A extends ReadonlyArray<unknown>>(
 ) => Eq<A> = E.getTupleEq as any
 
 /**
+ * @category combinators
  * @since 2.2.2
  */
 export function intersection<A, B>(left: Eq<A>, right: Eq<B>): Eq<A & B> {
@@ -121,6 +137,7 @@ export function intersection<A, B>(left: Eq<A>, right: Eq<B>): Eq<A & B> {
 }
 
 /**
+ * @category combinators
  * @since 2.2.2
  */
 export function sum<T extends string>(tag: T): <A>(members: { [K in keyof A]: Eq<A[K]> }) => Eq<A[keyof A]> {
@@ -139,6 +156,7 @@ export function sum<T extends string>(tag: T): <A>(members: { [K in keyof A]: Eq
 }
 
 /**
+ * @category combinators
  * @since 2.2.2
  */
 export function lazy<A>(f: () => Eq<A>): Eq<A> {
@@ -153,6 +171,7 @@ export function lazy<A>(f: () => Eq<A>): Eq<A> {
 // -------------------------------------------------------------------------------------
 
 /**
+ * @category instances
  * @since 2.2.3
  */
 export const schemableEq: Schemable1<E.URI> & WithUnknownContainers1<E.URI> & WithRefinement1<E.URI> = {

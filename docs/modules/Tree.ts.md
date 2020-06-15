@@ -4,7 +4,7 @@ nav_order: 13
 parent: Modules
 ---
 
-# Tree overview
+## Tree overview
 
 Added in v2.2.0
 
@@ -12,11 +12,14 @@ Added in v2.2.0
 
 <h2 class="text-delta">Table of contents</h2>
 
-- [draw](#draw)
+- [utils](#utils)
+  - [draw](#draw)
 
 ---
 
-# draw
+# utils
+
+## draw
 
 **Signature**
 

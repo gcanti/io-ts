@@ -11,26 +11,34 @@ import { Schemable1 } from './Schemable'
 // -------------------------------------------------------------------------------------
 
 /**
+ * @category model
  * @since 2.2.3
  */
 export interface JsonArray extends Array<Json> {}
 
 /**
+ * @category model
  * @since 2.2.3
  */
 export type JsonObject = { [key: string]: Json }
 
 /**
+ * @category model
  * @since 2.2.3
  */
 export type Json = null | string | number | boolean | JsonObject | JsonArray
 
 /**
+ * @category model
  * @since 2.2.3
  */
 export interface JsonEncoder<A> {
   readonly encode: (a: A) => Json
 }
+
+// -------------------------------------------------------------------------------------
+// utils
+// -------------------------------------------------------------------------------------
 
 /**
  * @since 2.2.3
@@ -42,6 +50,7 @@ export type TypeOf<E> = E.TypeOf<E>
 // -------------------------------------------------------------------------------------
 
 /**
+ * @category primitives
  * @since 2.2.5
  */
 export function id<A extends Json>(): JsonEncoder<A> {
@@ -55,11 +64,13 @@ export function id<A extends Json>(): JsonEncoder<A> {
 // -------------------------------------------------------------------------------------
 
 /**
+ * @category combinators
  * @since 2.2.3
  */
 export const nullable: <A>(or: JsonEncoder<A>) => JsonEncoder<null | A> = E.nullable
 
 /**
+ * @category combinators
  * @since 2.2.3
  */
 export const type: <A>(
@@ -67,6 +78,7 @@ export const type: <A>(
 ) => JsonEncoder<{ [K in keyof A]: A[K] }> = E.type as any
 
 /**
+ * @category combinators
  * @since 2.2.3
  */
 export const partial: <A>(
@@ -74,16 +86,19 @@ export const partial: <A>(
 ) => JsonEncoder<Partial<{ [K in keyof A]: A[K] }>> = E.partial as any
 
 /**
+ * @category combinators
  * @since 2.2.3
  */
 export const record: <A>(codomain: JsonEncoder<A>) => JsonEncoder<Record<string, A>> = E.record
 
 /**
+ * @category combinators
  * @since 2.2.3
  */
 export const array: <A>(items: JsonEncoder<A>) => JsonEncoder<Array<A>> = E.array
 
 /**
+ * @category combinators
  * @since 2.2.3
  */
 export const tuple: <A extends ReadonlyArray<unknown>>(
@@ -91,11 +106,13 @@ export const tuple: <A extends ReadonlyArray<unknown>>(
 ) => JsonEncoder<A> = E.tuple as any
 
 /**
+ * @category combinators
  * @since 2.2.3
  */
 export const intersection: <A, B>(left: JsonEncoder<A>, right: JsonEncoder<B>) => JsonEncoder<A & B> = E.intersection
 
 /**
+ * @category combinators
  * @since 2.2.3
  */
 export const sum: <T extends string>(
@@ -103,6 +120,7 @@ export const sum: <T extends string>(
 ) => <A>(members: { [K in keyof A]: JsonEncoder<A[K]> }) => JsonEncoder<A[keyof A]> = E.sum as any
 
 /**
+ * @category combinators
  * @since 2.2.3
  */
 export const lazy: <A>(f: () => JsonEncoder<A>) => JsonEncoder<A> = E.lazy
@@ -112,6 +130,7 @@ export const lazy: <A>(f: () => JsonEncoder<A>) => JsonEncoder<A> = E.lazy
 // -------------------------------------------------------------------------------------
 
 /**
+ * @category Contravariant
  * @since 2.2.3
  */
 export const contramap: <A, B>(f: (b: B) => A) => (fa: JsonEncoder<A>) => JsonEncoder<B> = E.contramap
@@ -121,11 +140,13 @@ export const contramap: <A, B>(f: (b: B) => A) => (fa: JsonEncoder<A>) => JsonEn
 // -------------------------------------------------------------------------------------
 
 /**
+ * @category instances
  * @since 2.2.3
  */
 export const URI = 'io-ts/JsonEncoder'
 
 /**
+ * @category instances
  * @since 2.2.3
  */
 export type URI = typeof URI
@@ -137,6 +158,7 @@ declare module 'fp-ts/lib/HKT' {
 }
 
 /**
+ * @category instances
  * @since 2.2.3
  */
 export const contravariantJsonEncoder: Contravariant1<URI> = {
@@ -145,6 +167,7 @@ export const contravariantJsonEncoder: Contravariant1<URI> = {
 }
 
 /**
+ * @category instances
  * @since 2.2.3
  */
 export const schemableJsonEncoder: Schemable1<URI> = {

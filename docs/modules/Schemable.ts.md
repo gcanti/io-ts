@@ -4,7 +4,7 @@ nav_order: 12
 parent: Modules
 ---
 
-# Schemable overview
+## Schemable overview
 
 Added in v2.2.0
 
@@ -12,20 +12,33 @@ Added in v2.2.0
 
 <h2 class="text-delta">Table of contents</h2>
 
-- [Schemable (interface)](#schemable-interface)
-- [Schemable1 (interface)](#schemable1-interface)
-- [WithRefinement (interface)](#withrefinement-interface)
-- [WithRefinement1 (interface)](#withrefinement1-interface)
-- [WithUnion (interface)](#withunion-interface)
-- [WithUnion1 (interface)](#withunion1-interface)
-- [WithUnknownContainers (interface)](#withunknowncontainers-interface)
-- [WithUnknownContainers1 (interface)](#withunknowncontainers1-interface)
-- [Literal (type alias)](#literal-type-alias)
-- [memoize](#memoize)
+- [utils](#utils)
+  - [Literal (type alias)](#literal-type-alias)
+  - [Schemable (interface)](#schemable-interface)
+  - [Schemable1 (interface)](#schemable1-interface)
+  - [WithRefinement (interface)](#withrefinement-interface)
+  - [WithRefinement1 (interface)](#withrefinement1-interface)
+  - [WithUnion (interface)](#withunion-interface)
+  - [WithUnion1 (interface)](#withunion1-interface)
+  - [WithUnknownContainers (interface)](#withunknowncontainers-interface)
+  - [WithUnknownContainers1 (interface)](#withunknowncontainers1-interface)
+  - [memoize](#memoize)
 
 ---
 
-# Schemable (interface)
+# utils
+
+## Literal (type alias)
+
+**Signature**
+
+```ts
+export type Literal = string | number | boolean | null
+```
+
+Added in v2.2.0
+
+## Schemable (interface)
 
 **Signature**
 
@@ -50,7 +63,7 @@ export interface Schemable<S> {
 
 Added in v2.2.3
 
-# Schemable1 (interface)
+## Schemable1 (interface)
 
 **Signature**
 
@@ -75,7 +88,7 @@ export interface Schemable1<S extends URIS> {
 
 Added in v2.2.3
 
-# WithRefinement (interface)
+## WithRefinement (interface)
 
 **Signature**
 
@@ -87,7 +100,7 @@ export interface WithRefinement<S> {
 
 Added in v2.2.3
 
-# WithRefinement1 (interface)
+## WithRefinement1 (interface)
 
 **Signature**
 
@@ -99,7 +112,7 @@ export interface WithRefinement1<S extends URIS> {
 
 Added in v2.2.3
 
-# WithUnion (interface)
+## WithUnion (interface)
 
 **Signature**
 
@@ -111,7 +124,7 @@ export interface WithUnion<S> {
 
 Added in v2.2.3
 
-# WithUnion1 (interface)
+## WithUnion1 (interface)
 
 **Signature**
 
@@ -125,7 +138,7 @@ export interface WithUnion1<S extends URIS> {
 
 Added in v2.2.3
 
-# WithUnknownContainers (interface)
+## WithUnknownContainers (interface)
 
 **Signature**
 
@@ -138,7 +151,7 @@ export interface WithUnknownContainers<S> {
 
 Added in v2.2.3
 
-# WithUnknownContainers1 (interface)
+## WithUnknownContainers1 (interface)
 
 **Signature**
 
@@ -151,17 +164,7 @@ export interface WithUnknownContainers1<S extends URIS> {
 
 Added in v2.2.3
 
-# Literal (type alias)
-
-**Signature**
-
-```ts
-export type Literal = string | number | boolean | null
-```
-
-Added in v2.2.0
-
-# memoize
+## memoize
 
 **Signature**
 

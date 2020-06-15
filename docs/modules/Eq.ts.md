@@ -4,7 +4,7 @@ nav_order: 4
 parent: Modules
 ---
 
-# Eq overview
+## Eq overview
 
 Added in v2.2.2
 
@@ -12,67 +12,33 @@ Added in v2.2.2
 
 <h2 class="text-delta">Table of contents</h2>
 
-- [TypeOf (type alias)](#typeof-type-alias)
-- [URI (type alias)](#uri-type-alias)
-- [UnknownArray](#unknownarray)
-- [UnknownRecord](#unknownrecord)
-- [array](#array)
-- [boolean](#boolean)
-- [intersection](#intersection)
-- [lazy](#lazy)
-- [nullable](#nullable)
-- [number](#number)
-- [partial](#partial)
-- [record](#record)
-- [schemableEq](#schemableeq)
-- [string](#string)
-- [sum](#sum)
-- [tuple](#tuple)
-- [type](#type)
+- [combinators](#combinators)
+  - [array](#array)
+  - [intersection](#intersection)
+  - [lazy](#lazy)
+  - [nullable](#nullable)
+  - [partial](#partial)
+  - [record](#record)
+  - [sum](#sum)
+  - [tuple](#tuple)
+  - [type](#type)
+- [instances](#instances)
+  - [schemableEq](#schemableeq)
+- [primitives](#primitives)
+  - [UnknownArray](#unknownarray)
+  - [UnknownRecord](#unknownrecord)
+  - [boolean](#boolean)
+  - [number](#number)
+  - [string](#string)
+- [utils](#utils)
+  - [TypeOf (type alias)](#typeof-type-alias)
+  - [URI (type alias)](#uri-type-alias)
 
 ---
 
-# TypeOf (type alias)
+# combinators
 
-**Signature**
-
-```ts
-export type TypeOf<E> = E extends Eq<infer A> ? A : never
-```
-
-Added in v2.2.2
-
-# URI (type alias)
-
-**Signature**
-
-```ts
-export type URI = E.URI
-```
-
-Added in v2.2.3
-
-# UnknownArray
-
-**Signature**
-
-```ts
-export declare const UnknownArray: E.Eq<unknown[]>
-```
-
-Added in v2.2.2
-
-# UnknownRecord
-
-**Signature**
-
-```ts
-export declare const UnknownRecord: E.Eq<Record<string, unknown>>
-```
-
-Added in v2.2.2
-
-# array
+## array
 
 **Signature**
 
@@ -82,17 +48,7 @@ export declare const array: <A>(eq: E.Eq<A>) => E.Eq<A[]>
 
 Added in v2.2.2
 
-# boolean
-
-**Signature**
-
-```ts
-export declare const boolean: E.Eq<boolean>
-```
-
-Added in v2.2.2
-
-# intersection
+## intersection
 
 **Signature**
 
@@ -102,7 +58,7 @@ export declare function intersection<A, B>(left: Eq<A>, right: Eq<B>): Eq<A & B>
 
 Added in v2.2.2
 
-# lazy
+## lazy
 
 **Signature**
 
@@ -112,7 +68,7 @@ export declare function lazy<A>(f: () => Eq<A>): Eq<A>
 
 Added in v2.2.2
 
-# nullable
+## nullable
 
 **Signature**
 
@@ -122,17 +78,7 @@ export declare function nullable<A>(or: Eq<A>): Eq<null | A>
 
 Added in v2.2.2
 
-# number
-
-**Signature**
-
-```ts
-export declare const number: E.Eq<number>
-```
-
-Added in v2.2.2
-
-# partial
+## partial
 
 **Signature**
 
@@ -142,7 +88,7 @@ export declare function partial<A>(properties: { [K in keyof A]: Eq<A[K]> }): Eq
 
 Added in v2.2.2
 
-# record
+## record
 
 **Signature**
 
@@ -152,27 +98,7 @@ export declare const record: <A>(codomain: E.Eq<A>) => E.Eq<Record<string, A>>
 
 Added in v2.2.2
 
-# schemableEq
-
-**Signature**
-
-```ts
-export declare const schemableEq: Schemable1<'Eq'> & WithUnknownContainers1<'Eq'> & WithRefinement1<'Eq'>
-```
-
-Added in v2.2.3
-
-# string
-
-**Signature**
-
-```ts
-export declare const string: E.Eq<string>
-```
-
-Added in v2.2.2
-
-# sum
+## sum
 
 **Signature**
 
@@ -182,7 +108,7 @@ export declare function sum<T extends string>(tag: T): <A>(members: { [K in keyo
 
 Added in v2.2.2
 
-# tuple
+## tuple
 
 **Signature**
 
@@ -192,7 +118,7 @@ export declare const tuple: <A extends readonly unknown[]>(...components: { [K i
 
 Added in v2.2.2
 
-# type
+## type
 
 **Signature**
 
@@ -201,3 +127,89 @@ export declare const type: <A>(eqs: { [K in keyof A]: E.Eq<A[K]> }) => E.Eq<{ [K
 ```
 
 Added in v2.2.2
+
+# instances
+
+## schemableEq
+
+**Signature**
+
+```ts
+export declare const schemableEq: Schemable1<'Eq'> & WithUnknownContainers1<'Eq'> & WithRefinement1<'Eq'>
+```
+
+Added in v2.2.3
+
+# primitives
+
+## UnknownArray
+
+**Signature**
+
+```ts
+export declare const UnknownArray: E.Eq<unknown[]>
+```
+
+Added in v2.2.2
+
+## UnknownRecord
+
+**Signature**
+
+```ts
+export declare const UnknownRecord: E.Eq<Record<string, unknown>>
+```
+
+Added in v2.2.2
+
+## boolean
+
+**Signature**
+
+```ts
+export declare const boolean: E.Eq<boolean>
+```
+
+Added in v2.2.2
+
+## number
+
+**Signature**
+
+```ts
+export declare const number: E.Eq<number>
+```
+
+Added in v2.2.2
+
+## string
+
+**Signature**
+
+```ts
+export declare const string: E.Eq<string>
+```
+
+Added in v2.2.2
+
+# utils
+
+## TypeOf (type alias)
+
+**Signature**
+
+```ts
+export type TypeOf<E> = E extends Eq<infer A> ? A : never
+```
+
+Added in v2.2.2
+
+## URI (type alias)
+
+**Signature**
+
+```ts
+export type URI = E.URI
+```
+
+Added in v2.2.3

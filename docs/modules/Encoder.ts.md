@@ -4,7 +4,7 @@ nav_order: 3
 parent: Modules
 ---
 
-# Encoder overview
+## Encoder overview
 
 Added in v2.2.3
 
@@ -12,111 +12,38 @@ Added in v2.2.3
 
 <h2 class="text-delta">Table of contents</h2>
 
-- [Encoder (interface)](#encoder-interface)
-- [OutputOf (type alias)](#outputof-type-alias)
-- [TypeOf (type alias)](#typeof-type-alias)
-- [URI (type alias)](#uri-type-alias)
-- [URI](#uri)
-- [array](#array)
-- [categoryEncoder](#categoryencoder)
-- [compose](#compose)
-- [contramap](#contramap)
-- [contravariantEncoder](#contravariantencoder)
-- [id](#id)
-- [intersection](#intersection)
-- [lazy](#lazy)
-- [nullable](#nullable)
-- [partial](#partial)
-- [record](#record)
-- [sum](#sum)
-- [tuple](#tuple)
-- [type](#type)
+- [Contravariant](#contravariant)
+  - [contramap](#contramap)
+- [Semigroupoid](#semigroupoid)
+  - [compose](#compose)
+- [combinators](#combinators)
+  - [array](#array)
+  - [intersection](#intersection)
+  - [lazy](#lazy)
+  - [nullable](#nullable)
+  - [partial](#partial)
+  - [record](#record)
+  - [sum](#sum)
+  - [tuple](#tuple)
+  - [type](#type)
+- [constructors](#constructors)
+  - [id](#id)
+- [instances](#instances)
+  - [URI](#uri)
+  - [URI (type alias)](#uri-type-alias)
+  - [categoryEncoder](#categoryencoder)
+  - [contravariantEncoder](#contravariantencoder)
+- [model](#model)
+  - [Encoder (interface)](#encoder-interface)
+- [utils](#utils)
+  - [OutputOf (type alias)](#outputof-type-alias)
+  - [TypeOf (type alias)](#typeof-type-alias)
 
 ---
 
-# Encoder (interface)
+# Contravariant
 
-**Signature**
-
-```ts
-export interface Encoder<O, A> {
-  readonly encode: (a: A) => O
-}
-```
-
-Added in v2.2.3
-
-# OutputOf (type alias)
-
-**Signature**
-
-```ts
-export type OutputOf<E> = E extends Encoder<infer O, any> ? O : never
-```
-
-Added in v2.2.3
-
-# TypeOf (type alias)
-
-**Signature**
-
-```ts
-export type TypeOf<E> = E extends Encoder<any, infer A> ? A : never
-```
-
-Added in v2.2.3
-
-# URI (type alias)
-
-**Signature**
-
-```ts
-export type URI = typeof URI
-```
-
-Added in v2.2.3
-
-# URI
-
-**Signature**
-
-```ts
-export declare const URI: 'io-ts/Encoder'
-```
-
-Added in v2.2.3
-
-# array
-
-**Signature**
-
-```ts
-export declare function array<O, A>(items: Encoder<O, A>): Encoder<Array<O>, Array<A>>
-```
-
-Added in v2.2.3
-
-# categoryEncoder
-
-**Signature**
-
-```ts
-export declare const categoryEncoder: Category2<'io-ts/Encoder'>
-```
-
-Added in v2.2.3
-
-# compose
-
-**Signature**
-
-```ts
-export declare const compose: <E, A>(ea: Encoder<E, A>) => <B>(ab: Encoder<A, B>) => Encoder<E, B>
-```
-
-Added in v2.2.3
-
-# contramap
+## contramap
 
 **Signature**
 
@@ -126,27 +53,31 @@ export declare const contramap: <A, B>(f: (b: B) => A) => <E>(fa: Encoder<E, A>)
 
 Added in v2.2.3
 
-# contravariantEncoder
+# Semigroupoid
+
+## compose
 
 **Signature**
 
 ```ts
-export declare const contravariantEncoder: Contravariant2<'io-ts/Encoder'>
+export declare const compose: <E, A>(ea: Encoder<E, A>) => <B>(ab: Encoder<A, B>) => Encoder<E, B>
 ```
 
 Added in v2.2.3
 
-# id
+# combinators
+
+## array
 
 **Signature**
 
 ```ts
-export declare function id<A>(): Encoder<A, A>
+export declare function array<O, A>(items: Encoder<O, A>): Encoder<Array<O>, Array<A>>
 ```
 
 Added in v2.2.3
 
-# intersection
+## intersection
 
 **Signature**
 
@@ -156,7 +87,7 @@ export declare function intersection<O, A, P, B>(left: Encoder<O, A>, right: Enc
 
 Added in v2.2.3
 
-# lazy
+## lazy
 
 **Signature**
 
@@ -166,7 +97,7 @@ export declare function lazy<O, A>(f: () => Encoder<O, A>): Encoder<O, A>
 
 Added in v2.2.3
 
-# nullable
+## nullable
 
 **Signature**
 
@@ -176,7 +107,7 @@ export declare function nullable<O, A>(or: Encoder<O, A>): Encoder<null | O, nul
 
 Added in v2.2.3
 
-# partial
+## partial
 
 **Signature**
 
@@ -188,7 +119,7 @@ export declare function partial<P extends Record<string, Encoder<any, any>>>(
 
 Added in v2.2.3
 
-# record
+## record
 
 **Signature**
 
@@ -198,7 +129,7 @@ export declare function record<O, A>(codomain: Encoder<O, A>): Encoder<Record<st
 
 Added in v2.2.3
 
-# sum
+## sum
 
 **Signature**
 
@@ -210,7 +141,7 @@ export declare function sum<T extends string>(
 
 Added in v2.2.3
 
-# tuple
+## tuple
 
 **Signature**
 
@@ -222,7 +153,7 @@ export declare function tuple<C extends ReadonlyArray<Encoder<any, any>>>(
 
 Added in v2.2.3
 
-# type
+## type
 
 **Signature**
 
@@ -230,6 +161,96 @@ Added in v2.2.3
 export declare function type<P extends Record<string, Encoder<any, any>>>(
   properties: P
 ): Encoder<{ [K in keyof P]: OutputOf<P[K]> }, { [K in keyof P]: TypeOf<P[K]> }>
+```
+
+Added in v2.2.3
+
+# constructors
+
+## id
+
+**Signature**
+
+```ts
+export declare function id<A>(): Encoder<A, A>
+```
+
+Added in v2.2.3
+
+# instances
+
+## URI
+
+**Signature**
+
+```ts
+export declare const URI: 'io-ts/Encoder'
+```
+
+Added in v2.2.3
+
+## URI (type alias)
+
+**Signature**
+
+```ts
+export type URI = typeof URI
+```
+
+Added in v2.2.3
+
+## categoryEncoder
+
+**Signature**
+
+```ts
+export declare const categoryEncoder: Category2<'io-ts/Encoder'>
+```
+
+Added in v2.2.3
+
+## contravariantEncoder
+
+**Signature**
+
+```ts
+export declare const contravariantEncoder: Contravariant2<'io-ts/Encoder'>
+```
+
+Added in v2.2.3
+
+# model
+
+## Encoder (interface)
+
+**Signature**
+
+```ts
+export interface Encoder<O, A> {
+  readonly encode: (a: A) => O
+}
+```
+
+Added in v2.2.3
+
+# utils
+
+## OutputOf (type alias)
+
+**Signature**
+
+```ts
+export type OutputOf<E> = E extends Encoder<infer O, any> ? O : never
+```
+
+Added in v2.2.3
+
+## TypeOf (type alias)
+
+**Signature**
+
+```ts
+export type TypeOf<E> = E extends Encoder<any, infer A> ? A : never
 ```
 
 Added in v2.2.3

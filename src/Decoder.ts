@@ -15,16 +15,16 @@ import { Alt1 } from 'fp-ts/lib/Alt'
 // -------------------------------------------------------------------------------------
 
 /**
- * @since 2.2.2
- */
-export interface DecodeError extends NonEmptyArray<Tree<string>> {}
-
-/**
+ * @category model
  * @since 2.2.0
  */
 export interface Decoder<A> {
   readonly decode: (u: unknown) => Either<DecodeError, A>
 }
+
+// -------------------------------------------------------------------------------------
+// utils
+// -------------------------------------------------------------------------------------
 
 /**
  * @since 2.2.0
@@ -35,9 +35,16 @@ export type TypeOf<D> = D extends Decoder<infer A> ? A : never
 // DecodeError
 // -------------------------------------------------------------------------------------
 
+/**
+ * @category DecodeError
+ * @since 2.2.2
+ */
+export interface DecodeError extends NonEmptyArray<Tree<string>> {}
+
 const empty: Array<never> = []
 
 /**
+ * @category DecodeError
  * @since 2.2.0
  */
 export function tree<A>(value: A, forest: Forest<A> = empty): Tree<A> {
@@ -48,6 +55,7 @@ export function tree<A>(value: A, forest: Forest<A> = empty): Tree<A> {
 }
 
 /**
+ * @category DecodeError
  * @since 2.2.0
  */
 export function success<A>(a: A): Either<DecodeError, A> {
@@ -55,6 +63,7 @@ export function success<A>(a: A): Either<DecodeError, A> {
 }
 
 /**
+ * @category DecodeError
  * @since 2.2.0
  */
 export function failure<A = never>(message: string): Either<DecodeError, A> {
@@ -62,6 +71,7 @@ export function failure<A = never>(message: string): Either<DecodeError, A> {
 }
 
 /**
+ * @category DecodeError
  * @since 2.2.2
  */
 export function isNotEmpty<A>(as: ReadonlyArray<A>): as is NonEmptyArray<A> {
@@ -73,6 +83,7 @@ export function isNotEmpty<A>(as: ReadonlyArray<A>): as is NonEmptyArray<A> {
 // -------------------------------------------------------------------------------------
 
 /**
+ * @category constructors
  * @since 2.2.3
  */
 export function of<A>(a: A): Decoder<A> {
@@ -82,6 +93,7 @@ export function of<A>(a: A): Decoder<A> {
 }
 
 /**
+ * @category constructors
  * @since 2.2.0
  */
 export function fromGuard<A>(guard: G.Guard<A>, expected: string): Decoder<A> {
@@ -91,6 +103,7 @@ export function fromGuard<A>(guard: G.Guard<A>, expected: string): Decoder<A> {
 }
 
 /**
+ * @category constructors
  * @since 2.2.0
  */
 export function literal<A extends ReadonlyArray<Literal>>(...values: A): Decoder<A[number]> {
@@ -106,31 +119,37 @@ export function literal<A extends ReadonlyArray<Literal>>(...values: A): Decoder
 // -------------------------------------------------------------------------------------
 
 /**
+ * @category primitives
  * @since 2.2.0
  */
 export const never: Decoder<never> = fromGuard(G.never, 'never')
 
 /**
+ * @category primitives
  * @since 2.2.0
  */
 export const string: Decoder<string> = fromGuard(G.string, 'string')
 
 /**
+ * @category primitives
  * @since 2.2.0
  */
 export const number: Decoder<number> = fromGuard(G.number, 'number')
 
 /**
+ * @category primitives
  * @since 2.2.0
  */
 export const boolean: Decoder<boolean> = fromGuard(G.boolean, 'boolean')
 
 /**
+ * @category primitives
  * @since 2.2.0
  */
 export const UnknownArray: Decoder<Array<unknown>> = fromGuard(G.UnknownArray, 'Array<unknown>')
 
 /**
+ * @category primitives
  * @since 2.2.0
  */
 export const UnknownRecord: Decoder<Record<string, unknown>> = fromGuard(G.UnknownRecord, 'Record<string, unknown>')
@@ -140,6 +159,7 @@ export const UnknownRecord: Decoder<Record<string, unknown>> = fromGuard(G.Unkno
 // -------------------------------------------------------------------------------------
 
 /**
+ * @category combinators
  * @since 2.2.0
  */
 export function withExpected<A>(
@@ -156,6 +176,7 @@ export function withExpected<A>(
 }
 
 /**
+ * @category combinators
  * @since 2.2.0
  */
 export function refinement<A, B extends A>(
@@ -176,6 +197,7 @@ export function refinement<A, B extends A>(
 }
 
 /**
+ * @category combinators
  * @since 2.2.0
  */
 export function parse<A, B>(from: Decoder<A>, parser: (a: A) => Either<string, B>): Decoder<B> {
@@ -195,6 +217,7 @@ export function parse<A, B>(from: Decoder<A>, parser: (a: A) => Either<string, B
 }
 
 /**
+ * @category combinators
  * @since 2.2.0
  */
 export function nullable<A>(or: Decoder<A>): Decoder<null | A> {
@@ -202,6 +225,7 @@ export function nullable<A>(or: Decoder<A>): Decoder<null | A> {
 }
 
 /**
+ * @category combinators
  * @since 2.2.0
  */
 export function type<A>(properties: { [K in keyof A]: Decoder<A[K]> }): Decoder<{ [K in keyof A]: A[K] }> {
@@ -229,6 +253,7 @@ export function type<A>(properties: { [K in keyof A]: Decoder<A[K]> }): Decoder<
 }
 
 /**
+ * @category combinators
  * @since 2.2.0
  */
 export function partial<A>(properties: { [K in keyof A]: Decoder<A[K]> }): Decoder<Partial<{ [K in keyof A]: A[K] }>> {
@@ -265,6 +290,7 @@ export function partial<A>(properties: { [K in keyof A]: Decoder<A[K]> }): Decod
 }
 
 /**
+ * @category combinators
  * @since 2.2.0
  */
 export function record<A>(codomain: Decoder<A>): Decoder<Record<string, A>> {
@@ -292,6 +318,7 @@ export function record<A>(codomain: Decoder<A>): Decoder<Record<string, A>> {
 }
 
 /**
+ * @category combinators
  * @since 2.2.0
  */
 export function array<A>(items: Decoder<A>): Decoder<Array<A>> {
@@ -320,6 +347,7 @@ export function array<A>(items: Decoder<A>): Decoder<Array<A>> {
 }
 
 /**
+ * @category combinators
  * @since 2.2.0
  */
 export function tuple<A extends ReadonlyArray<unknown>>(...components: { [K in keyof A]: Decoder<A[K]> }): Decoder<A> {
@@ -364,6 +392,7 @@ export function intersect<A, B>(a: A, b: B): A & B {
 }
 
 /**
+ * @category combinators
  * @since 2.2.0
  */
 export function intersection<A, B>(left: Decoder<A>, right: Decoder<B>): Decoder<A & B> {
@@ -383,6 +412,7 @@ export function intersection<A, B>(left: Decoder<A>, right: Decoder<B>): Decoder
 }
 
 /**
+ * @category combinators
  * @since 2.2.0
  */
 export function lazy<A>(id: string, f: () => Decoder<A>): Decoder<A> {
@@ -397,6 +427,7 @@ export function lazy<A>(id: string, f: () => Decoder<A>): Decoder<A> {
 }
 
 /**
+ * @category combinators
  * @since 2.2.0
  */
 export function sum<T extends string>(tag: T): <A>(members: { [K in keyof A]: Decoder<A[K]> }) => Decoder<A[keyof A]> {
@@ -427,6 +458,7 @@ export function sum<T extends string>(tag: T): <A>(members: { [K in keyof A]: De
 }
 
 /**
+ * @category combinators
  * @since 2.2.0
  */
 export function union<A extends ReadonlyArray<unknown>>(
@@ -462,6 +494,7 @@ export function union<A extends ReadonlyArray<unknown>>(
 // -------------------------------------------------------------------------------------
 
 /**
+ * @category Functor
  * @since 2.2.0
  */
 export const map: <A, B>(f: (a: A) => B) => (fa: Decoder<A>) => Decoder<B> = (f) => (fa) => map_(fa, f)
@@ -474,6 +507,7 @@ const map_: <A, B>(fa: Decoder<A>, f: (a: A) => B) => Decoder<B> = (fa, f) => ({
 })
 
 /**
+ * @category Alt
  * @since 2.2.0
  */
 export const alt: <A>(that: () => Decoder<A>) => (fa: Decoder<A>) => Decoder<A> = (that) => (fa) => alt_(fa, that)
@@ -490,11 +524,13 @@ const alt_: <A>(fx: Decoder<A>, fy: () => Decoder<A>) => Decoder<A> = (fx, fy) =
 // -------------------------------------------------------------------------------------
 
 /**
+ * @category instances
  * @since 2.2.0
  */
 export const URI = 'io-ts/Decoder'
 
 /**
+ * @category instances
  * @since 2.2.0
  */
 export type URI = typeof URI
@@ -506,6 +542,7 @@ declare module 'fp-ts/lib/HKT' {
 }
 
 /**
+ * @category instances
  * @since 2.2.3
  */
 export const functorDecoder: Functor1<URI> = {
@@ -514,6 +551,7 @@ export const functorDecoder: Functor1<URI> = {
 }
 
 /**
+ * @category instances
  * @since 2.2.3
  */
 export const altDecoder: Alt1<URI> = {
@@ -523,6 +561,7 @@ export const altDecoder: Alt1<URI> = {
 }
 
 /**
+ * @category instances
  * @since 2.2.3
  */
 export const schemableDecoder: Schemable1<URI> &

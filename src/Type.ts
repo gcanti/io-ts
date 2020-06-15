@@ -9,6 +9,7 @@ import { Literal, Schemable1, WithUnion1, WithRefinement1, WithUnknownContainers
 // -------------------------------------------------------------------------------------
 
 /**
+ * @category model
  * @since 2.2.3
  */
 export interface Type<A> extends t.Type<A, unknown, unknown> {}
@@ -18,6 +19,7 @@ export interface Type<A> extends t.Type<A, unknown, unknown> {}
 // -------------------------------------------------------------------------------------
 
 /**
+ * @category constructors
  * @since 2.2.3
  */
 export function literal<A extends ReadonlyArray<Literal>>(...values: A): Type<A[number]> {
@@ -29,26 +31,31 @@ export function literal<A extends ReadonlyArray<Literal>>(...values: A): Type<A[
 // -------------------------------------------------------------------------------------
 
 /**
+ * @category primitives
  * @since 2.2.3
  */
 export const string: Type<string> = t.string
 
 /**
+ * @category primitives
  * @since 2.2.3
  */
 export const number: Type<number> = t.number
 
 /**
+ * @category primitives
  * @since 2.2.3
  */
 export const boolean: Type<boolean> = t.boolean
 
 /**
+ * @category primitives
  * @since 2.2.3
  */
 export const UnknownArray: Type<Array<unknown>> = t.UnknownArray
 
 /**
+ * @category primitives
  * @since 2.2.3
  */
 export const UnknownRecord: Type<Record<string, unknown>> = t.UnknownRecord
@@ -58,6 +65,7 @@ export const UnknownRecord: Type<Record<string, unknown>> = t.UnknownRecord
 // -------------------------------------------------------------------------------------
 
 /**
+ * @category combinators
  * @since 2.2.3
  */
 export function refinement<A, B extends A>(from: Type<A>, refinement: (a: A) => a is B, expected: string): Type<B> {
@@ -66,6 +74,7 @@ export function refinement<A, B extends A>(from: Type<A>, refinement: (a: A) => 
 }
 
 /**
+ * @category combinators
  * @since 2.2.3
  */
 export function nullable<A>(or: Type<A>): Type<null | A> {
@@ -73,6 +82,7 @@ export function nullable<A>(or: Type<A>): Type<null | A> {
 }
 
 /**
+ * @category combinators
  * @since 2.2.3
  */
 export function type<A>(properties: { [K in keyof A]: Type<A[K]> }): Type<{ [K in keyof A]: A[K] }> {
@@ -80,6 +90,7 @@ export function type<A>(properties: { [K in keyof A]: Type<A[K]> }): Type<{ [K i
 }
 
 /**
+ * @category combinators
  * @since 2.2.3
  */
 export function partial<A>(properties: { [K in keyof A]: Type<A[K]> }): Type<Partial<{ [K in keyof A]: A[K] }>> {
@@ -87,6 +98,7 @@ export function partial<A>(properties: { [K in keyof A]: Type<A[K]> }): Type<Par
 }
 
 /**
+ * @category combinators
  * @since 2.2.3
  */
 export function record<A>(codomain: Type<A>): Type<Record<string, A>> {
@@ -94,6 +106,7 @@ export function record<A>(codomain: Type<A>): Type<Record<string, A>> {
 }
 
 /**
+ * @category combinators
  * @since 2.2.3
  */
 export function array<A>(items: Type<A>): Type<Array<A>> {
@@ -101,6 +114,7 @@ export function array<A>(items: Type<A>): Type<Array<A>> {
 }
 
 /**
+ * @category combinators
  * @since 2.2.3
  */
 export function tuple<A extends ReadonlyArray<unknown>>(...components: { [K in keyof A]: Type<A[K]> }): Type<A> {
@@ -108,6 +122,7 @@ export function tuple<A extends ReadonlyArray<unknown>>(...components: { [K in k
 }
 
 /**
+ * @category combinators
  * @since 2.2.3
  */
 export function intersection<A, B>(left: Type<A>, right: Type<B>): Type<A & B> {
@@ -115,6 +130,7 @@ export function intersection<A, B>(left: Type<A>, right: Type<B>): Type<A & B> {
 }
 
 /**
+ * @category combinators
  * @since 2.2.3
  */
 export function lazy<A>(id: string, f: () => Type<A>): Type<A> {
@@ -122,6 +138,7 @@ export function lazy<A>(id: string, f: () => Type<A>): Type<A> {
 }
 
 /**
+ * @category combinators
  * @since 2.2.3
  */
 export function sum<T extends string>(_tag: T): <A>(members: { [K in keyof A]: Type<A[K]> }) => Type<A[keyof A]> {
@@ -129,6 +146,7 @@ export function sum<T extends string>(_tag: T): <A>(members: { [K in keyof A]: T
 }
 
 /**
+ * @category combinators
  * @since 2.2.3
  */
 export function union<A extends ReadonlyArray<unknown>>(...members: { [K in keyof A]: Type<A[K]> }): Type<A[number]> {
@@ -140,11 +158,13 @@ export function union<A extends ReadonlyArray<unknown>>(...members: { [K in keyo
 // -------------------------------------------------------------------------------------
 
 /**
+ * @category instances
  * @since 2.2.3
  */
 export const URI = 'io-ts/Type'
 
 /**
+ * @category instances
  * @since 2.2.3
  */
 export type URI = typeof URI
@@ -156,6 +176,7 @@ declare module 'fp-ts/lib/HKT' {
 }
 
 /**
+ * @category instances
  * @since 2.2.3
  */
 export const schemableType: Schemable1<URI> & WithUnknownContainers1<URI> & WithUnion1<URI> & WithRefinement1<URI> = {

@@ -4,7 +4,7 @@ nav_order: 11
 parent: Modules
 ---
 
-# Schema overview
+## Schema overview
 
 Added in v2.2.0
 
@@ -12,14 +12,31 @@ Added in v2.2.0
 
 <h2 class="text-delta">Table of contents</h2>
 
-- [Schema (interface)](#schema-interface)
-- [TypeOf (type alias)](#typeof-type-alias)
-- [interpreter](#interpreter)
-- [make](#make)
+- [constructors](#constructors)
+  - [make](#make)
+- [model](#model)
+  - [Schema (interface)](#schema-interface)
+- [utils](#utils)
+  - [TypeOf (type alias)](#typeof-type-alias)
+  - [interpreter](#interpreter)
 
 ---
 
-# Schema (interface)
+# constructors
+
+## make
+
+**Signature**
+
+```ts
+export declare function make<A>(schema: Schema<A>): Schema<A>
+```
+
+Added in v2.2.0
+
+# model
+
+## Schema (interface)
 
 **Signature**
 
@@ -31,7 +48,9 @@ export interface Schema<A> {
 
 Added in v2.2.0
 
-# TypeOf (type alias)
+# utils
+
+## TypeOf (type alias)
 
 **Signature**
 
@@ -41,7 +60,7 @@ export type TypeOf<S> = S extends Schema<infer A> ? A : never
 
 Added in v2.2.0
 
-# interpreter
+## interpreter
 
 **Signature**
 
@@ -50,13 +69,3 @@ export declare function interpreter<S extends URIS>(S: Schemable1<S>): <A>(schem
 ```
 
 Added in v2.2.3
-
-# make
-
-**Signature**
-
-```ts
-export declare function make<A>(schema: Schema<A>): Schema<A>
-```
-
-Added in v2.2.0

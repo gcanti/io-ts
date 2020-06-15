@@ -12,11 +12,16 @@ import { identity } from 'fp-ts/lib/function'
 // -------------------------------------------------------------------------------------
 
 /**
+ * @category model
  * @since 2.2.3
  */
 export interface Encoder<O, A> {
   readonly encode: (a: A) => O
 }
+
+// -------------------------------------------------------------------------------------
+// utils
+// -------------------------------------------------------------------------------------
 
 /**
  * @since 2.2.3
@@ -33,6 +38,7 @@ export type OutputOf<E> = E extends Encoder<infer O, any> ? O : never
 // -------------------------------------------------------------------------------------
 
 /**
+ * @category constructors
  * @since 2.2.3
  */
 export function id<A>(): Encoder<A, A> {
@@ -46,6 +52,7 @@ export function id<A>(): Encoder<A, A> {
 // -------------------------------------------------------------------------------------
 
 /**
+ * @category combinators
  * @since 2.2.3
  */
 export function nullable<O, A>(or: Encoder<O, A>): Encoder<null | O, null | A> {
@@ -55,6 +62,7 @@ export function nullable<O, A>(or: Encoder<O, A>): Encoder<null | O, null | A> {
 }
 
 /**
+ * @category combinators
  * @since 2.2.3
  */
 export function type<P extends Record<string, Encoder<any, any>>>(
@@ -72,6 +80,7 @@ export function type<P extends Record<string, Encoder<any, any>>>(
 }
 
 /**
+ * @category combinators
  * @since 2.2.3
  */
 export function partial<P extends Record<string, Encoder<any, any>>>(
@@ -94,6 +103,7 @@ export function partial<P extends Record<string, Encoder<any, any>>>(
 }
 
 /**
+ * @category combinators
  * @since 2.2.3
  */
 export function record<O, A>(codomain: Encoder<O, A>): Encoder<Record<string, O>, Record<string, A>> {
@@ -109,6 +119,7 @@ export function record<O, A>(codomain: Encoder<O, A>): Encoder<Record<string, O>
 }
 
 /**
+ * @category combinators
  * @since 2.2.3
  */
 export function array<O, A>(items: Encoder<O, A>): Encoder<Array<O>, Array<A>> {
@@ -118,6 +129,7 @@ export function array<O, A>(items: Encoder<O, A>): Encoder<Array<O>, Array<A>> {
 }
 
 /**
+ * @category combinators
  * @since 2.2.3
  */
 export function tuple<C extends ReadonlyArray<Encoder<any, any>>>(
@@ -129,6 +141,7 @@ export function tuple<C extends ReadonlyArray<Encoder<any, any>>>(
 }
 
 /**
+ * @category combinators
  * @since 2.2.3
  */
 export function intersection<O, A, P, B>(left: Encoder<O, A>, right: Encoder<P, B>): Encoder<O & P, A & B> {
@@ -138,6 +151,7 @@ export function intersection<O, A, P, B>(left: Encoder<O, A>, right: Encoder<P, 
 }
 
 /**
+ * @category combinators
  * @since 2.2.3
  */
 export function sum<T extends string>(
@@ -151,6 +165,7 @@ export function sum<T extends string>(
 }
 
 /**
+ * @category combinators
  * @since 2.2.3
  */
 export function lazy<O, A>(f: () => Encoder<O, A>): Encoder<O, A> {
@@ -165,6 +180,7 @@ export function lazy<O, A>(f: () => Encoder<O, A>): Encoder<O, A> {
 // -------------------------------------------------------------------------------------
 
 /**
+ * @category Contravariant
  * @since 2.2.3
  */
 export const contramap: <A, B>(f: (b: B) => A) => <E>(fa: Encoder<E, A>) => Encoder<E, B> = (f) => (fa) =>
@@ -175,6 +191,7 @@ const contramap_: <E, A, B>(fa: Encoder<E, A>, f: (b: B) => A) => Encoder<E, B> 
 })
 
 /**
+ * @category Semigroupoid
  * @since 2.2.3
  */
 export const compose: <E, A>(ea: Encoder<E, A>) => <B>(ab: Encoder<A, B>) => Encoder<E, B> = (ea) => (ab) =>
@@ -189,11 +206,13 @@ const compose_: <E, A, B>(ab: Encoder<A, B>, la: Encoder<E, A>) => Encoder<E, B>
 // -------------------------------------------------------------------------------------
 
 /**
+ * @category instances
  * @since 2.2.3
  */
 export const URI = 'io-ts/Encoder'
 
 /**
+ * @category instances
  * @since 2.2.3
  */
 export type URI = typeof URI
@@ -205,6 +224,7 @@ declare module 'fp-ts/lib/HKT' {
 }
 
 /**
+ * @category instances
  * @since 2.2.3
  */
 export const contravariantEncoder: Contravariant2<URI> = {
@@ -213,6 +233,7 @@ export const contravariantEncoder: Contravariant2<URI> = {
 }
 
 /**
+ * @category instances
  * @since 2.2.3
  */
 export const categoryEncoder: Category2<URI> = {

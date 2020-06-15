@@ -4,7 +4,7 @@ nav_order: 10
 parent: Modules
 ---
 
-# Reporter overview
+## Reporter overview
 
 Added in v1.0.0
 
@@ -12,11 +12,14 @@ Added in v1.0.0
 
 <h2 class="text-delta">Table of contents</h2>
 
-- [Reporter (interface)](#reporter-interface)
+- [utils](#utils)
+  - [Reporter (interface)](#reporter-interface)
 
 ---
 
-# Reporter (interface)
+# utils
+
+## Reporter (interface)
 
 **Signature**
 

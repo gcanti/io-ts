@@ -7,6 +7,7 @@ import { PathReporter } from './PathReporter'
 import { isLeft } from 'fp-ts/lib/Either'
 
 /**
+ * @category deprecated
  * @since 1.0.0
  * @deprecated
  */

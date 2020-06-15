@@ -17,9 +17,14 @@ import { identity } from 'fp-ts/lib/function'
  * 1. `pipe(codec.decode(u), E.fold(() => u, codec.encode)) = u` for all `u` in `unknown`
  * 2. `codec.decode(codec.encode(a)) = E.right(a)` for all `a` in `A`
  *
+ * @category model
  * @since 2.2.3
  */
 export interface Codec<O, A> extends D.Decoder<A>, E.Encoder<O, A> {}
+
+// -------------------------------------------------------------------------------------
+// utils
+// -------------------------------------------------------------------------------------
 
 /**
  * @since 2.2.3
@@ -36,6 +41,7 @@ export type OutputOf<C> = E.OutputOf<C>
 // -------------------------------------------------------------------------------------
 
 /**
+ * @category constructors
  * @since 2.2.3
  */
 export function make<O, A>(decoder: D.Decoder<A>, encoder: E.Encoder<O, A>): Codec<O, A> {
@@ -46,6 +52,7 @@ export function make<O, A>(decoder: D.Decoder<A>, encoder: E.Encoder<O, A>): Cod
 }
 
 /**
+ * @category constructors
  * @since 2.2.3
  */
 export function fromDecoder<A>(decoder: D.Decoder<A>): Codec<A, A> {
@@ -56,6 +63,7 @@ export function fromDecoder<A>(decoder: D.Decoder<A>): Codec<A, A> {
 }
 
 /**
+ * @category constructors
  * @since 2.2.3
  */
 export function literal<A extends ReadonlyArray<Literal>>(...values: A): Codec<A[number], A[number]> {
@@ -67,26 +75,31 @@ export function literal<A extends ReadonlyArray<Literal>>(...values: A): Codec<A
 // -------------------------------------------------------------------------------------
 
 /**
+ * @category primitives
  * @since 2.2.3
  */
 export const string: Codec<string, string> = fromDecoder(D.string)
 
 /**
+ * @category primitives
  * @since 2.2.3
  */
 export const number: Codec<number, number> = fromDecoder(D.number)
 
 /**
+ * @category primitives
  * @since 2.2.3
  */
 export const boolean: Codec<boolean, boolean> = fromDecoder(D.boolean)
 
 /**
+ * @category primitives
  * @since 2.2.3
  */
 export const UnknownArray: Codec<Array<unknown>, Array<unknown>> = fromDecoder(D.UnknownArray)
 
 /**
+ * @category primitives
  * @since 2.2.3
  */
 export const UnknownRecord: Codec<Record<string, unknown>, Record<string, unknown>> = fromDecoder(D.UnknownRecord)
@@ -96,6 +109,7 @@ export const UnknownRecord: Codec<Record<string, unknown>, Record<string, unknow
 // -------------------------------------------------------------------------------------
 
 /**
+ * @category combinators
  * @since 2.2.3
  */
 export function withExpected<O, A>(
@@ -106,6 +120,7 @@ export function withExpected<O, A>(
 }
 
 /**
+ * @category combinators
  * @since 2.2.3
  */
 export function refinement<O, A, B extends A>(
@@ -117,6 +132,7 @@ export function refinement<O, A, B extends A>(
 }
 
 /**
+ * @category combinators
  * @since 2.2.3
  */
 export function nullable<O, A>(or: Codec<O, A>): Codec<null | O, null | A> {
@@ -124,6 +140,7 @@ export function nullable<O, A>(or: Codec<O, A>): Codec<null | O, null | A> {
 }
 
 /**
+ * @category combinators
  * @since 2.2.3
  */
 export function type<P extends Record<string, Codec<any, any>>>(
@@ -134,17 +151,19 @@ export function type<P extends Record<string, Codec<any, any>>>(
 }
 
 /**
+ * @category combinators
  * @since 2.2.3
  */
 export function partial<P extends Record<string, Codec<any, any>>>(
   properties: P
 ): Codec<Partial<{ [K in keyof P]: OutputOf<P[K]> }>, Partial<{ [K in keyof P]: TypeOf<P[K]> }>> {
-  // these tow `any`s are required to make typescript@3.5 compile
+  // these two `any`s are required to make typescript@3.5 compile
   //                               vvvvvv                          vvvvvv
   return make(D.partial(properties as any), E.partial(properties)) as any
 }
 
 /**
+ * @category combinators
  * @since 2.2.3
  */
 export function record<O, A>(codomain: Codec<O, A>): Codec<Record<string, O>, Record<string, A>> {
@@ -152,6 +171,7 @@ export function record<O, A>(codomain: Codec<O, A>): Codec<Record<string, O>, Re
 }
 
 /**
+ * @category combinators
  * @since 2.2.3
  */
 export function array<O, A>(items: Codec<O, A>): Codec<Array<O>, Array<A>> {
@@ -159,6 +179,7 @@ export function array<O, A>(items: Codec<O, A>): Codec<Array<O>, Array<A>> {
 }
 
 /**
+ * @category combinators
  * @since 2.2.3
  */
 export function tuple<C extends ReadonlyArray<Codec<any, any>>>(
@@ -170,6 +191,7 @@ export function tuple<C extends ReadonlyArray<Codec<any, any>>>(
 }
 
 /**
+ * @category combinators
  * @since 2.2.3
  */
 export function intersection<O, A, P, B>(left: Codec<O, A>, right: Codec<P, B>): Codec<O & P, A & B> {
@@ -177,6 +199,7 @@ export function intersection<O, A, P, B>(left: Codec<O, A>, right: Codec<P, B>):
 }
 
 /**
+ * @category combinators
  * @since 2.2.3
  */
 export function sum<T extends string>(
@@ -188,6 +211,7 @@ export function sum<T extends string>(
 }
 
 /**
+ * @category combinators
  * @since 2.2.3
  */
 export function lazy<O, A>(id: string, f: () => Codec<O, A>): Codec<O, A> {
@@ -199,6 +223,7 @@ export function lazy<O, A>(id: string, f: () => Codec<O, A>): Codec<O, A> {
 // -------------------------------------------------------------------------------------
 
 /**
+ * @category Invariant
  * @since 2.2.3
  */
 export const imap: <E, A, B>(f: (a: A) => B, g: (b: B) => A) => (fa: Codec<E, A>) => Codec<E, B> = (f, g) => (fa) =>
@@ -212,11 +237,13 @@ const imap_: <E, A, B>(fa: Codec<E, A>, f: (a: A) => B, g: (b: B) => A) => Codec
 // -------------------------------------------------------------------------------------
 
 /**
+ * @category instances
  * @since 2.2.3
  */
 export const URI = 'io-ts/Codec'
 
 /**
+ * @category instances
  * @since 2.2.3
  */
 export type URI = typeof URI
@@ -228,6 +255,7 @@ declare module 'fp-ts/lib/HKT' {
 }
 
 /**
+ * @category instances
  * @since 2.2.3
  */
 export const invariantCodec: Invariant2<URI> = {

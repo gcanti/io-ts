@@ -4,7 +4,7 @@ nav_order: 2
 parent: Modules
 ---
 
-# Decoder overview
+## Decoder overview
 
 Added in v2.2.0
 
@@ -12,118 +12,57 @@ Added in v2.2.0
 
 <h2 class="text-delta">Table of contents</h2>
 
-- [DecodeError (interface)](#decodeerror-interface)
-- [Decoder (interface)](#decoder-interface)
-- [TypeOf (type alias)](#typeof-type-alias)
-- [URI (type alias)](#uri-type-alias)
-- [URI](#uri)
-- [UnknownArray](#unknownarray)
-- [UnknownRecord](#unknownrecord)
-- [alt](#alt)
-- [altDecoder](#altdecoder)
-- [array](#array)
-- [boolean](#boolean)
-- [failure](#failure)
-- [fromGuard](#fromguard)
-- [functorDecoder](#functordecoder)
-- [intersection](#intersection)
-- [isNotEmpty](#isnotempty)
-- [lazy](#lazy)
-- [literal](#literal)
-- [map](#map)
-- [never](#never)
-- [nullable](#nullable)
-- [number](#number)
-- [of](#of)
-- [parse](#parse)
-- [partial](#partial)
-- [record](#record)
-- [refinement](#refinement)
-- [schemableDecoder](#schemabledecoder)
-- [string](#string)
-- [success](#success)
-- [sum](#sum)
-- [tree](#tree)
-- [tuple](#tuple)
-- [type](#type)
-- [union](#union)
-- [withExpected](#withexpected)
+- [Alt](#alt)
+  - [alt](#alt)
+- [DecodeError](#decodeerror)
+  - [DecodeError (interface)](#decodeerror-interface)
+  - [failure](#failure)
+  - [isNotEmpty](#isnotempty)
+  - [success](#success)
+  - [tree](#tree)
+- [Functor](#functor)
+  - [map](#map)
+- [combinators](#combinators)
+  - [array](#array)
+  - [intersection](#intersection)
+  - [lazy](#lazy)
+  - [nullable](#nullable)
+  - [parse](#parse)
+  - [partial](#partial)
+  - [record](#record)
+  - [refinement](#refinement)
+  - [sum](#sum)
+  - [tuple](#tuple)
+  - [type](#type)
+  - [union](#union)
+  - [withExpected](#withexpected)
+- [constructors](#constructors)
+  - [fromGuard](#fromguard)
+  - [literal](#literal)
+  - [of](#of)
+- [instances](#instances)
+  - [URI](#uri)
+  - [URI (type alias)](#uri-type-alias)
+  - [altDecoder](#altdecoder)
+  - [functorDecoder](#functordecoder)
+  - [schemableDecoder](#schemabledecoder)
+- [model](#model)
+  - [Decoder (interface)](#decoder-interface)
+- [primitives](#primitives)
+  - [UnknownArray](#unknownarray)
+  - [UnknownRecord](#unknownrecord)
+  - [boolean](#boolean)
+  - [never](#never)
+  - [number](#number)
+  - [string](#string)
+- [utils](#utils)
+  - [TypeOf (type alias)](#typeof-type-alias)
 
 ---
 
-# DecodeError (interface)
+# Alt
 
-**Signature**
-
-```ts
-export interface DecodeError extends NonEmptyArray<Tree<string>> {}
-```
-
-Added in v2.2.2
-
-# Decoder (interface)
-
-**Signature**
-
-```ts
-export interface Decoder<A> {
-  readonly decode: (u: unknown) => Either<DecodeError, A>
-}
-```
-
-Added in v2.2.0
-
-# TypeOf (type alias)
-
-**Signature**
-
-```ts
-export type TypeOf<D> = D extends Decoder<infer A> ? A : never
-```
-
-Added in v2.2.0
-
-# URI (type alias)
-
-**Signature**
-
-```ts
-export type URI = typeof URI
-```
-
-Added in v2.2.0
-
-# URI
-
-**Signature**
-
-```ts
-export declare const URI: 'io-ts/Decoder'
-```
-
-Added in v2.2.0
-
-# UnknownArray
-
-**Signature**
-
-```ts
-export declare const UnknownArray: Decoder<unknown[]>
-```
-
-Added in v2.2.0
-
-# UnknownRecord
-
-**Signature**
-
-```ts
-export declare const UnknownRecord: Decoder<Record<string, unknown>>
-```
-
-Added in v2.2.0
-
-# alt
+## alt
 
 **Signature**
 
@@ -133,37 +72,19 @@ export declare const alt: <A>(that: () => Decoder<A>) => (fa: Decoder<A>) => Dec
 
 Added in v2.2.0
 
-# altDecoder
+# DecodeError
+
+## DecodeError (interface)
 
 **Signature**
 
 ```ts
-export declare const altDecoder: Alt1<'io-ts/Decoder'>
+export interface DecodeError extends NonEmptyArray<Tree<string>> {}
 ```
 
-Added in v2.2.3
+Added in v2.2.2
 
-# array
-
-**Signature**
-
-```ts
-export declare function array<A>(items: Decoder<A>): Decoder<Array<A>>
-```
-
-Added in v2.2.0
-
-# boolean
-
-**Signature**
-
-```ts
-export declare const boolean: Decoder<boolean>
-```
-
-Added in v2.2.0
-
-# failure
+## failure
 
 **Signature**
 
@@ -173,37 +94,7 @@ export declare function failure<A = never>(message: string): Either<DecodeError,
 
 Added in v2.2.0
 
-# fromGuard
-
-**Signature**
-
-```ts
-export declare function fromGuard<A>(guard: G.Guard<A>, expected: string): Decoder<A>
-```
-
-Added in v2.2.0
-
-# functorDecoder
-
-**Signature**
-
-```ts
-export declare const functorDecoder: Functor1<'io-ts/Decoder'>
-```
-
-Added in v2.2.3
-
-# intersection
-
-**Signature**
-
-```ts
-export declare function intersection<A, B>(left: Decoder<A>, right: Decoder<B>): Decoder<A & B>
-```
-
-Added in v2.2.0
-
-# isNotEmpty
+## isNotEmpty
 
 **Signature**
 
@@ -213,27 +104,29 @@ export declare function isNotEmpty<A>(as: ReadonlyArray<A>): as is NonEmptyArray
 
 Added in v2.2.2
 
-# lazy
+## success
 
 **Signature**
 
 ```ts
-export declare function lazy<A>(id: string, f: () => Decoder<A>): Decoder<A>
+export declare function success<A>(a: A): Either<DecodeError, A>
 ```
 
 Added in v2.2.0
 
-# literal
+## tree
 
 **Signature**
 
 ```ts
-export declare function literal<A extends ReadonlyArray<Literal>>(...values: A): Decoder<A[number]>
+export declare function tree<A>(value: A, forest: Forest<A> = empty): Tree<A>
 ```
 
 Added in v2.2.0
 
-# map
+# Functor
+
+## map
 
 **Signature**
 
@@ -243,17 +136,39 @@ export declare const map: <A, B>(f: (a: A) => B) => (fa: Decoder<A>) => Decoder<
 
 Added in v2.2.0
 
-# never
+# combinators
+
+## array
 
 **Signature**
 
 ```ts
-export declare const never: Decoder<never>
+export declare function array<A>(items: Decoder<A>): Decoder<Array<A>>
 ```
 
 Added in v2.2.0
 
-# nullable
+## intersection
+
+**Signature**
+
+```ts
+export declare function intersection<A, B>(left: Decoder<A>, right: Decoder<B>): Decoder<A & B>
+```
+
+Added in v2.2.0
+
+## lazy
+
+**Signature**
+
+```ts
+export declare function lazy<A>(id: string, f: () => Decoder<A>): Decoder<A>
+```
+
+Added in v2.2.0
+
+## nullable
 
 **Signature**
 
@@ -263,27 +178,7 @@ export declare function nullable<A>(or: Decoder<A>): Decoder<null | A>
 
 Added in v2.2.0
 
-# number
-
-**Signature**
-
-```ts
-export declare const number: Decoder<number>
-```
-
-Added in v2.2.0
-
-# of
-
-**Signature**
-
-```ts
-export declare function of<A>(a: A): Decoder<A>
-```
-
-Added in v2.2.3
-
-# parse
+## parse
 
 **Signature**
 
@@ -293,7 +188,7 @@ export declare function parse<A, B>(from: Decoder<A>, parser: (a: A) => Either<s
 
 Added in v2.2.0
 
-# partial
+## partial
 
 **Signature**
 
@@ -305,7 +200,7 @@ export declare function partial<A>(
 
 Added in v2.2.0
 
-# record
+## record
 
 **Signature**
 
@@ -315,7 +210,7 @@ export declare function record<A>(codomain: Decoder<A>): Decoder<Record<string, 
 
 Added in v2.2.0
 
-# refinement
+## refinement
 
 **Signature**
 
@@ -329,7 +224,140 @@ export declare function refinement<A, B extends A>(
 
 Added in v2.2.0
 
-# schemableDecoder
+## sum
+
+**Signature**
+
+```ts
+export declare function sum<T extends string>(
+  tag: T
+): <A>(members: { [K in keyof A]: Decoder<A[K]> }) => Decoder<A[keyof A]>
+```
+
+Added in v2.2.0
+
+## tuple
+
+**Signature**
+
+```ts
+export declare function tuple<A extends ReadonlyArray<unknown>>(
+  ...components: { [K in keyof A]: Decoder<A[K]> }
+): Decoder<A>
+```
+
+Added in v2.2.0
+
+## type
+
+**Signature**
+
+```ts
+export declare function type<A>(properties: { [K in keyof A]: Decoder<A[K]> }): Decoder<{ [K in keyof A]: A[K] }>
+```
+
+Added in v2.2.0
+
+## union
+
+**Signature**
+
+```ts
+export declare function union<A extends ReadonlyArray<unknown>>(
+  ...members: { [K in keyof A]: Decoder<A[K]> }
+): Decoder<A[number]>
+```
+
+Added in v2.2.0
+
+## withExpected
+
+**Signature**
+
+```ts
+export declare function withExpected<A>(
+  decoder: Decoder<A>,
+  expected: (actual: unknown, e: DecodeError) => DecodeError
+): Decoder<A>
+```
+
+Added in v2.2.0
+
+# constructors
+
+## fromGuard
+
+**Signature**
+
+```ts
+export declare function fromGuard<A>(guard: G.Guard<A>, expected: string): Decoder<A>
+```
+
+Added in v2.2.0
+
+## literal
+
+**Signature**
+
+```ts
+export declare function literal<A extends ReadonlyArray<Literal>>(...values: A): Decoder<A[number]>
+```
+
+Added in v2.2.0
+
+## of
+
+**Signature**
+
+```ts
+export declare function of<A>(a: A): Decoder<A>
+```
+
+Added in v2.2.3
+
+# instances
+
+## URI
+
+**Signature**
+
+```ts
+export declare const URI: 'io-ts/Decoder'
+```
+
+Added in v2.2.0
+
+## URI (type alias)
+
+**Signature**
+
+```ts
+export type URI = typeof URI
+```
+
+Added in v2.2.0
+
+## altDecoder
+
+**Signature**
+
+```ts
+export declare const altDecoder: Alt1<'io-ts/Decoder'>
+```
+
+Added in v2.2.3
+
+## functorDecoder
+
+**Signature**
+
+```ts
+export declare const functorDecoder: Functor1<'io-ts/Decoder'>
+```
+
+Added in v2.2.3
+
+## schemableDecoder
 
 **Signature**
 
@@ -342,7 +370,73 @@ export declare const schemableDecoder: Schemable1<'io-ts/Decoder'> &
 
 Added in v2.2.3
 
-# string
+# model
+
+## Decoder (interface)
+
+**Signature**
+
+```ts
+export interface Decoder<A> {
+  readonly decode: (u: unknown) => Either<DecodeError, A>
+}
+```
+
+Added in v2.2.0
+
+# primitives
+
+## UnknownArray
+
+**Signature**
+
+```ts
+export declare const UnknownArray: Decoder<unknown[]>
+```
+
+Added in v2.2.0
+
+## UnknownRecord
+
+**Signature**
+
+```ts
+export declare const UnknownRecord: Decoder<Record<string, unknown>>
+```
+
+Added in v2.2.0
+
+## boolean
+
+**Signature**
+
+```ts
+export declare const boolean: Decoder<boolean>
+```
+
+Added in v2.2.0
+
+## never
+
+**Signature**
+
+```ts
+export declare const never: Decoder<never>
+```
+
+Added in v2.2.0
+
+## number
+
+**Signature**
+
+```ts
+export declare const number: Decoder<number>
+```
+
+Added in v2.2.0
+
+## string
 
 **Signature**
 
@@ -352,81 +446,14 @@ export declare const string: Decoder<string>
 
 Added in v2.2.0
 
-# success
+# utils
+
+## TypeOf (type alias)
 
 **Signature**
 
 ```ts
-export declare function success<A>(a: A): Either<DecodeError, A>
-```
-
-Added in v2.2.0
-
-# sum
-
-**Signature**
-
-```ts
-export declare function sum<T extends string>(
-  tag: T
-): <A>(members: { [K in keyof A]: Decoder<A[K]> }) => Decoder<A[keyof A]>
-```
-
-Added in v2.2.0
-
-# tree
-
-**Signature**
-
-```ts
-export declare function tree<A>(value: A, forest: Forest<A> = empty): Tree<A>
-```
-
-Added in v2.2.0
-
-# tuple
-
-**Signature**
-
-```ts
-export declare function tuple<A extends ReadonlyArray<unknown>>(
-  ...components: { [K in keyof A]: Decoder<A[K]> }
-): Decoder<A>
-```
-
-Added in v2.2.0
-
-# type
-
-**Signature**
-
-```ts
-export declare function type<A>(properties: { [K in keyof A]: Decoder<A[K]> }): Decoder<{ [K in keyof A]: A[K] }>
-```
-
-Added in v2.2.0
-
-# union
-
-**Signature**
-
-```ts
-export declare function union<A extends ReadonlyArray<unknown>>(
-  ...members: { [K in keyof A]: Decoder<A[K]> }
-): Decoder<A[number]>
-```
-
-Added in v2.2.0
-
-# withExpected
-
-**Signature**
-
-```ts
-export declare function withExpected<A>(
-  decoder: Decoder<A>,
-  expected: (actual: unknown, e: DecodeError) => DecodeError
-): Decoder<A>
+export type TypeOf<D> = D extends Decoder<infer A> ? A : never
 ```
 
 Added in v2.2.0
