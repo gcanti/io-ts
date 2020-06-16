@@ -501,18 +501,6 @@ describe('Codec', () => {
         const codec = C.intersection(Int, Positive)
         assert.deepStrictEqual(codec.decode(1), right(1))
       })
-
-      it('should reject an invalid input', () => {
-        const codec = C.intersection(C.type({ a: C.string }), C.type({ b: C.number }))
-        assert.deepStrictEqual(
-          codec.decode({ a: 'a' }),
-          left([D.tree('required property "b"', [D.tree('cannot decode undefined, should be number')])])
-        )
-        assert.deepStrictEqual(
-          codec.decode({ b: 1 }),
-          left([D.tree('required property "a"', [D.tree('cannot decode undefined, should be string')])])
-        )
-      })
     })
 
     describe('encode', () => {
