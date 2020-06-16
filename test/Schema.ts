@@ -121,12 +121,4 @@ describe('Schema', () => {
     )
     check(schema)
   })
-
-  // it('UnknownArray', () => {
-  //   check(make((S) => S.UnknownArray))
-  // })
-
-  // it('UnknownRecord', () => {
-  //   check(make((S) => S.UnknownRecord))
-  // })
 })

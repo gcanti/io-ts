@@ -205,10 +205,10 @@ export function union<A extends ReadonlyArray<unknown>>(...members: { [K in keyo
  * @since 2.2.0
  */
 export function sum<T extends string>(tag: T): <A>(members: { [K in keyof A]: Guard<A[K]> }) => Guard<A[keyof A]> {
-  return (members: Record<string, Guard<unknown>>) =>
+  return <A>(members: { [K in keyof A]: Guard<A[K]> }) =>
     refinement(UnknownRecord, (r): r is any => {
-      const v = r[tag]
-      if (string.is(v) && v in members) {
+      const v = r[tag] as keyof A
+      if (v in members) {
         return members[v].is(r)
       }
       return false

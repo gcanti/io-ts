@@ -55,6 +55,21 @@ describe('Decoder', () => {
     })
   })
 
+  describe('sum', () => {
+    it('should support non-`string` tag values', () => {
+      const decoder = D.sum('_tag')({
+        true: D.type({ _tag: D.literal(true), a: D.string }),
+        false: D.type({ _tag: D.literal(false), b: D.number })
+      })
+      assert.deepStrictEqual(decoder.decode({ _tag: true, a: 'a' }), E.right({ _tag: true, a: 'a' }))
+      assert.deepStrictEqual(decoder.decode({ _tag: false, b: 1 }), E.right({ _tag: false, b: 1 }))
+      assert.deepStrictEqual(
+        decoder.decode({ _tag: false, b: 'a' }),
+        E.left([D.tree('required property "b"', [D.tree('cannot decode "a", should be number')])])
+      )
+    })
+  })
+
   describe('intersect', () => {
     it('should concat strings', () => {
       assert.deepStrictEqual(D.intersect('a', 'b'), 'b')

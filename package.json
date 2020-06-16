@@ -1,6 +1,6 @@
 {
   "name": "io-ts",
-  "version": "2.2.5",
+  "version": "2.2.6",
   "description": "TypeScript runtime type system for IO decoding/encoding",
   "files": [
     "lib",
