@@ -70,6 +70,27 @@ describe('Decoder', () => {
     })
   })
 
+  describe('intersection', () => {
+    it('should accumulate all errors', () => {
+      const decoder = D.intersection(D.type({ a: D.string }), D.type({ b: D.number }))
+      assert.deepStrictEqual(
+        decoder.decode({}),
+        E.left([
+          D.tree('required property "a"', [D.tree('cannot decode undefined, should be string')]),
+          D.tree('required property "b"', [D.tree('cannot decode undefined, should be number')])
+        ])
+      )
+      assert.deepStrictEqual(
+        decoder.decode({ b: 1 }),
+        E.left([D.tree('required property "a"', [D.tree('cannot decode undefined, should be string')])])
+      )
+      assert.deepStrictEqual(
+        decoder.decode({ a: 'a' }),
+        E.left([D.tree('required property "b"', [D.tree('cannot decode undefined, should be number')])])
+      )
+    })
+  })
+
   describe('intersect', () => {
     it('should concat strings', () => {
       assert.deepStrictEqual(D.intersect('a', 'b'), 'b')

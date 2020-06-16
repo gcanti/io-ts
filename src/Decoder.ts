@@ -1,7 +1,7 @@
 /**
  * @since 2.2.0
  */
-import { Either, isLeft, isRight, left, mapLeft, right } from 'fp-ts/lib/Either'
+import * as E from 'fp-ts/lib/Either'
 import { NonEmptyArray } from 'fp-ts/lib/NonEmptyArray'
 import { pipe } from 'fp-ts/lib/pipeable'
 import { Forest, Tree } from 'fp-ts/lib/Tree'
@@ -13,6 +13,8 @@ import { Alt1 } from 'fp-ts/lib/Alt'
 // -------------------------------------------------------------------------------------
 // model
 // -------------------------------------------------------------------------------------
+
+import Either = E.Either
 
 /**
  * @category model
@@ -59,7 +61,7 @@ export function tree<A>(value: A, forest: Forest<A> = empty): Tree<A> {
  * @since 2.2.0
  */
 export function success<A>(a: A): Either<DecodeError, A> {
-  return right(a)
+  return E.right(a)
 }
 
 /**
@@ -67,7 +69,7 @@ export function success<A>(a: A): Either<DecodeError, A> {
  * @since 2.2.0
  */
 export function failure<A = never>(message: string): Either<DecodeError, A> {
-  return left([tree(message)])
+  return E.left([tree(message)])
 }
 
 /**
@@ -170,7 +172,7 @@ export function withExpected<A>(
     decode: (u) =>
       pipe(
         decoder.decode(u),
-        mapLeft((nea) => expected(u, nea))
+        E.mapLeft((nea) => expected(u, nea))
       )
   }
 }
@@ -187,7 +189,7 @@ export function refinement<A, B extends A>(
   return {
     decode: (u) => {
       const e = from.decode(u)
-      if (isLeft(e)) {
+      if (E.isLeft(e)) {
         return e
       }
       const a = e.right
@@ -204,11 +206,11 @@ export function parse<A, B>(from: Decoder<A>, parser: (a: A) => Either<string, B
   return {
     decode: (u) => {
       const e = from.decode(u)
-      if (isLeft(e)) {
+      if (E.isLeft(e)) {
         return e
       }
       const pe = parser(e.right)
-      if (isLeft(pe)) {
+      if (E.isLeft(pe)) {
         return failure(pe.left)
       }
       return pe
@@ -232,7 +234,7 @@ export function type<A>(properties: { [K in keyof A]: Decoder<A[K]> }): Decoder<
   return {
     decode: (u) => {
       const e = UnknownRecord.decode(u)
-      if (isLeft(e)) {
+      if (E.isLeft(e)) {
         return e
       } else {
         const r = e.right
@@ -240,13 +242,13 @@ export function type<A>(properties: { [K in keyof A]: Decoder<A[K]> }): Decoder<
         const errors: Array<Tree<string>> = []
         for (const k in properties) {
           const e = properties[k].decode(r[k])
-          if (isLeft(e)) {
+          if (E.isLeft(e)) {
             errors.push(tree(`required property ${JSON.stringify(k)}`, e.left))
           } else {
             a[k] = e.right
           }
         }
-        return isNotEmpty(errors) ? left(errors) : success(a as A)
+        return isNotEmpty(errors) ? E.left(errors) : success(a as A)
       }
     }
   }
@@ -260,7 +262,7 @@ export function partial<A>(properties: { [K in keyof A]: Decoder<A[K]> }): Decod
   return {
     decode: (u) => {
       const e = UnknownRecord.decode(u)
-      if (isLeft(e)) {
+      if (E.isLeft(e)) {
         return e
       } else {
         const r = e.right
@@ -275,7 +277,7 @@ export function partial<A>(properties: { [K in keyof A]: Decoder<A[K]> }): Decod
               a[k] = undefined
             } else {
               const e = properties[k].decode(rk)
-              if (isLeft(e)) {
+              if (E.isLeft(e)) {
                 errors.push(tree(`optional property ${JSON.stringify(k)}`, e.left))
               } else {
                 a[k] = e.right
@@ -283,7 +285,7 @@ export function partial<A>(properties: { [K in keyof A]: Decoder<A[K]> }): Decod
             }
           }
         }
-        return isNotEmpty(errors) ? left(errors) : success(a)
+        return isNotEmpty(errors) ? E.left(errors) : success(a)
       }
     }
   }
@@ -297,7 +299,7 @@ export function record<A>(codomain: Decoder<A>): Decoder<Record<string, A>> {
   return {
     decode: (u) => {
       const e = UnknownRecord.decode(u)
-      if (isLeft(e)) {
+      if (E.isLeft(e)) {
         return e
       } else {
         const r = e.right
@@ -305,13 +307,13 @@ export function record<A>(codomain: Decoder<A>): Decoder<Record<string, A>> {
         const errors: Array<Tree<string>> = []
         for (const k in r) {
           const e = codomain.decode(r[k])
-          if (isLeft(e)) {
+          if (E.isLeft(e)) {
             errors.push(tree(`key ${JSON.stringify(k)}`, e.left))
           } else {
             a[k] = e.right
           }
         }
-        return isNotEmpty(errors) ? left(errors) : success(a)
+        return isNotEmpty(errors) ? E.left(errors) : success(a)
       }
     }
   }
@@ -325,7 +327,7 @@ export function array<A>(items: Decoder<A>): Decoder<Array<A>> {
   return {
     decode: (u) => {
       const e = UnknownArray.decode(u)
-      if (isLeft(e)) {
+      if (E.isLeft(e)) {
         return e
       } else {
         const us = e.right
@@ -334,13 +336,13 @@ export function array<A>(items: Decoder<A>): Decoder<Array<A>> {
         const errors: Array<Tree<string>> = []
         for (let i = 0; i < len; i++) {
           const e = items.decode(us[i])
-          if (isLeft(e)) {
+          if (E.isLeft(e)) {
             errors.push(tree(`item ${i}`, e.left))
           } else {
             a[i] = e.right
           }
         }
-        return isNotEmpty(errors) ? left(errors) : success(a)
+        return isNotEmpty(errors) ? E.left(errors) : success(a)
       }
     }
   }
@@ -354,7 +356,7 @@ export function tuple<A extends ReadonlyArray<unknown>>(...components: { [K in k
   return {
     decode: (u) => {
       const e = UnknownArray.decode(u)
-      if (isLeft(e)) {
+      if (E.isLeft(e)) {
         return e
       }
       const us = e.right
@@ -362,13 +364,13 @@ export function tuple<A extends ReadonlyArray<unknown>>(...components: { [K in k
       const errors: Array<Tree<string>> = []
       for (let i = 0; i < components.length; i++) {
         const e = components[i].decode(us[i])
-        if (isLeft(e)) {
+        if (E.isLeft(e)) {
           errors.push(tree(`component ${i}`, e.left))
         } else {
           a.push(e.right)
         }
       }
-      return isNotEmpty(errors) ? left(errors) : success(a as any)
+      return isNotEmpty(errors) ? E.left(errors) : success(a as any)
     }
   }
 }
@@ -399,11 +401,11 @@ export function intersection<A, B>(left: Decoder<A>, right: Decoder<B>): Decoder
   return {
     decode: (u) => {
       const ea = left.decode(u)
-      if (isLeft(ea)) {
-        return ea
-      }
       const eb = right.decode(u)
-      if (isLeft(eb)) {
+      if (E.isLeft(ea)) {
+        return E.isLeft(eb) ? E.left(ea.left.concat(eb.left) as DecodeError) : ea
+      }
+      if (E.isLeft(eb)) {
         return eb
       }
       return success(intersect(ea.right, eb.right))
@@ -421,7 +423,7 @@ export function lazy<A>(id: string, f: () => Decoder<A>): Decoder<A> {
     decode: (u) =>
       pipe(
         get().decode(u),
-        mapLeft((nea) => [tree(id, nea)])
+        E.mapLeft((nea) => [tree(id, nea)])
       )
   }
 }
@@ -440,14 +442,14 @@ export function sum<T extends string>(tag: T): <A>(members: { [K in keyof A]: De
     return {
       decode: (u) => {
         const e = UnknownRecord.decode(u)
-        if (isLeft(e)) {
+        if (E.isLeft(e)) {
           return e
         }
         const v = e.right[tag] as keyof A
         if (v in members) {
           return members[v].decode(u)
         }
-        return left([
+        return E.left([
           tree(`required property ${JSON.stringify(tag)}`, [
             tree(`cannot decode ${JSON.stringify(v)}, should be ${expected}`)
           ])
@@ -471,19 +473,19 @@ export function union<A extends ReadonlyArray<unknown>>(
   return {
     decode: (u) => {
       const e = members[0].decode(u)
-      if (isRight(e)) {
+      if (E.isRight(e)) {
         return e
       } else {
         const errors: DecodeError = [tree(`member 0`, e.left)]
         for (let i = 1; i < len; i++) {
           const e = members[i].decode(u)
-          if (isRight(e)) {
+          if (E.isRight(e)) {
             return e
           } else {
             errors.push(tree(`member ${i}`, e.left))
           }
         }
-        return left(errors)
+        return E.left(errors)
       }
     }
   }
@@ -502,7 +504,7 @@ export const map: <A, B>(f: (a: A) => B) => (fa: Decoder<A>) => Decoder<B> = (f)
 const map_: <A, B>(fa: Decoder<A>, f: (a: A) => B) => Decoder<B> = (fa, f) => ({
   decode: (u) => {
     const e = fa.decode(u)
-    return isLeft(e) ? e : right(f(e.right))
+    return E.isLeft(e) ? e : E.right(f(e.right))
   }
 })
 
@@ -515,7 +517,7 @@ export const alt: <A>(that: () => Decoder<A>) => (fa: Decoder<A>) => Decoder<A> 
 const alt_: <A>(fx: Decoder<A>, fy: () => Decoder<A>) => Decoder<A> = (fx, fy) => ({
   decode: (u) => {
     const e = fx.decode(u)
-    return isLeft(e) ? fy().decode(u) : e
+    return E.isLeft(e) ? fy().decode(u) : e
   }
 })
 

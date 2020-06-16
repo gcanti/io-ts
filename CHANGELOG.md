@@ -19,6 +19,7 @@
 - **Experimental**
   - `Decoder`
     - add support for non-`string` tag values to `sum`, closes #481 (@gcanti)
+    - `intersection` should accumulate all errors (@gcanti)
 
 # 2.2.5
 
