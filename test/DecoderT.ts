@@ -113,8 +113,8 @@ describe('DecoderT', () => {
     assert.deepStrictEqual(
       decoder.decode({}),
       E.left([
-        T.make('required property "age"', [T.make('cannot decode undefined, should be number')]),
-        T.make('required property "name"', [T.make('cannot decode undefined, should be string')])
+        T.make('required property "name"', [T.make('cannot decode undefined, should be string')]),
+        T.make('required property "age"', [T.make('cannot decode undefined, should be number')])
       ])
     )
   })
@@ -139,8 +139,8 @@ describe('DecoderT', () => {
     assert.deepStrictEqual(
       decoder.decode({ name: 1, age: 'a' }),
       E.left([
-        T.make('optional property "age"', [T.make('cannot decode "a", should be number')]),
-        T.make('optional property "name"', [T.make('cannot decode 1, should be string')])
+        T.make('optional property "name"', [T.make('cannot decode 1, should be string')]),
+        T.make('optional property "age"', [T.make('cannot decode "a", should be number')])
       ])
     )
   })
