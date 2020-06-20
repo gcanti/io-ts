@@ -213,7 +213,7 @@ const traverseRecordWithIndex = <M extends URIS2, E>(M: Applicative2C<M, E>) => 
   r: Record<string, A>,
   f: (k: string, a: A) => Kind2<M, E, B>
 ): Kind2<M, E, Record<string, B>> => {
-  const ks = Object.keys(r).sort()
+  const ks = Object.keys(r)
   if (ks.length === 0) {
     return M.of({})
   }
