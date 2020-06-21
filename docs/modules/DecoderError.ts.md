@@ -33,7 +33,7 @@ Added in v2.2.7
 **Signature**
 
 ```ts
-export declare const leaf: (input: unknown, error: string) => DecodeError
+export declare const leaf: <E>(input: unknown, error: E) => DecodeError<E>
 ```
 
 Added in v2.2.7
@@ -43,7 +43,7 @@ Added in v2.2.7
 **Signature**
 
 ```ts
-export declare const required: (key: string, errors: FS.FreeSemigroup<DecodeError>) => DecodeError
+export declare const required: <E>(key: string, errors: FS.FreeSemigroup<DecodeError<E>>) => DecodeError<E>
 ```
 
 Added in v2.2.7
@@ -55,10 +55,10 @@ Added in v2.2.7
 **Signature**
 
 ```ts
-export declare const fold: <R>(patterns: {
-  Leaf: (input: unknown, error: string) => R
-  Required: (k: string, errors: FS.FreeSemigroup<DecodeError>) => R
-}) => (e: DecodeError) => R
+export declare const fold: <E, R>(patterns: {
+  Leaf: (input: unknown, error: E) => R
+  Required: (k: string, errors: FS.FreeSemigroup<DecodeError<E>>) => R
+}) => (e: DecodeError<E>) => R
 ```
 
 Added in v2.2.7
@@ -70,7 +70,7 @@ Added in v2.2.7
 **Signature**
 
 ```ts
-export declare function getSemigroup(): Semigroup<FS.FreeSemigroup<DecodeError>>
+export declare function getSemigroup<E = never>(): Semigroup<FS.FreeSemigroup<DecodeError<E>>>
 ```
 
 Added in v2.2.7
@@ -82,7 +82,7 @@ Added in v2.2.7
 **Signature**
 
 ```ts
-export type DecodeError = Leaf | Required
+export type DecodeError<E> = Leaf<E> | Required<E>
 ```
 
 Added in v2.2.7
@@ -92,10 +92,10 @@ Added in v2.2.7
 **Signature**
 
 ```ts
-export interface Leaf {
+export interface Leaf<E> {
   readonly _tag: 'Leaf'
   readonly input: unknown
-  readonly error: string
+  readonly error: E
 }
 ```
 
@@ -106,10 +106,10 @@ Added in v2.2.7
 **Signature**
 
 ```ts
-export interface Required {
+export interface Required<E> {
   readonly _tag: 'Required'
   readonly key: string
-  readonly errors: FS.FreeSemigroup<DecodeError>
+  readonly errors: FS.FreeSemigroup<DecodeError<E>>
 }
 ```
 
