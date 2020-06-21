@@ -6,11 +6,24 @@ import * as E from 'fp-ts/lib/Either'
 import { pipe } from 'fp-ts/lib/pipeable'
 import { drawTree } from 'fp-ts/lib/Tree'
 
+const UnknownRecord = FD.UnknownRecord('Record<string, unknown>')
+const string = FD.string('string')
+const number = FD.number('number')
+const type = FD.type(UnknownRecord)
+
 describe('FreeDecoder', () => {
+  it('string', () => {
+    assert.deepStrictEqual(string.decode('a'), E.right('a'))
+  })
+
+  it('number', () => {
+    assert.deepStrictEqual(number.decode(1), E.right(1))
+  })
+
   it('type', () => {
-    const decoder = FD.type({
-      name: FD.string,
-      age: FD.number
+    const decoder = type({
+      name: string,
+      age: number
     })
     assert.deepStrictEqual(decoder.decode({ name: 'name', age: 18 }), E.right({ name: 'name', age: 18 }))
     assert.deepStrictEqual(decoder.decode(null), E.left(FS.of(DE.leaf(null, 'Record<string, unknown>'))))
@@ -26,9 +39,9 @@ describe('FreeDecoder', () => {
   })
 
   it('toForest', () => {
-    const decoder = FD.type({
-      name: FD.string,
-      age: FD.number
+    const decoder = type({
+      name: string,
+      age: number
     })
     const s = pipe(
       decoder.decode({}),

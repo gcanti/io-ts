@@ -1,14 +1,14 @@
 /**
  * @since 2.2.0
  */
+import { Alt1 } from 'fp-ts/lib/Alt'
 import * as E from 'fp-ts/lib/Either'
+import { Functor1 } from 'fp-ts/lib/Functor'
 import { NonEmptyArray } from 'fp-ts/lib/NonEmptyArray'
 import { pipe } from 'fp-ts/lib/pipeable'
-import { Forest, Tree } from 'fp-ts/lib/Tree'
+import { drawTree, Forest, Tree } from 'fp-ts/lib/Tree'
 import * as G from './Guard'
 import { Literal, memoize, Schemable1, WithRefinement1, WithUnion1, WithUnknownContainers1 } from './Schemable'
-import { Functor1 } from 'fp-ts/lib/Functor'
-import { Alt1 } from 'fp-ts/lib/Alt'
 
 // -------------------------------------------------------------------------------------
 // model
@@ -589,3 +589,28 @@ export const schemableDecoder: Schemable1<URI> &
   union,
   refinement: refinement as WithRefinement1<URI>['refinement']
 }
+
+// -------------------------------------------------------------------------------------
+// utils
+// -------------------------------------------------------------------------------------
+
+/**
+ * @since 2.2.7
+ */
+export const toForest = (e: DecodeError): NonEmptyArray<Tree<string>> => {
+  return e
+  // const toTree: (e: DE.DecodeError<E>) => T.Tree<string> = DE.fold({
+  //   Leaf: (input, error) => T.make(`cannot decode ${JSON.stringify(input)}, should be ${error}`),
+  //   Required: (key, errors) => T.make(`required property ${JSON.stringify(key)}`, toForest(errors))
+  // })
+  // const toForest: (f: FS.FreeSemigroup<DE.DecodeError<E>>) => NEA.NonEmptyArray<T.Tree<string>> = FS.fold(
+  //   (value) => [toTree(value)],
+  //   (left, right) => NEA.concat(toForest(left), toForest(right))
+  // )
+  // return toForest(s)
+}
+
+/**
+ * @since 2.2.7
+ */
+export const draw = (e: DecodeError): string => toForest(e).map(drawTree).join('\n')

@@ -14,6 +14,14 @@
 **Note**: Gaps between patch versions are faulty/broken releases.
 **Note**: A feature tagged as Experimental is in a high state of flux, you're at risk of it changing without notice.
 
+# 2.2.7
+
+- **Experimental**
+  - add `DecodeError` module (@gcanti)
+  - add `DecoderT` module (@gcanti)
+  - add `FreeSemigroup` module (@gcanti)
+  - remove `Tree` module (@gcanti)
+
 # 2.2.6
 
 - **Experimental**
