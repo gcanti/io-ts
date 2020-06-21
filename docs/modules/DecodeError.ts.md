@@ -1,10 +1,10 @@
 ---
-title: DecoderError.ts
-nav_order: 3
+title: DecodeError.ts
+nav_order: 2
 parent: Modules
 ---
 
-## DecoderError overview
+## DecodeError overview
 
 Added in v2.2.7
 
