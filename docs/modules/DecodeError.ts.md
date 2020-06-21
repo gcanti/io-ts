@@ -13,37 +13,52 @@ Added in v2.2.7
 <h2 class="text-delta">Table of contents</h2>
 
 - [constructors](#constructors)
+  - [index](#index)
+  - [key](#key)
   - [leaf](#leaf)
-  - [required](#required)
 - [destructors](#destructors)
   - [fold](#fold)
 - [instances](#instances)
   - [getSemigroup](#getsemigroup)
 - [model](#model)
   - [DecodeError (type alias)](#decodeerror-type-alias)
+  - [Index (interface)](#index-interface)
+  - [Key (interface)](#key-interface)
+  - [Kind (type alias)](#kind-type-alias)
   - [Leaf (interface)](#leaf-interface)
-  - [Required (interface)](#required-interface)
+  - [optional](#optional)
+  - [required](#required)
 
 ---
 
 # constructors
+
+## index
+
+**Signature**
+
+```ts
+export declare const index: <E>(index: number, kind: Kind, errors: FS.FreeSemigroup<DecodeError<E>>) => DecodeError<E>
+```
+
+Added in v2.2.7
+
+## key
+
+**Signature**
+
+```ts
+export declare const key: <E>(key: string, kind: Kind, errors: FS.FreeSemigroup<DecodeError<E>>) => DecodeError<E>
+```
+
+Added in v2.2.7
 
 ## leaf
 
 **Signature**
 
 ```ts
-export declare const leaf: <E>(input: unknown, error: E) => DecodeError<E>
-```
-
-Added in v2.2.7
-
-## required
-
-**Signature**
-
-```ts
-export declare const required: <E>(key: string, errors: FS.FreeSemigroup<DecodeError<E>>) => DecodeError<E>
+export declare const leaf: <E>(actual: unknown, error: E) => DecodeError<E>
 ```
 
 Added in v2.2.7
@@ -57,7 +72,8 @@ Added in v2.2.7
 ```ts
 export declare const fold: <E, R>(patterns: {
   Leaf: (input: unknown, error: E) => R
-  Required: (k: string, errors: FS.FreeSemigroup<DecodeError<E>>) => R
+  Key: (key: string, kind: Kind, errors: FS.FreeSemigroup<DecodeError<E>>) => R
+  Index: (index: number, kind: Kind, errors: FS.FreeSemigroup<DecodeError<E>>) => R
 }) => (e: DecodeError<E>) => R
 ```
 
@@ -82,7 +98,47 @@ Added in v2.2.7
 **Signature**
 
 ```ts
-export type DecodeError<E> = Leaf<E> | Required<E>
+export type DecodeError<E> = Leaf<E> | Key<E> | Index<E>
+```
+
+Added in v2.2.7
+
+## Index (interface)
+
+**Signature**
+
+```ts
+export interface Index<E> {
+  readonly _tag: 'Index'
+  readonly index: number
+  readonly kind: Kind
+  readonly errors: FS.FreeSemigroup<DecodeError<E>>
+}
+```
+
+Added in v2.2.7
+
+## Key (interface)
+
+**Signature**
+
+```ts
+export interface Key<E> {
+  readonly _tag: 'Key'
+  readonly key: string
+  readonly kind: Kind
+  readonly errors: FS.FreeSemigroup<DecodeError<E>>
+}
+```
+
+Added in v2.2.7
+
+## Kind (type alias)
+
+**Signature**
+
+```ts
+export type Kind = 'required' | 'optional'
 ```
 
 Added in v2.2.7
@@ -94,23 +150,29 @@ Added in v2.2.7
 ```ts
 export interface Leaf<E> {
   readonly _tag: 'Leaf'
-  readonly input: unknown
+  readonly actual: unknown
   readonly error: E
 }
 ```
 
 Added in v2.2.7
 
-## Required (interface)
+## optional
 
 **Signature**
 
 ```ts
-export interface Required<E> {
-  readonly _tag: 'Required'
-  readonly key: string
-  readonly errors: FS.FreeSemigroup<DecodeError<E>>
-}
+export declare const optional: 'optional'
+```
+
+Added in v2.2.7
+
+## required
+
+**Signature**
+
+```ts
+export declare const required: 'required'
 ```
 
 Added in v2.2.7

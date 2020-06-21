@@ -1,63 +1,26 @@
 import * as assert from 'assert'
 import * as E from 'fp-ts/lib/Either'
 import * as NEA from 'fp-ts/lib/NonEmptyArray'
-import * as DT from '../src/DecoderT'
 import { pipe } from 'fp-ts/lib/pipeable'
-import * as TE from 'fp-ts/lib/TaskEither'
 import * as T from 'fp-ts/lib/Tree'
-import { MonadThrow2C } from 'fp-ts/lib/MonadThrow'
-import { Bifunctor2 } from 'fp-ts/lib/Bifunctor'
+import * as DT from '../src/DecoderT'
+import * as G from '../src/Guard'
 
 const M = E.getValidation(NEA.getSemigroup<T.Tree<string>>())
-const UnknownArray = DT.UnknownArray(M)((u) => [T.make(`cannot decode ${JSON.stringify(u)}, should be Array<unknown>`)])
-const UnknownRecord = DT.UnknownRecord(M)((u) => [
-  T.make(`cannot decode ${JSON.stringify(u)}, should be Record<string, unknown>`)
-])
-export const string = DT.string(M)((u) => [T.make(`cannot decode ${JSON.stringify(u)}, should be string`)])
-export const number = DT.number(M)((u) => [T.make(`cannot decode ${JSON.stringify(u)}, should be number`)])
-export const boolean = DT.boolean(M)((u) => [T.make(`cannot decode ${JSON.stringify(u)}, should be boolean`)])
-export const type = DT.type(M)(UnknownRecord, (k, e) =>
-  pipe(
-    e,
-    NEA.map((e) => T.make(`required property ${JSON.stringify(k)}`, [e]))
-  )
-)
+
+function fromGuard<A>(guard: G.Guard<A>, expected: string): DT.DecoderT<E.URI, NEA.NonEmptyArray<T.Tree<string>>, A> {
+  return {
+    decode: (u) =>
+      guard.is(u) ? E.right(u) : E.left([T.make(`cannot decode ${JSON.stringify(u)}, should be ${expected}`)])
+  }
+}
+
+const UnknownArray = fromGuard(G.UnknownArray, 'Array<unknown>')
+const UnknownRecord = fromGuard(G.UnknownRecord, 'Record<string, unknown>')
+const string = fromGuard(G.string, 'string')
+const number = fromGuard(G.number, 'number')
 
 describe('DecoderT', () => {
-  it('should support asynchronous decoders', async () => {
-    const M = TE.getTaskValidation(NEA.getSemigroup<string>())
-    const UnknownArray = DT.UnknownArray(M)((u) => [`cannot decode ${JSON.stringify(u)}, should be Array<unknown>`])
-    const array = DT.array(M)(UnknownArray, (i, e) =>
-      pipe(
-        e,
-        NEA.map((s) => `item ${i}: ${s}`)
-      )
-    )
-    const string = DT.string(M)((u) => [`cannot decode ${JSON.stringify(u)}, should be string`])
-    const decoder = array(string)
-    assert.deepStrictEqual(await decoder.decode(['a', 'b'])(), E.right(['a', 'b']))
-    assert.deepStrictEqual(
-      await decoder.decode([1, 2])(),
-      E.left(['item 0: cannot decode 1, should be string', 'item 1: cannot decode 2, should be string'])
-    )
-  })
-
-  it('should support fail fast decoders', () => {
-    const M: MonadThrow2C<E.URI, string> & Bifunctor2<E.URI> = E.either as any
-    const UnknownArray = DT.UnknownArray(M)((u) => `cannot decode ${JSON.stringify(u)}, should be Array<unknown>`)
-    const array = DT.array(M)(UnknownArray, (i, e) => `item ${i}: ${e}`)
-    const string = DT.string(M)((u) => `cannot decode ${JSON.stringify(u)}, should be string`)
-    const decoder = array(string)
-    assert.deepStrictEqual(decoder.decode(['a', 'b']), E.right(['a', 'b']))
-    assert.deepStrictEqual(decoder.decode([1, 2]), E.left('item 0: cannot decode 1, should be string'))
-  })
-
-  it('boolean', () => {
-    assert.deepStrictEqual(boolean.decode(true), E.right(true))
-    assert.deepStrictEqual(boolean.decode(false), E.right(false))
-    assert.deepStrictEqual(boolean.decode(null), E.left([T.make('cannot decode null, should be boolean')]))
-  })
-
   it('array', () => {
     const array = DT.array(M)(UnknownArray, (i, e) =>
       pipe(
@@ -101,6 +64,12 @@ describe('DecoderT', () => {
   })
 
   it('type', () => {
+    const type = DT.type(M)(UnknownRecord, (k, e) =>
+      pipe(
+        e,
+        NEA.map((e) => T.make(`required property ${JSON.stringify(k)}`, [e]))
+      )
+    )
     const decoder = type({
       name: string,
       age: number

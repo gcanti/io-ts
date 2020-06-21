@@ -3,11 +3,9 @@
  */
 import { Applicative2C } from 'fp-ts/lib/Applicative'
 import { Bifunctor2 } from 'fp-ts/lib/Bifunctor'
+import * as E from 'fp-ts/lib/Either'
 import { Kind2, URIS2 } from 'fp-ts/lib/HKT'
 import { Monad2C } from 'fp-ts/lib/Monad'
-import { MonadThrow2C } from 'fp-ts/lib/MonadThrow'
-import * as G from './Guard'
-import * as E from 'fp-ts/lib/Either'
 
 // -------------------------------------------------------------------------------------
 // model
@@ -19,77 +17,6 @@ import * as E from 'fp-ts/lib/Either'
  */
 export interface DecoderT<M extends URIS2, E, A> {
   readonly decode: (u: unknown) => Kind2<M, E, A>
-}
-
-// -------------------------------------------------------------------------------------
-// constructors
-// -------------------------------------------------------------------------------------
-
-/**
- * @category constructors
- * @since 2.2.7
- */
-export const fromGuard = <M extends URIS2, E>(M: MonadThrow2C<M, E>) => <A>(
-  guard: G.Guard<A>,
-  onError: (u: unknown) => E
-): DecoderT<M, E, A> => {
-  return {
-    decode: (u) => (guard.is(u) ? M.of(u) : M.throwError(onError(u)))
-  }
-}
-
-// -------------------------------------------------------------------------------------
-// primitives
-// -------------------------------------------------------------------------------------
-
-/**
- * @category primitives
- * @since 2.2.7
- */
-export const string = <M extends URIS2, E>(M: MonadThrow2C<M, E>) => (
-  onError: (u: unknown) => E
-): DecoderT<M, E, string> => {
-  return fromGuard(M)(G.string, onError)
-}
-
-/**
- * @category primitives
- * @since 2.2.7
- */
-export const number = <M extends URIS2, E>(M: MonadThrow2C<M, E>) => (
-  onError: (u: unknown) => E
-): DecoderT<M, E, number> => {
-  return fromGuard(M)(G.number, onError)
-}
-
-/**
- * @category primitives
- * @since 2.2.7
- */
-export const boolean = <M extends URIS2, E>(M: MonadThrow2C<M, E>) => (
-  onError: (u: unknown) => E
-): DecoderT<M, E, boolean> => {
-  return fromGuard(M)(G.boolean, onError)
-}
-
-/**
- * @category primitives
- * @since 2.2.7
- */
-export const UnknownArray = <M extends URIS2, E>(M: MonadThrow2C<M, E>) => (
-  onError: (u: unknown) => E
-): DecoderT<M, E, Array<unknown>> => {
-  return fromGuard(M)(G.UnknownArray, onError)
-}
-
-/**
- * @category primitives
- * @since 2.2.7
- */
-export const UnknownRecord = <M extends URIS2, E>(M: MonadThrow2C<M, E>) => (
-  onError: (u: unknown) => E
-): DecoderT<M, E, Record<string, unknown>> => {
-  return fromGuard(M)(G.UnknownRecord, onError)
 }
 
 // -------------------------------------------------------------------------------------
@@ -129,6 +56,7 @@ export function partial<M extends URIS2, E>(
 ) => <A>(properties: { [K in keyof A]: DecoderT<M, E, A[K]> }) => DecoderT<M, E, Partial<{ [K in keyof A]: A[K] }>> {
   const traverse = traverseRecordWithIndex(M)
   const skip = M.of<E.Either<void, unknown>>(E.left(undefined))
+  const undef = M.of<E.Either<void, unknown>>(E.right(undefined))
   return (UnknownRecord, onKeyError) => (properties) => ({
     decode: (u) =>
       M.map(
@@ -136,7 +64,11 @@ export function partial<M extends URIS2, E>(
           traverse(properties as Record<string, DecoderT<M, E, unknown>>, (k, decoder) => {
             const rk = r[k]
             if (rk === undefined) {
-              return skip
+              return k in r
+                ? // don't strip undefined properties
+                  undef
+                : // don't add missing properties
+                  skip
             }
             return M.bimap(
               decoder.decode(rk),
@@ -185,6 +117,27 @@ export function record<M extends URIS2, E>(
       M.chain(UnknownRecord.decode(u), (r) =>
         traverse(r, (k, u) => M.mapLeft(codomain.decode(u), (e) => onKeyError(k, e)))
       )
+  })
+}
+
+/**
+ * @category combinators
+ * @since 2.2.7
+ */
+export function tuple<M extends URIS2, E>(
+  M: Monad2C<M, E> & Bifunctor2<M>
+): (
+  UnknownArray: DecoderT<M, E, Array<unknown>>,
+  onIndexError: (i: number, e: E) => E
+) => <A extends ReadonlyArray<unknown>>(...components: { [K in keyof A]: DecoderT<M, E, A[K]> }) => DecoderT<M, E, A> {
+  const traverse = traverseArrayWithIndex(M)
+  return (UnknownArray, onIndexError) => (...components) => ({
+    decode: (u) =>
+      M.chain(UnknownArray.decode(u), (us) =>
+        traverse((components as unknown) as Array<DecoderT<M, E, unknown>>, (i, decoder) =>
+          M.mapLeft(decoder.decode(us[i]), (e) => onIndexError(i, e))
+        )
+      ) as any
   })
 }
 

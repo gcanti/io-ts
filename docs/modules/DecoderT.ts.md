@@ -16,17 +16,10 @@ Added in v2.2.7
   - [array](#array)
   - [partial](#partial)
   - [record](#record)
+  - [tuple](#tuple)
   - [type](#type)
-- [constructors](#constructors)
-  - [fromGuard](#fromguard)
 - [model](#model)
   - [DecoderT (interface)](#decodert-interface)
-- [primitives](#primitives)
-  - [UnknownArray](#unknownarray)
-  - [UnknownRecord](#unknownrecord)
-  - [boolean](#boolean)
-  - [number](#number)
-  - [string](#string)
 
 ---
 
@@ -77,6 +70,21 @@ export declare function record<M extends URIS2, E>(
 
 Added in v2.2.7
 
+## tuple
+
+**Signature**
+
+```ts
+export declare function tuple<M extends URIS2, E>(
+  M: Monad2C<M, E> & Bifunctor2<M>
+): (
+  UnknownArray: DecoderT<M, E, Array<unknown>>,
+  onIndexError: (i: number, e: E) => E
+) => <A extends ReadonlyArray<unknown>>(...components: { [K in keyof A]: DecoderT<M, E, A[K]> }) => DecoderT<M, E, A>
+```
+
+Added in v2.2.7
+
 ## type
 
 **Signature**
@@ -92,20 +100,6 @@ export declare function type<M extends URIS2, E>(
 
 Added in v2.2.7
 
-# constructors
-
-## fromGuard
-
-**Signature**
-
-```ts
-export declare const fromGuard: <M extends 'io-ts/Codec' | 'io-ts/Encoder' | 'Either', E>(
-  M: MonadThrow2C<M, E>
-) => <A>(guard: G.Guard<A>, onError: (u: unknown) => E) => DecoderT<M, E, A>
-```
-
-Added in v2.2.7
-
 # model
 
 ## DecoderT (interface)
@@ -116,68 +110,6 @@ Added in v2.2.7
 export interface DecoderT<M extends URIS2, E, A> {
   readonly decode: (u: unknown) => Kind2<M, E, A>
 }
-```
-
-Added in v2.2.7
-
-# primitives
-
-## UnknownArray
-
-**Signature**
-
-```ts
-export declare const UnknownArray: <M extends 'io-ts/Codec' | 'io-ts/Encoder' | 'Either', E>(
-  M: MonadThrow2C<M, E>
-) => (onError: (u: unknown) => E) => DecoderT<M, E, unknown[]>
-```
-
-Added in v2.2.7
-
-## UnknownRecord
-
-**Signature**
-
-```ts
-export declare const UnknownRecord: <M extends 'io-ts/Codec' | 'io-ts/Encoder' | 'Either', E>(
-  M: MonadThrow2C<M, E>
-) => (onError: (u: unknown) => E) => DecoderT<M, E, Record<string, unknown>>
-```
-
-Added in v2.2.7
-
-## boolean
-
-**Signature**
-
-```ts
-export declare const boolean: <M extends 'io-ts/Codec' | 'io-ts/Encoder' | 'Either', E>(
-  M: MonadThrow2C<M, E>
-) => (onError: (u: unknown) => E) => DecoderT<M, E, boolean>
-```
-
-Added in v2.2.7
-
-## number
-
-**Signature**
-
-```ts
-export declare const number: <M extends 'io-ts/Codec' | 'io-ts/Encoder' | 'Either', E>(
-  M: MonadThrow2C<M, E>
-) => (onError: (u: unknown) => E) => DecoderT<M, E, number>
-```
-
-Added in v2.2.7
-
-## string
-
-**Signature**
-
-```ts
-export declare const string: <M extends 'io-ts/Codec' | 'io-ts/Encoder' | 'Either', E>(
-  M: MonadThrow2C<M, E>
-) => (onError: (u: unknown) => E) => DecoderT<M, E, string>
 ```
 
 Added in v2.2.7
