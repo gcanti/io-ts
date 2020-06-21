@@ -66,7 +66,7 @@ export function fromDecoder<A>(decoder: D.Decoder<A>): Codec<A, A> {
  * @category constructors
  * @since 2.2.3
  */
-export function literal<A extends ReadonlyArray<Literal>>(...values: A): Codec<A[number], A[number]> {
+export function literal<A extends readonly [Literal, ...Array<Literal>]>(...values: A): Codec<A[number], A[number]> {
   return fromDecoder(D.literal(...values))
 }
 

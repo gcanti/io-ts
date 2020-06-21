@@ -20,7 +20,11 @@ export type OfTest = TypeOf<typeof OfTest> // $ExpectType { a: string; b: { c: n
 //
 // literal
 //
+
+// $ExpectError
+make((S) => S.literal())
 make((S) => S.literal('a')) // $ExpectType Schema<"a">
+make((S) => S.literal('a', 'b', null)) // $ExpectType Schema<"a" | "b" | null>
 
 //
 // string

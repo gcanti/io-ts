@@ -166,7 +166,7 @@ Added in v2.2.3
 **Signature**
 
 ```ts
-export declare function literal<A extends ReadonlyArray<Literal>>(...values: A): Type<A[number]>
+export declare function literal<A extends readonly [Literal, ...Array<Literal>]>(...values: A): Type<A[number]>
 ```
 
 Added in v2.2.3

@@ -22,7 +22,7 @@ export interface Type<A> extends t.Type<A, unknown, unknown> {}
  * @category constructors
  * @since 2.2.3
  */
-export function literal<A extends ReadonlyArray<Literal>>(...values: A): Type<A[number]> {
+export function literal<A extends readonly [Literal, ...Array<Literal>]>(...values: A): Type<A[number]> {
   return t.union(values.map((v) => t.literal(v as any)) as any)
 }
 

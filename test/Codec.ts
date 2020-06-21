@@ -119,10 +119,6 @@ describe('Codec', () => {
         const codec = C.literal('a', null)
         assert.deepStrictEqual(codec.decode('b'), left([D.tree('cannot decode "b", should be "a" | null')]))
       })
-
-      it('should handle zero members', () => {
-        assert.deepStrictEqual(C.literal().decode({}), left([D.tree('cannot decode {}, should be never')]))
-      })
     })
 
     describe('encode', () => {

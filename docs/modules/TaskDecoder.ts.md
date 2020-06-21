@@ -88,7 +88,7 @@ Added in v2.2.7
 **Signature**
 
 ```ts
-export declare const literal: <A extends readonly (string | number | boolean)[]>(...values: A) => TaskDecoder<A[number]>
+export declare const literal: <A extends readonly [Literal, ...Literal[]]>(...values: A) => TaskDecoder<A[number]>
 ```
 
 Added in v2.2.7
