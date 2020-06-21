@@ -11,14 +11,14 @@ import * as NEA from 'fp-ts/lib/NonEmptyArray'
 
 /*
 
-Guard (good) x 34,238,300 ops/sec ±1.99% (82 runs sampled)
-Decoder (good) x 4,617,403 ops/sec ±0.87% (88 runs sampled)
-DecoderT (good) x 2,334,698 ops/sec ±1.04% (87 runs sampled)
-Guard (bad) x 35,743,005 ops/sec ±1.31% (82 runs sampled)
-Decoder (bad) x 1,239,790 ops/sec ±0.65% (91 runs sampled)
-DecoderT (bad) x 1,980,574 ops/sec ±0.51% (88 runs sampled)
-Decoder (draw) x 589,953 ops/sec ±2.11% (87 runs sampled)
-DecoderT (draw) x 380,337 ops/sec ±0.36% (85 runs sampled)
+Guard (good) x 35,343,457 ops/sec ±1.74% (82 runs sampled)
+Decoder (good) x 4,830,970 ops/sec ±0.67% (87 runs sampled)
+DecoderT (good) x 2,335,998 ops/sec ±0.78% (88 runs sampled)
+Guard (bad) x 34,999,708 ops/sec ±1.77% (80 runs sampled)
+Decoder (bad) x 1,225,579 ops/sec ±0.76% (89 runs sampled)
+DecoderT (bad) x 2,048,515 ops/sec ±0.59% (87 runs sampled)
+Decoder (draw) x 584,376 ops/sec ±2.17% (90 runs sampled)
+DecoderT (draw) x 368,724 ops/sec ±0.66% (84 runs sampled)
 
 */
 
@@ -28,11 +28,18 @@ const decoder = D.type({
 })
 
 function getDecoderT() {
-  const M = E.getValidation(DE.getSemigroup<string>())
-  const UnknownRecord = DT.UnknownRecord(M)((u) => FS.of(DE.leaf(u, 'Record<string, unknown>')))
-  const string = DT.string(M)((u) => FS.of(DE.leaf(u, 'string')))
-  const number = DT.number(M)((u) => FS.of(DE.leaf(u, 'number')))
-  const type = DT.type(M)(UnknownRecord, (k, e) => FS.of(DE.required(k, e)))
+  type E = string
+  const M = E.getValidation(DE.getSemigroup<E>())
+  function fromGuard<A>(guard: G.Guard<A>, expected: E): DT.DecoderT<E.URI, FS.FreeSemigroup<DE.DecodeError<E>>, A> {
+    return {
+      decode: (u) => (guard.is(u) ? E.right(u) : E.left(FS.of(DE.leaf(u, expected))))
+    }
+  }
+
+  const UnknownRecord = fromGuard(G.UnknownRecord, 'Record<string, unknown>')
+  const string = fromGuard(G.string, 'string')
+  const number = fromGuard(G.number, 'number')
+  const type = DT.type(M)(UnknownRecord, (k, e) => FS.of(DE.key(k, DE.required, e)))
 
   return type({
     name: string,
@@ -43,7 +50,10 @@ function getDecoderT() {
 function toForest<E>(s: FS.FreeSemigroup<DE.DecodeError<E>>): NEA.NonEmptyArray<T.Tree<string>> {
   const toTree: (e: DE.DecodeError<E>) => T.Tree<string> = DE.fold({
     Leaf: (input, error) => T.make(`cannot decode ${JSON.stringify(input)}, should be ${error}`),
-    Required: (key, errors) => T.make(`required property ${JSON.stringify(key)}`, toForest(errors))
+    Key: (key, required, errors) =>
+      T.make(`${required ? 'required' : 'optional'} property ${JSON.stringify(key)}`, toForest(errors)),
+    Index: (key, required, errors) =>
+      T.make(`${required ? 'required' : 'optional'} index ${JSON.stringify(key)}`, toForest(errors))
   })
   const toForest: (f: FS.FreeSemigroup<DE.DecodeError<E>>) => NEA.NonEmptyArray<T.Tree<string>> = FS.fold(
     (value) => NEA.of(toTree(value)),

@@ -20,6 +20,7 @@
   - add `DecodeError` module (@gcanti)
   - add `DecoderT` module (@gcanti)
   - add `FreeSemigroup` module (@gcanti)
+  - add `TaskDecoder` module (@gcanti)
   - remove `Tree` module (@gcanti)
 
 # 2.2.6

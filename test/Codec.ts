@@ -414,7 +414,7 @@ describe('Codec', () => {
         )
         assert.deepStrictEqual(
           codec.decode([1]),
-          left([D.tree('item 0', [D.tree('cannot decode 1, should be string')])])
+          left([D.tree('optional index 0', [D.tree('cannot decode 1, should be string')])])
         )
       })
 
@@ -423,8 +423,8 @@ describe('Codec', () => {
         assert.deepStrictEqual(
           codec.decode([1, 2]),
           left([
-            D.tree('item 0', [D.tree('cannot decode 1, should be string')]),
-            D.tree('item 1', [D.tree('cannot decode 2, should be string')])
+            D.tree('optional index 0', [D.tree('cannot decode 1, should be string')]),
+            D.tree('optional index 1', [D.tree('cannot decode 2, should be string')])
           ])
         )
       })
@@ -457,11 +457,11 @@ describe('Codec', () => {
         )
         assert.deepStrictEqual(
           codec.decode(['a']),
-          left([D.tree('component 1', [D.tree('cannot decode undefined, should be number')])])
+          left([D.tree('required index 1', [D.tree('cannot decode undefined, should be number')])])
         )
         assert.deepStrictEqual(
           codec.decode([1, 2]),
-          left([D.tree('component 0', [D.tree('cannot decode 1, should be string')])])
+          left([D.tree('required index 0', [D.tree('cannot decode 1, should be string')])])
         )
       })
 
@@ -470,8 +470,8 @@ describe('Codec', () => {
         assert.deepStrictEqual(
           codec.decode([1, 'a']),
           left([
-            D.tree('component 0', [D.tree('cannot decode 1, should be string')]),
-            D.tree('component 1', [D.tree('cannot decode "a", should be number')])
+            D.tree('required index 0', [D.tree('cannot decode 1, should be string')]),
+            D.tree('required index 1', [D.tree('cannot decode "a", should be number')])
           ])
         )
       })

@@ -109,11 +109,9 @@ export function fromGuard<A>(guard: G.Guard<A>, expected: string): Decoder<A> {
  * @since 2.2.0
  */
 export function literal<A extends ReadonlyArray<Literal>>(...values: A): Decoder<A[number]> {
-  if (values.length === 0) {
-    return never
-  }
-  const expected = values.map((value) => JSON.stringify(value)).join(' | ')
-  return fromGuard(G.schemableGuard.literal(...values), expected)
+  return values.length === 0
+    ? never
+    : fromGuard(G.literal(...values), values.map((value) => JSON.stringify(value)).join(' | '))
 }
 
 // -------------------------------------------------------------------------------------
@@ -337,7 +335,7 @@ export function array<A>(items: Decoder<A>): Decoder<Array<A>> {
         for (let i = 0; i < len; i++) {
           const e = items.decode(us[i])
           if (E.isLeft(e)) {
-            errors.push(tree(`item ${i}`, e.left))
+            errors.push(tree(`optional index ${i}`, e.left))
           } else {
             a[i] = e.right
           }
@@ -365,7 +363,7 @@ export function tuple<A extends ReadonlyArray<unknown>>(...components: { [K in k
       for (let i = 0; i < components.length; i++) {
         const e = components[i].decode(us[i])
         if (E.isLeft(e)) {
-          errors.push(tree(`component ${i}`, e.left))
+          errors.push(tree(`required index ${i}`, e.left))
         } else {
           a.push(e.right)
         }
