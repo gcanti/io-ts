@@ -128,4 +128,18 @@ describe('Decoder', () => {
       assert.deepStrictEqual(D.intersect(true, { a: 1 }), { a: 1 })
     })
   })
+
+  describe('draw', () => {
+    it('should draw a tree', () => {
+      const codec = D.type({
+        a: D.string
+      })
+      assert.deepStrictEqual(pipe(codec.decode({ a: 'a' }), E.mapLeft(D.draw)), E.right({ a: 'a' }))
+      assert.deepStrictEqual(
+        pipe(codec.decode({ a: 1 }), E.mapLeft(D.draw)),
+        E.left(`required property "a"
+└─ cannot decode 1, should be string`)
+      )
+    })
+  })
 })
