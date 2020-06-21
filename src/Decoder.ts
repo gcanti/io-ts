@@ -108,11 +108,8 @@ export function fromGuard<A>(guard: G.Guard<A>, expected: string): Decoder<A> {
  * @category constructors
  * @since 2.2.0
  */
-export function literal<A extends ReadonlyArray<Literal>>(...values: A): Decoder<A[number]> {
-  return values.length === 0
-    ? never
-    : fromGuard(G.literal(...values), values.map((value) => JSON.stringify(value)).join(' | '))
-}
+export const literal = <A extends readonly [Literal, ...Array<Literal>]>(...values: A): Decoder<A[number]> =>
+  fromGuard(G.literal(...values), values.map((value) => JSON.stringify(value)).join(' | '))
 
 // -------------------------------------------------------------------------------------
 // primitives

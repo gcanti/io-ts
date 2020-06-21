@@ -171,7 +171,7 @@ Added in v2.2.0
 **Signature**
 
 ```ts
-export declare function literal<A extends ReadonlyArray<Literal>>(...values: A): Guard<A[number]>
+export declare function literal<A extends readonly [Literal, ...Array<Literal>]>(...values: A): Guard<A[number]>
 ```
 
 Added in v2.2.0

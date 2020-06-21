@@ -20,6 +20,21 @@ export interface DecoderT<M extends URIS2, E, A> {
 }
 
 // -------------------------------------------------------------------------------------
+// constructors
+// -------------------------------------------------------------------------------------
+
+// TODO
+// /**
+//  * @category constructors
+//  * @since 2.2.7
+//  */
+// export function literal<M extends URIS2, E>(
+//   M: Monad2C<M, E> & Bifunctor2<M>
+// ): <A extends readonly [Literal, ...Array<Literal>]>(...values: A) => DecoderT<M, E, A[number]> {
+//   return null as any
+// }
+
+// -------------------------------------------------------------------------------------
 // combinators
 // -------------------------------------------------------------------------------------
 

@@ -32,7 +32,7 @@ export type TypeOf<G> = G extends Guard<infer A> ? A : never
  * @category constructors
  * @since 2.2.0
  */
-export function literal<A extends ReadonlyArray<Literal>>(...values: A): Guard<A[number]> {
+export function literal<A extends readonly [Literal, ...Array<Literal>]>(...values: A): Guard<A[number]> {
   return {
     is: (u: unknown): u is A[number] => values.findIndex((a) => a === u) !== -1
   }

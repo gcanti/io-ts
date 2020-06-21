@@ -22,6 +22,8 @@
   - add `FreeSemigroup` module (@gcanti)
   - add `TaskDecoder` module (@gcanti)
   - remove `Tree` module (@gcanti)
+  - `Schemable`
+    - better `literal` signature (@gcanti)
 
 # 2.2.6
 

@@ -280,7 +280,7 @@ Added in v1.0.0
 **Signature**
 
 ```ts
-export declare const literal: <V extends LiteralValue>(value: V, name?: string) => LiteralC<V>
+export declare const literal: <V extends Literal>(value: V, name?: string) => LiteralC<V>
 ```
 
 Added in v1.0.0

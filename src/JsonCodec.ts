@@ -45,7 +45,8 @@ export const make: <A>(decoder: D.Decoder<A>, encoder: JE.JsonEncoder<A>) => Jso
  * @category constructors
  * @since 2.2.3
  */
-export const literal: <A extends ReadonlyArray<Literal>>(...values: A) => JsonCodec<A[number]> = C.literal
+export const literal: <A extends readonly [Literal, ...Array<Literal>]>(...values: A) => JsonCodec<A[number]> =
+  C.literal
 
 // -------------------------------------------------------------------------------------
 // primitives

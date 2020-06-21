@@ -52,10 +52,6 @@ describe('TaskDecoder', () => {
       const codec = D.literal('a', null)
       assert.deepStrictEqual(await codec.decode('b')(), E.left(FS.of(DE.leaf('b', '"a" | null'))))
     })
-
-    it('should handle zero members', async () => {
-      assert.deepStrictEqual(await D.literal().decode({})(), E.left(FS.of(DE.leaf({}, 'never'))))
-    })
   })
 
   describe('type', () => {

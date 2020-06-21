@@ -302,7 +302,7 @@ Added in v2.2.0
 **Signature**
 
 ```ts
-export declare function literal<A extends ReadonlyArray<Literal>>(...values: A): Decoder<A[number]>
+export declare const literal: <A extends readonly [Literal, ...Literal[]]>(...values: A) => Decoder<A[number]>
 ```
 
 Added in v2.2.0

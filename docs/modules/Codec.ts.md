@@ -204,7 +204,9 @@ Added in v2.2.3
 **Signature**
 
 ```ts
-export declare function literal<A extends ReadonlyArray<Literal>>(...values: A): Codec<A[number], A[number]>
+export declare function literal<A extends readonly [Literal, ...Array<Literal>]>(
+  ...values: A
+): Codec<A[number], A[number]>
 ```
 
 Added in v2.2.3

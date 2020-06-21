@@ -68,10 +68,8 @@ export const fromGuard = <A>(guard: G.Guard<A>, expected: string): TaskDecoder<A
  * @category combinators
  * @since 2.2.7
  */
-export const literal = <A extends ReadonlyArray<Literal>>(...values: A): TaskDecoder<A[number]> =>
-  values.length === 0
-    ? never
-    : fromGuard(G.literal(...values), values.map((value) => JSON.stringify(value)).join(' | '))
+export const literal = <A extends readonly [Literal, ...Array<Literal>]>(...values: A): TaskDecoder<A[number]> =>
+  fromGuard(G.literal(...values), values.map((value) => JSON.stringify(value)).join(' | '))
 
 // -------------------------------------------------------------------------------------
 // primitives
