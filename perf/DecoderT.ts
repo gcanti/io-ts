@@ -7,7 +7,6 @@ import * as DT from '../src/DecoderT'
 import * as FD from '../src/FreeDecoder'
 import * as FS from '../src/FreeSemigroup'
 import * as G from '../src/Guard'
-import { draw } from '../src/Tree'
 
 /*
 
@@ -80,12 +79,12 @@ suite
     decoderT.decode(bad)
   })
   .add('Decoder (draw)', function () {
-    pipe(decoder.decode(bad), E.mapLeft(draw))
+    pipe(decoder.decode(bad), E.mapLeft(D.draw))
   })
   .add('DecoderT (draw)', function () {
     pipe(
       decoderT.decode(bad),
-      E.mapLeft((e) => draw(FD.toForest(e)))
+      E.mapLeft((e) => D.draw(FD.toForest(e)))
     )
   })
   .on('cycle', function (event: any) {

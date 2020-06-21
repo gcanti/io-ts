@@ -29,7 +29,7 @@ Added in v2.2.7
 **Signature**
 
 ```ts
-export interface FreeDecoder<A> extends DT.DecoderT<E.URI, FS.FreeSemigroup<DE.DecodeError>, A> {}
+export interface FreeDecoder<E, A> extends DT.DecoderT<E.URI, FS.FreeSemigroup<DE.DecodeError<E>>, A> {}
 ```
 
 Added in v2.2.7
@@ -39,7 +39,7 @@ Added in v2.2.7
 **Signature**
 
 ```ts
-export declare const UnknownRecord: FreeDecoder<Record<string, unknown>>
+export declare const UnknownRecord: <E>(e: E) => FreeDecoder<E, Record<string, unknown>>
 ```
 
 Added in v2.2.7
@@ -49,7 +49,7 @@ Added in v2.2.7
 **Signature**
 
 ```ts
-export declare const number: FreeDecoder<number>
+export declare const number: <E>(e: E) => FreeDecoder<E, number>
 ```
 
 Added in v2.2.7
@@ -59,7 +59,7 @@ Added in v2.2.7
 **Signature**
 
 ```ts
-export declare const string: FreeDecoder<string>
+export declare const string: <E>(e: E) => FreeDecoder<E, string>
 ```
 
 Added in v2.2.7
@@ -69,7 +69,7 @@ Added in v2.2.7
 **Signature**
 
 ```ts
-export declare function toForest(s: FS.FreeSemigroup<DE.DecodeError>): NEA.NonEmptyArray<T.Tree<string>>
+export declare function toForest<E>(s: FS.FreeSemigroup<DE.DecodeError<E>>): NEA.NonEmptyArray<T.Tree<string>>
 ```
 
 Added in v2.2.7
@@ -79,9 +79,9 @@ Added in v2.2.7
 **Signature**
 
 ```ts
-export declare const type: <A>(
-  properties: { [K in keyof A]: FreeDecoder<A[K]> }
-) => FreeDecoder<{ [K in keyof A]: A[K] }>
+export declare const type: <E>(
+  UnknownRecord: FreeDecoder<E, Record<string, unknown>>
+) => <A>(properties: { [K in keyof A]: FreeDecoder<E, A[K]> }) => FreeDecoder<E, { [K in keyof A]: A[K] }>
 ```
 
 Added in v2.2.7
