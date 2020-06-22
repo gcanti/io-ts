@@ -149,7 +149,9 @@ export function sum<T extends string>(_tag: T): <A>(members: { [K in keyof A]: T
  * @category combinators
  * @since 2.2.3
  */
-export function union<A extends ReadonlyArray<unknown>>(...members: { [K in keyof A]: Type<A[K]> }): Type<A[number]> {
+export function union<A extends readonly [unknown, ...Array<unknown>]>(
+  ...members: { [K in keyof A]: Type<A[K]> }
+): Type<A[number]> {
   return t.union(members as any)
 }
 
@@ -196,6 +198,6 @@ export const schemableType: Schemable1<URI> & WithUnknownContainers1<URI> & With
   lazy,
   UnknownArray,
   UnknownRecord,
-  union,
+  union: union as WithUnion1<URI>['union'],
   refinement: refinement as WithRefinement1<URI>['refinement']
 }

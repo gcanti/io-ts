@@ -49,10 +49,6 @@ describe('Decoder', () => {
         ])
       )
     })
-
-    it('should handle zero members', () => {
-      assert.deepStrictEqual(D.union().decode({}), E.left([D.tree('cannot decode {}, should be never')]))
-    })
   })
 
   describe('sum', () => {

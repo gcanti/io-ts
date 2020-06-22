@@ -152,7 +152,7 @@ Added in v2.2.3
 **Signature**
 
 ```ts
-export declare function union<A extends ReadonlyArray<unknown>>(
+export declare function union<A extends readonly [unknown, ...Array<unknown>]>(
   ...members: { [K in keyof A]: Type<A[K]> }
 ): Type<A[number]>
 ```

@@ -10,7 +10,16 @@ import * as NEA from 'fp-ts/lib/NonEmptyArray'
 import * as T from 'fp-ts/lib/Tree'
 import { Literal } from './Schemable'
 
+// -------------------------------------------------------------------------------------
+// config
+// -------------------------------------------------------------------------------------
+
 const M = TE.getTaskValidation(DE.getSemigroup<string>())
+const fromGuardM = DT.fromGuard(M)
+const literalM = DT.literal(M)((u, values) =>
+  FS.of(DE.leaf(u, values.map((value) => JSON.stringify(value)).join(' | ')))
+)
+const refinementM = DT.refinement(M)
 
 // -------------------------------------------------------------------------------------
 // model
@@ -54,22 +63,21 @@ export function failure<A = never>(actual: unknown, message: string): TE.TaskEit
 // constructors
 // -------------------------------------------------------------------------------------
 
-/**
- * @category constructors
- * @since 2.2.7
- */
-export const fromGuard = <A>(guard: G.Guard<A>, expected: string): TaskDecoder<A> => ({
-  decode: (u) => (guard.is(u) ? success(u) : failure(u, expected))
-})
-
 // TODO: add fromDecoder: <A>(decoder: D.Decoder<A>) => TaskDecoder<A>
 
 /**
  * @category constructors
  * @since 2.2.7
  */
+export const fromGuard = <A>(guard: G.Guard<A>, expected: string): TaskDecoder<A> =>
+  fromGuardM(guard, (u) => FS.of(DE.leaf(u, expected)))
+
+/**
+ * @category constructors
+ * @since 2.2.7
+ */
 export const literal = <A extends readonly [Literal, ...Array<Literal>]>(...values: A): TaskDecoder<A[number]> =>
-  fromGuard(G.literal(...values), values.map((value) => JSON.stringify(value)).join(' | '))
+  literalM(...values)
 
 // -------------------------------------------------------------------------------------
 // primitives
@@ -114,6 +122,16 @@ export const UnknownRecord: TaskDecoder<Record<string, unknown>> = fromGuard(G.U
 // -------------------------------------------------------------------------------------
 // combinators
 // -------------------------------------------------------------------------------------
+
+/**
+ * @category combinators
+ * @since 2.2.7
+ */
+export const refinement = <A, B extends A>(
+  from: TaskDecoder<A>,
+  refinement: (a: A) => a is B,
+  expected: string
+): TaskDecoder<B> => refinementM(from, refinement, (u) => FS.of(DE.leaf(u, expected)))
 
 /**
  * @category combinators
@@ -165,6 +183,22 @@ export const record: <A>(codomain: TaskDecoder<A>) => TaskDecoder<Record<string,
 export const tuple: <A extends ReadonlyArray<unknown>>(
   ...components: { [K in keyof A]: TaskDecoder<A[K]> }
 ) => TaskDecoder<A> = DT.tuple(M)(UnknownArray, (i, e) => FS.of(DE.index(i, DE.required, e))) as any
+
+/**
+ * @category combinators
+ * @since 2.2.7
+ */
+export const union: <A extends readonly [unknown, ...Array<unknown>]>(
+  ...members: { [K in keyof A]: TaskDecoder<A[K]> }
+) => TaskDecoder<A[number]> = DT.union(M)((i, e) => FS.of(DE.member(i, e))) as any
+
+/**
+ * @category combinators
+ * @since 2.2.7
+ */
+export const intersection: <A, B>(left: TaskDecoder<A>, right: TaskDecoder<B>) => TaskDecoder<A & B> = DT.intersection(
+  M
+)
 
 // -------------------------------------------------------------------------------------
 // utils

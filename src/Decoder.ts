@@ -458,13 +458,10 @@ export function sum<T extends string>(tag: T): <A>(members: { [K in keyof A]: De
  * @category combinators
  * @since 2.2.0
  */
-export function union<A extends ReadonlyArray<unknown>>(
+export function union<A extends readonly [unknown, ...Array<unknown>]>(
   ...members: { [K in keyof A]: Decoder<A[K]> }
 ): Decoder<A[number]> {
   const len = members.length
-  if (len === 0) {
-    return never
-  }
   return {
     decode: (u) => {
       const e = members[0].decode(u)
@@ -581,7 +578,7 @@ export const schemableDecoder: Schemable1<URI> &
   lazy,
   UnknownArray,
   UnknownRecord,
-  union,
+  union: union as WithUnion1<URI>['union'],
   refinement: refinement as WithRefinement1<URI>['refinement']
 }
 

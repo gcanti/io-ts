@@ -10,7 +10,16 @@ import * as NEA from 'fp-ts/lib/NonEmptyArray'
 import * as T from 'fp-ts/lib/Tree'
 import { Literal } from './Schemable'
 
+// -------------------------------------------------------------------------------------
+// config
+// -------------------------------------------------------------------------------------
+
 const M = E.getValidation(DE.getSemigroup<string>())
+const fromGuardM = DT.fromGuard(M)
+const literalM = DT.literal(M)((u, values) =>
+  FS.of(DE.leaf(u, values.map((value) => JSON.stringify(value)).join(' | ')))
+)
+const refinementM = DT.refinement(M)
 
 // -------------------------------------------------------------------------------------
 // model
@@ -58,16 +67,15 @@ export function failure<A = never>(actual: unknown, message: string): E.Either<D
  * @category constructors
  * @since 2.2.7
  */
-export const fromGuard = <A>(guard: G.Guard<A>, expected: string): Decoder<A> => ({
-  decode: (u) => (guard.is(u) ? success(u) : failure(u, expected))
-})
+export const fromGuard = <A>(guard: G.Guard<A>, expected: string): Decoder<A> =>
+  fromGuardM(guard, (u) => FS.of(DE.leaf(u, expected)))
 
 /**
  * @category constructors
  * @since 2.2.7
  */
 export const literal = <A extends readonly [Literal, ...Array<Literal>]>(...values: A): Decoder<A[number]> =>
-  fromGuard(G.literal(...values), values.map((value) => JSON.stringify(value)).join(' | '))
+  literalM(...values)
 
 // -------------------------------------------------------------------------------------
 // primitives
@@ -112,6 +120,16 @@ export const UnknownRecord: Decoder<Record<string, unknown>> = fromGuard(G.Unkno
 // -------------------------------------------------------------------------------------
 // combinators
 // -------------------------------------------------------------------------------------
+
+/**
+ * @category combinators
+ * @since 2.2.7
+ */
+export const refinement = <A, B extends A>(
+  from: Decoder<A>,
+  refinement: (a: A) => a is B,
+  expected: string
+): Decoder<B> => refinementM(from, refinement, (u) => FS.of(DE.leaf(u, expected)))
 
 /**
  * @category combinators
@@ -162,6 +180,20 @@ export const record: <A>(codomain: Decoder<A>) => Decoder<Record<string, A>> = D
 export const tuple: <A extends ReadonlyArray<unknown>>(
   ...components: { [K in keyof A]: Decoder<A[K]> }
 ) => Decoder<A> = DT.tuple(M)(UnknownArray, (i, e) => FS.of(DE.index(i, DE.required, e))) as any
+
+/**
+ * @category combinators
+ * @since 2.2.7
+ */
+export const union: <A extends readonly [unknown, ...Array<unknown>]>(
+  ...members: { [K in keyof A]: Decoder<A[K]> }
+) => Decoder<A[number]> = DT.union(M)((i, e) => FS.of(DE.member(i, e))) as any
+
+/**
+ * @category combinators
+ * @since 2.2.7
+ */
+export const intersection: <A, B>(left: Decoder<A>, right: Decoder<B>) => Decoder<A & B> = DT.intersection(M)
 
 // -------------------------------------------------------------------------------------
 // utils

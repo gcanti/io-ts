@@ -22,7 +22,23 @@ const NumberFromString: D.Decoder<number> = {
     )
 }
 
+interface PositiveBrand {
+  readonly Positive: unique symbol
+}
+type Positive = number & PositiveBrand
+const Positive: D.Decoder<Positive> = D.refinement(D.number, (n): n is Positive => n > 0, 'Positive')
+
+interface IntBrand {
+  readonly Int: unique symbol
+}
+type Int = number & IntBrand
+const Int: D.Decoder<Int> = D.refinement(D.number, (n): n is Int => Number.isInteger(n), 'Int')
+
 describe('Decoder', () => {
+  // -------------------------------------------------------------------------------------
+  // primitives
+  // -------------------------------------------------------------------------------------
+
   it('string', async () => {
     assert.deepStrictEqual(D.string.decode('a'), E.right('a'))
     assert.deepStrictEqual(D.string.decode(null), E.left(FS.of(DE.leaf(null, 'string'))))
@@ -48,6 +64,10 @@ describe('Decoder', () => {
     assert.deepStrictEqual(D.UnknownRecord.decode(null), E.left(FS.of(DE.leaf(null, 'Record<string, unknown>'))))
   })
 
+  // -------------------------------------------------------------------------------------
+  // constructors
+  // -------------------------------------------------------------------------------------
+
   describe('literal', () => {
     it('should decode a valid input', async () => {
       const codec = D.literal('a', null, 'b', 1, true)
@@ -60,6 +80,10 @@ describe('Decoder', () => {
       assert.deepStrictEqual(codec.decode('b'), E.left(FS.of(DE.leaf('b', '"a" | null'))))
     })
   })
+
+  // -------------------------------------------------------------------------------------
+  // combinators
+  // -------------------------------------------------------------------------------------
 
   describe('nullable', () => {
     it('should decode a valid input', () => {
@@ -310,6 +334,78 @@ describe('Decoder', () => {
       assert.deepStrictEqual(codec.decode(['a', 1, true]), E.right(['a', 1]))
     })
   })
+
+  describe('union', () => {
+    it('should decode a valid input', () => {
+      assert.deepStrictEqual(D.union(D.string).decode('a'), E.right('a'))
+      const decoder = D.union(D.string, D.number)
+      assert.deepStrictEqual(decoder.decode('a'), E.right('a'))
+      assert.deepStrictEqual(decoder.decode(1), E.right(1))
+    })
+
+    it('should reject an invalid input', () => {
+      const decoder = D.union(D.string, D.number)
+      assert.deepStrictEqual(
+        decoder.decode(true),
+        E.left(
+          FS.concat(
+            FS.of(DE.member(0, FS.of(DE.leaf(true, 'string')))),
+            FS.of(DE.member(1, FS.of(DE.leaf(true, 'number'))))
+          )
+        )
+      )
+    })
+  })
+
+  describe('refinement', () => {
+    it('should decode a valid input', () => {
+      const codec = D.refinement(D.string, (s): s is string => s.length > 0, 'NonEmptyString')
+      assert.deepStrictEqual(codec.decode('a'), E.right('a'))
+    })
+
+    it('should reject an invalid input', () => {
+      const codec = D.refinement(D.string, (s): s is string => s.length > 0, 'NonEmptyString')
+      assert.deepStrictEqual(codec.decode(undefined), E.left(FS.of(DE.leaf(undefined, 'string'))))
+      assert.deepStrictEqual(codec.decode(''), E.left(FS.of(DE.leaf('', 'NonEmptyString'))))
+    })
+  })
+
+  describe('intersection', () => {
+    it('should decode a valid input', () => {
+      const codec = D.intersection(D.type({ a: D.string }), D.type({ b: D.number }))
+      assert.deepStrictEqual(codec.decode({ a: 'a', b: 1 }), E.right({ a: 'a', b: 1 }))
+    })
+
+    it('should handle primitives', () => {
+      const codec = D.intersection(Int, Positive)
+      assert.deepStrictEqual(codec.decode(1), E.right(1))
+    })
+
+    it('should accumulate all errors', () => {
+      const decoder = D.intersection(D.type({ a: D.string }), D.type({ b: D.number }))
+      assert.deepStrictEqual(
+        decoder.decode({ a: 'a' }),
+        E.left(FS.of(DE.key('b', DE.required, FS.of(DE.leaf(undefined, 'number')))))
+      )
+      assert.deepStrictEqual(
+        decoder.decode({ b: 1 }),
+        E.left(FS.of(DE.key('a', DE.required, FS.of(DE.leaf(undefined, 'string')))))
+      )
+      assert.deepStrictEqual(
+        decoder.decode({}),
+        E.left(
+          FS.concat(
+            FS.of(DE.key('a', DE.required, FS.of(DE.leaf(undefined, 'string')))),
+            FS.of(DE.key('b', DE.required, FS.of(DE.leaf(undefined, 'number'))))
+          )
+        )
+      )
+    })
+  })
+
+  // -------------------------------------------------------------------------------------
+  // utils
+  // -------------------------------------------------------------------------------------
 
   it('draw', async () => {
     const decoder = D.type({

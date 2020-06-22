@@ -118,7 +118,9 @@ Added in v2.2.3
 
 ```ts
 export interface WithUnion<S> {
-  readonly union: <A extends ReadonlyArray<unknown>>(...members: { [K in keyof A]: HKT<S, A[K]> }) => HKT<S, A[number]>
+  readonly union: <A extends readonly [unknown, ...Array<unknown>]>(
+    ...members: { [K in keyof A]: HKT<S, A[K]> }
+  ) => HKT<S, A[number]>
 }
 ```
 
@@ -130,7 +132,7 @@ Added in v2.2.3
 
 ```ts
 export interface WithUnion1<S extends URIS> {
-  readonly union: <A extends ReadonlyArray<unknown>>(
+  readonly union: <A extends readonly [unknown, ...Array<unknown>]>(
     ...members: { [K in keyof A]: Kind<S, A[K]> }
   ) => Kind<S, A[number]>
 }

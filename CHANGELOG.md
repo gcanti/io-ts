@@ -24,6 +24,7 @@
   - remove `Tree` module (@gcanti)
   - `Schemable`
     - better `literal` signature (@gcanti)
+    - better `union` signature (@gcanti)
 
 # 2.2.6
 

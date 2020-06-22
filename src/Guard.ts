@@ -194,7 +194,9 @@ export function intersection<A, B>(left: Guard<A>, right: Guard<B>): Guard<A & B
  * @category combinators
  * @since 2.2.0
  */
-export function union<A extends ReadonlyArray<unknown>>(...members: { [K in keyof A]: Guard<A[K]> }): Guard<A[number]> {
+export function union<A extends readonly [unknown, ...Array<unknown>]>(
+  ...members: { [K in keyof A]: Guard<A[K]> }
+): Guard<A[number]> {
   return {
     is: (u: unknown): u is A | A[number] => members.some((m) => m.is(u))
   }
@@ -269,6 +271,6 @@ export const schemableGuard: Schemable1<URI> & WithUnknownContainers1<URI> & Wit
   lazy: (_, f) => lazy(f),
   UnknownArray,
   UnknownRecord,
-  union,
+  union: union as WithUnion1<URI>['union'],
   refinement: refinement as WithRefinement1<URI>['refinement']
 }

@@ -9,6 +9,8 @@ import { Monad2C } from 'fp-ts/lib/Monad'
 import { MonadThrow2C } from 'fp-ts/lib/MonadThrow'
 import * as G from './Guard'
 import { Literal } from './Schemable'
+import { Alt2C } from 'fp-ts/lib/Alt'
+import { Apply2C } from 'fp-ts/lib/Apply'
 
 // -------------------------------------------------------------------------------------
 // model
@@ -59,7 +61,23 @@ export function literal<M extends URIS2, E>(
  * @category combinators
  * @since 2.2.7
  */
-export const nullable = <M extends URIS2, E>(M: MonadThrow2C<M, E> & Bifunctor2<M>) => (
+export function refinement<M extends URIS2, E>(
+  M: MonadThrow2C<M, E> & Bifunctor2<M>
+): <A, B extends A>(
+  from: DecoderT<M, E, A>,
+  refinement: (a: A) => a is B,
+  onError: (u: unknown) => E
+) => DecoderT<M, E, B> {
+  return (from, refinement, onError) => ({
+    decode: (u) => M.chain(from.decode(u), (a) => (refinement(a) ? M.of(a) : M.throwError(onError(u))))
+  })
+}
+
+/**
+ * @category combinators
+ * @since 2.2.7
+ */
+export const nullable = <M extends URIS2, E>(M: Applicative2C<M, E> & Bifunctor2<M>) => (
   onError: (u: unknown, e: E) => E
 ) => <A>(or: DecoderT<M, E, A>): DecoderT<M, E, null | A> => ({
   decode: (u) =>
@@ -194,15 +212,57 @@ export function tuple<M extends URIS2, E>(
  * @category combinators
  * @since 2.2.7
  */
-// export function union<M extends URIS2, E>(
-//   _M: Monad2C<M, E> & Bifunctor2<M>
-// ): (
-//   onMemberError: (i: number, e: E) => E
-// ) => <A extends ReadonlyArray<unknown>>(
-//   ...members: { [K in keyof A]: DecoderT<M, E, A[K]> }
-// ) => DecoderT<M, E, A[number]> {
-//   return null as any
-// }
+export function union<M extends URIS2, E>(
+  M: Alt2C<M, E> & Bifunctor2<M>
+): (
+  onMemberError: (i: number, e: E) => E
+) => <A extends readonly [unknown, ...Array<unknown>]>(
+  ...members: { [K in keyof A]: DecoderT<M, E, A[K]> }
+) => DecoderT<M, E, A[number]> {
+  return (onMemberError) => (...members) => ({
+    decode: (u) => {
+      let out: Kind2<M, E, unknown> = M.mapLeft(members[0].decode(u), (e) => onMemberError(0, e))
+      for (let i = 1; i < members.length; i++) {
+        out = M.alt(out, () => M.mapLeft(members[i].decode(u), (e) => onMemberError(i, e)))
+      }
+      return out
+    }
+  })
+}
+
+function typeOf(x: unknown): string {
+  return x === null ? 'null' : typeof x
+}
+
+/**
+ * @internal
+ */
+export function intersect<A, B>(a: A, b: B): A & B {
+  if (a !== undefined && b !== undefined) {
+    const tx = typeOf(a)
+    const ty = typeOf(b)
+    if (tx === 'object' || ty === 'object') {
+      return Object.assign({}, a, b)
+    }
+  }
+  return b as any
+}
+
+/**
+ * @category combinators
+ * @since 2.2.7
+ */
+export function intersection<M extends URIS2, E>(
+  M: Apply2C<M, E>
+): <A, B>(left: DecoderT<M, E, A>, right: DecoderT<M, E, B>) => DecoderT<M, E, A & B> {
+  return <A, B>(left: DecoderT<M, E, A>, right: DecoderT<M, E, B>) => ({
+    decode: (u) =>
+      M.ap(
+        M.map(left.decode(u), (a: A) => (b: B) => intersect(a, b)),
+        right.decode(u)
+      )
+  })
+}
 
 // -------------------------------------------------------------------------------------
 // utils
