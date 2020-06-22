@@ -8,7 +8,7 @@ import { Kind2, URIS2 } from 'fp-ts/lib/HKT'
 import { Monad2C } from 'fp-ts/lib/Monad'
 import { MonadThrow2C } from 'fp-ts/lib/MonadThrow'
 import * as G from './Guard'
-import { Literal } from './Schemable'
+import { Literal, memoize } from './Schemable'
 import { Alt2C } from 'fp-ts/lib/Alt'
 import { Apply2C } from 'fp-ts/lib/Apply'
 
@@ -212,32 +212,26 @@ export function tuple<M extends URIS2, E>(
  * @category combinators
  * @since 2.2.7
  */
-export function union<M extends URIS2, E>(
-  M: Alt2C<M, E> & Bifunctor2<M>
-): (
+export const union = <M extends URIS2, E>(M: Alt2C<M, E> & Bifunctor2<M>) => (
   onMemberError: (i: number, e: E) => E
 ) => <A extends readonly [unknown, ...Array<unknown>]>(
   ...members: { [K in keyof A]: DecoderT<M, E, A[K]> }
-) => DecoderT<M, E, A[number]> {
-  return (onMemberError) => (...members) => ({
-    decode: (u) => {
-      let out: Kind2<M, E, unknown> = M.mapLeft(members[0].decode(u), (e) => onMemberError(0, e))
-      for (let i = 1; i < members.length; i++) {
-        out = M.alt(out, () => M.mapLeft(members[i].decode(u), (e) => onMemberError(i, e)))
-      }
-      return out
+): DecoderT<M, E, A[number]> => ({
+  decode: (u) => {
+    let out: Kind2<M, E, unknown> = M.mapLeft(members[0].decode(u), (e) => onMemberError(0, e))
+    for (let i = 1; i < members.length; i++) {
+      out = M.alt(out, () => M.mapLeft(members[i].decode(u), (e) => onMemberError(i, e)))
     }
-  })
-}
+    return out
+  }
+})
 
-function typeOf(x: unknown): string {
-  return x === null ? 'null' : typeof x
-}
+const typeOf = (x: unknown): string => (x === null ? 'null' : typeof x)
 
 /**
  * @internal
  */
-export function intersect<A, B>(a: A, b: B): A & B {
+export const intersect = <A, B>(a: A, b: B): A & B => {
   if (a !== undefined && b !== undefined) {
     const tx = typeOf(a)
     const ty = typeOf(b)
@@ -252,33 +246,28 @@ export function intersect<A, B>(a: A, b: B): A & B {
  * @category combinators
  * @since 2.2.7
  */
-export function intersection<M extends URIS2, E>(
-  M: Apply2C<M, E>
-): <A, B>(left: DecoderT<M, E, A>, right: DecoderT<M, E, B>) => DecoderT<M, E, A & B> {
-  return <A, B>(left: DecoderT<M, E, A>, right: DecoderT<M, E, B>) => ({
-    decode: (u) =>
-      M.ap(
-        M.map(left.decode(u), (a: A) => (b: B) => intersect(a, b)),
-        right.decode(u)
-      )
-  })
-}
+export const intersection = <M extends URIS2, E>(M: Apply2C<M, E>) => <A, B>(
+  left: DecoderT<M, E, A>,
+  right: DecoderT<M, E, B>
+): DecoderT<M, E, A & B> => ({
+  decode: (u) =>
+    M.ap(
+      M.map(left.decode(u), (a: A) => (b: B) => intersect(a, b)),
+      right.decode(u)
+    )
+})
 
 /**
  * @category combinators
  * @since 2.2.7
  */
-export function sum<M extends URIS2, E>(
-  M: MonadThrow2C<M, E>
-): (
+export const sum = <M extends URIS2, E>(M: MonadThrow2C<M, E>) => (
   UnknownRecord: DecoderT<M, E, Record<string, unknown>>,
   onTagError: (tag: string, value: unknown, tags: ReadonlyArray<string>) => E
 ) => <T extends string>(
   tag: T
-) => <A>(members: { [K in keyof A]: DecoderT<M, E, A[K]> }) => DecoderT<M, E, A[keyof A]> {
-  return (UnknownRecord, onTagError) => (tag) => <A>(
-    members: { [K in keyof A]: DecoderT<M, E, A[K]> }
-  ): DecoderT<M, E, A[keyof A]> => {
+): (<A>(members: { [K in keyof A]: DecoderT<M, E, A[K]> }) => DecoderT<M, E, A[keyof A]>) => {
+  return <A>(members: { [K in keyof A]: DecoderT<M, E, A[K]> }): DecoderT<M, E, A[keyof A]> => {
     const keys = Object.keys(members)
     return {
       decode: (u) =>
@@ -289,6 +278,21 @@ export function sum<M extends URIS2, E>(
           }
           return M.throwError(onTagError(tag, v, keys))
         })
+    }
+  }
+}
+
+/**
+ * @category combinators
+ * @since 2.2.7
+ */
+export const lazy = <M extends URIS2, E>(M: MonadThrow2C<M, E> & Bifunctor2<M>) => (
+  onError: (id: string, e: E) => E
+): (<A>(id: string, f: () => DecoderT<M, E, A>) => DecoderT<M, E, A>) => {
+  return <A>(id: string, f: () => DecoderT<M, E, A>): DecoderT<M, E, A> => {
+    const get = memoize<void, DecoderT<M, E, A>>(f)
+    return {
+      decode: (u) => M.mapLeft(get().decode(u), (e) => onError(id, e))
     }
   }
 }

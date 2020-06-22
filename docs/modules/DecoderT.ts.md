@@ -15,6 +15,7 @@ Added in v2.2.7
 - [combinators](#combinators)
   - [array](#array)
   - [intersection](#intersection)
+  - [lazy](#lazy)
   - [nullable](#nullable)
   - [partial](#partial)
   - [record](#record)
@@ -53,9 +54,24 @@ Added in v2.2.7
 **Signature**
 
 ```ts
-export declare function intersection<M extends URIS2, E>(
+export declare const intersection: <
+  M extends 'io-ts/Codec' | 'io-ts/Encoder' | 'Either' | 'IOEither' | 'TaskEither',
+  E
+>(
   M: Apply2C<M, E>
-): <A, B>(left: DecoderT<M, E, A>, right: DecoderT<M, E, B>) => DecoderT<M, E, A & B>
+) => <A, B>(left: DecoderT<M, E, A>, right: DecoderT<M, E, B>) => DecoderT<M, E, A & B>
+```
+
+Added in v2.2.7
+
+## lazy
+
+**Signature**
+
+```ts
+export declare const lazy: <M extends 'io-ts/Codec' | 'io-ts/Encoder' | 'Either' | 'IOEither' | 'TaskEither', E>(
+  M: MonadThrow2C<M, E> & Bifunctor2<M>
+) => (onError: (id: string, e: E) => E) => <A>(id: string, f: () => DecoderT<M, E, A>) => DecoderT<M, E, A>
 ```
 
 Added in v2.2.7
@@ -123,11 +139,11 @@ Added in v2.2.7
 **Signature**
 
 ```ts
-export declare function sum<M extends URIS2, E>(
+export declare const sum: <M extends 'io-ts/Codec' | 'io-ts/Encoder' | 'Either' | 'IOEither' | 'TaskEither', E>(
   M: MonadThrow2C<M, E>
-): (
+) => (
   UnknownRecord: DecoderT<M, E, Record<string, unknown>>,
-  onTagError: (tag: string, value: unknown, tags: ReadonlyArray<string>) => E
+  onTagError: (tag: string, value: unknown, tags: readonly string[]) => E
 ) => <T extends string>(tag: T) => <A>(members: { [K in keyof A]: DecoderT<M, E, A[K]> }) => DecoderT<M, E, A[keyof A]>
 ```
 
@@ -168,11 +184,11 @@ Added in v2.2.7
 **Signature**
 
 ```ts
-export declare function union<M extends URIS2, E>(
+export declare const union: <M extends 'io-ts/Codec' | 'io-ts/Encoder' | 'Either' | 'IOEither' | 'TaskEither', E>(
   M: Alt2C<M, E> & Bifunctor2<M>
-): (
+) => (
   onMemberError: (i: number, e: E) => E
-) => <A extends readonly [unknown, ...Array<unknown>]>(
+) => <A extends readonly [unknown, ...unknown[]]>(
   ...members: { [K in keyof A]: DecoderT<M, E, A[K]> }
 ) => DecoderT<M, E, A[number]>
 ```

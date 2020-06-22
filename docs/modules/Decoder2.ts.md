@@ -19,6 +19,7 @@ Added in v2.2.7
 - [combinators](#combinators)
   - [array](#array)
   - [intersection](#intersection)
+  - [lazy](#lazy)
   - [nullable](#nullable)
   - [partial](#partial)
   - [record](#record)
@@ -94,6 +95,16 @@ Added in v2.2.7
 
 ```ts
 export declare const intersection: <A, B>(left: Decoder<A>, right: Decoder<B>) => Decoder<A & B>
+```
+
+Added in v2.2.7
+
+## lazy
+
+**Signature**
+
+```ts
+export declare const lazy: <A>(id: string, f: () => Decoder<A>) => Decoder<A>
 ```
 
 Added in v2.2.7
