@@ -264,6 +264,35 @@ export function intersection<M extends URIS2, E>(
   })
 }
 
+/**
+ * @category combinators
+ * @since 2.2.7
+ */
+export function sum<M extends URIS2, E>(
+  M: MonadThrow2C<M, E>
+): (
+  UnknownRecord: DecoderT<M, E, Record<string, unknown>>,
+  onTagError: (tag: string, value: unknown, tags: ReadonlyArray<string>) => E
+) => <T extends string>(
+  tag: T
+) => <A>(members: { [K in keyof A]: DecoderT<M, E, A[K]> }) => DecoderT<M, E, A[keyof A]> {
+  return (UnknownRecord, onTagError) => (tag) => <A>(
+    members: { [K in keyof A]: DecoderT<M, E, A[K]> }
+  ): DecoderT<M, E, A[keyof A]> => {
+    const keys = Object.keys(members)
+    return {
+      decode: (u) =>
+        M.chain(UnknownRecord.decode(u), (r) => {
+          const v = r[tag] as keyof A
+          if (v in members) {
+            return members[v].decode(u)
+          }
+          return M.throwError(onTagError(tag, v, keys))
+        })
+    }
+  }
+}
+
 // -------------------------------------------------------------------------------------
 // utils
 // -------------------------------------------------------------------------------------

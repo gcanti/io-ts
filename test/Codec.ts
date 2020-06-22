@@ -542,6 +542,7 @@ describe('Codec', () => {
         )
       })
 
+      // TODO: make this an error
       it('should support empty records', () => {
         const decoder = sum({})
         assert.deepStrictEqual(decoder.decode({}), left([D.tree('cannot decode {}, should be never')]))

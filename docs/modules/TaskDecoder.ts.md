@@ -23,6 +23,7 @@ Added in v2.2.7
   - [partial](#partial)
   - [record](#record)
   - [refinement](#refinement)
+  - [sum](#sum)
   - [tuple](#tuple)
   - [type](#type)
   - [union](#union)
@@ -139,6 +140,18 @@ export declare const refinement: <A, B extends A>(
   refinement: (a: A) => a is B,
   expected: string
 ) => TaskDecoder<B>
+```
+
+Added in v2.2.7
+
+## sum
+
+**Signature**
+
+```ts
+export declare const sum: <T extends string>(
+  tag: T
+) => <A>(members: { [K in keyof A]: TaskDecoder<A[K]> }) => TaskDecoder<A[keyof A]>
 ```
 
 Added in v2.2.7

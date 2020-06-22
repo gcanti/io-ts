@@ -422,6 +422,33 @@ describe('TaskDecoder', () => {
     })
   })
 
+  describe('sum', () => {
+    const sum = D.sum('_tag')
+
+    it('should decode a valid input', async () => {
+      const A = D.type({ _tag: D.literal('A'), a: D.string })
+      const B = D.type({ _tag: D.literal('B'), b: D.number })
+      const codec = sum({ A, B })
+      assert.deepStrictEqual(await codec.decode({ _tag: 'A', a: 'a' })(), E.right({ _tag: 'A', a: 'a' }))
+      assert.deepStrictEqual(await codec.decode({ _tag: 'B', b: 1 })(), E.right({ _tag: 'B', b: 1 }))
+    })
+
+    it('should reject an invalid input', async () => {
+      const A = D.type({ _tag: D.literal('A'), a: D.string })
+      const B = D.type({ _tag: D.literal('B'), b: D.number })
+      const codec = sum({ A, B })
+      assert.deepStrictEqual(await codec.decode(null)(), E.left(FS.of(DE.leaf(null, 'Record<string, unknown>'))))
+      assert.deepStrictEqual(
+        await codec.decode({})(),
+        E.left(FS.of(DE.key('_tag', DE.required, FS.of(DE.leaf(undefined, '"A" | "B"')))))
+      )
+      assert.deepStrictEqual(
+        await codec.decode({ _tag: 'A', a: 1 })(),
+        E.left(FS.of(DE.key('a', DE.required, FS.of(DE.leaf(1, 'string')))))
+      )
+    })
+  })
+
   // -------------------------------------------------------------------------------------
   // utils
   // -------------------------------------------------------------------------------------

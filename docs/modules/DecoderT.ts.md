@@ -19,6 +19,7 @@ Added in v2.2.7
   - [partial](#partial)
   - [record](#record)
   - [refinement](#refinement)
+  - [sum](#sum)
   - [tuple](#tuple)
   - [type](#type)
   - [union](#union)
@@ -113,6 +114,21 @@ export declare function refinement<M extends URIS2, E>(
   refinement: (a: A) => a is B,
   onError: (u: unknown) => E
 ) => DecoderT<M, E, B>
+```
+
+Added in v2.2.7
+
+## sum
+
+**Signature**
+
+```ts
+export declare function sum<M extends URIS2, E>(
+  M: MonadThrow2C<M, E>
+): (
+  UnknownRecord: DecoderT<M, E, Record<string, unknown>>,
+  onTagError: (tag: string, value: unknown, tags: ReadonlyArray<string>) => E
+) => <T extends string>(tag: T) => <A>(members: { [K in keyof A]: DecoderT<M, E, A[K]> }) => DecoderT<M, E, A[keyof A]>
 ```
 
 Added in v2.2.7
