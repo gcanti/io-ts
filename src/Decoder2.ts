@@ -85,12 +85,6 @@ export const literal = <A extends readonly [Literal, ...Array<Literal>]>(...valu
  * @category primitives
  * @since 2.2.7
  */
-export const never: Decoder<never> = fromGuard(G.never, 'never')
-
-/**
- * @category primitives
- * @since 2.2.7
- */
 export const string: Decoder<string> = fromGuard(G.string, 'string')
 
 /**
