@@ -200,6 +200,18 @@ export const intersection: <A, B>(left: TaskDecoder<A>, right: TaskDecoder<B>) =
   M
 )
 
+/**
+ * @category combinators
+ * @since 2.2.7
+ */
+export const sum: <T extends string>(
+  tag: T
+) => <A>(members: { [K in keyof A]: TaskDecoder<A[K]> }) => TaskDecoder<A[keyof A]> = DT.sum(M)(
+  UnknownRecord,
+  (tag, value, keys) =>
+    FS.of(DE.key(tag, DE.required, FS.of(DE.leaf(value, keys.map((k) => JSON.stringify(k)).join(' | ')))))
+)
+
 // -------------------------------------------------------------------------------------
 // utils
 // -------------------------------------------------------------------------------------

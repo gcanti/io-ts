@@ -195,6 +195,18 @@ export const union: <A extends readonly [unknown, ...Array<unknown>]>(
  */
 export const intersection: <A, B>(left: Decoder<A>, right: Decoder<B>) => Decoder<A & B> = DT.intersection(M)
 
+/**
+ * @category combinators
+ * @since 2.2.7
+ */
+export const sum: <T extends string>(
+  tag: T
+) => <A>(members: { [K in keyof A]: Decoder<A[K]> }) => Decoder<A[keyof A]> = DT.sum(M)(
+  UnknownRecord,
+  (tag, value, keys) =>
+    FS.of(DE.key(tag, DE.required, FS.of(DE.leaf(value, keys.map((k) => JSON.stringify(k)).join(' | ')))))
+)
+
 // -------------------------------------------------------------------------------------
 // utils
 // -------------------------------------------------------------------------------------
