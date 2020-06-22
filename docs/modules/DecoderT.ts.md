@@ -14,11 +14,14 @@ Added in v2.2.7
 
 - [combinators](#combinators)
   - [array](#array)
+  - [intersection](#intersection)
   - [nullable](#nullable)
   - [partial](#partial)
   - [record](#record)
+  - [refinement](#refinement)
   - [tuple](#tuple)
   - [type](#type)
+  - [union](#union)
 - [constructors](#constructors)
   - [fromGuard](#fromguard)
   - [literal](#literal)
@@ -44,13 +47,25 @@ export declare function array<M extends URIS2, E>(
 
 Added in v2.2.7
 
+## intersection
+
+**Signature**
+
+```ts
+export declare function intersection<M extends URIS2, E>(
+  M: Apply2C<M, E>
+): <A, B>(left: DecoderT<M, E, A>, right: DecoderT<M, E, B>) => DecoderT<M, E, A & B>
+```
+
+Added in v2.2.7
+
 ## nullable
 
 **Signature**
 
 ```ts
 export declare const nullable: <M extends 'io-ts/Codec' | 'io-ts/Encoder' | 'Either' | 'IOEither' | 'TaskEither', E>(
-  M: MonadThrow2C<M, E> & Bifunctor2<M>
+  M: Applicative2C<M, E> & Bifunctor2<M>
 ) => (onError: (u: unknown, e: E) => E) => <A>(or: DecoderT<M, E, A>) => DecoderT<M, E, A>
 ```
 
@@ -86,6 +101,22 @@ export declare function record<M extends URIS2, E>(
 
 Added in v2.2.7
 
+## refinement
+
+**Signature**
+
+```ts
+export declare function refinement<M extends URIS2, E>(
+  M: MonadThrow2C<M, E> & Bifunctor2<M>
+): <A, B extends A>(
+  from: DecoderT<M, E, A>,
+  refinement: (a: A) => a is B,
+  onError: (u: unknown) => E
+) => DecoderT<M, E, B>
+```
+
+Added in v2.2.7
+
 ## tuple
 
 **Signature**
@@ -112,6 +143,22 @@ export declare function type<M extends URIS2, E>(
   UnknownRecord: DecoderT<M, E, Record<string, unknown>>,
   onKeyError: (k: string, e: E) => E
 ) => <A>(properties: { [K in keyof A]: DecoderT<M, E, A[K]> }) => DecoderT<M, E, { [K in keyof A]: A[K] }>
+```
+
+Added in v2.2.7
+
+## union
+
+**Signature**
+
+```ts
+export declare function union<M extends URIS2, E>(
+  M: Alt2C<M, E> & Bifunctor2<M>
+): (
+  onMemberError: (i: number, e: E) => E
+) => <A extends readonly [unknown, ...Array<unknown>]>(
+  ...members: { [K in keyof A]: DecoderT<M, E, A[K]> }
+) => DecoderT<M, E, A[number]>
 ```
 
 Added in v2.2.7

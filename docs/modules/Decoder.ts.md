@@ -265,7 +265,7 @@ Added in v2.2.0
 **Signature**
 
 ```ts
-export declare function union<A extends ReadonlyArray<unknown>>(
+export declare function union<A extends readonly [unknown, ...Array<unknown>]>(
   ...members: { [K in keyof A]: Decoder<A[K]> }
 ): Decoder<A[number]>
 ```

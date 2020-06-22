@@ -136,6 +136,6 @@ export const schemableArbitrary: S.Schemable1<URI> &
   lazy: (_, f) => lazy(f),
   UnknownArray,
   UnknownRecord,
-  union,
+  union: union as S.WithUnion1<URI>['union'],
   refinement: refinement as S.WithRefinement1<URI>['refinement']
 }

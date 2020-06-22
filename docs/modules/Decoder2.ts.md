@@ -18,11 +18,14 @@ Added in v2.2.7
   - [success](#success)
 - [combinators](#combinators)
   - [array](#array)
+  - [intersection](#intersection)
   - [nullable](#nullable)
   - [partial](#partial)
   - [record](#record)
+  - [refinement](#refinement)
   - [tuple](#tuple)
   - [type](#type)
+  - [union](#union)
 - [constructors](#constructors)
   - [fromGuard](#fromguard)
   - [literal](#literal)
@@ -84,6 +87,16 @@ export declare const array: <A>(items: Decoder<A>) => Decoder<A[]>
 
 Added in v2.2.7
 
+## intersection
+
+**Signature**
+
+```ts
+export declare const intersection: <A, B>(left: Decoder<A>, right: Decoder<B>) => Decoder<A & B>
+```
+
+Added in v2.2.7
+
 ## nullable
 
 **Signature**
@@ -116,6 +129,20 @@ export declare const record: <A>(codomain: Decoder<A>) => Decoder<Record<string,
 
 Added in v2.2.7
 
+## refinement
+
+**Signature**
+
+```ts
+export declare const refinement: <A, B extends A>(
+  from: Decoder<A>,
+  refinement: (a: A) => a is B,
+  expected: string
+) => Decoder<B>
+```
+
+Added in v2.2.7
+
 ## tuple
 
 **Signature**
@@ -134,6 +161,18 @@ Added in v2.2.7
 
 ```ts
 export declare const type: <A>(properties: { [K in keyof A]: Decoder<A[K]> }) => Decoder<{ [K in keyof A]: A[K] }>
+```
+
+Added in v2.2.7
+
+## union
+
+**Signature**
+
+```ts
+export declare const union: <A extends readonly [unknown, ...unknown[]]>(
+  ...members: { [K in keyof A]: Decoder<A[K]> }
+) => Decoder<A[number]>
 ```
 
 Added in v2.2.7
