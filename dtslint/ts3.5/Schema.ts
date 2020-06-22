@@ -138,5 +138,7 @@ make((S) => S.refinement(S.number, (n): n is Positive => n > 0, 'Positive'))
 //
 // union
 //
+
+make((S) => S.union()) // $ExpectType Schema<never>
 make((S) => S.union(S.string)) // $ExpectType Schema<string>
 make((S) => S.union(S.string, S.number)) // $ExpectType Schema<string | number>

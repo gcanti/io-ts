@@ -14,6 +14,7 @@ Added in v2.2.7
 
 - [combinators](#combinators)
   - [array](#array)
+  - [nullable](#nullable)
   - [partial](#partial)
   - [record](#record)
   - [tuple](#tuple)
@@ -39,6 +40,18 @@ export declare function array<M extends URIS2, E>(
   UnknownArray: DecoderT<M, E, Array<unknown>>,
   onItemError: (i: number, e: E) => E
 ) => <A>(items: DecoderT<M, E, A>) => DecoderT<M, E, Array<A>>
+```
+
+Added in v2.2.7
+
+## nullable
+
+**Signature**
+
+```ts
+export declare const nullable: <M extends 'io-ts/Codec' | 'io-ts/Encoder' | 'Either' | 'IOEither' | 'TaskEither', E>(
+  M: MonadThrow2C<M, E> & Bifunctor2<M>
+) => (onError: (u: unknown, e: E) => E) => <A>(or: DecoderT<M, E, A>) => DecoderT<M, E, A>
 ```
 
 Added in v2.2.7

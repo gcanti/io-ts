@@ -12,6 +12,17 @@ const undefinedGuard: G.Guard<undefined> = {
 }
 const undef: D.TaskDecoder<undefined> = D.fromGuard(undefinedGuard, 'undefined')
 
+const NumberFromString: D.TaskDecoder<number> = {
+  decode: (u) =>
+    pipe(
+      D.string.decode(u),
+      TE.chain((s) => {
+        const n = parseFloat(s)
+        return isNaN(n) ? D.failure(u, 'parsable to a number') : D.success(n)
+      })
+    )
+}
+
 describe('TaskDecoder', () => {
   it('string', async () => {
     assert.deepStrictEqual(await D.string.decode('a')(), E.right('a'))
@@ -51,6 +62,36 @@ describe('TaskDecoder', () => {
     it('should reject an invalid input', async () => {
       const codec = D.literal('a', null)
       assert.deepStrictEqual(await codec.decode('b')(), E.left(FS.of(DE.leaf('b', '"a" | null'))))
+    })
+  })
+
+  describe('nullable', () => {
+    it('should decode a valid input', async () => {
+      const codec = D.nullable(NumberFromString)
+      assert.deepStrictEqual(await codec.decode(null)(), E.right(null))
+      assert.deepStrictEqual(await codec.decode('1')(), E.right(1))
+    })
+
+    it('should reject an invalid input', async () => {
+      const codec = D.nullable(NumberFromString)
+      assert.deepStrictEqual(
+        await codec.decode(undefined)(),
+        E.left(
+          FS.concat(
+            FS.of(DE.member(0, FS.of(DE.leaf(undefined, 'null')))),
+            FS.of(DE.member(1, FS.of(DE.leaf(undefined, 'string'))))
+          )
+        )
+      )
+      assert.deepStrictEqual(
+        await codec.decode('a')(),
+        E.left(
+          FS.concat(
+            FS.of(DE.member(0, FS.of(DE.leaf('a', 'null')))),
+            FS.of(DE.member(1, FS.of(DE.leaf('a', 'parsable to a number'))))
+          )
+        )
+      )
     })
   })
 
@@ -293,7 +334,8 @@ describe('TaskDecoder', () => {
     const decoder = D.type({
       a: D.string,
       b: D.number,
-      c: D.array(D.boolean)
+      c: D.array(D.boolean),
+      d: D.nullable(D.string)
     })
     assert.deepStrictEqual(
       await pipe(decoder.decode({ c: [1] }), TE.mapLeft(D.draw))(),
@@ -303,7 +345,12 @@ required property "b"
 └─ cannot decode undefined, should be number
 required property "c"
 └─ optional index 0
-   └─ cannot decode 1, should be boolean`)
+   └─ cannot decode 1, should be boolean
+required property "d"
+├─ member 0
+│  └─ cannot decode undefined, should be null
+└─ member 1
+   └─ cannot decode undefined, should be string`)
     )
   })
 })

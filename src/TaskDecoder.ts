@@ -65,7 +65,7 @@ export const fromGuard = <A>(guard: G.Guard<A>, expected: string): TaskDecoder<A
 // TODO: add fromDecoder: <A>(decoder: D.Decoder<A>) => TaskDecoder<A>
 
 /**
- * @category combinators
+ * @category constructors
  * @since 2.2.7
  */
 export const literal = <A extends readonly [Literal, ...Array<Literal>]>(...values: A): TaskDecoder<A[number]> =>
@@ -119,6 +119,14 @@ export const UnknownRecord: TaskDecoder<Record<string, unknown>> = fromGuard(G.U
  * @category combinators
  * @since 2.2.7
  */
+export const nullable: <A>(or: TaskDecoder<A>) => TaskDecoder<null | A> = DT.nullable(M)((u, e) =>
+  FS.concat(FS.of(DE.member(0, FS.of(DE.leaf(u, 'null')))), FS.of(DE.member(1, e)))
+)
+
+/**
+ * @category combinators
+ * @since 2.2.7
+ */
 export const type: <A>(
   properties: { [K in keyof A]: TaskDecoder<A[K]> }
 ) => TaskDecoder<{ [K in keyof A]: A[K] }> = DT.type(M)(UnknownRecord, (k, e) => FS.of(DE.key(k, DE.required, e)))
@@ -166,7 +174,8 @@ const toForest = (e: DecodeError): NEA.NonEmptyArray<T.Tree<string>> => {
   const toTree: (e: DE.DecodeError<string>) => T.Tree<string> = DE.fold({
     Leaf: (input, error) => T.make(`cannot decode ${JSON.stringify(input)}, should be ${error}`),
     Key: (key, kind, errors) => T.make(`${kind} property ${JSON.stringify(key)}`, toForest(errors)),
-    Index: (index, kind, errors) => T.make(`${kind} index ${index}`, toForest(errors))
+    Index: (index, kind, errors) => T.make(`${kind} index ${index}`, toForest(errors)),
+    Member: (index, errors) => T.make(`member ${index}`, toForest(errors))
   })
   const toForest: (f: DecodeError) => NEA.NonEmptyArray<T.Tree<string>> = FS.fold(
     (value) => [toTree(value)],

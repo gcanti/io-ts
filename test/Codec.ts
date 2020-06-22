@@ -542,10 +542,6 @@ describe('Codec', () => {
         )
       })
 
-      it('should handle zero members', () => {
-        assert.deepStrictEqual(C.sum('_tag')({}).decode({}), left([D.tree('cannot decode {}, should be never')]))
-      })
-
       it('should support empty records', () => {
         const decoder = sum({})
         assert.deepStrictEqual(decoder.decode({}), left([D.tree('cannot decode {}, should be never')]))

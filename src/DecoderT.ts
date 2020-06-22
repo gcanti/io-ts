@@ -6,9 +6,9 @@ import { Bifunctor2 } from 'fp-ts/lib/Bifunctor'
 import * as E from 'fp-ts/lib/Either'
 import { Kind2, URIS2 } from 'fp-ts/lib/HKT'
 import { Monad2C } from 'fp-ts/lib/Monad'
-import { Literal } from './Schemable'
-import * as G from './Guard'
 import { MonadThrow2C } from 'fp-ts/lib/MonadThrow'
+import * as G from './Guard'
+import { Literal } from './Schemable'
 
 // -------------------------------------------------------------------------------------
 // model
@@ -55,18 +55,22 @@ export function literal<M extends URIS2, E>(
 // combinators
 // -------------------------------------------------------------------------------------
 
-// TODO
 /**
  * @category combinators
  * @since 2.2.7
  */
-// export function nullable<M extends URIS2, E>(
-//   M: MonadThrow2C<M, E>
-// ): <A>(or: DecoderT<M, E, A>) => DecoderT<M, E, null | A> {
-//   return (or) => ({
-//     decode: (u) => (u === null ? M.of(u) : or.decode(u))
-//   })
-// }
+export const nullable = <M extends URIS2, E>(M: MonadThrow2C<M, E> & Bifunctor2<M>) => (
+  onError: (u: unknown, e: E) => E
+) => <A>(or: DecoderT<M, E, A>): DecoderT<M, E, null | A> => ({
+  decode: (u) =>
+    u === null
+      ? M.of<null | A>(u)
+      : M.bimap(
+          or.decode(u),
+          (e) => onError(u, e),
+          (a): A | null => a
+        )
+})
 
 /**
  * @category combinators
@@ -185,6 +189,20 @@ export function tuple<M extends URIS2, E>(
       ) as any
   })
 }
+
+/**
+ * @category combinators
+ * @since 2.2.7
+ */
+// export function union<M extends URIS2, E>(
+//   _M: Monad2C<M, E> & Bifunctor2<M>
+// ): (
+//   onMemberError: (i: number, e: E) => E
+// ) => <A extends ReadonlyArray<unknown>>(
+//   ...members: { [K in keyof A]: DecoderT<M, E, A[K]> }
+// ) => DecoderT<M, E, A[number]> {
+//   return null as any
+// }
 
 // -------------------------------------------------------------------------------------
 // utils

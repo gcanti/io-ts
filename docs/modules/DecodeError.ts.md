@@ -16,6 +16,7 @@ Added in v2.2.7
   - [index](#index)
   - [key](#key)
   - [leaf](#leaf)
+  - [member](#member)
 - [destructors](#destructors)
   - [fold](#fold)
 - [instances](#instances)
@@ -26,6 +27,7 @@ Added in v2.2.7
   - [Key (interface)](#key-interface)
   - [Kind (type alias)](#kind-type-alias)
   - [Leaf (interface)](#leaf-interface)
+  - [Member (interface)](#member-interface)
   - [optional](#optional)
   - [required](#required)
 
@@ -63,6 +65,16 @@ export declare const leaf: <E>(actual: unknown, error: E) => DecodeError<E>
 
 Added in v2.2.7
 
+## member
+
+**Signature**
+
+```ts
+export declare const member: <E>(index: number, errors: FS.FreeSemigroup<DecodeError<E>>) => DecodeError<E>
+```
+
+Added in v2.2.7
+
 # destructors
 
 ## fold
@@ -74,6 +86,7 @@ export declare const fold: <E, R>(patterns: {
   Leaf: (input: unknown, error: E) => R
   Key: (key: string, kind: Kind, errors: FS.FreeSemigroup<DecodeError<E>>) => R
   Index: (index: number, kind: Kind, errors: FS.FreeSemigroup<DecodeError<E>>) => R
+  Member: (index: number, errors: FS.FreeSemigroup<DecodeError<E>>) => R
 }) => (e: DecodeError<E>) => R
 ```
 
@@ -98,7 +111,7 @@ Added in v2.2.7
 **Signature**
 
 ```ts
-export type DecodeError<E> = Leaf<E> | Key<E> | Index<E>
+export type DecodeError<E> = Leaf<E> | Key<E> | Index<E> | Member<E>
 ```
 
 Added in v2.2.7
@@ -152,6 +165,20 @@ export interface Leaf<E> {
   readonly _tag: 'Leaf'
   readonly actual: unknown
   readonly error: E
+}
+```
+
+Added in v2.2.7
+
+## Member (interface)
+
+**Signature**
+
+```ts
+export interface Member<E> {
+  readonly _tag: 'Member'
+  readonly index: number
+  readonly errors: FS.FreeSemigroup<DecodeError<E>>
 }
 ```
 
