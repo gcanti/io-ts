@@ -11,6 +11,17 @@ const undefinedGuard: G.Guard<undefined> = {
 }
 const undef: D.Decoder<undefined> = D.fromGuard(undefinedGuard, 'undefined')
 
+const NumberFromString: D.Decoder<number> = {
+  decode: (u) =>
+    pipe(
+      D.string.decode(u),
+      E.chain((s) => {
+        const n = parseFloat(s)
+        return isNaN(n) ? D.failure(u, 'parsable to a number') : D.success(n)
+      })
+    )
+}
+
 describe('Decoder', () => {
   it('string', async () => {
     assert.deepStrictEqual(D.string.decode('a'), E.right('a'))
@@ -47,6 +58,36 @@ describe('Decoder', () => {
     it('should reject an invalid input', async () => {
       const codec = D.literal('a', null)
       assert.deepStrictEqual(codec.decode('b'), E.left(FS.of(DE.leaf('b', '"a" | null'))))
+    })
+  })
+
+  describe('nullable', () => {
+    it('should decode a valid input', () => {
+      const codec = D.nullable(NumberFromString)
+      assert.deepStrictEqual(codec.decode(null), E.right(null))
+      assert.deepStrictEqual(codec.decode('1'), E.right(1))
+    })
+
+    it('should reject an invalid input', () => {
+      const codec = D.nullable(NumberFromString)
+      assert.deepStrictEqual(
+        codec.decode(undefined),
+        E.left(
+          FS.concat(
+            FS.of(DE.member(0, FS.of(DE.leaf(undefined, 'null')))),
+            FS.of(DE.member(1, FS.of(DE.leaf(undefined, 'string'))))
+          )
+        )
+      )
+      assert.deepStrictEqual(
+        codec.decode('a'),
+        E.left(
+          FS.concat(
+            FS.of(DE.member(0, FS.of(DE.leaf('a', 'null')))),
+            FS.of(DE.member(1, FS.of(DE.leaf('a', 'parsable to a number'))))
+          )
+        )
+      )
     })
   })
 
@@ -274,7 +315,8 @@ describe('Decoder', () => {
     const decoder = D.type({
       a: D.string,
       b: D.number,
-      c: D.array(D.boolean)
+      c: D.array(D.boolean),
+      d: D.nullable(D.string)
     })
     assert.deepStrictEqual(
       pipe(decoder.decode({ c: [1] }), E.mapLeft(D.draw)),
@@ -284,7 +326,12 @@ required property "b"
 └─ cannot decode undefined, should be number
 required property "c"
 └─ optional index 0
-   └─ cannot decode 1, should be boolean`)
+   └─ cannot decode 1, should be boolean
+required property "d"
+├─ member 0
+│  └─ cannot decode undefined, should be null
+└─ member 1
+   └─ cannot decode undefined, should be string`)
     )
   })
 })

@@ -18,13 +18,14 @@ Added in v2.2.7
   - [success](#success)
 - [combinators](#combinators)
   - [array](#array)
-  - [literal](#literal)
+  - [nullable](#nullable)
   - [partial](#partial)
   - [record](#record)
   - [tuple](#tuple)
   - [type](#type)
 - [constructors](#constructors)
   - [fromGuard](#fromguard)
+  - [literal](#literal)
 - [model](#model)
   - [TaskDecoder (interface)](#taskdecoder-interface)
 - [primitives](#primitives)
@@ -83,12 +84,12 @@ export declare const array: <A>(items: TaskDecoder<A>) => TaskDecoder<A[]>
 
 Added in v2.2.7
 
-## literal
+## nullable
 
 **Signature**
 
 ```ts
-export declare const literal: <A extends readonly [Literal, ...Literal[]]>(...values: A) => TaskDecoder<A[number]>
+export declare const nullable: <A>(or: TaskDecoder<A>) => TaskDecoder<A>
 ```
 
 Added in v2.2.7
@@ -147,6 +148,16 @@ Added in v2.2.7
 
 ```ts
 export declare const fromGuard: <A>(guard: G.Guard<A>, expected: string) => TaskDecoder<A>
+```
+
+Added in v2.2.7
+
+## literal
+
+**Signature**
+
+```ts
+export declare const literal: <A extends readonly [Literal, ...Literal[]]>(...values: A) => TaskDecoder<A[number]>
 ```
 
 Added in v2.2.7

@@ -58,7 +58,17 @@ export interface Index<E> {
  * @category model
  * @since 2.2.7
  */
-export type DecodeError<E> = Leaf<E> | Key<E> | Index<E>
+export interface Member<E> {
+  readonly _tag: 'Member'
+  readonly index: number
+  readonly errors: FS.FreeSemigroup<DecodeError<E>>
+}
+
+/**
+ * @category model
+ * @since 2.2.7
+ */
+export type DecodeError<E> = Leaf<E> | Key<E> | Index<E> | Member<E>
 
 /**
  * @category constructors
@@ -89,6 +99,16 @@ export const index = <E>(index: number, kind: Kind, errors: FS.FreeSemigroup<Dec
 })
 
 /**
+ * @category constructors
+ * @since 2.2.7
+ */
+export const member = <E>(index: number, errors: FS.FreeSemigroup<DecodeError<E>>): DecodeError<E> => ({
+  _tag: 'Member',
+  index,
+  errors
+})
+
+/**
  * @category destructors
  * @since 2.2.7
  */
@@ -96,6 +116,7 @@ export const fold = <E, R>(patterns: {
   Leaf: (input: unknown, error: E) => R
   Key: (key: string, kind: Kind, errors: FS.FreeSemigroup<DecodeError<E>>) => R
   Index: (index: number, kind: Kind, errors: FS.FreeSemigroup<DecodeError<E>>) => R
+  Member: (index: number, errors: FS.FreeSemigroup<DecodeError<E>>) => R
 }): ((e: DecodeError<E>) => R) => {
   const f = (e: DecodeError<E>): R => {
     switch (e._tag) {
@@ -105,6 +126,8 @@ export const fold = <E, R>(patterns: {
         return patterns.Key(e.key, e.kind, e.errors)
       case 'Index':
         return patterns.Index(e.index, e.kind, e.errors)
+      case 'Member':
+        return patterns.Member(e.index, e.errors)
     }
   }
   return f

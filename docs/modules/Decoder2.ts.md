@@ -18,6 +18,7 @@ Added in v2.2.7
   - [success](#success)
 - [combinators](#combinators)
   - [array](#array)
+  - [nullable](#nullable)
   - [partial](#partial)
   - [record](#record)
   - [tuple](#tuple)
@@ -79,6 +80,16 @@ Added in v2.2.7
 
 ```ts
 export declare const array: <A>(items: Decoder<A>) => Decoder<A[]>
+```
+
+Added in v2.2.7
+
+## nullable
+
+**Signature**
+
+```ts
+export declare const nullable: <A>(or: Decoder<A>) => Decoder<A>
 ```
 
 Added in v2.2.7

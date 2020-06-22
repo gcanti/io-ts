@@ -113,14 +113,13 @@ export const UnknownRecord: Decoder<Record<string, unknown>> = fromGuard(G.Unkno
 // combinators
 // -------------------------------------------------------------------------------------
 
-// TODO
 /**
  * @category combinators
- * @since 2.2.0
+ * @since 2.2.7
  */
-// export function nullable<A>(or: Decoder<A>): Decoder<null | A> {
-//   return union(literal(null), or)
-// }
+export const nullable: <A>(or: Decoder<A>) => Decoder<null | A> = DT.nullable(M)((u, e) =>
+  FS.concat(FS.of(DE.member(0, FS.of(DE.leaf(u, 'null')))), FS.of(DE.member(1, e)))
+)
 
 /**
  * @category combinators
@@ -172,7 +171,8 @@ const toForest = (e: DecodeError): NEA.NonEmptyArray<T.Tree<string>> => {
   const toTree: (e: DE.DecodeError<string>) => T.Tree<string> = DE.fold({
     Leaf: (input, error) => T.make(`cannot decode ${JSON.stringify(input)}, should be ${error}`),
     Key: (key, kind, errors) => T.make(`${kind} property ${JSON.stringify(key)}`, toForest(errors)),
-    Index: (index, kind, errors) => T.make(`${kind} index ${index}`, toForest(errors))
+    Index: (index, kind, errors) => T.make(`${kind} index ${index}`, toForest(errors)),
+    Member: (index, errors) => T.make(`member ${index}`, toForest(errors))
   })
   const toForest: (f: DecodeError) => NEA.NonEmptyArray<T.Tree<string>> = FS.fold(
     (value) => [toTree(value)],
