@@ -29,13 +29,13 @@ export interface Concat<A> {
 export type FreeSemigroup<A> = Of<A> | Concat<A>
 
 /**
- * @category consrtuctors
+ * @category constructors
  * @since 2.2.7
  */
 export const of = <A>(a: A): FreeSemigroup<A> => ({ _tag: 'Of', value: a })
 
 /**
- * @category consrtuctors
+ * @category constructors
  * @since 2.2.7
  */
 export const concat = <A>(left: FreeSemigroup<A>, right: FreeSemigroup<A>): FreeSemigroup<A> => ({
