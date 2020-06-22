@@ -87,12 +87,6 @@ export const literal = <A extends readonly [Literal, ...Array<Literal>]>(...valu
  * @category primitives
  * @since 2.2.7
  */
-export const never: TaskDecoder<never> = fromGuard(G.never, 'never')
-
-/**
- * @category primitives
- * @since 2.2.7
- */
 export const string: TaskDecoder<string> = fromGuard(G.string, 'string')
 
 /**

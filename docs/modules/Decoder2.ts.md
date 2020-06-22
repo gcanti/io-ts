@@ -37,7 +37,6 @@ Added in v2.2.7
   - [UnknownArray](#unknownarray)
   - [UnknownRecord](#unknownrecord)
   - [boolean](#boolean)
-  - [never](#never)
   - [number](#number)
   - [string](#string)
 - [utils](#utils)
@@ -265,16 +264,6 @@ Added in v2.2.7
 
 ```ts
 export declare const boolean: Decoder<boolean>
-```
-
-Added in v2.2.7
-
-## never
-
-**Signature**
-
-```ts
-export declare const never: Decoder<never>
 ```
 
 Added in v2.2.7
