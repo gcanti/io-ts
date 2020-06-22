@@ -212,6 +212,14 @@ export const sum: <T extends string>(
     FS.of(DE.key(tag, DE.required, FS.of(DE.leaf(value, keys.map((k) => JSON.stringify(k)).join(' | ')))))
 )
 
+/**
+ * @category combinators
+ * @since 2.2.7
+ */
+export const lazy: <A>(id: string, f: () => TaskDecoder<A>) => TaskDecoder<A> = DT.lazy(M)((id, e) =>
+  FS.of(DE.lazy(id, e))
+)
+
 // -------------------------------------------------------------------------------------
 // utils
 // -------------------------------------------------------------------------------------
@@ -221,7 +229,8 @@ const toForest = (e: DecodeError): NEA.NonEmptyArray<T.Tree<string>> => {
     Leaf: (input, error) => T.make(`cannot decode ${JSON.stringify(input)}, should be ${error}`),
     Key: (key, kind, errors) => T.make(`${kind} property ${JSON.stringify(key)}`, toForest(errors)),
     Index: (index, kind, errors) => T.make(`${kind} index ${index}`, toForest(errors)),
-    Member: (index, errors) => T.make(`member ${index}`, toForest(errors))
+    Member: (index, errors) => T.make(`member ${index}`, toForest(errors)),
+    Lazy: (id, errors) => T.make(`lazy type ${id}`, toForest(errors))
   })
   const toForest: (f: DecodeError) => NEA.NonEmptyArray<T.Tree<string>> = FS.fold(
     (value) => [toTree(value)],

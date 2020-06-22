@@ -449,20 +449,65 @@ describe('TaskDecoder', () => {
     })
   })
 
+  interface A {
+    a: number
+    b?: A
+  }
+
+  const lazyDecoder: D.TaskDecoder<A> = D.lazy('A', () =>
+    D.intersection(D.type({ a: NumberFromString }), D.partial({ b: lazyDecoder }))
+  )
+
+  describe('lazy', () => {
+    it('should decode a valid input', async () => {
+      assert.deepStrictEqual(await lazyDecoder.decode({ a: '1' })(), E.right({ a: 1 }))
+      assert.deepStrictEqual(await lazyDecoder.decode({ a: '1', b: { a: '2' } })(), E.right({ a: 1, b: { a: 2 } }))
+    })
+
+    it('should reject an invalid input', async () => {
+      assert.deepStrictEqual(
+        await lazyDecoder.decode({ a: 1 })(),
+        E.left(FS.of(DE.lazy('A', FS.of(DE.key('a', DE.required, FS.of(DE.leaf(1, 'string')))))))
+      )
+      assert.deepStrictEqual(
+        await lazyDecoder.decode({ a: 'a' })(),
+        E.left(FS.of(DE.lazy('A', FS.of(DE.key('a', DE.required, FS.of(DE.leaf('a', 'parsable to a number')))))))
+      )
+      assert.deepStrictEqual(
+        await lazyDecoder.decode({ a: '1', b: {} })(),
+        E.left(
+          FS.of(
+            DE.lazy(
+              'A',
+              FS.of(
+                DE.key(
+                  'b',
+                  DE.optional,
+                  FS.of(DE.lazy('A', FS.of(DE.key('a', DE.required, FS.of(DE.leaf(undefined, 'string'))))))
+                )
+              )
+            )
+          )
+        )
+      )
+    })
+  })
+
   // -------------------------------------------------------------------------------------
   // utils
   // -------------------------------------------------------------------------------------
 
-  it('draw', async () => {
-    const decoder = D.type({
-      a: D.string,
-      b: D.number,
-      c: D.array(D.boolean),
-      d: D.nullable(D.string)
-    })
-    assert.deepStrictEqual(
-      await pipe(decoder.decode({ c: [1] }), TE.mapLeft(D.draw))(),
-      E.left(`required property "a"
+  describe('draw', () => {
+    it('draw', async () => {
+      const decoder = D.type({
+        a: D.string,
+        b: D.number,
+        c: D.array(D.boolean),
+        d: D.nullable(D.string)
+      })
+      assert.deepStrictEqual(
+        await pipe(decoder.decode({ c: [1] }), TE.mapLeft(D.draw))(),
+        E.left(`required property "a"
 └─ cannot decode undefined, should be string
 required property "b"
 └─ cannot decode undefined, should be number
@@ -474,6 +519,18 @@ required property "d"
 │  └─ cannot decode undefined, should be null
 └─ member 1
    └─ cannot decode undefined, should be string`)
-    )
+      )
+    })
+
+    it('should support lazy combinators', async () => {
+      assert.deepStrictEqual(
+        await pipe(lazyDecoder.decode({ a: '1', b: {} }), TE.mapLeft(D.draw))(),
+        E.left(`lazy type A
+└─ optional property \"b\"
+   └─ lazy type A
+      └─ required property \"a\"
+         └─ cannot decode undefined, should be string`)
+      )
+    })
   })
 })
