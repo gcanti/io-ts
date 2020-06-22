@@ -1,10 +1,10 @@
 ---
-title: TaskDecoder.ts
-nav_order: 17
+title: Decoder2.ts
+nav_order: 4
 parent: Modules
 ---
 
-## TaskDecoder overview
+## Decoder2 overview
 
 Added in v2.2.7
 
@@ -18,15 +18,15 @@ Added in v2.2.7
   - [success](#success)
 - [combinators](#combinators)
   - [array](#array)
-  - [literal](#literal)
   - [partial](#partial)
   - [record](#record)
   - [tuple](#tuple)
   - [type](#type)
 - [constructors](#constructors)
   - [fromGuard](#fromguard)
+  - [literal](#literal)
 - [model](#model)
-  - [TaskDecoder (interface)](#taskdecoder-interface)
+  - [Decoder (interface)](#decoder-interface)
 - [primitives](#primitives)
   - [UnknownArray](#unknownarray)
   - [UnknownRecord](#unknownrecord)
@@ -56,7 +56,7 @@ Added in v2.2.7
 **Signature**
 
 ```ts
-export declare function failure<A = never>(actual: unknown, message: string): TE.TaskEither<DecodeError, A>
+export declare function failure<A = never>(actual: unknown, message: string): E.Either<DecodeError, A>
 ```
 
 Added in v2.2.7
@@ -66,7 +66,7 @@ Added in v2.2.7
 **Signature**
 
 ```ts
-export declare function success<A>(a: A): TE.TaskEither<DecodeError, A>
+export declare function success<A>(a: A): E.Either<DecodeError, A>
 ```
 
 Added in v2.2.7
@@ -78,17 +78,7 @@ Added in v2.2.7
 **Signature**
 
 ```ts
-export declare const array: <A>(items: TaskDecoder<A>) => TaskDecoder<A[]>
-```
-
-Added in v2.2.7
-
-## literal
-
-**Signature**
-
-```ts
-export declare const literal: <A extends readonly [Literal, ...Literal[]]>(...values: A) => TaskDecoder<A[number]>
+export declare const array: <A>(items: Decoder<A>) => Decoder<A[]>
 ```
 
 Added in v2.2.7
@@ -99,8 +89,8 @@ Added in v2.2.7
 
 ```ts
 export declare const partial: <A>(
-  properties: { [K in keyof A]: TaskDecoder<A[K]> }
-) => TaskDecoder<Partial<{ [K in keyof A]: A[K] }>>
+  properties: { [K in keyof A]: Decoder<A[K]> }
+) => Decoder<Partial<{ [K in keyof A]: A[K] }>>
 ```
 
 Added in v2.2.7
@@ -110,7 +100,7 @@ Added in v2.2.7
 **Signature**
 
 ```ts
-export declare const record: <A>(codomain: TaskDecoder<A>) => TaskDecoder<Record<string, A>>
+export declare const record: <A>(codomain: Decoder<A>) => Decoder<Record<string, A>>
 ```
 
 Added in v2.2.7
@@ -121,8 +111,8 @@ Added in v2.2.7
 
 ```ts
 export declare const tuple: <A extends readonly unknown[]>(
-  ...components: { [K in keyof A]: TaskDecoder<A[K]> }
-) => TaskDecoder<A>
+  ...components: { [K in keyof A]: Decoder<A[K]> }
+) => Decoder<A>
 ```
 
 Added in v2.2.7
@@ -132,9 +122,7 @@ Added in v2.2.7
 **Signature**
 
 ```ts
-export declare const type: <A>(
-  properties: { [K in keyof A]: TaskDecoder<A[K]> }
-) => TaskDecoder<{ [K in keyof A]: A[K] }>
+export declare const type: <A>(properties: { [K in keyof A]: Decoder<A[K]> }) => Decoder<{ [K in keyof A]: A[K] }>
 ```
 
 Added in v2.2.7
@@ -146,20 +134,30 @@ Added in v2.2.7
 **Signature**
 
 ```ts
-export declare const fromGuard: <A>(guard: G.Guard<A>, expected: string) => TaskDecoder<A>
+export declare const fromGuard: <A>(guard: G.Guard<A>, expected: string) => Decoder<A>
+```
+
+Added in v2.2.7
+
+## literal
+
+**Signature**
+
+```ts
+export declare const literal: <A extends readonly [Literal, ...Literal[]]>(...values: A) => Decoder<A[number]>
 ```
 
 Added in v2.2.7
 
 # model
 
-## TaskDecoder (interface)
+## Decoder (interface)
 
 **Signature**
 
 ```ts
-export interface TaskDecoder<A> {
-  readonly decode: (u: unknown) => TE.TaskEither<DecodeError, A>
+export interface Decoder<A> {
+  readonly decode: (u: unknown) => E.Either<DecodeError, A>
 }
 ```
 
@@ -172,7 +170,7 @@ Added in v2.2.7
 **Signature**
 
 ```ts
-export declare const UnknownArray: TaskDecoder<unknown[]>
+export declare const UnknownArray: Decoder<unknown[]>
 ```
 
 Added in v2.2.7
@@ -182,7 +180,7 @@ Added in v2.2.7
 **Signature**
 
 ```ts
-export declare const UnknownRecord: TaskDecoder<Record<string, unknown>>
+export declare const UnknownRecord: Decoder<Record<string, unknown>>
 ```
 
 Added in v2.2.7
@@ -192,7 +190,7 @@ Added in v2.2.7
 **Signature**
 
 ```ts
-export declare const boolean: TaskDecoder<boolean>
+export declare const boolean: Decoder<boolean>
 ```
 
 Added in v2.2.7
@@ -202,7 +200,7 @@ Added in v2.2.7
 **Signature**
 
 ```ts
-export declare const never: TaskDecoder<never>
+export declare const never: Decoder<never>
 ```
 
 Added in v2.2.7
@@ -212,7 +210,7 @@ Added in v2.2.7
 **Signature**
 
 ```ts
-export declare const number: TaskDecoder<number>
+export declare const number: Decoder<number>
 ```
 
 Added in v2.2.7
@@ -222,7 +220,7 @@ Added in v2.2.7
 **Signature**
 
 ```ts
-export declare const string: TaskDecoder<string>
+export declare const string: Decoder<string>
 ```
 
 Added in v2.2.7

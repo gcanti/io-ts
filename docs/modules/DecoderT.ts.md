@@ -1,6 +1,6 @@
 ---
 title: DecoderT.ts
-nav_order: 4
+nav_order: 5
 parent: Modules
 ---
 
@@ -18,6 +18,9 @@ Added in v2.2.7
   - [record](#record)
   - [tuple](#tuple)
   - [type](#type)
+- [constructors](#constructors)
+  - [fromGuard](#fromguard)
+  - [literal](#literal)
 - [model](#model)
   - [DecoderT (interface)](#decodert-interface)
 
@@ -96,6 +99,34 @@ export declare function type<M extends URIS2, E>(
   UnknownRecord: DecoderT<M, E, Record<string, unknown>>,
   onKeyError: (k: string, e: E) => E
 ) => <A>(properties: { [K in keyof A]: DecoderT<M, E, A[K]> }) => DecoderT<M, E, { [K in keyof A]: A[K] }>
+```
+
+Added in v2.2.7
+
+# constructors
+
+## fromGuard
+
+**Signature**
+
+```ts
+export declare const fromGuard: <M extends 'io-ts/Codec' | 'io-ts/Encoder' | 'Either' | 'IOEither' | 'TaskEither', E>(
+  M: MonadThrow2C<M, E>
+) => <A>(guard: G.Guard<A>, onError: (u: unknown) => E) => DecoderT<M, E, A>
+```
+
+Added in v2.2.7
+
+## literal
+
+**Signature**
+
+```ts
+export declare function literal<M extends URIS2, E>(
+  M: MonadThrow2C<M, E>
+): (
+  onError: (u: unknown, values: readonly [Literal, ...Array<Literal>]) => E
+) => <A extends readonly [Literal, ...Array<Literal>]>(...values: A) => DecoderT<M, E, A[number]>
 ```
 
 Added in v2.2.7
