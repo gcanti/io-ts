@@ -6,6 +6,9 @@ import { Bifunctor2 } from 'fp-ts/lib/Bifunctor'
 import * as E from 'fp-ts/lib/Either'
 import { Kind2, URIS2 } from 'fp-ts/lib/HKT'
 import { Monad2C } from 'fp-ts/lib/Monad'
+import { Literal } from './Schemable'
+import * as G from './Guard'
+import { MonadThrow2C } from 'fp-ts/lib/MonadThrow'
 
 // -------------------------------------------------------------------------------------
 // model
@@ -23,20 +26,47 @@ export interface DecoderT<M extends URIS2, E, A> {
 // constructors
 // -------------------------------------------------------------------------------------
 
-// TODO
-// /**
-//  * @category constructors
-//  * @since 2.2.7
-//  */
-// export function literal<M extends URIS2, E>(
-//   M: Monad2C<M, E> & Bifunctor2<M>
-// ): <A extends readonly [Literal, ...Array<Literal>]>(...values: A) => DecoderT<M, E, A[number]> {
-//   return null as any
-// }
+/**
+ * @category constructors
+ * @since 2.2.7
+ */
+export const fromGuard = <M extends URIS2, E>(M: MonadThrow2C<M, E>) => <A>(
+  guard: G.Guard<A>,
+  onError: (u: unknown) => E
+): DecoderT<M, E, A> => ({
+  decode: (u) => (guard.is(u) ? M.of(u) : M.throwError(onError(u)))
+})
+
+/**
+ * @category constructors
+ * @since 2.2.7
+ */
+export function literal<M extends URIS2, E>(
+  M: MonadThrow2C<M, E>
+): (
+  onError: (u: unknown, values: readonly [Literal, ...Array<Literal>]) => E
+) => <A extends readonly [Literal, ...Array<Literal>]>(...values: A) => DecoderT<M, E, A[number]> {
+  return (onError) => (...values) => ({
+    decode: (u) => (G.literal(...values).is(u) ? M.of(u) : M.throwError(onError(u, values)))
+  })
+}
 
 // -------------------------------------------------------------------------------------
 // combinators
 // -------------------------------------------------------------------------------------
+
+// TODO
+/**
+ * @category combinators
+ * @since 2.2.7
+ */
+// export function nullable<M extends URIS2, E>(
+//   M: MonadThrow2C<M, E>
+// ): <A>(or: DecoderT<M, E, A>) => DecoderT<M, E, null | A> {
+//   return (or) => ({
+//     decode: (u) => (u === null ? M.of(u) : or.decode(u))
+//   })
+// }
 
 /**
  * @category combinators
