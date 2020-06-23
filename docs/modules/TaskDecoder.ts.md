@@ -35,6 +35,7 @@ Added in v2.2.7
   - [union](#union)
   - [withExpected](#withexpected)
 - [constructors](#constructors)
+  - [fromDecoder](#fromdecoder)
   - [fromGuard](#fromguard)
   - [literal](#literal)
 - [instances](#instances)
@@ -266,6 +267,16 @@ export declare const withExpected: <A>(
 Added in v2.2.7
 
 # constructors
+
+## fromDecoder
+
+**Signature**
+
+```ts
+export declare const fromDecoder: <A>(decoder: D.Decoder<A>) => TaskDecoder<A>
+```
+
+Added in v2.2.7
 
 ## fromGuard
 
