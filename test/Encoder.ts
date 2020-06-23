@@ -56,8 +56,8 @@ describe('Encoder', () => {
     assert.deepStrictEqual(encoder.encode([3, true]), ['3', 1])
   })
 
-  it('intersection', () => {
-    const encoder = E.intersection(E.type({ a: NumberToString }), E.type({ b: BooleanToNumber }))
+  it('intersect', () => {
+    const encoder = pipe(E.type({ a: NumberToString }), E.intersect(E.type({ b: BooleanToNumber })))
     assert.deepStrictEqual(encoder.encode({ a: 1, b: true }), { a: '1', b: 1 })
   })
 

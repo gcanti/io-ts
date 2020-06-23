@@ -16,7 +16,7 @@ Added in v2.2.3
   - [imap](#imap)
 - [combinators](#combinators)
   - [array](#array)
-  - [intersection](#intersection)
+  - [intersect](#intersect)
   - [lazy](#lazy)
   - [nullable](#nullable)
   - [partial](#partial)
@@ -72,12 +72,12 @@ export declare function array<O, A>(items: Codec<O, A>): Codec<Array<O>, Array<A
 
 Added in v2.2.3
 
-## intersection
+## intersect
 
 **Signature**
 
 ```ts
-export declare function intersection<O, A, P, B>(left: Codec<O, A>, right: Codec<P, B>): Codec<O & P, A & B>
+export declare const intersect: <P, B>(right: Codec<P, B>) => <O, A>(left: Codec<O, A>) => Codec<O & P, A & B>
 ```
 
 Added in v2.2.3

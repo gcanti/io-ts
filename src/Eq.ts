@@ -130,11 +130,9 @@ export const tuple: <A extends ReadonlyArray<unknown>>(
  * @category combinators
  * @since 2.2.2
  */
-export function intersection<A, B>(left: Eq<A>, right: Eq<B>): Eq<A & B> {
-  return {
-    equals: (x, y) => left.equals(x, y) && right.equals(x, y)
-  }
-}
+export const intersect = <B>(right: Eq<B>) => <A>(left: Eq<A>): Eq<A & B> => ({
+  equals: (x, y) => left.equals(x, y) && right.equals(x, y)
+})
 
 /**
  * @category combinators
@@ -186,7 +184,7 @@ export const schemableEq: Schemable1<E.URI> & WithUnknownContainers1<E.URI> & Wi
   record,
   array,
   tuple,
-  intersection,
+  intersect,
   sum,
   lazy: (_, f) => lazy(f),
   UnknownArray,

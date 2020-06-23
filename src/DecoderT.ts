@@ -249,7 +249,7 @@ const typeOf = (x: unknown): string => (x === null ? 'null' : typeof x)
 /**
  * @internal
  */
-export const intersect = <A, B>(a: A, b: B): A & B => {
+export const intersect_ = <A, B>(a: A, b: B): A & B => {
   if (a !== undefined && b !== undefined) {
     const tx = typeOf(a)
     const ty = typeOf(b)
@@ -264,13 +264,12 @@ export const intersect = <A, B>(a: A, b: B): A & B => {
  * @category combinators
  * @since 2.2.7
  */
-export const intersection = <M extends URIS2, E>(M: Apply2C<M, E>) => <A, B>(
-  left: DecoderT<M, E, A>,
-  right: DecoderT<M, E, B>
+export const intersect = <M extends URIS2, E>(M: Apply2C<M, E>) => <B>(right: DecoderT<M, E, B>) => <A>(
+  left: DecoderT<M, E, A>
 ): DecoderT<M, E, A & B> => ({
   decode: (u) =>
     M.ap(
-      M.map(left.decode(u), (a: A) => (b: B) => intersect(a, b)),
+      M.map(left.decode(u), (a: A) => (b: B) => intersect_(a, b)),
       right.decode(u)
     )
 })

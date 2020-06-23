@@ -1,5 +1,6 @@
 import { Schemable, WithUnknownContainers, memoize, WithRefinement, WithUnion } from '../../src/Schemable'
 import { HKT } from 'fp-ts/lib/HKT'
+import { pipe } from 'fp-ts/lib/pipeable'
 
 interface Schema<A> {
   <S>(S: Schemable<S> & WithUnknownContainers<S> & WithRefinement<S> & WithUnion<S>): HKT<S, A>
@@ -88,7 +89,7 @@ make((S) => S.tuple(S.string, S.number, S.boolean)) // $ExpectType Schema<[strin
 // intersection
 //
 
-make((S) => S.intersection(S.type({ a: S.string }), S.type({ b: S.number }))) // $ExpectType Schema<{ a: string; } & { b: number; }>
+make((S) => pipe(S.type({ a: S.string }), S.intersect(S.type({ b: S.number })))) // $ExpectType Schema<{ a: string; } & { b: number; }>
 
 //
 // sum

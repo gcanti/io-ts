@@ -139,7 +139,7 @@ export const tuple: <A extends ReadonlyArray<unknown>>(
  * @category combinators
  * @since 2.2.3
  */
-export const intersection: <A, B>(left: JsonCodec<A>, right: JsonCodec<B>) => JsonCodec<A & B> = C.intersection
+export const intersect: <B>(right: JsonCodec<B>) => <A>(left: JsonCodec<A>) => JsonCodec<A & B> = C.intersect
 
 /**
  * @category combinators
@@ -212,7 +212,7 @@ export const schemableJsonCodec: Schemable1<URI> & WithRefinement1<URI> = {
   record,
   array,
   tuple: tuple as Schemable1<URI>['tuple'],
-  intersection,
+  intersect,
   sum,
   lazy,
   refinement: refinement as WithRefinement1<URI>['refinement']

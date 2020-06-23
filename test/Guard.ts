@@ -1,5 +1,6 @@
 import * as assert from 'assert'
 import * as G from '../src/Guard'
+import { pipe } from 'fp-ts/lib/pipeable'
 
 describe('Guard', () => {
   describe('refinement', () => {
@@ -151,14 +152,14 @@ describe('Guard', () => {
     })
   })
 
-  describe('intersection', () => {
+  describe('intersect', () => {
     it('should accepts valid inputs', () => {
-      const guard = G.intersection(G.type({ a: G.string }), G.type({ b: G.number }))
+      const guard = pipe(G.type({ a: G.string }), G.intersect(G.type({ b: G.number })))
       assert.strictEqual(guard.is({ a: 'a', b: 1 }), true)
     })
 
     it('should rejects invalid inputs', () => {
-      const guard = G.intersection(G.type({ a: G.string }), G.type({ b: G.number }))
+      const guard = pipe(G.type({ a: G.string }), G.intersect(G.type({ b: G.number })))
       assert.strictEqual(guard.is({ a: 'a' }), false)
     })
   })

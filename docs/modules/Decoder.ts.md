@@ -24,7 +24,7 @@ Added in v2.2.0
   - [map](#map)
 - [combinators](#combinators)
   - [array](#array)
-  - [intersection](#intersection)
+  - [intersect](#intersect)
   - [lazy](#lazy)
   - [nullable](#nullable)
   - [parse](#parse)
@@ -148,12 +148,12 @@ export declare function array<A>(items: Decoder<A>): Decoder<Array<A>>
 
 Added in v2.2.0
 
-## intersection
+## intersect
 
 **Signature**
 
 ```ts
-export declare function intersection<A, B>(left: Decoder<A>, right: Decoder<B>): Decoder<A & B>
+export declare const intersect: <B>(right: Decoder<B>) => <A>(left: Decoder<A>) => Decoder<A & B>
 ```
 
 Added in v2.2.0

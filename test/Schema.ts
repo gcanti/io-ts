@@ -7,6 +7,7 @@ import * as G from '../src/Guard'
 import { Schema, interpreter, make } from '../src/Schema'
 import * as A from './Arbitrary'
 import * as JE from '../src/JsonEncoder'
+import { pipe } from 'fp-ts/lib/pipeable'
 
 function isDeepStrictEqual(actual: unknown, expected: unknown): boolean {
   try {
@@ -99,8 +100,8 @@ describe('Schema', () => {
     check(make((S) => S.tuple(S.string, S.number)))
   })
 
-  it('intersection', () => {
-    check(make((S) => S.intersection(S.type({ a: S.string }), S.type({ b: S.number }))))
+  it('intersect', () => {
+    check(make((S) => pipe(S.type({ a: S.string }), S.intersect(S.type({ b: S.number })))))
   })
 
   it('sum', () => {
@@ -117,7 +118,7 @@ describe('Schema', () => {
     }
 
     const schema: Schema<A> = make((S) =>
-      S.lazy('A', () => S.intersection(S.type({ a: S.string }), S.partial({ b: schema(S), c: S.number })))
+      S.lazy('A', () => pipe(S.type({ a: S.string }), S.intersect(S.partial({ b: schema(S), c: S.number }))))
     )
     check(schema)
   })

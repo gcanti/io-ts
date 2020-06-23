@@ -109,7 +109,7 @@ export const tuple: <A extends ReadonlyArray<unknown>>(
  * @category combinators
  * @since 2.2.3
  */
-export const intersection: <A, B>(left: JsonEncoder<A>, right: JsonEncoder<B>) => JsonEncoder<A & B> = E.intersection
+export const intersect: <B>(right: JsonEncoder<B>) => <A>(left: JsonEncoder<A>) => JsonEncoder<A & B> = E.intersect
 
 /**
  * @category combinators
@@ -182,7 +182,7 @@ export const schemableJsonEncoder: Schemable1<URI> = {
   record,
   array,
   tuple,
-  intersection,
+  intersect,
   sum,
   lazy: (_, f) => lazy(f)
 }

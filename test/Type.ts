@@ -16,6 +16,7 @@ import {
 } from '../src/Schemable'
 import * as T from '../src/Type'
 import * as A from './Arbitrary'
+import { pipe } from 'fp-ts/lib/pipeable'
 
 interface Schema<A> {
   <S>(S: Schemable<S> & WithUnknownContainers<S> & WithUnion<S>): HKT<S, A>
@@ -149,9 +150,9 @@ describe('Type', () => {
     )
   })
 
-  it('intersection', () => {
+  it('intersect', () => {
     check(
-      make((S) => S.intersection(S.type({ a: S.string }), S.type({ b: S.number }))),
+      make((S) => pipe(S.type({ a: S.string }), S.intersect(S.type({ b: S.number })))),
       t.intersection([t.type({ a: t.string }), t.type({ b: t.number })])
     )
   })
@@ -176,7 +177,7 @@ describe('Type', () => {
     }
 
     const schema: Schema<A> = make((S) =>
-      S.lazy('A', () => S.intersection(S.type({ a: S.string }), S.partial({ b: schema(S), c: S.number })))
+      S.lazy('A', () => pipe(S.type({ a: S.string }), S.intersect(S.partial({ b: schema(S), c: S.number }))))
     )
     const type: t.Type<A> = t.recursion('A', () =>
       t.intersection([t.type({ a: t.string }), t.partial({ b: type, c: t.number })])

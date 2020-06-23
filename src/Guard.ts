@@ -32,11 +32,9 @@ export type TypeOf<G> = G extends Guard<infer A> ? A : never
  * @category constructors
  * @since 2.2.0
  */
-export function literal<A extends readonly [Literal, ...Array<Literal>]>(...values: A): Guard<A[number]> {
-  return {
-    is: (u: unknown): u is A[number] => values.findIndex((a) => a === u) !== -1
-  }
-}
+export const literal = <A extends readonly [Literal, ...Array<Literal>]>(...values: A): Guard<A[number]> => ({
+  is: (u: unknown): u is A[number] => values.findIndex((a) => a === u) !== -1
+})
 
 // -------------------------------------------------------------------------------------
 // primitives
@@ -90,28 +88,24 @@ export const UnknownRecord: Guard<Record<string, unknown>> = {
  * @category combinators
  * @since 2.2.0
  */
-export function refinement<A, B extends A>(from: Guard<A>, refinement: (a: A) => a is B): Guard<B> {
-  return {
-    is: (u: unknown): u is B => from.is(u) && refinement(u)
-  }
-}
+export const refinement = <A, B extends A>(from: Guard<A>, refinement: (a: A) => a is B): Guard<B> => ({
+  is: (u: unknown): u is B => from.is(u) && refinement(u)
+})
 
 /**
  * @category combinators
  * @since 2.2.0
  */
-export function nullable<A>(or: Guard<A>): Guard<null | A> {
-  return {
-    is: (u): u is null | A => u === null || or.is(u)
-  }
-}
+export const nullable = <A>(or: Guard<A>): Guard<null | A> => ({
+  is: (u): u is null | A => u === null || or.is(u)
+})
 
 /**
  * @category combinators
  * @since 2.2.0
  */
-export function type<A>(properties: { [K in keyof A]: Guard<A[K]> }): Guard<{ [K in keyof A]: A[K] }> {
-  return refinement(UnknownRecord, (r): r is {
+export const type = <A>(properties: { [K in keyof A]: Guard<A[K]> }): Guard<{ [K in keyof A]: A[K] }> =>
+  refinement(UnknownRecord, (r): r is {
     [K in keyof A]: A[K]
   } => {
     for (const k in properties) {
@@ -121,14 +115,13 @@ export function type<A>(properties: { [K in keyof A]: Guard<A[K]> }): Guard<{ [K
     }
     return true
   })
-}
 
 /**
  * @category combinators
  * @since 2.2.0
  */
-export function partial<A>(properties: { [K in keyof A]: Guard<A[K]> }): Guard<Partial<{ [K in keyof A]: A[K] }>> {
-  return refinement(UnknownRecord, (r): r is Partial<A> => {
+export const partial = <A>(properties: { [K in keyof A]: Guard<A[K]> }): Guard<Partial<{ [K in keyof A]: A[K] }>> =>
+  refinement(UnknownRecord, (r): r is Partial<A> => {
     for (const k in properties) {
       const v = r[k]
       if (v !== undefined && !properties[k].is(v)) {
@@ -137,14 +130,13 @@ export function partial<A>(properties: { [K in keyof A]: Guard<A[K]> }): Guard<P
     }
     return true
   })
-}
 
 /**
  * @category combinators
  * @since 2.2.0
  */
-export function record<A>(codomain: Guard<A>): Guard<Record<string, A>> {
-  return refinement(UnknownRecord, (r): r is Record<string, A> => {
+export const record = <A>(codomain: Guard<A>): Guard<Record<string, A>> =>
+  refinement(UnknownRecord, (r): r is Record<string, A> => {
     for (const k in r) {
       if (!codomain.is(r[k])) {
         return false
@@ -152,68 +144,58 @@ export function record<A>(codomain: Guard<A>): Guard<Record<string, A>> {
     }
     return true
   })
-}
 
 /**
  * @category combinators
  * @since 2.2.0
  */
-export function array<A>(items: Guard<A>): Guard<Array<A>> {
-  return refinement(UnknownArray, (us): us is Array<A> => us.every(items.is))
-}
+export const array = <A>(items: Guard<A>): Guard<Array<A>> =>
+  refinement(UnknownArray, (us): us is Array<A> => us.every(items.is))
 
 /**
  * @category combinators
  * @since 2.2.0
  */
-export function tuple<A extends ReadonlyArray<unknown>>(...components: { [K in keyof A]: Guard<A[K]> }): Guard<A> {
-  return {
-    is: (u): u is A => Array.isArray(u) && u.length === components.length && components.every((c, i) => c.is(u[i]))
-  }
-}
+export const tuple = <A extends ReadonlyArray<unknown>>(...components: { [K in keyof A]: Guard<A[K]> }): Guard<A> => ({
+  is: (u): u is A => Array.isArray(u) && u.length === components.length && components.every((c, i) => c.is(u[i]))
+})
 
 /**
  * @category combinators
  * @since 2.2.0
  */
-export function intersection<A, B>(left: Guard<A>, right: Guard<B>): Guard<A & B> {
-  return {
-    is: (u: unknown): u is A & B => left.is(u) && right.is(u)
-  }
-}
+export const intersect = <B>(right: Guard<B>) => <A>(left: Guard<A>): Guard<A & B> => ({
+  is: (u: unknown): u is A & B => left.is(u) && right.is(u)
+})
 
 /**
  * @category combinators
  * @since 2.2.0
  */
-export function union<A extends readonly [unknown, ...Array<unknown>]>(
+export const union = <A extends readonly [unknown, ...Array<unknown>]>(
   ...members: { [K in keyof A]: Guard<A[K]> }
-): Guard<A[number]> {
-  return {
-    is: (u: unknown): u is A | A[number] => members.some((m) => m.is(u))
-  }
-}
+): Guard<A[number]> => ({
+  is: (u: unknown): u is A | A[number] => members.some((m) => m.is(u))
+})
 
 /**
  * @category combinators
  * @since 2.2.0
  */
-export function sum<T extends string>(tag: T): <A>(members: { [K in keyof A]: Guard<A[K]> }) => Guard<A[keyof A]> {
-  return <A>(members: { [K in keyof A]: Guard<A[K]> }) =>
-    refinement(UnknownRecord, (r): r is any => {
-      const v = r[tag] as keyof A
-      if (v in members) {
-        return members[v].is(r)
-      }
-      return false
-    })
-}
+export const sum = <T extends string>(tag: T) => <A>(members: { [K in keyof A]: Guard<A[K]> }): Guard<A[keyof A]> =>
+  refinement(UnknownRecord, (r): r is any => {
+    const v = r[tag] as keyof A
+    if (v in members) {
+      return members[v].is(r)
+    }
+    return false
+  })
 
 /**
  * @category combinators
  * @since 2.2.0
  */
-export function lazy<A>(f: () => Guard<A>): Guard<A> {
+export const lazy = <A>(f: () => Guard<A>): Guard<A> => {
   const get = memoize<void, Guard<A>>(f)
   return {
     is: (u: unknown): u is A => get().is(u)
@@ -258,7 +240,7 @@ export const schemableGuard: Schemable1<URI> & WithUnknownContainers1<URI> & Wit
   record,
   array,
   tuple: tuple as Schemable1<URI>['tuple'],
-  intersection,
+  intersect,
   sum,
   lazy: (_, f) => lazy(f),
   UnknownArray,

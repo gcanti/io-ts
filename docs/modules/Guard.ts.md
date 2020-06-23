@@ -14,7 +14,7 @@ Added in v2.2.0
 
 - [combinators](#combinators)
   - [array](#array)
-  - [intersection](#intersection)
+  - [intersect](#intersect)
   - [lazy](#lazy)
   - [nullable](#nullable)
   - [partial](#partial)
@@ -50,17 +50,17 @@ Added in v2.2.0
 **Signature**
 
 ```ts
-export declare function array<A>(items: Guard<A>): Guard<Array<A>>
+export declare const array: <A>(items: Guard<A>) => Guard<A[]>
 ```
 
 Added in v2.2.0
 
-## intersection
+## intersect
 
 **Signature**
 
 ```ts
-export declare function intersection<A, B>(left: Guard<A>, right: Guard<B>): Guard<A & B>
+export declare const intersect: <B>(right: Guard<B>) => <A>(left: Guard<A>) => Guard<A & B>
 ```
 
 Added in v2.2.0
@@ -70,7 +70,7 @@ Added in v2.2.0
 **Signature**
 
 ```ts
-export declare function lazy<A>(f: () => Guard<A>): Guard<A>
+export declare const lazy: <A>(f: () => Guard<A>) => Guard<A>
 ```
 
 Added in v2.2.0
@@ -80,7 +80,7 @@ Added in v2.2.0
 **Signature**
 
 ```ts
-export declare function nullable<A>(or: Guard<A>): Guard<null | A>
+export declare const nullable: <A>(or: Guard<A>) => Guard<A>
 ```
 
 Added in v2.2.0
@@ -90,9 +90,9 @@ Added in v2.2.0
 **Signature**
 
 ```ts
-export declare function partial<A>(
+export declare const partial: <A>(
   properties: { [K in keyof A]: Guard<A[K]> }
-): Guard<Partial<{ [K in keyof A]: A[K] }>>
+) => Guard<Partial<{ [K in keyof A]: A[K] }>>
 ```
 
 Added in v2.2.0
@@ -102,7 +102,7 @@ Added in v2.2.0
 **Signature**
 
 ```ts
-export declare function record<A>(codomain: Guard<A>): Guard<Record<string, A>>
+export declare const record: <A>(codomain: Guard<A>) => Guard<Record<string, A>>
 ```
 
 Added in v2.2.0
@@ -112,7 +112,7 @@ Added in v2.2.0
 **Signature**
 
 ```ts
-export declare function refinement<A, B extends A>(from: Guard<A>, refinement: (a: A) => a is B): Guard<B>
+export declare const refinement: <A, B extends A>(from: Guard<A>, refinement: (a: A) => a is B) => Guard<B>
 ```
 
 Added in v2.2.0
@@ -122,9 +122,9 @@ Added in v2.2.0
 **Signature**
 
 ```ts
-export declare function sum<T extends string>(
+export declare const sum: <T extends string>(
   tag: T
-): <A>(members: { [K in keyof A]: Guard<A[K]> }) => Guard<A[keyof A]>
+) => <A>(members: { [K in keyof A]: Guard<A[K]> }) => Guard<A[keyof A]>
 ```
 
 Added in v2.2.0
@@ -134,9 +134,7 @@ Added in v2.2.0
 **Signature**
 
 ```ts
-export declare function tuple<A extends ReadonlyArray<unknown>>(
-  ...components: { [K in keyof A]: Guard<A[K]> }
-): Guard<A>
+export declare const tuple: <A extends readonly unknown[]>(...components: { [K in keyof A]: Guard<A[K]> }) => Guard<A>
 ```
 
 Added in v2.2.0
@@ -146,7 +144,7 @@ Added in v2.2.0
 **Signature**
 
 ```ts
-export declare function type<A>(properties: { [K in keyof A]: Guard<A[K]> }): Guard<{ [K in keyof A]: A[K] }>
+export declare const type: <A>(properties: { [K in keyof A]: Guard<A[K]> }) => Guard<{ [K in keyof A]: A[K] }>
 ```
 
 Added in v2.2.0
@@ -156,9 +154,9 @@ Added in v2.2.0
 **Signature**
 
 ```ts
-export declare function union<A extends readonly [unknown, ...Array<unknown>]>(
+export declare const union: <A extends readonly [unknown, ...unknown[]]>(
   ...members: { [K in keyof A]: Guard<A[K]> }
-): Guard<A[number]>
+) => Guard<A[number]>
 ```
 
 Added in v2.2.0
@@ -170,7 +168,7 @@ Added in v2.2.0
 **Signature**
 
 ```ts
-export declare function literal<A extends readonly [Literal, ...Array<Literal>]>(...values: A): Guard<A[number]>
+export declare const literal: <A extends readonly [Literal, ...Literal[]]>(...values: A) => Guard<A[number]>
 ```
 
 Added in v2.2.0

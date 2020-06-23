@@ -18,7 +18,7 @@ Added in v2.2.3
   - [compose](#compose)
 - [combinators](#combinators)
   - [array](#array)
-  - [intersection](#intersection)
+  - [intersect](#intersect)
   - [lazy](#lazy)
   - [nullable](#nullable)
   - [partial](#partial)
@@ -77,12 +77,12 @@ export declare function array<O, A>(items: Encoder<O, A>): Encoder<Array<O>, Arr
 
 Added in v2.2.3
 
-## intersection
+## intersect
 
 **Signature**
 
 ```ts
-export declare function intersection<O, A, P, B>(left: Encoder<O, A>, right: Encoder<P, B>): Encoder<O & P, A & B>
+export declare const intersect: <P, B>(right: Encoder<P, B>) => <O, A>(left: Encoder<O, A>) => Encoder<O & P, A & B>
 ```
 
 Added in v2.2.3

@@ -22,7 +22,7 @@ Added in v2.2.7
   - [map](#map)
 - [combinators](#combinators)
   - [array](#array)
-  - [intersection](#intersection)
+  - [intersect](#intersect)
   - [lazy](#lazy)
   - [nullable](#nullable)
   - [parse](#parse)
@@ -126,12 +126,12 @@ export declare const array: <A>(items: TaskDecoder<A>) => TaskDecoder<A[]>
 
 Added in v2.2.7
 
-## intersection
+## intersect
 
 **Signature**
 
 ```ts
-export declare const intersection: <A, B>(left: TaskDecoder<A>, right: TaskDecoder<B>) => TaskDecoder<A & B>
+export declare const intersect: <B>(right: TaskDecoder<B>) => <A>(left: TaskDecoder<A>) => TaskDecoder<A & B>
 ```
 
 Added in v2.2.7

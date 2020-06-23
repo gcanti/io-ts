@@ -3,7 +3,7 @@
  */
 import { Contravariant2 } from 'fp-ts/lib/Contravariant'
 import { Category2 } from 'fp-ts/lib/Category'
-import { intersect } from './Decoder'
+import { intersect_ } from './Decoder'
 import { memoize } from './Schemable'
 import { identity } from 'fp-ts/lib/function'
 
@@ -144,11 +144,9 @@ export function tuple<C extends ReadonlyArray<Encoder<any, any>>>(
  * @category combinators
  * @since 2.2.3
  */
-export function intersection<O, A, P, B>(left: Encoder<O, A>, right: Encoder<P, B>): Encoder<O & P, A & B> {
-  return {
-    encode: (ab) => intersect(left.encode(ab), right.encode(ab))
-  }
-}
+export const intersect = <P, B>(right: Encoder<P, B>) => <O, A>(left: Encoder<O, A>): Encoder<O & P, A & B> => ({
+  encode: (ab) => intersect_(left.encode(ab), right.encode(ab))
+})
 
 /**
  * @category combinators

@@ -205,7 +205,7 @@ export const union: <A extends readonly [unknown, ...Array<unknown>]>(
  * @category combinators
  * @since 2.2.7
  */
-export const intersection: <A, B>(left: Decoder<A>, right: Decoder<B>) => Decoder<A & B> = DT.intersection(M)
+export const intersect: <B>(right: Decoder<B>) => <A>(left: Decoder<A>) => Decoder<A & B> = DT.intersect(M)
 
 /**
  * @category combinators
@@ -323,7 +323,7 @@ export const schemableDecoder: Schemable1<URI> &
   record,
   array,
   tuple: tuple as Schemable1<URI>['tuple'],
-  intersection,
+  intersect,
   sum,
   lazy,
   UnknownArray,

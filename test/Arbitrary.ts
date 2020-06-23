@@ -3,7 +3,7 @@
  */
 import * as fc from 'fast-check'
 import * as S from '../src/Schemable'
-import { intersect } from '../src/Decoder'
+import { intersect_ } from '../src/Decoder'
 
 // -------------------------------------------------------------------------------------
 // model
@@ -81,9 +81,8 @@ export function tuple<A extends ReadonlyArray<unknown>>(
   return (fc.tuple as any)(...components)
 }
 
-export function intersection<A, B>(left: Arbitrary<A>, right: Arbitrary<B>): Arbitrary<A & B> {
-  return fc.tuple(left, right).map(([a, b]) => intersect(a, b))
-}
+export const intersect = <B>(right: Arbitrary<B>) => <A>(left: Arbitrary<A>): Arbitrary<A & B> =>
+  fc.tuple(left, right).map(([a, b]) => intersect_(a, b))
 
 export function sum<T extends string>(
   _tag: T
@@ -131,7 +130,7 @@ export const schemableArbitrary: S.Schemable1<URI> &
   record,
   array,
   tuple: tuple as S.Schemable1<URI>['tuple'],
-  intersection,
+  intersect,
   sum,
   lazy: (_, f) => lazy(f),
   UnknownArray,
