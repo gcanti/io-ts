@@ -12,7 +12,7 @@ import * as FS from '../src/FreeSemigroup'
 import * as DE from './DecodeError'
 import * as DT from './DecoderT'
 import * as G from './Guard'
-import * as D from './Decoder2'
+import * as D from './Decoder'
 import { Literal, Schemable1, WithRefine1, WithUnion1, WithUnknownContainers1 } from './Schemable'
 
 // -------------------------------------------------------------------------------------
@@ -52,6 +52,14 @@ export type DecodeError = FS.FreeSemigroup<DE.DecodeError<string>>
  * @category DecodeError
  * @since 2.2.7
  */
+export function error(actual: unknown, message: string): DecodeError {
+  return FS.of(DE.leaf(actual, message))
+}
+
+/**
+ * @category DecodeError
+ * @since 2.2.7
+ */
 export function success<A>(a: A): TE.TaskEither<DecodeError, A> {
   return TE.right(a)
 }
@@ -61,7 +69,7 @@ export function success<A>(a: A): TE.TaskEither<DecodeError, A> {
  * @since 2.2.7
  */
 export function failure<A = never>(actual: unknown, message: string): TE.TaskEither<DecodeError, A> {
-  return TE.left(FS.of(DE.leaf(actual, message)))
+  return TE.left(error(actual, message))
 }
 
 // -------------------------------------------------------------------------------------

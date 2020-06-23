@@ -3,8 +3,7 @@
  */
 import { Contravariant2 } from 'fp-ts/lib/Contravariant'
 import { Category2 } from 'fp-ts/lib/Category'
-import { intersect_ } from './Decoder'
-import { memoize } from './Schemable'
+import { memoize, intersect_ } from './Schemable'
 import { identity } from 'fp-ts/lib/function'
 
 // -------------------------------------------------------------------------------------

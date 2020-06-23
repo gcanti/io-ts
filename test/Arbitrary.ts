@@ -3,7 +3,6 @@
  */
 import * as fc from 'fast-check'
 import * as S from '../src/Schemable'
-import { intersect_ } from '../src/Decoder'
 
 // -------------------------------------------------------------------------------------
 // model
@@ -81,7 +80,7 @@ export function tuple<A extends ReadonlyArray<unknown>>(
 }
 
 export const intersect = <B>(right: Arbitrary<B>) => <A>(left: Arbitrary<A>): Arbitrary<A & B> =>
-  fc.tuple(left, right).map(([a, b]) => intersect_(a, b))
+  fc.tuple(left, right).map(([a, b]) => S.intersect_(a, b))
 
 export function sum<T extends string>(
   _tag: T

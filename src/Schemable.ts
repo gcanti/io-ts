@@ -110,3 +110,23 @@ export function memoize<A, B>(f: (a: A) => B): (a: A) => B {
     return cache.get(a)
   }
 }
+
+// -------------------------------------------------------------------------------------
+// utils
+// -------------------------------------------------------------------------------------
+
+const typeOf = (x: unknown): string => (x === null ? 'null' : typeof x)
+
+/**
+ * @internal
+ */
+export const intersect_ = <A, B>(a: A, b: B): A & B => {
+  if (a !== undefined && b !== undefined) {
+    const tx = typeOf(a)
+    const ty = typeOf(b)
+    if (tx === 'object' || ty === 'object') {
+      return Object.assign({}, a, b)
+    }
+  }
+  return b as any
+}
