@@ -1,14 +1,17 @@
 /**
  * @since 2.2.7
  */
+import { Alt1 } from 'fp-ts/lib/Alt'
 import * as E from 'fp-ts/lib/Either'
+import { Functor1 } from 'fp-ts/lib/Functor'
+import * as NEA from 'fp-ts/lib/NonEmptyArray'
+import { pipe } from 'fp-ts/lib/pipeable'
+import * as T from 'fp-ts/lib/Tree'
+import * as FS from '../src/FreeSemigroup'
 import * as DE from './DecodeError'
 import * as DT from './DecoderT'
-import * as FS from '../src/FreeSemigroup'
 import * as G from './Guard'
-import * as NEA from 'fp-ts/lib/NonEmptyArray'
-import * as T from 'fp-ts/lib/Tree'
-import { Literal } from './Schemable'
+import { Literal, Schemable1, WithRefinement1, WithUnion1, WithUnknownContainers1 } from './Schemable'
 
 // -------------------------------------------------------------------------------------
 // config
@@ -229,6 +232,107 @@ export const sum: <T extends string>(
 export const lazy: <A>(id: string, f: () => Decoder<A>) => Decoder<A> = DT.lazy(M)((id, e) => FS.of(DE.lazy(id, e)))
 
 // -------------------------------------------------------------------------------------
+// non-pipeables
+// -------------------------------------------------------------------------------------
+
+const map_: <A, B>(fa: Decoder<A>, f: (a: A) => B) => Decoder<B> = (fa, f) => ({
+  decode: (u) => pipe(fa.decode(u), E.map(f))
+})
+
+const alt_: <A>(me: Decoder<A>, that: () => Decoder<A>) => Decoder<A> = (me, that) => ({
+  decode: (u) =>
+    pipe(
+      me.decode(u),
+      E.alt(() => that().decode(u))
+    )
+})
+
+// -------------------------------------------------------------------------------------
+// pipeables
+// -------------------------------------------------------------------------------------
+
+/**
+ * @category Functor
+ * @since 2.2.7
+ */
+export const map: <A, B>(f: (a: A) => B) => (fa: Decoder<A>) => Decoder<B> = (f) => (fa) => map_(fa, f)
+
+/**
+ * @category Alt
+ * @since 2.2.7
+ */
+export const alt: <A>(that: () => Decoder<A>) => (me: Decoder<A>) => Decoder<A> = (that) => (fa) => alt_(fa, that)
+
+// -------------------------------------------------------------------------------------
+// instances
+// -------------------------------------------------------------------------------------
+
+/**
+ * @category instances
+ * @since 2.2.7
+ */
+export const URI = 'io-ts/Decoder2'
+
+/**
+ * @category instances
+ * @since 2.2.7
+ */
+export type URI = typeof URI
+
+declare module 'fp-ts/lib/HKT' {
+  interface URItoKind<A> {
+    readonly [URI]: Decoder<A>
+  }
+}
+
+/**
+ * @category instances
+ * @since 2.2.7
+ */
+export const functorDecoder: Functor1<URI> = {
+  URI,
+  map: map_
+}
+
+/**
+ * @category instances
+ * @since 2.2.7
+ */
+export const altDecoder: Alt1<URI> = {
+  URI,
+  map: map_,
+  alt: alt_
+}
+
+/**
+ * @category instances
+ * @since 2.2.7
+ */
+export const schemableDecoder: Schemable1<URI> &
+  WithUnknownContainers1<URI> &
+  WithUnion1<URI> &
+  WithRefinement1<URI> = {
+  URI,
+  literal,
+  string,
+  number,
+  boolean,
+  nullable,
+  type,
+  partial,
+  record,
+  array,
+  tuple: tuple as Schemable1<URI>['tuple'],
+  intersection,
+  sum,
+  lazy,
+  UnknownArray,
+  UnknownRecord,
+  union: union as WithUnion1<URI>['union'],
+  refinement: refinement as WithRefinement1<URI>['refinement']
+}
+
+// -------------------------------------------------------------------------------------
 // utils
 // -------------------------------------------------------------------------------------
 
@@ -251,3 +355,11 @@ const toForest = (e: DecodeError): NEA.NonEmptyArray<T.Tree<string>> => {
  * @since 2.2.7
  */
 export const draw = (e: DecodeError): string => toForest(e).map(T.drawTree).join('\n')
+
+/**
+ * @since 2.2.7
+ */
+export const stringify: <A>(e: E.Either<DecodeError, A>) => string = E.fold(
+  (e) => draw(e),
+  (a) => JSON.stringify(a, null, 2)
+)

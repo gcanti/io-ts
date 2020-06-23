@@ -471,6 +471,24 @@ export function union<A extends readonly [unknown, ...Array<unknown>]>(
 }
 
 // -------------------------------------------------------------------------------------
+// non-pipeables
+// -------------------------------------------------------------------------------------
+
+const map_: <A, B>(fa: Decoder<A>, f: (a: A) => B) => Decoder<B> = (fa, f) => ({
+  decode: (u) => {
+    const e = fa.decode(u)
+    return E.isLeft(e) ? e : E.right(f(e.right))
+  }
+})
+
+const alt_: <A>(fx: Decoder<A>, fy: () => Decoder<A>) => Decoder<A> = (fx, fy) => ({
+  decode: (u) => {
+    const e = fx.decode(u)
+    return E.isLeft(e) ? fy().decode(u) : e
+  }
+})
+
+// -------------------------------------------------------------------------------------
 // pipeables
 // -------------------------------------------------------------------------------------
 
@@ -480,25 +498,11 @@ export function union<A extends readonly [unknown, ...Array<unknown>]>(
  */
 export const map: <A, B>(f: (a: A) => B) => (fa: Decoder<A>) => Decoder<B> = (f) => (fa) => map_(fa, f)
 
-const map_: <A, B>(fa: Decoder<A>, f: (a: A) => B) => Decoder<B> = (fa, f) => ({
-  decode: (u) => {
-    const e = fa.decode(u)
-    return E.isLeft(e) ? e : E.right(f(e.right))
-  }
-})
-
 /**
  * @category Alt
  * @since 2.2.0
  */
 export const alt: <A>(that: () => Decoder<A>) => (fa: Decoder<A>) => Decoder<A> = (that) => (fa) => alt_(fa, that)
-
-const alt_: <A>(fx: Decoder<A>, fy: () => Decoder<A>) => Decoder<A> = (fx, fy) => ({
-  decode: (u) => {
-    const e = fx.decode(u)
-    return E.isLeft(e) ? fy().decode(u) : e
-  }
-})
 
 // -------------------------------------------------------------------------------------
 // instances
@@ -573,20 +577,8 @@ export const schemableDecoder: Schemable1<URI> &
 // utils
 // -------------------------------------------------------------------------------------
 
-/**
- * @since 2.2.7
- */
-export const toForest = (e: DecodeError): NonEmptyArray<Tree<string>> => {
+const toForest = (e: DecodeError): NonEmptyArray<Tree<string>> => {
   return e
-  // const toTree: (e: DE.DecodeError<E>) => T.Tree<string> = DE.fold({
-  //   Leaf: (input, error) => T.make(`cannot decode ${JSON.stringify(input)}, should be ${error}`),
-  //   Required: (key, errors) => T.make(`required property ${JSON.stringify(key)}`, toForest(errors))
-  // })
-  // const toForest: (f: FS.FreeSemigroup<DE.DecodeError<E>>) => NEA.NonEmptyArray<T.Tree<string>> = FS.fold(
-  //   (value) => [toTree(value)],
-  //   (left, right) => NEA.concat(toForest(left), toForest(right))
-  // )
-  // return toForest(s)
 }
 
 /**

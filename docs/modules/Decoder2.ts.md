@@ -12,10 +12,14 @@ Added in v2.2.7
 
 <h2 class="text-delta">Table of contents</h2>
 
+- [Alt](#alt)
+  - [alt](#alt)
 - [DecodeError](#decodeerror)
   - [DecodeError (type alias)](#decodeerror-type-alias)
   - [failure](#failure)
   - [success](#success)
+- [Functor](#functor)
+  - [map](#map)
 - [combinators](#combinators)
   - [array](#array)
   - [intersection](#intersection)
@@ -33,6 +37,12 @@ Added in v2.2.7
 - [constructors](#constructors)
   - [fromGuard](#fromguard)
   - [literal](#literal)
+- [instances](#instances)
+  - [URI](#uri)
+  - [URI (type alias)](#uri-type-alias)
+  - [altDecoder](#altdecoder)
+  - [functorDecoder](#functordecoder)
+  - [schemableDecoder](#schemabledecoder)
 - [model](#model)
   - [Decoder (interface)](#decoder-interface)
 - [primitives](#primitives)
@@ -43,8 +53,21 @@ Added in v2.2.7
   - [string](#string)
 - [utils](#utils)
   - [draw](#draw)
+  - [stringify](#stringify)
 
 ---
+
+# Alt
+
+## alt
+
+**Signature**
+
+```ts
+export declare const alt: <A>(that: () => Decoder<A>) => (me: Decoder<A>) => Decoder<A>
+```
+
+Added in v2.2.7
 
 # DecodeError
 
@@ -74,6 +97,18 @@ Added in v2.2.7
 
 ```ts
 export declare function success<A>(a: A): E.Either<DecodeError, A>
+```
+
+Added in v2.2.7
+
+# Functor
+
+## map
+
+**Signature**
+
+```ts
+export declare const map: <A, B>(f: (a: A) => B) => (fa: Decoder<A>) => Decoder<B>
 ```
 
 Added in v2.2.7
@@ -250,6 +285,61 @@ export declare const literal: <A extends readonly [Literal, ...Literal[]]>(...va
 
 Added in v2.2.7
 
+# instances
+
+## URI
+
+**Signature**
+
+```ts
+export declare const URI: 'io-ts/Decoder2'
+```
+
+Added in v2.2.7
+
+## URI (type alias)
+
+**Signature**
+
+```ts
+export type URI = typeof URI
+```
+
+Added in v2.2.7
+
+## altDecoder
+
+**Signature**
+
+```ts
+export declare const altDecoder: Alt1<'io-ts/Decoder2'>
+```
+
+Added in v2.2.7
+
+## functorDecoder
+
+**Signature**
+
+```ts
+export declare const functorDecoder: Functor1<'io-ts/Decoder2'>
+```
+
+Added in v2.2.7
+
+## schemableDecoder
+
+**Signature**
+
+```ts
+export declare const schemableDecoder: Schemable1<'io-ts/Decoder2'> &
+  WithUnknownContainers1<'io-ts/Decoder2'> &
+  WithUnion1<'io-ts/Decoder2'> &
+  WithRefinement1<'io-ts/Decoder2'>
+```
+
+Added in v2.2.7
+
 # model
 
 ## Decoder (interface)
@@ -324,6 +414,16 @@ Added in v2.2.7
 
 ```ts
 export declare const draw: (e: FS.FreeSemigroup<DE.DecodeError<string>>) => string
+```
+
+Added in v2.2.7
+
+## stringify
+
+**Signature**
+
+```ts
+export declare const stringify: <A>(e: E.Either<FS.FreeSemigroup<DE.DecodeError<string>>, A>) => string
 ```
 
 Added in v2.2.7

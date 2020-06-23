@@ -57,7 +57,6 @@ Added in v2.2.0
 - [utils](#utils)
   - [TypeOf (type alias)](#typeof-type-alias)
   - [draw](#draw)
-  - [toForest](#toforest)
 
 ---
 
@@ -455,16 +454,6 @@ Added in v2.2.0
 
 ```ts
 export declare const draw: (e: DecodeError) => string
-```
-
-Added in v2.2.7
-
-## toForest
-
-**Signature**
-
-```ts
-export declare const toForest: (e: DecodeError) => NonEmptyArray<Tree<string>>
 ```
 
 Added in v2.2.7
