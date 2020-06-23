@@ -12,10 +12,14 @@ Added in v2.2.7
 
 <h2 class="text-delta">Table of contents</h2>
 
+- [Alt](#alt)
+  - [alt](#alt)
 - [DecodeError](#decodeerror)
   - [DecodeError (type alias)](#decodeerror-type-alias)
   - [failure](#failure)
   - [success](#success)
+- [Functor](#functor)
+  - [map](#map)
 - [combinators](#combinators)
   - [array](#array)
   - [intersection](#intersection)
@@ -33,6 +37,12 @@ Added in v2.2.7
 - [constructors](#constructors)
   - [fromGuard](#fromguard)
   - [literal](#literal)
+- [instances](#instances)
+  - [URI](#uri)
+  - [URI (type alias)](#uri-type-alias)
+  - [altDecoder](#altdecoder)
+  - [functorDecoder](#functordecoder)
+  - [schemableTaskDecoder](#schemabletaskdecoder)
 - [model](#model)
   - [TaskDecoder (interface)](#taskdecoder-interface)
 - [primitives](#primitives)
@@ -43,8 +53,21 @@ Added in v2.2.7
   - [string](#string)
 - [utils](#utils)
   - [draw](#draw)
+  - [stringify](#stringify)
 
 ---
+
+# Alt
+
+## alt
+
+**Signature**
+
+```ts
+export declare const alt: <A>(that: () => TaskDecoder<A>) => (me: TaskDecoder<A>) => TaskDecoder<A>
+```
+
+Added in v2.2.7
 
 # DecodeError
 
@@ -74,6 +97,18 @@ Added in v2.2.7
 
 ```ts
 export declare function success<A>(a: A): TE.TaskEither<DecodeError, A>
+```
+
+Added in v2.2.7
+
+# Functor
+
+## map
+
+**Signature**
+
+```ts
+export declare const map: <A, B>(f: (a: A) => B) => (fa: TaskDecoder<A>) => TaskDecoder<B>
 ```
 
 Added in v2.2.7
@@ -252,6 +287,61 @@ export declare const literal: <A extends readonly [Literal, ...Literal[]]>(...va
 
 Added in v2.2.7
 
+# instances
+
+## URI
+
+**Signature**
+
+```ts
+export declare const URI: 'io-ts/TaskDecoder'
+```
+
+Added in v2.2.7
+
+## URI (type alias)
+
+**Signature**
+
+```ts
+export type URI = typeof URI
+```
+
+Added in v2.2.7
+
+## altDecoder
+
+**Signature**
+
+```ts
+export declare const altDecoder: Alt1<'io-ts/TaskDecoder'>
+```
+
+Added in v2.2.7
+
+## functorDecoder
+
+**Signature**
+
+```ts
+export declare const functorDecoder: Functor1<'io-ts/TaskDecoder'>
+```
+
+Added in v2.2.7
+
+## schemableTaskDecoder
+
+**Signature**
+
+```ts
+export declare const schemableTaskDecoder: Schemable1<'io-ts/TaskDecoder'> &
+  WithUnknownContainers1<'io-ts/TaskDecoder'> &
+  WithUnion1<'io-ts/TaskDecoder'> &
+  WithRefinement1<'io-ts/TaskDecoder'>
+```
+
+Added in v2.2.7
+
 # model
 
 ## TaskDecoder (interface)
@@ -326,6 +416,16 @@ Added in v2.2.7
 
 ```ts
 export declare const draw: (e: FS.FreeSemigroup<DE.DecodeError<string>>) => string
+```
+
+Added in v2.2.7
+
+## stringify
+
+**Signature**
+
+```ts
+export declare const stringify: <A>(e: TE.TaskEither<FS.FreeSemigroup<DE.DecodeError<string>>, A>) => T.Task<string>
 ```
 
 Added in v2.2.7

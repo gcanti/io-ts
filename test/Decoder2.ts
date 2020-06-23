@@ -30,6 +30,26 @@ const Int: D.Decoder<Int> = D.refinement(D.number, (n): n is Int => Number.isInt
 
 describe('Decoder', () => {
   // -------------------------------------------------------------------------------------
+  // pipeables
+  // -------------------------------------------------------------------------------------
+  it('map', () => {
+    const decoder = pipe(
+      D.string,
+      D.map((s) => s + '!')
+    )
+    assert.deepStrictEqual(decoder.decode('a'), E.right('a!'))
+  })
+
+  it('alt', () => {
+    const decoder = pipe(
+      D.string,
+      D.alt<string | number>(() => D.number)
+    )
+    assert.deepStrictEqual(decoder.decode('a'), E.right('a'))
+    assert.deepStrictEqual(decoder.decode(1), E.right(1))
+  })
+
+  // -------------------------------------------------------------------------------------
   // primitives
   // -------------------------------------------------------------------------------------
 
@@ -520,5 +540,10 @@ required property "d"
          └─ cannot decode undefined, should be string`)
       )
     })
+  })
+
+  it('stringify', () => {
+    assert.deepStrictEqual(D.stringify(D.string.decode('a')), '"a"')
+    assert.deepStrictEqual(D.stringify(D.string.decode(null)), 'cannot decode null, should be string')
   })
 })

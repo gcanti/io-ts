@@ -31,6 +31,26 @@ const Int: D.TaskDecoder<Int> = D.refinement(D.number, (n): n is Int => Number.i
 
 describe('TaskDecoder', () => {
   // -------------------------------------------------------------------------------------
+  // pipeables
+  // -------------------------------------------------------------------------------------
+  it('map', async () => {
+    const decoder = pipe(
+      D.string,
+      D.map((s) => s + '!')
+    )
+    assert.deepStrictEqual(await decoder.decode('a')(), E.right('a!'))
+  })
+
+  it('alt', async () => {
+    const decoder = pipe(
+      D.string,
+      D.alt<string | number>(() => D.number)
+    )
+    assert.deepStrictEqual(await decoder.decode('a')(), E.right('a'))
+    assert.deepStrictEqual(await decoder.decode(1)(), E.right(1))
+  })
+
+  // -------------------------------------------------------------------------------------
   // primitives
   // -------------------------------------------------------------------------------------
 
@@ -539,5 +559,10 @@ required property "d"
          └─ cannot decode undefined, should be string`)
       )
     })
+  })
+
+  it('stringify', async () => {
+    assert.deepStrictEqual(await D.stringify(D.string.decode('a'))(), '"a"')
+    assert.deepStrictEqual(await D.stringify(D.string.decode(null))(), 'cannot decode null, should be string')
   })
 })
