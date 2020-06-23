@@ -28,6 +28,7 @@ Added in v2.2.7
   - [tuple](#tuple)
   - [type](#type)
   - [union](#union)
+  - [withExpected](#withexpected)
 - [constructors](#constructors)
   - [fromGuard](#fromguard)
   - [literal](#literal)
@@ -196,6 +197,19 @@ Added in v2.2.7
 export declare const union: <A extends readonly [unknown, ...unknown[]]>(
   ...members: { [K in keyof A]: Decoder<A[K]> }
 ) => Decoder<A[number]>
+```
+
+Added in v2.2.7
+
+## withExpected
+
+**Signature**
+
+```ts
+export declare const withExpected: <A>(
+  decoder: Decoder<A>,
+  expected: (actual: unknown, e: FS.FreeSemigroup<DE.DecodeError<string>>) => FS.FreeSemigroup<DE.DecodeError<string>>
+) => Decoder<A>
 ```
 
 Added in v2.2.7

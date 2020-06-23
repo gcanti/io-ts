@@ -85,6 +85,11 @@ describe('Decoder', () => {
   // combinators
   // -------------------------------------------------------------------------------------
 
+  it('withExpected', () => {
+    const decoder = D.withExpected(D.number, (u) => FS.of(DE.leaf(u, 'not a number')))
+    assert.deepStrictEqual(decoder.decode('a'), E.left(FS.of(DE.leaf('a', 'not a number'))))
+  })
+
   describe('nullable', () => {
     it('should decode a valid input', () => {
       const codec = D.nullable(NumberFromString)

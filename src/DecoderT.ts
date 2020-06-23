@@ -61,6 +61,17 @@ export function literal<M extends URIS2, E>(
  * @category combinators
  * @since 2.2.7
  */
+export const withExpected = <M extends URIS2, E>(M: Monad2C<M, E> & Bifunctor2<M>) => <A>(
+  decoder: DecoderT<M, E, A>,
+  expected: (actual: unknown, e: E) => E
+): DecoderT<M, E, A> => ({
+  decode: (u) => M.mapLeft(decoder.decode(u), (e) => expected(u, e))
+})
+
+/**
+ * @category combinators
+ * @since 2.2.7
+ */
 export function refinement<M extends URIS2, E>(
   M: MonadThrow2C<M, E> & Bifunctor2<M>
 ): <A, B extends A>(

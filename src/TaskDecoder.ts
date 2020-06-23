@@ -121,6 +121,15 @@ export const UnknownRecord: TaskDecoder<Record<string, unknown>> = fromGuard(G.U
  * @category combinators
  * @since 2.2.7
  */
+export const withExpected: <A>(
+  decoder: TaskDecoder<A>,
+  expected: (actual: unknown, e: DecodeError) => DecodeError
+) => TaskDecoder<A> = DT.withExpected(M)
+
+/**
+ * @category combinators
+ * @since 2.2.7
+ */
 export const refinement = <A, B extends A>(
   from: TaskDecoder<A>,
   refinement: (a: A) => a is B,
