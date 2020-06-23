@@ -194,8 +194,10 @@ export function tuple<C extends ReadonlyArray<Codec<any, any>>>(
  * @category combinators
  * @since 2.2.3
  */
-export function intersection<O, A, P, B>(left: Codec<O, A>, right: Codec<P, B>): Codec<O & P, A & B> {
-  return make(D.intersection(left, right), E.intersection(left, right))
+export const intersect = <P, B>(right: Codec<P, B>): (<O, A>(left: Codec<O, A>) => Codec<O & P, A & B>) => {
+  const intersectD = D.intersect(right)
+  const intersectE = E.intersect(right)
+  return (left) => make(intersectD(left), intersectE(left))
 }
 
 /**

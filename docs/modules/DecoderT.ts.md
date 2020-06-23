@@ -14,7 +14,7 @@ Added in v2.2.7
 
 - [combinators](#combinators)
   - [array](#array)
-  - [intersection](#intersection)
+  - [intersect](#intersect)
   - [lazy](#lazy)
   - [nullable](#nullable)
   - [parse](#parse)
@@ -51,17 +51,14 @@ export declare function array<M extends URIS2, E>(
 
 Added in v2.2.7
 
-## intersection
+## intersect
 
 **Signature**
 
 ```ts
-export declare const intersection: <
-  M extends 'io-ts/Codec' | 'io-ts/Encoder' | 'Either' | 'IOEither' | 'TaskEither',
-  E
->(
+export declare const intersect: <M extends 'io-ts/Codec' | 'io-ts/Encoder' | 'Either' | 'IOEither' | 'TaskEither', E>(
   M: Apply2C<M, E>
-) => <A, B>(left: DecoderT<M, E, A>, right: DecoderT<M, E, B>) => DecoderT<M, E, A & B>
+) => <B>(right: DecoderT<M, E, B>) => <A>(left: DecoderT<M, E, A>) => DecoderT<M, E, A & B>
 ```
 
 Added in v2.2.7

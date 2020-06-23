@@ -367,7 +367,7 @@ function typeOf(x: unknown): string {
 /**
  * @internal
  */
-export function intersect<A, B>(a: A, b: B): A & B {
+export function intersect_<A, B>(a: A, b: B): A & B {
   if (a !== undefined && b !== undefined) {
     const tx = typeOf(a)
     const ty = typeOf(b)
@@ -382,21 +382,19 @@ export function intersect<A, B>(a: A, b: B): A & B {
  * @category combinators
  * @since 2.2.0
  */
-export function intersection<A, B>(left: Decoder<A>, right: Decoder<B>): Decoder<A & B> {
-  return {
-    decode: (u) => {
-      const ea = left.decode(u)
-      const eb = right.decode(u)
-      if (E.isLeft(ea)) {
-        return E.isLeft(eb) ? E.left(ea.left.concat(eb.left) as DecodeError) : ea
-      }
-      if (E.isLeft(eb)) {
-        return eb
-      }
-      return success(intersect(ea.right, eb.right))
+export const intersect = <B>(right: Decoder<B>) => <A>(left: Decoder<A>): Decoder<A & B> => ({
+  decode: (u) => {
+    const ea = left.decode(u)
+    const eb = right.decode(u)
+    if (E.isLeft(ea)) {
+      return E.isLeft(eb) ? E.left(ea.left.concat(eb.left) as DecodeError) : ea
     }
+    if (E.isLeft(eb)) {
+      return eb
+    }
+    return success(intersect_(ea.right, eb.right))
   }
-}
+})
 
 /**
  * @category combinators
@@ -564,7 +562,7 @@ export const schemableDecoder: Schemable1<URI> &
   record,
   array,
   tuple: tuple as Schemable1<URI>['tuple'],
-  intersection,
+  intersect,
   sum,
   lazy,
   UnknownArray,

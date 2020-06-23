@@ -66,9 +66,9 @@ describe('Decoder', () => {
     })
   })
 
-  describe('intersection', () => {
+  describe('intersect', () => {
     it('should accumulate all errors', () => {
-      const decoder = D.intersection(D.type({ a: D.string }), D.type({ b: D.number }))
+      const decoder = pipe(D.type({ a: D.string }), D.intersect(D.type({ b: D.number })))
       assert.deepStrictEqual(
         decoder.decode({}),
         E.left([
@@ -87,41 +87,41 @@ describe('Decoder', () => {
     })
   })
 
-  describe('intersect', () => {
+  describe('intersect_', () => {
     it('should concat strings', () => {
-      assert.deepStrictEqual(D.intersect('a', 'b'), 'b')
+      assert.deepStrictEqual(D.intersect_('a', 'b'), 'b')
     })
 
     it('should concat numbers', () => {
-      assert.deepStrictEqual(D.intersect(1, 2), 2)
+      assert.deepStrictEqual(D.intersect_(1, 2), 2)
     })
 
     it('should concat booleans', () => {
-      assert.deepStrictEqual(D.intersect(true, false), false)
+      assert.deepStrictEqual(D.intersect_(true, false), false)
     })
 
     it('should concat nulls', () => {
-      assert.deepStrictEqual(D.intersect(null, null), null)
+      assert.deepStrictEqual(D.intersect_(null, null), null)
     })
 
     it('should concat undefineds', () => {
-      assert.deepStrictEqual(D.intersect(undefined, undefined), undefined)
+      assert.deepStrictEqual(D.intersect_(undefined, undefined), undefined)
     })
 
     it('should concat objects', () => {
-      assert.deepStrictEqual(D.intersect({ a: 1 }, { b: 2 }), { a: 1, b: 2 })
+      assert.deepStrictEqual(D.intersect_({ a: 1 }, { b: 2 }), { a: 1, b: 2 })
     })
 
     it('should concat a string with an object', () => {
-      assert.deepStrictEqual(D.intersect('a', { a: 1 }), { 0: 'a', a: 1 })
+      assert.deepStrictEqual(D.intersect_('a', { a: 1 }), { 0: 'a', a: 1 })
     })
 
     it('should concat a number with an object', () => {
-      assert.deepStrictEqual(D.intersect(1, { a: 1 }), { a: 1 })
+      assert.deepStrictEqual(D.intersect_(1, { a: 1 }), { a: 1 })
     })
 
     it('should concat a boolean with an object', () => {
-      assert.deepStrictEqual(D.intersect(true, { a: 1 }), { a: 1 })
+      assert.deepStrictEqual(D.intersect_(true, { a: 1 }), { a: 1 })
     })
   })
 

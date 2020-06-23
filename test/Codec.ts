@@ -486,27 +486,27 @@ describe('Codec', () => {
     })
   })
 
-  describe('intersection', () => {
+  describe('intersect', () => {
     describe('decode', () => {
       it('should decode a valid input', () => {
-        const codec = C.intersection(C.type({ a: C.string }), C.type({ b: C.number }))
+        const codec = pipe(C.type({ a: C.string }), C.intersect(C.type({ b: C.number })))
         assert.deepStrictEqual(codec.decode({ a: 'a', b: 1 }), right({ a: 'a', b: 1 }))
       })
 
       it('should handle primitives', () => {
-        const codec = C.intersection(Int, Positive)
+        const codec = pipe(Int, C.intersect(Positive))
         assert.deepStrictEqual(codec.decode(1), right(1))
       })
     })
 
     describe('encode', () => {
       it('should encode a value', () => {
-        const codec = C.intersection(C.type({ a: C.string }), C.type({ b: NumberFromString }))
+        const codec = pipe(C.type({ a: C.string }), C.intersect(C.type({ b: NumberFromString })))
         assert.deepStrictEqual(codec.encode({ a: 'a', b: 1 }), { a: 'a', b: '1' })
       })
 
       it('should handle primitives', () => {
-        const codec = C.intersection(Int, Positive)
+        const codec = pipe(Int, C.intersect(Positive))
         assert.deepStrictEqual(codec.encode(1 as any), 1)
       })
     })
@@ -573,7 +573,7 @@ describe('Codec', () => {
     }
 
     const codec: C.Codec<AOut, A> = C.lazy('A', () =>
-      C.intersection(C.type({ a: NumberFromString }), C.partial({ b: codec }))
+      pipe(C.type({ a: NumberFromString }), C.intersect(C.partial({ b: codec })))
     )
 
     describe('decode', () => {

@@ -392,19 +392,19 @@ describe('Decoder', () => {
     })
   })
 
-  describe('intersection', () => {
+  describe('intersect', () => {
     it('should decode a valid input', () => {
-      const decoder = D.intersection(D.type({ a: D.string }), D.type({ b: D.number }))
+      const decoder = pipe(D.type({ a: D.string }), D.intersect(D.type({ b: D.number })))
       assert.deepStrictEqual(decoder.decode({ a: 'a', b: 1 }), E.right({ a: 'a', b: 1 }))
     })
 
     it('should handle primitives', () => {
-      const decoder = D.intersection(Int, Positive)
+      const decoder = pipe(Int, D.intersect(Positive))
       assert.deepStrictEqual(decoder.decode(1), E.right(1))
     })
 
     it('should accumulate all errors', () => {
-      const decoder = D.intersection(D.type({ a: D.string }), D.type({ b: D.number }))
+      const decoder = pipe(D.type({ a: D.string }), D.intersect(D.type({ b: D.number })))
       assert.deepStrictEqual(
         decoder.decode({ a: 'a' }),
         E.left(FS.of(DE.key('b', DE.required, FS.of(DE.leaf(undefined, 'number')))))
@@ -466,7 +466,7 @@ describe('Decoder', () => {
   }
 
   const lazyDecoder: D.Decoder<A> = D.lazy('A', () =>
-    D.intersection(D.type({ a: NumberFromString }), D.partial({ b: lazyDecoder }))
+    pipe(D.type({ a: NumberFromString }), D.intersect(D.partial({ b: lazyDecoder })))
   )
 
   describe('lazy', () => {

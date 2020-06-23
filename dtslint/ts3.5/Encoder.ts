@@ -1,4 +1,5 @@
 import * as E from '../../src/Encoder'
+import { pipe } from 'fp-ts/lib/pipeable'
 
 const NumberToString: E.Encoder<string, number> = {
   encode: String
@@ -55,7 +56,7 @@ E.tuple(NumberToString, BooleanToNumber) // $ExpectType Encoder<[string, number]
 //
 // intersection
 //
-E.intersection(E.type({ a: NumberToString }), E.type({ b: BooleanToNumber })) // $ExpectType Encoder<{ a: string; } & { b: number; }, { a: number; } & { b: boolean; }>
+pipe(E.type({ a: NumberToString }), E.intersect(E.type({ b: BooleanToNumber }))) // $ExpectType Encoder<{ a: string; } & { b: number; }, { a: number; } & { b: boolean; }>
 
 //
 // sum

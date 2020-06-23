@@ -22,9 +22,8 @@ export interface Type<A> extends t.Type<A, unknown, unknown> {}
  * @category constructors
  * @since 2.2.3
  */
-export function literal<A extends readonly [Literal, ...Array<Literal>]>(...values: A): Type<A[number]> {
-  return t.union(values.map((v) => t.literal(v as any)) as any)
-}
+export const literal = <A extends readonly [Literal, ...Array<Literal>]>(...values: A): Type<A[number]> =>
+  t.union(values.map((v) => t.literal(v as any)) as any)
 
 // -------------------------------------------------------------------------------------
 // primitives
@@ -68,92 +67,75 @@ export const UnknownRecord: Type<Record<string, unknown>> = t.UnknownRecord
  * @category combinators
  * @since 2.2.3
  */
-export function refinement<A, B extends A>(from: Type<A>, refinement: (a: A) => a is B, expected: string): Type<B> {
+export const refinement = <A, B extends A>(from: Type<A>, refinement: (a: A) => a is B, expected: string): Type<B> =>
   // tslint:disable-next-line: deprecation
-  return t.refinement(from, refinement, expected) as any
-}
+  t.refinement(from, refinement, expected) as any
 
 /**
  * @category combinators
  * @since 2.2.3
  */
-export function nullable<A>(or: Type<A>): Type<null | A> {
-  return t.union([t.null, or])
-}
+export const nullable = <A>(or: Type<A>): Type<null | A> => t.union([t.null, or])
 
 /**
  * @category combinators
  * @since 2.2.3
  */
-export function type<A>(properties: { [K in keyof A]: Type<A[K]> }): Type<{ [K in keyof A]: A[K] }> {
-  return t.type(properties) as any
-}
+export const type = <A>(properties: { [K in keyof A]: Type<A[K]> }): Type<{ [K in keyof A]: A[K] }> =>
+  t.type(properties) as any
 
 /**
  * @category combinators
  * @since 2.2.3
  */
-export function partial<A>(properties: { [K in keyof A]: Type<A[K]> }): Type<Partial<{ [K in keyof A]: A[K] }>> {
-  return t.partial(properties)
-}
+export const partial = <A>(properties: { [K in keyof A]: Type<A[K]> }): Type<Partial<{ [K in keyof A]: A[K] }>> =>
+  t.partial(properties)
 
 /**
  * @category combinators
  * @since 2.2.3
  */
-export function record<A>(codomain: Type<A>): Type<Record<string, A>> {
-  return t.record(t.string, codomain)
-}
+export const record = <A>(codomain: Type<A>): Type<Record<string, A>> => t.record(t.string, codomain)
 
 /**
  * @category combinators
  * @since 2.2.3
  */
-export function array<A>(items: Type<A>): Type<Array<A>> {
-  return t.array(items)
-}
+export const array = <A>(items: Type<A>): Type<Array<A>> => t.array(items)
 
 /**
  * @category combinators
  * @since 2.2.3
  */
-export function tuple<A extends ReadonlyArray<unknown>>(...components: { [K in keyof A]: Type<A[K]> }): Type<A> {
-  return t.tuple(components as any) as any
-}
+export const tuple = <A extends ReadonlyArray<unknown>>(...components: { [K in keyof A]: Type<A[K]> }): Type<A> =>
+  t.tuple(components as any) as any
 
 /**
  * @category combinators
  * @since 2.2.3
  */
-export function intersection<A, B>(left: Type<A>, right: Type<B>): Type<A & B> {
-  return t.intersection([left, right])
-}
+export const intersect = <B>(right: Type<B>) => <A>(left: Type<A>): Type<A & B> => t.intersection([left, right])
 
 /**
  * @category combinators
  * @since 2.2.3
  */
-export function lazy<A>(id: string, f: () => Type<A>): Type<A> {
-  return t.recursion(id, f)
-}
+export const lazy = <A>(id: string, f: () => Type<A>): Type<A> => t.recursion(id, f)
 
 /**
  * @category combinators
  * @since 2.2.3
  */
-export function sum<T extends string>(_tag: T): <A>(members: { [K in keyof A]: Type<A[K]> }) => Type<A[keyof A]> {
-  return (members) => t.union(Object.values(members) as any)
-}
+export const sum = <T extends string>(_tag: T) => <A>(members: { [K in keyof A]: Type<A[K]> }): Type<A[keyof A]> =>
+  t.union(Object.values(members) as any)
 
 /**
  * @category combinators
  * @since 2.2.3
  */
-export function union<A extends readonly [unknown, ...Array<unknown>]>(
+export const union = <A extends readonly [unknown, ...Array<unknown>]>(
   ...members: { [K in keyof A]: Type<A[K]> }
-): Type<A[number]> {
-  return t.union(members as any)
-}
+): Type<A[number]> => t.union(members as any)
 
 // -------------------------------------------------------------------------------------
 // instances
@@ -193,7 +175,7 @@ export const schemableType: Schemable1<URI> & WithUnknownContainers1<URI> & With
   record,
   array,
   tuple: tuple as Schemable1<URI>['tuple'],
-  intersection,
+  intersect,
   sum,
   lazy,
   UnknownArray,

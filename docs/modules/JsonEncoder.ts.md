@@ -16,7 +16,7 @@ Added in v2.2.3
   - [contramap](#contramap)
 - [combinators](#combinators)
   - [array](#array)
-  - [intersection](#intersection)
+  - [intersect](#intersect)
   - [lazy](#lazy)
   - [nullable](#nullable)
   - [partial](#partial)
@@ -65,12 +65,12 @@ export declare const array: <A>(items: JsonEncoder<A>) => JsonEncoder<A[]>
 
 Added in v2.2.3
 
-## intersection
+## intersect
 
 **Signature**
 
 ```ts
-export declare const intersection: <A, B>(left: JsonEncoder<A>, right: JsonEncoder<B>) => JsonEncoder<A & B>
+export declare const intersect: <B>(right: JsonEncoder<B>) => <A>(left: JsonEncoder<A>) => JsonEncoder<A & B>
 ```
 
 Added in v2.2.3

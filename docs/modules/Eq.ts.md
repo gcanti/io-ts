@@ -14,7 +14,7 @@ Added in v2.2.2
 
 - [combinators](#combinators)
   - [array](#array)
-  - [intersection](#intersection)
+  - [intersect](#intersect)
   - [lazy](#lazy)
   - [nullable](#nullable)
   - [partial](#partial)
@@ -48,12 +48,12 @@ export declare const array: <A>(eq: E.Eq<A>) => E.Eq<A[]>
 
 Added in v2.2.2
 
-## intersection
+## intersect
 
 **Signature**
 
 ```ts
-export declare function intersection<A, B>(left: Eq<A>, right: Eq<B>): Eq<A & B>
+export declare const intersect: <B>(right: E.Eq<B>) => <A>(left: E.Eq<A>) => E.Eq<A & B>
 ```
 
 Added in v2.2.2

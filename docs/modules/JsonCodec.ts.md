@@ -16,7 +16,7 @@ Added in v2.2.3
   - [imap](#imap)
 - [combinators](#combinators)
   - [array](#array)
-  - [intersection](#intersection)
+  - [intersect](#intersect)
   - [lazy](#lazy)
   - [nullable](#nullable)
   - [partial](#partial)
@@ -69,12 +69,12 @@ export declare const array: <A>(items: JsonCodec<A>) => JsonCodec<A[]>
 
 Added in v2.2.3
 
-## intersection
+## intersect
 
 **Signature**
 
 ```ts
-export declare const intersection: <A, B>(left: JsonCodec<A>, right: JsonCodec<B>) => JsonCodec<A & B>
+export declare const intersect: <B>(right: JsonCodec<B>) => <A>(left: JsonCodec<A>) => JsonCodec<A & B>
 ```
 
 Added in v2.2.3

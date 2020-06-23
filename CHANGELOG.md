@@ -21,15 +21,18 @@
   - add `DecoderT` module (@gcanti)
   - add `FreeSemigroup` module (@gcanti)
   - add `TaskDecoder` module (@gcanti)
-  - remove `Tree` module (@gcanti)
+  - (**bc**) remove `Tree` module (@gcanti)
   - `Decoder`
-    - remove `never` (@gcanti)
-    - change `parse` signature (@gcanti)
+    - (**bc**) remove `never` (@gcanti)
+    - (**bc**) change `parse` signature (@gcanti)
   - `Guard`
-    - remove `never` (@gcanti)
+    - (**bc**) remove `never` (@gcanti)
   - `Schemable`
     - better `literal` signature (@gcanti)
     - better `union` signature (@gcanti)
+    - (**bc**) make intersections pipeables (@gcanti)
+
+**bc** means "possible breaking change"
 
 # 2.2.6
 

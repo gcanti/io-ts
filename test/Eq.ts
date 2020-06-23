@@ -1,6 +1,7 @@
 import * as assert from 'assert'
 import * as E from '../src/Eq'
 import { Eq } from 'fp-ts/lib/Eq'
+import { pipe } from 'fp-ts/lib/pipeable'
 
 describe('Eq', () => {
   it('literal', () => {
@@ -42,8 +43,8 @@ describe('Eq', () => {
     assert.deepStrictEqual(eq.equals(['a', 1], ['a', 2]), false)
   })
 
-  it('intersection', () => {
-    const eq = E.intersection(E.type({ a: E.string }), E.type({ b: E.number }))
+  it('intersect', () => {
+    const eq = pipe(E.type({ a: E.string }), E.intersect(E.type({ b: E.number })))
     assert.deepStrictEqual(eq.equals({ a: 'a', b: 1 }, { a: 'a', b: 1 }), true)
     assert.deepStrictEqual(eq.equals({ a: 'a', b: 1 }, { a: 'c', b: 1 }), false)
     assert.deepStrictEqual(eq.equals({ a: 'a', b: 1 }, { a: 'a', b: 2 }), false)
