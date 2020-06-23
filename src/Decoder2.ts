@@ -141,7 +141,7 @@ export const refinement = <A, B extends A>(
  * @category combinators
  * @since 2.2.7
  */
-export const parse: <A, B>(from: Decoder<A>, parser: (a: A) => E.Either<DecodeError, B>) => Decoder<B> = DT.parse(M)
+export const parse: <A, B>(parser: (a: A) => E.Either<DecodeError, B>) => (from: Decoder<A>) => Decoder<B> = DT.parse(M)
 
 /**
  * @category combinators

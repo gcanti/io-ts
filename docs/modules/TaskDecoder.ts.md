@@ -162,9 +162,8 @@ Added in v2.2.7
 
 ```ts
 export declare const parse: <A, B>(
-  from: TaskDecoder<A>,
   parser: (a: A) => TE.TaskEither<FS.FreeSemigroup<DE.DecodeError<string>>, B>
-) => TaskDecoder<B>
+) => (from: TaskDecoder<A>) => TaskDecoder<B>
 ```
 
 Added in v2.2.7

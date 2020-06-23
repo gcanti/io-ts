@@ -24,7 +24,7 @@
   - (**bc**) remove `Tree` module (@gcanti)
   - `Decoder`
     - (**bc**) remove `never` (@gcanti)
-    - (**bc**) change `parse` signature (@gcanti)
+    - (**bc**) make `parse` pipeable and change its `parser` argument (@gcanti)
   - `Guard`
     - (**bc**) remove `never` (@gcanti)
   - `Schemable`
