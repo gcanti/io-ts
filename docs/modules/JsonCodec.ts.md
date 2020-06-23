@@ -1,6 +1,6 @@
 ---
 title: JsonCodec.ts
-nav_order: 11
+nav_order: 10
 parent: Modules
 ---
 
@@ -175,7 +175,7 @@ Added in v2.2.3
 ```ts
 export declare const withExpected: <A>(
   codec: JsonCodec<A>,
-  expected: (actual: unknown, e: D.DecodeError) => D.DecodeError
+  expected: (actual: unknown, e: FreeSemigroup<DecodeError<string>>) => FreeSemigroup<DecodeError<string>>
 ) => JsonCodec<A>
 ```
 

@@ -30,10 +30,12 @@ npm i io-ts fp-ts
 
 ## Experimental features (version `2.2+`)
 
-Experimental features are published in order to get early feedback from the community, see these tracking [issues](https://github.com/gcanti/io-ts/issues?q=label%3Av2.2+) for further discussions and enhancements.
+Experimental features (\*) are published in order to get early feedback from the community, see these tracking [issues](https://github.com/gcanti/io-ts/issues?q=label%3Av2.2+) for further discussions and enhancements.
 
 - [`Decoder.ts` module](Decoder.md)
 - [`Encoder.ts` module](Encoder.md)
 - [`Codec.ts` module](Codec.md)
 - [`Eq.ts` module](Eq.md)
 - [`Schema.ts` module (advanced feature)](Schema.md)
+
+(\*) A feature tagged as _Experimental_ is in a high state of flux, you're at risk of it changing without notice.

@@ -8,7 +8,7 @@ import { Kind2, URIS2 } from 'fp-ts/lib/HKT'
 import { Monad2C } from 'fp-ts/lib/Monad'
 import { MonadThrow2C } from 'fp-ts/lib/MonadThrow'
 import * as G from './Guard'
-import { Literal, memoize } from './Schemable'
+import { Literal, memoize, intersect_ } from './Schemable'
 import { Alt2C } from 'fp-ts/lib/Alt'
 import { Apply2C } from 'fp-ts/lib/Apply'
 
@@ -241,22 +241,6 @@ export const union = <M extends URIS2, E>(M: Alt2C<M, E> & Bifunctor2<M>) => (
     return out
   }
 })
-
-const typeOf = (x: unknown): string => (x === null ? 'null' : typeof x)
-
-/**
- * @internal
- */
-export const intersect_ = <A, B>(a: A, b: B): A & B => {
-  if (a !== undefined && b !== undefined) {
-    const tx = typeOf(a)
-    const ty = typeOf(b)
-    if (tx === 'object' || ty === 'object') {
-      return Object.assign({}, a, b)
-    }
-  }
-  return b as any
-}
 
 /**
  * @category combinators

@@ -25,6 +25,7 @@
   - `Decoder`
     - (**bc**) remove `never` (@gcanti)
     - (**bc**) make `parse` pipeable and change its `parser` argument (@gcanti)
+    - (**bc**) change `DecoderError` (@gcanti)
   - `Guard`
     - (**bc**) remove `never` (@gcanti)
   - `Schemable`

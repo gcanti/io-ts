@@ -1,6 +1,6 @@
 ---
 title: TaskDecoder.ts
-nav_order: 17
+nav_order: 16
 parent: Modules
 ---
 
@@ -16,6 +16,7 @@ Added in v2.2.7
   - [alt](#alt)
 - [DecodeError](#decodeerror)
   - [DecodeError (type alias)](#decodeerror-type-alias)
+  - [error](#error)
   - [failure](#failure)
   - [success](#success)
 - [Functor](#functor)
@@ -78,6 +79,16 @@ Added in v2.2.7
 
 ```ts
 export type DecodeError = FS.FreeSemigroup<DE.DecodeError<string>>
+```
+
+Added in v2.2.7
+
+## error
+
+**Signature**
+
+```ts
+export declare function error(actual: unknown, message: string): DecodeError
 ```
 
 Added in v2.2.7

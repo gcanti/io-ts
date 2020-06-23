@@ -4,12 +4,17 @@ import * as C from '../src/Codec'
 import * as D from '../src/Decoder'
 import * as G from '../src/Guard'
 import { pipe } from 'fp-ts/lib/pipeable'
+import * as DE from '../src/DecodeError'
+import * as FS from '../src/FreeSemigroup'
 
 const NumberFromString: C.Codec<string, number> = C.make(
-  D.parse(D.string, (s) => {
-    const n = parseFloat(s)
-    return isNaN(n) ? left([D.tree(`cannot decode ${JSON.stringify(s)}, should be parsable into a number`)]) : right(n)
-  }),
+  pipe(
+    D.string,
+    D.parse((s) => {
+      const n = parseFloat(s)
+      return isNaN(n) ? D.failure(s, 'parsable to a number') : D.success(n)
+    })
+  ),
   { encode: String }
 )
 
@@ -64,8 +69,8 @@ describe('Codec', () => {
   describe('withExpected', () => {
     describe('decode', () => {
       it('should, return the provided expected', () => {
-        const codec = C.withExpected(C.number, () => [D.tree(`not a number`)])
-        assert.deepStrictEqual(codec.decode('a'), left([D.tree('not a number')]))
+        const decoder = C.withExpected(C.number, (u) => FS.of(DE.leaf(u, 'not a number')))
+        assert.deepStrictEqual(decoder.decode('a'), left(FS.of(DE.leaf('a', 'not a number'))))
       })
     })
   })
@@ -79,7 +84,7 @@ describe('Codec', () => {
 
       it('should reject an invalid input', () => {
         const codec = C.string
-        assert.deepStrictEqual(codec.decode(null), left([D.tree('cannot decode null, should be string')]))
+        assert.deepStrictEqual(codec.decode(null), left(FS.of(DE.leaf(null, 'string'))))
       })
     })
   })
@@ -93,7 +98,7 @@ describe('Codec', () => {
 
       it('should reject an invalid input', () => {
         const codec = C.number
-        assert.deepStrictEqual(codec.decode(null), left([D.tree('cannot decode null, should be number')]))
+        assert.deepStrictEqual(codec.decode(null), left(FS.of(DE.leaf(null, 'number'))))
       })
     })
   })
@@ -108,7 +113,7 @@ describe('Codec', () => {
 
       it('should reject an invalid input', () => {
         const codec = C.boolean
-        assert.deepStrictEqual(codec.decode(null), left([D.tree('cannot decode null, should be boolean')]))
+        assert.deepStrictEqual(codec.decode(null), left(FS.of(DE.leaf(null, 'boolean'))))
       })
     })
   })
@@ -123,7 +128,7 @@ describe('Codec', () => {
 
       it('should reject an invalid input', () => {
         const codec = C.literal('a', null)
-        assert.deepStrictEqual(codec.decode('b'), left([D.tree('cannot decode "b", should be "a" | null')]))
+        assert.deepStrictEqual(codec.decode('b'), left(FS.of(DE.leaf('b', '"a" | null'))))
       })
     })
 
@@ -150,8 +155,8 @@ describe('Codec', () => {
           C.string,
           C.refine((s): s is string => s.length > 0, 'NonEmptyString')
         )
-        assert.deepStrictEqual(codec.decode(undefined), left([D.tree('cannot decode undefined, should be string')]))
-        assert.deepStrictEqual(codec.decode(''), left([D.tree('cannot refine "", should be NonEmptyString')]))
+        assert.deepStrictEqual(codec.decode(undefined), left(FS.of(DE.leaf(undefined, 'string'))))
+        assert.deepStrictEqual(codec.decode(''), left(FS.of(DE.leaf('', 'NonEmptyString'))))
       })
     })
 
@@ -178,17 +183,21 @@ describe('Codec', () => {
         const codec = C.nullable(NumberFromString)
         assert.deepStrictEqual(
           codec.decode(undefined),
-          left([
-            D.tree('member 0', [D.tree('cannot decode undefined, should be null')]),
-            D.tree('member 1', [D.tree('cannot decode undefined, should be string')])
-          ])
+          left(
+            FS.concat(
+              FS.of(DE.member(0, FS.of(DE.leaf(undefined, 'null')))),
+              FS.of(DE.member(1, FS.of(DE.leaf(undefined, 'string'))))
+            )
+          )
         )
         assert.deepStrictEqual(
           codec.decode('a'),
-          left([
-            D.tree('member 0', [D.tree('cannot decode "a", should be null')]),
-            D.tree('member 1', [D.tree('cannot decode "a", should be parsable into a number')])
-          ])
+          left(
+            FS.concat(
+              FS.of(DE.member(0, FS.of(DE.leaf('a', 'null')))),
+              FS.of(DE.member(1, FS.of(DE.leaf('a', 'parsable to a number'))))
+            )
+          )
         )
       })
     })
@@ -229,13 +238,10 @@ describe('Codec', () => {
         const codec = C.type({
           a: C.string
         })
-        assert.deepStrictEqual(
-          codec.decode(undefined),
-          left([D.tree('cannot decode undefined, should be Record<string, unknown>')])
-        )
+        assert.deepStrictEqual(codec.decode(undefined), left(FS.of(DE.leaf(undefined, 'Record<string, unknown>'))))
         assert.deepStrictEqual(
           codec.decode({ a: 1 }),
-          left([D.tree('required property "a"', [D.tree('cannot decode 1, should be string')])])
+          left(FS.of(DE.key('a', DE.required, FS.of(DE.leaf(1, 'string')))))
         )
       })
 
@@ -246,10 +252,12 @@ describe('Codec', () => {
         })
         assert.deepStrictEqual(
           codec.decode({}),
-          left([
-            D.tree('required property "a"', [D.tree('cannot decode undefined, should be string')]),
-            D.tree('required property "b"', [D.tree('cannot decode undefined, should be number')])
-          ])
+          left(
+            FS.concat(
+              FS.of(DE.key('a', DE.required, FS.of(DE.leaf(undefined, 'string')))),
+              FS.of(DE.key('b', DE.required, FS.of(DE.leaf(undefined, 'number'))))
+            )
+          )
         )
       })
 
@@ -306,13 +314,10 @@ describe('Codec', () => {
 
       it('should reject an invalid input', () => {
         const codec = C.partial({ a: C.string })
-        assert.deepStrictEqual(
-          codec.decode(undefined),
-          left([D.tree('cannot decode undefined, should be Record<string, unknown>')])
-        )
+        assert.deepStrictEqual(codec.decode(undefined), left(FS.of(DE.leaf(undefined, 'Record<string, unknown>'))))
         assert.deepStrictEqual(
           codec.decode({ a: 1 }),
-          left([D.tree('optional property "a"', [D.tree('cannot decode 1, should be string')])])
+          left(FS.of(DE.key('a', DE.optional, FS.of(DE.leaf(1, 'string')))))
         )
       })
 
@@ -323,10 +328,12 @@ describe('Codec', () => {
         })
         assert.deepStrictEqual(
           codec.decode({ a: 1, b: 'b' }),
-          left([
-            D.tree('optional property "a"', [D.tree('cannot decode 1, should be string')]),
-            D.tree('optional property "b"', [D.tree('cannot decode "b", should be number')])
-          ])
+          left(
+            FS.concat(
+              FS.of(DE.key('a', DE.optional, FS.of(DE.leaf(1, 'string')))),
+              FS.of(DE.key('b', DE.optional, FS.of(DE.leaf('b', 'number'))))
+            )
+          )
         )
       })
 
@@ -379,13 +386,10 @@ describe('Codec', () => {
 
       it('should reject an invalid value', () => {
         const codec = C.record(C.number)
-        assert.deepStrictEqual(
-          codec.decode(undefined),
-          left([D.tree('cannot decode undefined, should be Record<string, unknown>')])
-        )
+        assert.deepStrictEqual(codec.decode(undefined), left(FS.of(DE.leaf(undefined, 'Record<string, unknown>'))))
         assert.deepStrictEqual(
           codec.decode({ a: 'a' }),
-          left([D.tree('key "a"', [D.tree('cannot decode "a", should be number')])])
+          left(FS.of(DE.key('a', DE.optional, FS.of(DE.leaf('a', 'number')))))
         )
       })
 
@@ -393,10 +397,12 @@ describe('Codec', () => {
         const codec = C.record(C.number)
         assert.deepStrictEqual(
           codec.decode({ a: 'a', b: 'b' }),
-          left([
-            D.tree('key "a"', [D.tree('cannot decode "a", should be number')]),
-            D.tree('key "b"', [D.tree('cannot decode "b", should be number')])
-          ])
+          left(
+            FS.concat(
+              FS.of(DE.key('a', DE.optional, FS.of(DE.leaf('a', 'number')))),
+              FS.of(DE.key('b', DE.optional, FS.of(DE.leaf('b', 'number'))))
+            )
+          )
         )
       })
     })
@@ -419,24 +425,20 @@ describe('Codec', () => {
 
       it('should reject an invalid input', () => {
         const codec = C.array(C.string)
-        assert.deepStrictEqual(
-          codec.decode(undefined),
-          left([D.tree('cannot decode undefined, should be Array<unknown>')])
-        )
-        assert.deepStrictEqual(
-          codec.decode([1]),
-          left([D.tree('optional index 0', [D.tree('cannot decode 1, should be string')])])
-        )
+        assert.deepStrictEqual(codec.decode(undefined), left(FS.of(DE.leaf(undefined, 'Array<unknown>'))))
+        assert.deepStrictEqual(codec.decode([1]), left(FS.of(DE.index(0, DE.optional, FS.of(DE.leaf(1, 'string'))))))
       })
 
       it('should collect all errors', () => {
         const codec = C.array(C.string)
         assert.deepStrictEqual(
           codec.decode([1, 2]),
-          left([
-            D.tree('optional index 0', [D.tree('cannot decode 1, should be string')]),
-            D.tree('optional index 1', [D.tree('cannot decode 2, should be string')])
-          ])
+          left(
+            FS.concat(
+              FS.of(DE.index(0, DE.optional, FS.of(DE.leaf(1, 'string')))),
+              FS.of(DE.index(1, DE.optional, FS.of(DE.leaf(2, 'string'))))
+            )
+          )
         )
       })
     })
@@ -462,28 +464,24 @@ describe('Codec', () => {
 
       it('should reject an invalid input', () => {
         const codec = C.tuple(C.string, C.number)
-        assert.deepStrictEqual(
-          codec.decode(undefined),
-          left([D.tree('cannot decode undefined, should be Array<unknown>')])
-        )
+        assert.deepStrictEqual(codec.decode(undefined), left(FS.of(DE.leaf(undefined, 'Array<unknown>'))))
         assert.deepStrictEqual(
           codec.decode(['a']),
-          left([D.tree('required index 1', [D.tree('cannot decode undefined, should be number')])])
+          left(FS.of(DE.index(1, DE.required, FS.of(DE.leaf(undefined, 'number')))))
         )
-        assert.deepStrictEqual(
-          codec.decode([1, 2]),
-          left([D.tree('required index 0', [D.tree('cannot decode 1, should be string')])])
-        )
+        assert.deepStrictEqual(codec.decode([1, 2]), left(FS.of(DE.index(0, DE.required, FS.of(DE.leaf(1, 'string'))))))
       })
 
       it('should collect all errors', () => {
         const codec = C.tuple(C.string, C.number)
         assert.deepStrictEqual(
           codec.decode([1, 'a']),
-          left([
-            D.tree('required index 0', [D.tree('cannot decode 1, should be string')]),
-            D.tree('required index 1', [D.tree('cannot decode "a", should be number')])
-          ])
+          left(
+            FS.concat(
+              FS.of(DE.index(0, DE.required, FS.of(DE.leaf(1, 'string')))),
+              FS.of(DE.index(1, DE.required, FS.of(DE.leaf('a', 'number'))))
+            )
+          )
         )
       })
 
@@ -543,17 +541,14 @@ describe('Codec', () => {
         const A = C.type({ _tag: C.literal('A'), a: C.string })
         const B = C.type({ _tag: C.literal('B'), b: C.number })
         const codec = sum({ A, B })
-        assert.deepStrictEqual(
-          codec.decode(null),
-          left([D.tree('cannot decode null, should be Record<string, unknown>')])
-        )
+        assert.deepStrictEqual(codec.decode(null), left(FS.of(DE.leaf(null, 'Record<string, unknown>'))))
         assert.deepStrictEqual(
           codec.decode({}),
-          left([D.tree('required property "_tag"', [D.tree('cannot decode undefined, should be "A" | "B"')])])
+          left(FS.of(DE.key('_tag', DE.required, FS.of(DE.leaf(undefined, '"A" | "B"')))))
         )
         assert.deepStrictEqual(
           codec.decode({ _tag: 'A', a: 1 }),
-          left([D.tree('required property "a"', [D.tree('cannot decode 1, should be string')])])
+          left(FS.of(DE.key('a', DE.required, FS.of(DE.leaf(1, 'string')))))
         )
       })
 
@@ -561,7 +556,7 @@ describe('Codec', () => {
         const decoder = sum({})
         assert.deepStrictEqual(
           decoder.decode({}),
-          left([D.tree('required property "_tag"', [D.tree('cannot decode undefined, should be never')])])
+          left(FS.of(DE.key('_tag', DE.required, FS.of(DE.leaf(undefined, 'never')))))
         )
       })
     })
@@ -587,46 +582,49 @@ describe('Codec', () => {
       b?: AOut
     }
 
-    const codec: C.Codec<AOut, A> = C.lazy('A', () =>
-      pipe(C.type({ a: NumberFromString }), C.intersect(C.partial({ b: codec })))
+    const lazyCodec: C.Codec<AOut, A> = C.lazy('A', () =>
+      pipe(C.type({ a: NumberFromString }), C.intersect(C.partial({ b: lazyCodec })))
     )
 
     describe('decode', () => {
       it('should decode a valid input', () => {
-        assert.deepStrictEqual(codec.decode({ a: '1' }), right({ a: 1 }))
-        assert.deepStrictEqual(codec.decode({ a: '1', b: { a: '2' } }), right({ a: 1, b: { a: 2 } }))
+        assert.deepStrictEqual(lazyCodec.decode({ a: '1' }), right({ a: 1 }))
+        assert.deepStrictEqual(lazyCodec.decode({ a: '1', b: { a: '2' } }), right({ a: 1, b: { a: 2 } }))
       })
 
       it('should reject an invalid input', () => {
         assert.deepStrictEqual(
-          codec.decode({ a: 1 }),
-          left([D.tree('A', [D.tree('required property "a"', [D.tree('cannot decode 1, should be string')])])])
+          lazyCodec.decode({ a: 1 }),
+          left(FS.of(DE.lazy('A', FS.of(DE.key('a', DE.required, FS.of(DE.leaf(1, 'string')))))))
         )
         assert.deepStrictEqual(
-          codec.decode({ a: 'a' }),
-          left([
-            D.tree('A', [
-              D.tree('required property "a"', [D.tree('cannot decode "a", should be parsable into a number')])
-            ])
-          ])
+          lazyCodec.decode({ a: 'a' }),
+          left(FS.of(DE.lazy('A', FS.of(DE.key('a', DE.required, FS.of(DE.leaf('a', 'parsable to a number')))))))
         )
         assert.deepStrictEqual(
-          codec.decode({ a: '1', b: {} }),
-          left([
-            D.tree('A', [
-              D.tree('optional property "b"', [
-                D.tree('A', [D.tree('required property "a"', [D.tree('cannot decode undefined, should be string')])])
-              ])
-            ])
-          ])
+          lazyCodec.decode({ a: '1', b: {} }),
+          left(
+            FS.of(
+              DE.lazy(
+                'A',
+                FS.of(
+                  DE.key(
+                    'b',
+                    DE.optional,
+                    FS.of(DE.lazy('A', FS.of(DE.key('a', DE.required, FS.of(DE.leaf(undefined, 'string'))))))
+                  )
+                )
+              )
+            )
+          )
         )
       })
     })
 
     describe('encode', () => {
       it('should encode a value', () => {
-        assert.deepStrictEqual(codec.encode({ a: 1 }), { a: '1' })
-        assert.deepStrictEqual(codec.encode({ a: 1, b: { a: 2 } }), { a: '1', b: { a: '2' } })
+        assert.deepStrictEqual(lazyCodec.encode({ a: 1 }), { a: '1' })
+        assert.deepStrictEqual(lazyCodec.encode({ a: 1, b: { a: 2 } }), { a: '1', b: { a: '2' } })
       })
     })
   })

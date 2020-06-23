@@ -2,7 +2,6 @@ import * as Benchmark from 'benchmark'
 import * as E from 'fp-ts/lib/Either'
 import { pipe } from 'fp-ts/lib/pipeable'
 import * as D from '../src/Decoder'
-import * as D2 from '../src/Decoder2'
 import * as G from '../src/Guard'
 
 /*
@@ -23,11 +22,6 @@ const decoder = D.type({
   age: D.number
 })
 
-const decoder2 = D2.type({
-  name: D2.string,
-  age: D2.number
-})
-
 const guard = G.type({
   name: G.string,
   age: G.number
@@ -41,7 +35,6 @@ const good = {
 const bad = {}
 
 // console.log(decoder.decode(bad))
-// console.log(decoder2.decode(bad))
 // console.log(JSON.stringify(freeDecoder.decode(bad), null, 2))
 
 const suite = new Benchmark.Suite()
@@ -53,23 +46,14 @@ suite
   .add('Decoder (good)', function () {
     decoder.decode(good)
   })
-  .add('Decoder2 (good)', function () {
-    decoder2.decode(good)
-  })
   .add('Guard (bad)', function () {
     guard.is(bad)
   })
   .add('Decoder (bad)', function () {
     decoder.decode(bad)
   })
-  .add('Decoder2 (bad)', function () {
-    decoder2.decode(bad)
-  })
   .add('Decoder (draw)', function () {
     pipe(decoder.decode(bad), E.mapLeft(D.draw))
-  })
-  .add('Decoder2 (draw)', function () {
-    pipe(decoder2.decode(bad), E.mapLeft(D2.draw))
   })
   .on('cycle', function (event: any) {
     console.log(String(event.target))
