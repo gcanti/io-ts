@@ -21,6 +21,7 @@ Added in v2.2.7
   - [intersection](#intersection)
   - [lazy](#lazy)
   - [nullable](#nullable)
+  - [parse](#parse)
   - [partial](#partial)
   - [record](#record)
   - [refinement](#refinement)
@@ -115,6 +116,19 @@ Added in v2.2.7
 
 ```ts
 export declare const nullable: <A>(or: Decoder<A>) => Decoder<A>
+```
+
+Added in v2.2.7
+
+## parse
+
+**Signature**
+
+```ts
+export declare const parse: <A, B>(
+  from: Decoder<A>,
+  parser: (a: A) => E.Either<FS.FreeSemigroup<DE.DecodeError<string>>, B>
+) => Decoder<B>
 ```
 
 Added in v2.2.7

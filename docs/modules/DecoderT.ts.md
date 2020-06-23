@@ -17,6 +17,7 @@ Added in v2.2.7
   - [intersection](#intersection)
   - [lazy](#lazy)
   - [nullable](#nullable)
+  - [parse](#parse)
   - [partial](#partial)
   - [record](#record)
   - [refinement](#refinement)
@@ -89,6 +90,18 @@ export declare const nullable: <M extends 'io-ts/Codec' | 'io-ts/Encoder' | 'Eit
 
 Added in v2.2.7
 
+## parse
+
+**Signature**
+
+```ts
+export declare const parse: <M extends 'io-ts/Codec' | 'io-ts/Encoder' | 'Either' | 'IOEither' | 'TaskEither', E>(
+  M: MonadThrow2C<M, E> & Bifunctor2<M>
+) => <A, B>(from: DecoderT<M, E, A>, parser: (a: A) => Kind2<M, E, B>) => DecoderT<M, E, B>
+```
+
+Added in v2.2.7
+
 ## partial
 
 **Signature**
@@ -124,9 +137,9 @@ Added in v2.2.7
 **Signature**
 
 ```ts
-export declare function refinement<M extends URIS2, E>(
+export declare const refinement: <M extends 'io-ts/Codec' | 'io-ts/Encoder' | 'Either' | 'IOEither' | 'TaskEither', E>(
   M: MonadThrow2C<M, E> & Bifunctor2<M>
-): <A, B extends A>(
+) => <A, B extends A>(
   from: DecoderT<M, E, A>,
   refinement: (a: A) => a is B,
   onError: (u: unknown) => E

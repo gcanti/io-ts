@@ -8,7 +8,7 @@ import { pipe } from 'fp-ts/lib/pipeable'
 const NumberFromString: C.Codec<string, number> = C.make(
   D.parse(D.string, (s) => {
     const n = parseFloat(s)
-    return isNaN(n) ? left(`cannot decode ${JSON.stringify(s)}, should be parsable into a number`) : right(n)
+    return isNaN(n) ? left([D.tree(`cannot decode ${JSON.stringify(s)}, should be parsable into a number`)]) : right(n)
   }),
   { encode: String }
 )

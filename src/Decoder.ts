@@ -191,18 +191,14 @@ export function refinement<A, B extends A>(
  * @category combinators
  * @since 2.2.0
  */
-export function parse<A, B>(from: Decoder<A>, parser: (a: A) => Either<string, B>): Decoder<B> {
+export function parse<A, B>(from: Decoder<A>, parser: (a: A) => Either<DecodeError, B>): Decoder<B> {
   return {
     decode: (u) => {
       const e = from.decode(u)
       if (E.isLeft(e)) {
         return e
       }
-      const pe = parser(e.right)
-      if (E.isLeft(pe)) {
-        return failure(pe.left)
-      }
-      return pe
+      return parser(e.right)
     }
   }
 }

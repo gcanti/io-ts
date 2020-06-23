@@ -184,7 +184,7 @@ Added in v2.2.0
 **Signature**
 
 ```ts
-export declare function parse<A, B>(from: Decoder<A>, parser: (a: A) => Either<string, B>): Decoder<B>
+export declare function parse<A, B>(from: Decoder<A>, parser: (a: A) => Either<DecodeError, B>): Decoder<B>
 ```
 
 Added in v2.2.0
