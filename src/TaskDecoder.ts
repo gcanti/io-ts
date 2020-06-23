@@ -130,6 +130,15 @@ export const withExpected: <A>(
  * @category combinators
  * @since 2.2.7
  */
+export const parse: <A, B>(
+  from: TaskDecoder<A>,
+  parser: (a: A) => TE.TaskEither<DecodeError, B>
+) => TaskDecoder<B> = DT.parse(M)
+
+/**
+ * @category combinators
+ * @since 2.2.7
+ */
 export const refinement = <A, B extends A>(
   from: TaskDecoder<A>,
   refinement: (a: A) => a is B,

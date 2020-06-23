@@ -24,6 +24,7 @@
   - remove `Tree` module (@gcanti)
   - `Decoder`
     - remove `never` (@gcanti)
+    - change `parse` signature (@gcanti)
   - `Guard`
     - remove `never` (@gcanti)
   - `Schemable`

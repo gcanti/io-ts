@@ -138,6 +138,12 @@ export const refinement = <A, B extends A>(
  * @category combinators
  * @since 2.2.7
  */
+export const parse: <A, B>(from: Decoder<A>, parser: (a: A) => E.Either<DecodeError, B>) => Decoder<B> = DT.parse(M)
+
+/**
+ * @category combinators
+ * @since 2.2.7
+ */
 export const nullable: <A>(or: Decoder<A>) => Decoder<null | A> = DT.nullable(M)((u, e) =>
   FS.concat(FS.of(DE.member(0, FS.of(DE.leaf(u, 'null')))), FS.of(DE.member(1, e)))
 )
