@@ -13,10 +13,10 @@ import * as DE from './DecodeError'
 import * as DT from './DecoderT'
 import * as G from './Guard'
 import * as D from './Decoder2'
-import { Literal, Schemable1, WithRefinement1, WithUnion1, WithUnknownContainers1 } from './Schemable'
+import { Literal, Schemable1, WithRefine1, WithUnion1, WithUnknownContainers1 } from './Schemable'
 
 // -------------------------------------------------------------------------------------
-// config
+// DecoderT config
 // -------------------------------------------------------------------------------------
 
 const M = TE.getTaskValidation(DE.getSemigroup<string>())
@@ -24,7 +24,7 @@ const fromGuardM = DT.fromGuard(M)
 const literalM = DT.literal(M)((u, values) =>
   FS.of(DE.leaf(u, values.map((value) => JSON.stringify(value)).join(' | ')))
 )
-const refinementM = DT.refinement(M)
+const refineM = DT.refine(M)
 
 // -------------------------------------------------------------------------------------
 // model
@@ -149,11 +149,10 @@ export const parse: <A, B>(
  * @category combinators
  * @since 2.2.7
  */
-export const refinement = <A, B extends A>(
-  from: TaskDecoder<A>,
+export const refine = <A, B extends A>(
   refinement: (a: A) => a is B,
-  expected: string
-): TaskDecoder<B> => refinementM(from, refinement, (u) => FS.of(DE.leaf(u, expected)))
+  id: string
+): ((from: TaskDecoder<A>) => TaskDecoder<B>) => refineM(refinement, (u) => FS.of(DE.leaf(u, id)))
 
 /**
  * @category combinators
@@ -327,7 +326,7 @@ export const altDecoder: Alt1<URI> = {
 export const schemableTaskDecoder: Schemable1<URI> &
   WithUnknownContainers1<URI> &
   WithUnion1<URI> &
-  WithRefinement1<URI> = {
+  WithRefine1<URI> = {
   URI,
   literal,
   string,
@@ -345,7 +344,7 @@ export const schemableTaskDecoder: Schemable1<URI> &
   UnknownArray,
   UnknownRecord,
   union: union as WithUnion1<URI>['union'],
-  refinement: refinement as WithRefinement1<URI>['refinement']
+  refine: refine as WithRefine1<URI>['refine']
 }
 
 // -------------------------------------------------------------------------------------

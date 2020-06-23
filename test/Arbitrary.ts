@@ -43,9 +43,8 @@ export const UnknownRecord: Arbitrary<Record<string, unknown>> = fc.dictionary(s
 // combinators
 // -------------------------------------------------------------------------------------
 
-export function refinement<A, B extends A>(from: Arbitrary<A>, refinement: (a: A) => a is B): Arbitrary<B> {
-  return from.filter(refinement)
-}
+export const refine = <A, B extends A>(refinement: (a: A) => a is B) => (from: Arbitrary<A>): Arbitrary<B> =>
+  from.filter(refinement)
 
 export function nullable<A>(or: Arbitrary<A>): Arbitrary<null | A> {
   return fc.oneof(fc.constant(null), or)
@@ -118,7 +117,7 @@ declare module 'fp-ts/lib/HKT' {
 export const schemableArbitrary: S.Schemable1<URI> &
   S.WithUnknownContainers1<URI> &
   S.WithUnion1<URI> &
-  S.WithRefinement1<URI> = {
+  S.WithRefine1<URI> = {
   URI,
   literal,
   string,
@@ -136,5 +135,5 @@ export const schemableArbitrary: S.Schemable1<URI> &
   UnknownArray,
   UnknownRecord,
   union: union as S.WithUnion1<URI>['union'],
-  refinement: refinement as S.WithRefinement1<URI>['refinement']
+  refine: refine as S.WithRefine1<URI>['refine']
 }

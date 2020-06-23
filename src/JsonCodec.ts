@@ -5,7 +5,7 @@ import { Invariant1 } from 'fp-ts/lib/Invariant'
 import * as D from './Decoder'
 import * as JE from './JsonEncoder'
 import * as C from './Codec'
-import { Literal, Schemable1, WithRefinement1 } from './Schemable'
+import { Literal, Schemable1, WithRefine1 } from './Schemable'
 
 // -------------------------------------------------------------------------------------
 // model
@@ -87,11 +87,10 @@ export const withExpected: <A>(
  * @category combinators
  * @since 2.2.3
  */
-export const refinement: <A, B extends A>(
-  from: JsonCodec<A>,
+export const refine: <A, B extends A>(
   refinement: (a: A) => a is B,
-  expected: string
-) => JsonCodec<B> = C.refinement
+  id: string
+) => (from: JsonCodec<A>) => JsonCodec<B> = C.refine
 
 /**
  * @category combinators
@@ -200,7 +199,7 @@ export const invariantJsonCodec: Invariant1<URI> = {
  * @category instances
  * @since 2.2.3
  */
-export const schemableJsonCodec: Schemable1<URI> & WithRefinement1<URI> = {
+export const schemableJsonCodec: Schemable1<URI> & WithRefine1<URI> = {
   URI,
   literal,
   string,
@@ -215,5 +214,5 @@ export const schemableJsonCodec: Schemable1<URI> & WithRefinement1<URI> = {
   intersect,
   sum,
   lazy,
-  refinement: refinement as WithRefinement1<URI>['refinement']
+  refine: refine as WithRefine1<URI>['refine']
 }

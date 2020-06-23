@@ -21,7 +21,7 @@ Added in v2.2.3
   - [nullable](#nullable)
   - [partial](#partial)
   - [record](#record)
-  - [refinement](#refinement)
+  - [refine](#refine)
   - [sum](#sum)
   - [tuple](#tuple)
   - [type](#type)
@@ -121,16 +121,15 @@ export declare const record: <A>(codomain: JsonCodec<A>) => JsonCodec<Record<str
 
 Added in v2.2.3
 
-## refinement
+## refine
 
 **Signature**
 
 ```ts
-export declare const refinement: <A, B extends A>(
-  from: JsonCodec<A>,
+export declare const refine: <A, B extends A>(
   refinement: (a: A) => a is B,
-  expected: string
-) => JsonCodec<B>
+  id: string
+) => (from: JsonCodec<A>) => JsonCodec<B>
 ```
 
 Added in v2.2.3
@@ -241,7 +240,7 @@ Added in v2.2.3
 **Signature**
 
 ```ts
-export declare const schemableJsonCodec: Schemable1<'io-ts/JsonCodec'> & WithRefinement1<'io-ts/JsonCodec'>
+export declare const schemableJsonCodec: Schemable1<'io-ts/JsonCodec'> & WithRefine1<'io-ts/JsonCodec'>
 ```
 
 Added in v2.2.3

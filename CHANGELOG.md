@@ -31,8 +31,9 @@
     - better `literal` signature (@gcanti)
     - better `union` signature (@gcanti)
     - (**bc**) make intersections pipeables (@gcanti)
+    - (**bc**) make refinements pipeables (@gcanti)
 
-**bc** means "possible breaking change"
+**bc** means "breaking change"
 
 # 2.2.6
 

@@ -21,7 +21,7 @@ Added in v2.2.3
   - [nullable](#nullable)
   - [partial](#partial)
   - [record](#record)
-  - [refinement](#refinement)
+  - [refine](#refine)
   - [sum](#sum)
   - [tuple](#tuple)
   - [type](#type)
@@ -124,16 +124,15 @@ export declare function record<O, A>(codomain: Codec<O, A>): Codec<Record<string
 
 Added in v2.2.3
 
-## refinement
+## refine
 
 **Signature**
 
 ```ts
-export declare function refinement<O, A, B extends A>(
-  from: Codec<O, A>,
+export declare const refine: <O, A, B extends A>(
   refinement: (a: A) => a is B,
-  expected: string
-): Codec<O, B>
+  id: string
+) => (from: Codec<O, A>) => Codec<O, B>
 ```
 
 Added in v2.2.3

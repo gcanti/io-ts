@@ -23,13 +23,19 @@ interface PositiveBrand {
   readonly Positive: unique symbol
 }
 type Positive = number & PositiveBrand
-const Positive: D.Decoder<Positive> = D.refinement(D.number, (n): n is Positive => n > 0, 'Positive')
+const Positive: D.Decoder<Positive> = pipe(
+  D.number,
+  D.refine((n): n is Positive => n > 0, 'Positive')
+)
 
 interface IntBrand {
   readonly Int: unique symbol
 }
 type Int = number & IntBrand
-const Int: D.Decoder<Int> = D.refinement(D.number, (n): n is Int => Number.isInteger(n), 'Int')
+const Int: D.Decoder<Int> = pipe(
+  D.number,
+  D.refine((n): n is Int => Number.isInteger(n), 'Int')
+)
 
 describe('Decoder', () => {
   // -------------------------------------------------------------------------------------
@@ -382,14 +388,20 @@ describe('Decoder', () => {
     })
   })
 
-  describe('refinement', () => {
+  describe('refine', () => {
     it('should decode a valid input', () => {
-      const decoder = D.refinement(D.string, (s): s is string => s.length > 0, 'NonEmptyString')
+      const decoder = pipe(
+        D.string,
+        D.refine((s): s is string => s.length > 0, 'NonEmptyString')
+      )
       assert.deepStrictEqual(decoder.decode('a'), E.right('a'))
     })
 
     it('should reject an invalid input', () => {
-      const decoder = D.refinement(D.string, (s): s is string => s.length > 0, 'NonEmptyString')
+      const decoder = pipe(
+        D.string,
+        D.refine((s): s is string => s.length > 0, 'NonEmptyString')
+      )
       assert.deepStrictEqual(decoder.decode(undefined), E.left(FS.of(DE.leaf(undefined, 'string'))))
       assert.deepStrictEqual(decoder.decode(''), E.left(FS.of(DE.leaf('', 'NonEmptyString'))))
     })

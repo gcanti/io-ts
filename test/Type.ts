@@ -192,12 +192,15 @@ describe('Type', () => {
     )
   })
 
-  it('refinement', () => {
+  it('refine', () => {
     interface NonEmptyStringBrand {
       readonly NonEmptyString: unique symbol
     }
     type NonEmptyString = string & NonEmptyStringBrand
-    const type = T.refinement(T.string, (s): s is NonEmptyString => s.length > 0, 'NonEmptyString')
+    const type = pipe(
+      T.string,
+      T.refine((s): s is NonEmptyString => s.length > 0, 'NonEmptyString')
+    )
     assert.deepStrictEqual(isRight(type.decode('a')), true)
     assert.deepStrictEqual(isRight(type.decode('')), false)
   })
