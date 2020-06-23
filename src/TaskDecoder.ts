@@ -12,6 +12,7 @@ import * as FS from '../src/FreeSemigroup'
 import * as DE from './DecodeError'
 import * as DT from './DecoderT'
 import * as G from './Guard'
+import * as D from './Decoder2'
 import { Literal, Schemable1, WithRefinement1, WithUnion1, WithUnknownContainers1 } from './Schemable'
 
 // -------------------------------------------------------------------------------------
@@ -67,7 +68,13 @@ export function failure<A = never>(actual: unknown, message: string): TE.TaskEit
 // constructors
 // -------------------------------------------------------------------------------------
 
-// TODO: add fromDecoder: <A>(decoder: D.Decoder<A>) => TaskDecoder<A>
+/**
+ * @category constructors
+ * @since 2.2.7
+ */
+export const fromDecoder = <A>(decoder: D.Decoder<A>): TaskDecoder<A> => ({
+  decode: TE.fromEitherK(decoder.decode)
+})
 
 /**
  * @category constructors
@@ -91,31 +98,31 @@ export const literal = <A extends readonly [Literal, ...Array<Literal>]>(...valu
  * @category primitives
  * @since 2.2.7
  */
-export const string: TaskDecoder<string> = fromGuard(G.string, 'string')
+export const string: TaskDecoder<string> = fromDecoder(D.string)
 
 /**
  * @category primitives
  * @since 2.2.7
  */
-export const number: TaskDecoder<number> = fromGuard(G.number, 'number')
+export const number: TaskDecoder<number> = fromDecoder(D.number)
 
 /**
  * @category primitives
  * @since 2.2.7
  */
-export const boolean: TaskDecoder<boolean> = fromGuard(G.boolean, 'boolean')
+export const boolean: TaskDecoder<boolean> = fromDecoder(D.boolean)
 
 /**
  * @category primitives
  * @since 2.2.7
  */
-export const UnknownArray: TaskDecoder<Array<unknown>> = fromGuard(G.UnknownArray, 'Array<unknown>')
+export const UnknownArray: TaskDecoder<Array<unknown>> = fromDecoder(D.UnknownArray)
 
 /**
  * @category primitives
  * @since 2.2.7
  */
-export const UnknownRecord: TaskDecoder<Record<string, unknown>> = fromGuard(G.UnknownRecord, 'Record<string, unknown>')
+export const UnknownRecord: TaskDecoder<Record<string, unknown>> = fromDecoder(D.UnknownRecord)
 
 // -------------------------------------------------------------------------------------
 // combinators

@@ -86,16 +86,22 @@ describe('TaskDecoder', () => {
   // constructors
   // -------------------------------------------------------------------------------------
 
+  it('fromGuard', async () => {
+    const decoder = D.fromGuard(G.string, 'string')
+    assert.deepStrictEqual(await decoder.decode('a')(), E.right('a'))
+    assert.deepStrictEqual(await decoder.decode(null)(), E.left(FS.of(DE.leaf(null, 'string'))))
+  })
+
   describe('literal', () => {
     it('should decode a valid input', async () => {
-      const codec = D.literal('a', null, 'b', 1, true)
-      assert.deepStrictEqual(await codec.decode('a')(), E.right('a'))
-      assert.deepStrictEqual(await codec.decode(null)(), E.right(null))
+      const decoder = D.literal('a', null, 'b', 1, true)
+      assert.deepStrictEqual(await decoder.decode('a')(), E.right('a'))
+      assert.deepStrictEqual(await decoder.decode(null)(), E.right(null))
     })
 
     it('should reject an invalid input', async () => {
-      const codec = D.literal('a', null)
-      assert.deepStrictEqual(await codec.decode('b')(), E.left(FS.of(DE.leaf('b', '"a" | null'))))
+      const decoder = D.literal('a', null)
+      assert.deepStrictEqual(await decoder.decode('b')(), E.left(FS.of(DE.leaf('b', '"a" | null'))))
     })
   })
 
@@ -110,15 +116,15 @@ describe('TaskDecoder', () => {
 
   describe('nullable', () => {
     it('should decode a valid input', async () => {
-      const codec = D.nullable(NumberFromString)
-      assert.deepStrictEqual(await codec.decode(null)(), E.right(null))
-      assert.deepStrictEqual(await codec.decode('1')(), E.right(1))
+      const decoder = D.nullable(NumberFromString)
+      assert.deepStrictEqual(await decoder.decode(null)(), E.right(null))
+      assert.deepStrictEqual(await decoder.decode('1')(), E.right(1))
     })
 
     it('should reject an invalid input', async () => {
-      const codec = D.nullable(NumberFromString)
+      const decoder = D.nullable(NumberFromString)
       assert.deepStrictEqual(
-        await codec.decode(undefined)(),
+        await decoder.decode(undefined)(),
         E.left(
           FS.concat(
             FS.of(DE.member(0, FS.of(DE.leaf(undefined, 'null')))),
@@ -127,7 +133,7 @@ describe('TaskDecoder', () => {
         )
       )
       assert.deepStrictEqual(
-        await codec.decode('a')(),
+        await decoder.decode('a')(),
         E.left(
           FS.concat(
             FS.of(DE.member(0, FS.of(DE.leaf('a', 'null')))),
@@ -140,47 +146,47 @@ describe('TaskDecoder', () => {
 
   describe('type', () => {
     it('should decode a valid input', async () => {
-      const codec = D.type({
+      const decoder = D.type({
         a: D.string
       })
-      assert.deepStrictEqual(await codec.decode({ a: 'a' })(), E.right({ a: 'a' }))
+      assert.deepStrictEqual(await decoder.decode({ a: 'a' })(), E.right({ a: 'a' }))
     })
 
     it('should strip additional fields', async () => {
-      const codec = D.type({
+      const decoder = D.type({
         a: D.string
       })
-      assert.deepStrictEqual(await codec.decode({ a: 'a', b: 1 })(), E.right({ a: 'a' }))
+      assert.deepStrictEqual(await decoder.decode({ a: 'a', b: 1 })(), E.right({ a: 'a' }))
     })
 
     it('should not strip fields corresponding to undefined values', async () => {
-      const codec = D.type({
+      const decoder = D.type({
         a: undef
       })
-      assert.deepStrictEqual(await codec.decode({})(), E.right({ a: undefined }))
+      assert.deepStrictEqual(await decoder.decode({})(), E.right({ a: undefined }))
     })
 
     it('should reject an invalid input', async () => {
-      const codec = D.type({
+      const decoder = D.type({
         a: D.string
       })
       assert.deepStrictEqual(
-        await codec.decode(undefined)(),
+        await decoder.decode(undefined)(),
         E.left(FS.of(DE.leaf(undefined, 'Record<string, unknown>')))
       )
       assert.deepStrictEqual(
-        await codec.decode({ a: 1 })(),
+        await decoder.decode({ a: 1 })(),
         E.left(FS.of(DE.key('a', DE.required, FS.of(DE.leaf(1, 'string')))))
       )
     })
 
     it('should collect all errors', async () => {
-      const codec = D.type({
+      const decoder = D.type({
         a: D.string,
         b: D.number
       })
       assert.deepStrictEqual(
-        await codec.decode({})(),
+        await decoder.decode({})(),
         E.left(
           FS.concat(
             FS.of(DE.key('a', DE.required, FS.of(DE.leaf(undefined, 'string')))),
@@ -199,52 +205,52 @@ describe('TaskDecoder', () => {
           return 'b'
         }
       }
-      const codec = D.type({ a: D.string, b: D.string })
-      assert.deepStrictEqual(await codec.decode(new A())(), E.right({ a: 'a', b: 'b' }))
+      const decoder = D.type({ a: D.string, b: D.string })
+      assert.deepStrictEqual(await decoder.decode(new A())(), E.right({ a: 'a', b: 'b' }))
     })
   })
 
   describe('partial', () => {
     it('should decode a valid input', async () => {
-      const codec = D.partial({ a: D.string })
-      assert.deepStrictEqual(await codec.decode({ a: 'a' })(), E.right({ a: 'a' }))
-      assert.deepStrictEqual(await codec.decode({})(), E.right({}))
+      const decoder = D.partial({ a: D.string })
+      assert.deepStrictEqual(await decoder.decode({ a: 'a' })(), E.right({ a: 'a' }))
+      assert.deepStrictEqual(await decoder.decode({})(), E.right({}))
     })
 
     it('should strip additional fields', async () => {
-      const codec = D.partial({ a: D.string })
-      assert.deepStrictEqual(await codec.decode({ a: 'a', b: 1 })(), E.right({ a: 'a' }))
+      const decoder = D.partial({ a: D.string })
+      assert.deepStrictEqual(await decoder.decode({ a: 'a', b: 1 })(), E.right({ a: 'a' }))
     })
 
     it('should not add missing fields', async () => {
-      const codec = D.partial({ a: D.string })
-      assert.deepStrictEqual(await codec.decode({})(), E.right({}))
+      const decoder = D.partial({ a: D.string })
+      assert.deepStrictEqual(await decoder.decode({})(), E.right({}))
     })
 
     it('should not strip fields corresponding to undefined values', async () => {
-      const codec = D.partial({ a: D.string })
-      assert.deepStrictEqual(await codec.decode({ a: undefined })(), E.right({ a: undefined }))
+      const decoder = D.partial({ a: D.string })
+      assert.deepStrictEqual(await decoder.decode({ a: undefined })(), E.right({ a: undefined }))
     })
 
     it('should reject an invalid input', async () => {
-      const codec = D.partial({ a: D.string })
+      const decoder = D.partial({ a: D.string })
       assert.deepStrictEqual(
-        await codec.decode(undefined)(),
+        await decoder.decode(undefined)(),
         E.left(FS.of(DE.leaf(undefined, 'Record<string, unknown>')))
       )
       assert.deepStrictEqual(
-        await codec.decode({ a: 1 })(),
+        await decoder.decode({ a: 1 })(),
         E.left(FS.of(DE.key('a', DE.optional, FS.of(DE.leaf(1, 'string')))))
       )
     })
 
     it('should collect all errors', async () => {
-      const codec = D.partial({
+      const decoder = D.partial({
         a: D.string,
         b: D.number
       })
       assert.deepStrictEqual(
-        await codec.decode({ a: 1, b: 'b' })(),
+        await decoder.decode({ a: 1, b: 'b' })(),
         E.left(
           FS.concat(
             FS.of(DE.key('a', DE.optional, FS.of(DE.leaf(1, 'string')))),
@@ -263,31 +269,31 @@ describe('TaskDecoder', () => {
           return 'b'
         }
       }
-      const codec = D.partial({ a: D.string, b: D.string })
-      assert.deepStrictEqual(await codec.decode(new A())(), E.right({ a: 'a', b: 'b' }))
+      const decoder = D.partial({ a: D.string, b: D.string })
+      assert.deepStrictEqual(await decoder.decode(new A())(), E.right({ a: 'a', b: 'b' }))
     })
   })
 
   describe('array', () => {
     it('should decode a valid input', async () => {
-      const codec = D.array(D.string)
-      assert.deepStrictEqual(await codec.decode([])(), E.right([]))
-      assert.deepStrictEqual(await codec.decode(['a'])(), E.right(['a']))
+      const decoder = D.array(D.string)
+      assert.deepStrictEqual(await decoder.decode([])(), E.right([]))
+      assert.deepStrictEqual(await decoder.decode(['a'])(), E.right(['a']))
     })
 
     it('should reject an invalid input', async () => {
-      const codec = D.array(D.string)
-      assert.deepStrictEqual(await codec.decode(undefined)(), E.left(FS.of(DE.leaf(undefined, 'Array<unknown>'))))
+      const decoder = D.array(D.string)
+      assert.deepStrictEqual(await decoder.decode(undefined)(), E.left(FS.of(DE.leaf(undefined, 'Array<unknown>'))))
       assert.deepStrictEqual(
-        await codec.decode([1])(),
+        await decoder.decode([1])(),
         E.left(FS.of(DE.index(0, DE.optional, FS.of(DE.leaf(1, 'string')))))
       )
     })
 
     it('should collect all errors', async () => {
-      const codec = D.array(D.string)
+      const decoder = D.array(D.string)
       assert.deepStrictEqual(
-        await codec.decode([1, 2])(),
+        await decoder.decode([1, 2])(),
         E.left(
           FS.concat(
             FS.of(DE.index(0, DE.optional, FS.of(DE.leaf(1, 'string')))),
@@ -300,27 +306,27 @@ describe('TaskDecoder', () => {
 
   describe('record', () => {
     it('should decode a valid value', async () => {
-      const codec = D.record(D.number)
-      assert.deepStrictEqual(await codec.decode({})(), E.right({}))
-      assert.deepStrictEqual(await codec.decode({ a: 1 })(), E.right({ a: 1 }))
+      const decoder = D.record(D.number)
+      assert.deepStrictEqual(await decoder.decode({})(), E.right({}))
+      assert.deepStrictEqual(await decoder.decode({ a: 1 })(), E.right({ a: 1 }))
     })
 
     it('should reject an invalid value', async () => {
-      const codec = D.record(D.number)
+      const decoder = D.record(D.number)
       assert.deepStrictEqual(
-        await codec.decode(undefined)(),
+        await decoder.decode(undefined)(),
         E.left(FS.of(DE.leaf(undefined, 'Record<string, unknown>')))
       )
       assert.deepStrictEqual(
-        await codec.decode({ a: 'a' })(),
+        await decoder.decode({ a: 'a' })(),
         E.left(FS.of(DE.key('a', DE.optional, FS.of(DE.leaf('a', 'number')))))
       )
     })
 
     it('should collect all errors', async () => {
-      const codec = D.record(D.number)
+      const decoder = D.record(D.number)
       assert.deepStrictEqual(
-        await codec.decode({ a: 'a', b: 'b' })(),
+        await decoder.decode({ a: 'a', b: 'b' })(),
         E.left(
           FS.concat(
             FS.of(DE.key('a', DE.optional, FS.of(DE.leaf('a', 'number')))),
@@ -333,8 +339,8 @@ describe('TaskDecoder', () => {
 
   describe('tuple', () => {
     it('should decode a valid input', async () => {
-      const codec = D.tuple(D.string, D.number)
-      assert.deepStrictEqual(await codec.decode(['a', 1])(), E.right(['a', 1]))
+      const decoder = D.tuple(D.string, D.number)
+      assert.deepStrictEqual(await decoder.decode(['a', 1])(), E.right(['a', 1]))
     })
 
     it('should handle zero components', async () => {
@@ -342,22 +348,22 @@ describe('TaskDecoder', () => {
     })
 
     it('should reject an invalid input', async () => {
-      const codec = D.tuple(D.string, D.number)
-      assert.deepStrictEqual(await codec.decode(undefined)(), E.left(FS.of(DE.leaf(undefined, 'Array<unknown>'))))
+      const decoder = D.tuple(D.string, D.number)
+      assert.deepStrictEqual(await decoder.decode(undefined)(), E.left(FS.of(DE.leaf(undefined, 'Array<unknown>'))))
       assert.deepStrictEqual(
-        await codec.decode(['a'])(),
+        await decoder.decode(['a'])(),
         E.left(FS.of(DE.index(1, DE.required, FS.of(DE.leaf(undefined, 'number')))))
       )
       assert.deepStrictEqual(
-        await codec.decode([1, 2])(),
+        await decoder.decode([1, 2])(),
         E.left(FS.of(DE.index(0, DE.required, FS.of(DE.leaf(1, 'string')))))
       )
     })
 
     it('should collect all errors', async () => {
-      const codec = D.tuple(D.string, D.number)
+      const decoder = D.tuple(D.string, D.number)
       assert.deepStrictEqual(
-        await codec.decode([1, 'a'])(),
+        await decoder.decode([1, 'a'])(),
         E.left(
           FS.concat(
             FS.of(DE.index(0, DE.required, FS.of(DE.leaf(1, 'string')))),
@@ -368,8 +374,8 @@ describe('TaskDecoder', () => {
     })
 
     it('should strip additional components', async () => {
-      const codec = D.tuple(D.string, D.number)
-      assert.deepStrictEqual(await codec.decode(['a', 1, true])(), E.right(['a', 1]))
+      const decoder = D.tuple(D.string, D.number)
+      assert.deepStrictEqual(await decoder.decode(['a', 1, true])(), E.right(['a', 1]))
     })
   })
 
@@ -397,26 +403,26 @@ describe('TaskDecoder', () => {
 
   describe('refinement', () => {
     it('should decode a valid input', async () => {
-      const codec = D.refinement(D.string, (s): s is string => s.length > 0, 'NonEmptyString')
-      assert.deepStrictEqual(await codec.decode('a')(), E.right('a'))
+      const decoder = D.refinement(D.string, (s): s is string => s.length > 0, 'NonEmptyString')
+      assert.deepStrictEqual(await decoder.decode('a')(), E.right('a'))
     })
 
     it('should reject an invalid input', async () => {
-      const codec = D.refinement(D.string, (s): s is string => s.length > 0, 'NonEmptyString')
-      assert.deepStrictEqual(await codec.decode(undefined)(), E.left(FS.of(DE.leaf(undefined, 'string'))))
-      assert.deepStrictEqual(await codec.decode('')(), E.left(FS.of(DE.leaf('', 'NonEmptyString'))))
+      const decoder = D.refinement(D.string, (s): s is string => s.length > 0, 'NonEmptyString')
+      assert.deepStrictEqual(await decoder.decode(undefined)(), E.left(FS.of(DE.leaf(undefined, 'string'))))
+      assert.deepStrictEqual(await decoder.decode('')(), E.left(FS.of(DE.leaf('', 'NonEmptyString'))))
     })
   })
 
   describe('intersection', () => {
     it('should decode a valid input', async () => {
-      const codec = D.intersection(D.type({ a: D.string }), D.type({ b: D.number }))
-      assert.deepStrictEqual(await codec.decode({ a: 'a', b: 1 })(), E.right({ a: 'a', b: 1 }))
+      const decoder = D.intersection(D.type({ a: D.string }), D.type({ b: D.number }))
+      assert.deepStrictEqual(await decoder.decode({ a: 'a', b: 1 })(), E.right({ a: 'a', b: 1 }))
     })
 
     it('should handle primitives', async () => {
-      const codec = D.intersection(Int, Positive)
-      assert.deepStrictEqual(await codec.decode(1)(), E.right(1))
+      const decoder = D.intersection(Int, Positive)
+      assert.deepStrictEqual(await decoder.decode(1)(), E.right(1))
     })
 
     it('should accumulate all errors', async () => {
@@ -447,22 +453,22 @@ describe('TaskDecoder', () => {
     it('should decode a valid input', async () => {
       const A = D.type({ _tag: D.literal('A'), a: D.string })
       const B = D.type({ _tag: D.literal('B'), b: D.number })
-      const codec = sum({ A, B })
-      assert.deepStrictEqual(await codec.decode({ _tag: 'A', a: 'a' })(), E.right({ _tag: 'A', a: 'a' }))
-      assert.deepStrictEqual(await codec.decode({ _tag: 'B', b: 1 })(), E.right({ _tag: 'B', b: 1 }))
+      const decoder = sum({ A, B })
+      assert.deepStrictEqual(await decoder.decode({ _tag: 'A', a: 'a' })(), E.right({ _tag: 'A', a: 'a' }))
+      assert.deepStrictEqual(await decoder.decode({ _tag: 'B', b: 1 })(), E.right({ _tag: 'B', b: 1 }))
     })
 
     it('should reject an invalid input', async () => {
       const A = D.type({ _tag: D.literal('A'), a: D.string })
       const B = D.type({ _tag: D.literal('B'), b: D.number })
-      const codec = sum({ A, B })
-      assert.deepStrictEqual(await codec.decode(null)(), E.left(FS.of(DE.leaf(null, 'Record<string, unknown>'))))
+      const decoder = sum({ A, B })
+      assert.deepStrictEqual(await decoder.decode(null)(), E.left(FS.of(DE.leaf(null, 'Record<string, unknown>'))))
       assert.deepStrictEqual(
-        await codec.decode({})(),
+        await decoder.decode({})(),
         E.left(FS.of(DE.key('_tag', DE.required, FS.of(DE.leaf(undefined, '"A" | "B"')))))
       )
       assert.deepStrictEqual(
-        await codec.decode({ _tag: 'A', a: 1 })(),
+        await decoder.decode({ _tag: 'A', a: 1 })(),
         E.left(FS.of(DE.key('a', DE.required, FS.of(DE.leaf(1, 'string')))))
       )
     })
