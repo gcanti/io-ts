@@ -20,7 +20,7 @@ Added in v2.2.7
   - [parse](#parse)
   - [partial](#partial)
   - [record](#record)
-  - [refinement](#refinement)
+  - [refine](#refine)
   - [sum](#sum)
   - [tuple](#tuple)
   - [type](#type)
@@ -129,18 +129,17 @@ export declare function record<M extends URIS2, E>(
 
 Added in v2.2.7
 
-## refinement
+## refine
 
 **Signature**
 
 ```ts
-export declare const refinement: <M extends 'io-ts/Codec' | 'io-ts/Encoder' | 'Either' | 'IOEither' | 'TaskEither', E>(
+export declare const refine: <M extends 'io-ts/Codec' | 'io-ts/Encoder' | 'Either' | 'IOEither' | 'TaskEither', E>(
   M: MonadThrow2C<M, E> & Bifunctor2<M>
 ) => <A, B extends A>(
-  from: DecoderT<M, E, A>,
   refinement: (a: A) => a is B,
   onError: (u: unknown) => E
-) => DecoderT<M, E, B>
+) => (from: DecoderT<M, E, A>) => DecoderT<M, E, B>
 ```
 
 Added in v2.2.7

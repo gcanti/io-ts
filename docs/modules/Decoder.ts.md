@@ -30,7 +30,7 @@ Added in v2.2.0
   - [parse](#parse)
   - [partial](#partial)
   - [record](#record)
-  - [refinement](#refinement)
+  - [refine](#refine)
   - [sum](#sum)
   - [tuple](#tuple)
   - [type](#type)
@@ -210,16 +210,15 @@ export declare function record<A>(codomain: Decoder<A>): Decoder<Record<string, 
 
 Added in v2.2.0
 
-## refinement
+## refine
 
 **Signature**
 
 ```ts
-export declare function refinement<A, B extends A>(
-  from: Decoder<A>,
+export declare const refine: <A, B extends A>(
   refinement: (a: A) => a is B,
-  expected: string
-): Decoder<B>
+  id: string
+) => (from: Decoder<A>) => Decoder<B>
 ```
 
 Added in v2.2.0
@@ -365,7 +364,7 @@ Added in v2.2.3
 export declare const schemableDecoder: Schemable1<'io-ts/Decoder'> &
   WithUnknownContainers1<'io-ts/Decoder'> &
   WithUnion1<'io-ts/Decoder'> &
-  WithRefinement1<'io-ts/Decoder'>
+  WithRefine1<'io-ts/Decoder'>
 ```
 
 Added in v2.2.3

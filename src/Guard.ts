@@ -1,7 +1,8 @@
 /**
  * @since 2.2.0
  */
-import { Literal, memoize, Schemable1, WithRefinement1, WithUnion1, WithUnknownContainers1 } from './Schemable'
+import { pipe } from 'fp-ts/lib/pipeable'
+import { Literal, memoize, Schemable1, WithRefine1, WithUnion1, WithUnknownContainers1 } from './Schemable'
 
 // -------------------------------------------------------------------------------------
 // model
@@ -88,7 +89,7 @@ export const UnknownRecord: Guard<Record<string, unknown>> = {
  * @category combinators
  * @since 2.2.0
  */
-export const refinement = <A, B extends A>(from: Guard<A>, refinement: (a: A) => a is B): Guard<B> => ({
+export const refine = <A, B extends A>(refinement: (a: A) => a is B) => (from: Guard<A>): Guard<B> => ({
   is: (u: unknown): u is B => from.is(u) && refinement(u)
 })
 
@@ -105,52 +106,64 @@ export const nullable = <A>(or: Guard<A>): Guard<null | A> => ({
  * @since 2.2.0
  */
 export const type = <A>(properties: { [K in keyof A]: Guard<A[K]> }): Guard<{ [K in keyof A]: A[K] }> =>
-  refinement(UnknownRecord, (r): r is {
-    [K in keyof A]: A[K]
-  } => {
-    for (const k in properties) {
-      if (!(k in r) || !properties[k].is(r[k])) {
-        return false
+  pipe(
+    UnknownRecord,
+    refine((r): r is {
+      [K in keyof A]: A[K]
+    } => {
+      for (const k in properties) {
+        if (!(k in r) || !properties[k].is(r[k])) {
+          return false
+        }
       }
-    }
-    return true
-  })
+      return true
+    })
+  )
 
 /**
  * @category combinators
  * @since 2.2.0
  */
 export const partial = <A>(properties: { [K in keyof A]: Guard<A[K]> }): Guard<Partial<{ [K in keyof A]: A[K] }>> =>
-  refinement(UnknownRecord, (r): r is Partial<A> => {
-    for (const k in properties) {
-      const v = r[k]
-      if (v !== undefined && !properties[k].is(v)) {
-        return false
+  pipe(
+    UnknownRecord,
+    refine((r): r is Partial<A> => {
+      for (const k in properties) {
+        const v = r[k]
+        if (v !== undefined && !properties[k].is(v)) {
+          return false
+        }
       }
-    }
-    return true
-  })
+      return true
+    })
+  )
 
 /**
  * @category combinators
  * @since 2.2.0
  */
 export const record = <A>(codomain: Guard<A>): Guard<Record<string, A>> =>
-  refinement(UnknownRecord, (r): r is Record<string, A> => {
-    for (const k in r) {
-      if (!codomain.is(r[k])) {
-        return false
+  pipe(
+    UnknownRecord,
+    refine((r): r is Record<string, A> => {
+      for (const k in r) {
+        if (!codomain.is(r[k])) {
+          return false
+        }
       }
-    }
-    return true
-  })
+      return true
+    })
+  )
 
 /**
  * @category combinators
  * @since 2.2.0
  */
 export const array = <A>(items: Guard<A>): Guard<Array<A>> =>
-  refinement(UnknownArray, (us): us is Array<A> => us.every(items.is))
+  pipe(
+    UnknownArray,
+    refine((us): us is Array<A> => us.every(items.is))
+  )
 
 /**
  * @category combinators
@@ -183,13 +196,16 @@ export const union = <A extends readonly [unknown, ...Array<unknown>]>(
  * @since 2.2.0
  */
 export const sum = <T extends string>(tag: T) => <A>(members: { [K in keyof A]: Guard<A[K]> }): Guard<A[keyof A]> =>
-  refinement(UnknownRecord, (r): r is any => {
-    const v = r[tag] as keyof A
-    if (v in members) {
-      return members[v].is(r)
-    }
-    return false
-  })
+  pipe(
+    UnknownRecord,
+    refine((r): r is any => {
+      const v = r[tag] as keyof A
+      if (v in members) {
+        return members[v].is(r)
+      }
+      return false
+    })
+  )
 
 /**
  * @category combinators
@@ -228,7 +244,7 @@ declare module 'fp-ts/lib/HKT' {
  * @category instances
  * @since 2.2.3
  */
-export const schemableGuard: Schemable1<URI> & WithUnknownContainers1<URI> & WithUnion1<URI> & WithRefinement1<URI> = {
+export const schemableGuard: Schemable1<URI> & WithUnknownContainers1<URI> & WithUnion1<URI> & WithRefine1<URI> = {
   URI,
   literal,
   string,
@@ -246,5 +262,5 @@ export const schemableGuard: Schemable1<URI> & WithUnknownContainers1<URI> & Wit
   UnknownArray,
   UnknownRecord,
   union: union as WithUnion1<URI>['union'],
-  refinement: refinement as WithRefinement1<URI>['refinement']
+  refine: refine as WithRefine1<URI>['refine']
 }

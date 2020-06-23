@@ -135,7 +135,7 @@ Added in v2.2.2
 **Signature**
 
 ```ts
-export declare const schemableEq: Schemable1<'Eq'> & WithUnknownContainers1<'Eq'> & WithRefinement1<'Eq'>
+export declare const schemableEq: Schemable1<'Eq'> & WithUnknownContainers1<'Eq'> & WithRefine1<'Eq'>
 ```
 
 Added in v2.2.3

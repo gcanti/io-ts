@@ -28,7 +28,7 @@ Added in v2.2.7
   - [parse](#parse)
   - [partial](#partial)
   - [record](#record)
-  - [refinement](#refinement)
+  - [refine](#refine)
   - [sum](#sum)
   - [tuple](#tuple)
   - [type](#type)
@@ -190,16 +190,15 @@ export declare const record: <A>(codomain: TaskDecoder<A>) => TaskDecoder<Record
 
 Added in v2.2.7
 
-## refinement
+## refine
 
 **Signature**
 
 ```ts
-export declare const refinement: <A, B extends A>(
-  from: TaskDecoder<A>,
+export declare const refine: <A, B extends A>(
   refinement: (a: A) => a is B,
-  expected: string
-) => TaskDecoder<B>
+  id: string
+) => (from: TaskDecoder<A>) => TaskDecoder<B>
 ```
 
 Added in v2.2.7
@@ -347,7 +346,7 @@ Added in v2.2.7
 export declare const schemableTaskDecoder: Schemable1<'io-ts/TaskDecoder'> &
   WithUnknownContainers1<'io-ts/TaskDecoder'> &
   WithUnion1<'io-ts/TaskDecoder'> &
-  WithRefinement1<'io-ts/TaskDecoder'>
+  WithRefine1<'io-ts/TaskDecoder'>
 ```
 
 Added in v2.2.7

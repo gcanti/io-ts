@@ -16,8 +16,8 @@ Added in v2.2.0
   - [Literal (type alias)](#literal-type-alias)
   - [Schemable (interface)](#schemable-interface)
   - [Schemable1 (interface)](#schemable1-interface)
-  - [WithRefinement (interface)](#withrefinement-interface)
-  - [WithRefinement1 (interface)](#withrefinement1-interface)
+  - [WithRefine (interface)](#withrefine-interface)
+  - [WithRefine1 (interface)](#withrefine1-interface)
   - [WithUnion (interface)](#withunion-interface)
   - [WithUnion1 (interface)](#withunion1-interface)
   - [WithUnknownContainers (interface)](#withunknowncontainers-interface)
@@ -88,25 +88,25 @@ export interface Schemable1<S extends URIS> {
 
 Added in v2.2.3
 
-## WithRefinement (interface)
+## WithRefine (interface)
 
 **Signature**
 
 ```ts
-export interface WithRefinement<S> {
-  readonly refinement: <A, B extends A>(from: HKT<S, A>, refinement: (a: A) => a is B, expected: string) => HKT<S, B>
+export interface WithRefine<S> {
+  readonly refine: <A, B extends A>(refinement: (a: A) => a is B, id: string) => (from: HKT<S, A>) => HKT<S, B>
 }
 ```
 
 Added in v2.2.3
 
-## WithRefinement1 (interface)
+## WithRefine1 (interface)
 
 **Signature**
 
 ```ts
-export interface WithRefinement1<S extends URIS> {
-  readonly refinement: <A, B extends A>(from: Kind<S, A>, refinement: (a: A) => a is B, expected: string) => Kind<S, B>
+export interface WithRefine1<S extends URIS> {
+  readonly refine: <A, B extends A>(refinement: (a: A) => a is B, id: string) => (from: Kind<S, A>) => Kind<S, B>
 }
 ```
 

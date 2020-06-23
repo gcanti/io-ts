@@ -19,7 +19,7 @@ Added in v2.2.3
   - [nullable](#nullable)
   - [partial](#partial)
   - [record](#record)
-  - [refinement](#refinement)
+  - [refine](#refine)
   - [sum](#sum)
   - [tuple](#tuple)
   - [type](#type)
@@ -103,16 +103,12 @@ export declare const record: <A>(codomain: Type<A>) => Type<Record<string, A>>
 
 Added in v2.2.3
 
-## refinement
+## refine
 
 **Signature**
 
 ```ts
-export declare const refinement: <A, B extends A>(
-  from: Type<A>,
-  refinement: (a: A) => a is B,
-  expected: string
-) => Type<B>
+export declare const refine: <A, B extends A>(refinement: (a: A) => a is B, id: string) => (from: Type<A>) => Type<B>
 ```
 
 Added in v2.2.3
@@ -203,7 +199,7 @@ Added in v2.2.3
 export declare const schemableType: Schemable1<'io-ts/Type'> &
   WithUnknownContainers1<'io-ts/Type'> &
   WithUnion1<'io-ts/Type'> &
-  WithRefinement1<'io-ts/Type'>
+  WithRefine1<'io-ts/Type'>
 ```
 
 Added in v2.2.3

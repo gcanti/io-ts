@@ -85,15 +85,15 @@ export interface WithUnion1<S extends URIS> {
 /**
  * @since 2.2.3
  */
-export interface WithRefinement<S> {
-  readonly refinement: <A, B extends A>(from: HKT<S, A>, refinement: (a: A) => a is B, expected: string) => HKT<S, B>
+export interface WithRefine<S> {
+  readonly refine: <A, B extends A>(refinement: (a: A) => a is B, id: string) => (from: HKT<S, A>) => HKT<S, B>
 }
 
 /**
  * @since 2.2.3
  */
-export interface WithRefinement1<S extends URIS> {
-  readonly refinement: <A, B extends A>(from: Kind<S, A>, refinement: (a: A) => a is B, expected: string) => Kind<S, B>
+export interface WithRefine1<S extends URIS> {
+  readonly refine: <A, B extends A>(refinement: (a: A) => a is B, id: string) => (from: Kind<S, A>) => Kind<S, B>
 }
 
 /**

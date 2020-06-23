@@ -1,9 +1,9 @@
-import { Schemable, WithUnknownContainers, memoize, WithRefinement, WithUnion } from '../../src/Schemable'
+import { Schemable, WithUnknownContainers, memoize, WithRefine, WithUnion } from '../../src/Schemable'
 import { HKT } from 'fp-ts/lib/HKT'
 import { pipe } from 'fp-ts/lib/pipeable'
 
 interface Schema<A> {
-  <S>(S: Schemable<S> & WithUnknownContainers<S> & WithRefinement<S> & WithUnion<S>): HKT<S, A>
+  <S>(S: Schemable<S> & WithUnknownContainers<S> & WithRefine<S> & WithUnion<S>): HKT<S, A>
 }
 
 export type TypeOf<S> = S extends Schema<infer A> ? A : never
@@ -155,7 +155,12 @@ interface PositiveBrand {
 
 type Positive = number & PositiveBrand
 
-make((S) => S.refinement(S.number, (n): n is Positive => n > 0, 'Positive'))
+make((S) =>
+  pipe(
+    S.number,
+    S.refine((n): n is Positive => n > 0, 'Positive')
+  )
+)
 
 //
 // union

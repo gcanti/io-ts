@@ -3,14 +3,20 @@ import * as G from '../src/Guard'
 import { pipe } from 'fp-ts/lib/pipeable'
 
 describe('Guard', () => {
-  describe('refinement', () => {
+  describe('refine', () => {
     it('should accepts valid inputs', () => {
-      const guard = G.refinement(G.string, (s): s is string => s.length > 0)
+      const guard = pipe(
+        G.string,
+        G.refine((s): s is string => s.length > 0)
+      )
       assert.strictEqual(guard.is('a'), true)
     })
 
     it('should rejects invalid inputs', () => {
-      const guard = G.refinement(G.string, (s): s is string => s.length > 0)
+      const guard = pipe(
+        G.string,
+        G.refine((s): s is string => s.length > 0)
+      )
       assert.strictEqual(guard.is(undefined), false)
       assert.strictEqual(guard.is(''), false)
     })

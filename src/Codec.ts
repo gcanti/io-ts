@@ -123,12 +123,12 @@ export function withExpected<O, A>(
  * @category combinators
  * @since 2.2.3
  */
-export function refinement<O, A, B extends A>(
-  from: Codec<O, A>,
+export const refine = <O, A, B extends A>(
   refinement: (a: A) => a is B,
-  expected: string
-): Codec<O, B> {
-  return make(D.refinement(from, refinement, expected), from)
+  id: string
+): ((from: Codec<O, A>) => Codec<O, B>) => {
+  const refine = D.refine(refinement, id)
+  return (from) => make(refine(from), from)
 }
 
 /**

@@ -72,11 +72,10 @@ export const withExpected = <M extends URIS2, E>(M: Monad2C<M, E> & Bifunctor2<M
  * @category combinators
  * @since 2.2.7
  */
-export const refinement = <M extends URIS2, E>(M: MonadThrow2C<M, E> & Bifunctor2<M>) => <A, B extends A>(
-  from: DecoderT<M, E, A>,
+export const refine = <M extends URIS2, E>(M: MonadThrow2C<M, E> & Bifunctor2<M>) => <A, B extends A>(
   refinement: (a: A) => a is B,
   onError: (u: unknown) => E
-): DecoderT<M, E, B> => ({
+) => (from: DecoderT<M, E, A>): DecoderT<M, E, B> => ({
   decode: (u) => M.chain(from.decode(u), (a) => (refinement(a) ? M.of(a) : M.throwError(onError(u))))
 })
 

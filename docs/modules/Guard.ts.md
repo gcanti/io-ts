@@ -19,7 +19,7 @@ Added in v2.2.0
   - [nullable](#nullable)
   - [partial](#partial)
   - [record](#record)
-  - [refinement](#refinement)
+  - [refine](#refine)
   - [sum](#sum)
   - [tuple](#tuple)
   - [type](#type)
@@ -107,12 +107,12 @@ export declare const record: <A>(codomain: Guard<A>) => Guard<Record<string, A>>
 
 Added in v2.2.0
 
-## refinement
+## refine
 
 **Signature**
 
 ```ts
-export declare const refinement: <A, B extends A>(from: Guard<A>, refinement: (a: A) => a is B) => Guard<B>
+export declare const refine: <A, B extends A>(refinement: (a: A) => a is B) => (from: Guard<A>) => Guard<B>
 ```
 
 Added in v2.2.0
@@ -203,7 +203,7 @@ Added in v2.2.0
 export declare const schemableGuard: Schemable1<'io-ts/Guard'> &
   WithUnknownContainers1<'io-ts/Guard'> &
   WithUnion1<'io-ts/Guard'> &
-  WithRefinement1<'io-ts/Guard'>
+  WithRefine1<'io-ts/Guard'>
 ```
 
 Added in v2.2.3

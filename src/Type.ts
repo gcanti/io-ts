@@ -2,7 +2,7 @@
  * @since 2.2.3
  */
 import * as t from './index'
-import { Literal, Schemable1, WithUnion1, WithRefinement1, WithUnknownContainers1 } from './Schemable'
+import { Literal, Schemable1, WithUnion1, WithRefine1, WithUnknownContainers1 } from './Schemable'
 
 // -------------------------------------------------------------------------------------
 // model
@@ -67,9 +67,9 @@ export const UnknownRecord: Type<Record<string, unknown>> = t.UnknownRecord
  * @category combinators
  * @since 2.2.3
  */
-export const refinement = <A, B extends A>(from: Type<A>, refinement: (a: A) => a is B, expected: string): Type<B> =>
+export const refine = <A, B extends A>(refinement: (a: A) => a is B, id: string) => (from: Type<A>): Type<B> =>
   // tslint:disable-next-line: deprecation
-  t.refinement(from, refinement, expected) as any
+  t.refinement(from, refinement, id) as any
 
 /**
  * @category combinators
@@ -163,7 +163,7 @@ declare module 'fp-ts/lib/HKT' {
  * @category instances
  * @since 2.2.3
  */
-export const schemableType: Schemable1<URI> & WithUnknownContainers1<URI> & WithUnion1<URI> & WithRefinement1<URI> = {
+export const schemableType: Schemable1<URI> & WithUnknownContainers1<URI> & WithUnion1<URI> & WithRefine1<URI> = {
   URI,
   literal,
   string,
@@ -181,5 +181,5 @@ export const schemableType: Schemable1<URI> & WithUnknownContainers1<URI> & With
   UnknownArray,
   UnknownRecord,
   union: union as WithUnion1<URI>['union'],
-  refinement: refinement as WithRefinement1<URI>['refinement']
+  refine: refine as WithRefine1<URI>['refine']
 }

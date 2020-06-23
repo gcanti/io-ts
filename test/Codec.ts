@@ -17,13 +17,19 @@ interface PositiveBrand {
   readonly Positive: unique symbol
 }
 type Positive = number & PositiveBrand
-const Positive: C.Codec<number, Positive> = C.refinement(C.number, (n): n is Positive => n > 0, 'Positive')
+const Positive: C.Codec<number, Positive> = pipe(
+  C.number,
+  C.refine((n): n is Positive => n > 0, 'Positive')
+)
 
 interface IntBrand {
   readonly Int: unique symbol
 }
 type Int = number & IntBrand
-const Int: C.Codec<number, Int> = C.refinement(C.number, (n): n is Int => Number.isInteger(n), 'Int')
+const Int: C.Codec<number, Int> = pipe(
+  C.number,
+  C.refine((n): n is Int => Number.isInteger(n), 'Int')
+)
 
 const undefinedGuard: G.Guard<undefined> = {
   is: (u): u is undefined => u === undefined
@@ -129,15 +135,21 @@ describe('Codec', () => {
     })
   })
 
-  describe('refinement', () => {
+  describe('refine', () => {
     describe('decode', () => {
       it('should decode a valid input', () => {
-        const codec = C.refinement(C.string, (s): s is string => s.length > 0, 'NonEmptyString')
+        const codec = pipe(
+          C.string,
+          C.refine((s): s is string => s.length > 0, 'NonEmptyString')
+        )
         assert.deepStrictEqual(codec.decode('a'), right('a'))
       })
 
       it('should reject an invalid input', () => {
-        const codec = C.refinement(C.string, (s): s is string => s.length > 0, 'NonEmptyString')
+        const codec = pipe(
+          C.string,
+          C.refine((s): s is string => s.length > 0, 'NonEmptyString')
+        )
         assert.deepStrictEqual(codec.decode(undefined), left([D.tree('cannot decode undefined, should be string')]))
         assert.deepStrictEqual(codec.decode(''), left([D.tree('cannot refine "", should be NonEmptyString')]))
       })
@@ -145,7 +157,10 @@ describe('Codec', () => {
 
     describe('encode', () => {
       it('should encode a value', () => {
-        const codec = C.refinement(C.string, (s): s is string => s.length > 0, 'NonEmptyString')
+        const codec = pipe(
+          C.string,
+          C.refine((s): s is string => s.length > 0, 'NonEmptyString')
+        )
         assert.strictEqual(codec.encode('a'), 'a')
       })
     })

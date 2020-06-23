@@ -8,7 +8,7 @@ import { NonEmptyArray } from 'fp-ts/lib/NonEmptyArray'
 import { pipe } from 'fp-ts/lib/pipeable'
 import { drawTree, Forest, Tree } from 'fp-ts/lib/Tree'
 import * as G from './Guard'
-import { Literal, memoize, Schemable1, WithRefinement1, WithUnion1, WithUnknownContainers1 } from './Schemable'
+import { Literal, memoize, Schemable1, WithRefine1, WithUnion1, WithUnknownContainers1 } from './Schemable'
 
 // -------------------------------------------------------------------------------------
 // model
@@ -170,22 +170,16 @@ export function withExpected<A>(
  * @category combinators
  * @since 2.2.0
  */
-export function refinement<A, B extends A>(
-  from: Decoder<A>,
-  refinement: (a: A) => a is B,
-  expected: string
-): Decoder<B> {
-  return {
-    decode: (u) => {
-      const e = from.decode(u)
-      if (E.isLeft(e)) {
-        return e
-      }
-      const a = e.right
-      return refinement(a) ? success(a) : failure(`cannot refine ${JSON.stringify(u)}, should be ${expected}`)
+export const refine = <A, B extends A>(refinement: (a: A) => a is B, id: string) => (from: Decoder<A>): Decoder<B> => ({
+  decode: (u) => {
+    const e = from.decode(u)
+    if (E.isLeft(e)) {
+      return e
     }
+    const a = e.right
+    return refinement(a) ? success(a) : failure(`cannot refine ${JSON.stringify(u)}, should be ${id}`)
   }
-}
+})
 
 /**
  * @category combinators
@@ -547,10 +541,7 @@ export const altDecoder: Alt1<URI> = {
  * @category instances
  * @since 2.2.3
  */
-export const schemableDecoder: Schemable1<URI> &
-  WithUnknownContainers1<URI> &
-  WithUnion1<URI> &
-  WithRefinement1<URI> = {
+export const schemableDecoder: Schemable1<URI> & WithUnknownContainers1<URI> & WithUnion1<URI> & WithRefine1<URI> = {
   URI,
   literal,
   string,
@@ -568,7 +559,7 @@ export const schemableDecoder: Schemable1<URI> &
   UnknownArray,
   UnknownRecord,
   union: union as WithUnion1<URI>['union'],
-  refinement: refinement as WithRefinement1<URI>['refinement']
+  refine: refine as WithRefine1<URI>['refine']
 }
 
 // -------------------------------------------------------------------------------------
