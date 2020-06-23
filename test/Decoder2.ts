@@ -428,6 +428,14 @@ describe('Decoder', () => {
         E.left(FS.of(DE.key('a', DE.required, FS.of(DE.leaf(1, 'string')))))
       )
     })
+
+    it('should support empty records', () => {
+      const decoder = sum({})
+      assert.deepStrictEqual(
+        decoder.decode({}),
+        E.left(FS.of(DE.key('_tag', DE.required, FS.of(DE.leaf(undefined, 'never')))))
+      )
+    })
   })
 
   interface A {
