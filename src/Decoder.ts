@@ -119,12 +119,6 @@ export const literal = <A extends readonly [Literal, ...Array<Literal>]>(...valu
  * @category primitives
  * @since 2.2.0
  */
-export const never: Decoder<never> = fromGuard(G.never, 'never')
-
-/**
- * @category primitives
- * @since 2.2.0
- */
 export const string: Decoder<string> = fromGuard(G.string, 'string')
 
 /**
@@ -430,10 +424,7 @@ export function lazy<A>(id: string, f: () => Decoder<A>): Decoder<A> {
 export function sum<T extends string>(tag: T): <A>(members: { [K in keyof A]: Decoder<A[K]> }) => Decoder<A[keyof A]> {
   return <A>(members: { [K in keyof A]: Decoder<A[K]> }) => {
     const keys = Object.keys(members)
-    if (keys.length === 0) {
-      return never
-    }
-    const expected = keys.map((k) => JSON.stringify(k)).join(' | ')
+    const expected = keys.length === 0 ? 'never' : keys.map((k) => JSON.stringify(k)).join(' | ')
     return {
       decode: (u) => {
         const e = UnknownRecord.decode(u)

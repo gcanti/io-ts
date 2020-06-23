@@ -46,14 +46,6 @@ export function literal<A extends readonly [Literal, ...Array<Literal>]>(...valu
  * @category primitives
  * @since 2.2.0
  */
-export const never: Guard<never> = {
-  is: (_u): _u is never => false
-}
-
-/**
- * @category primitives
- * @since 2.2.0
- */
 export const string: Guard<string> = {
   is: (u: unknown): u is string => typeof u === 'string'
 }

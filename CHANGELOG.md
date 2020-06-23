@@ -22,6 +22,10 @@
   - add `FreeSemigroup` module (@gcanti)
   - add `TaskDecoder` module (@gcanti)
   - remove `Tree` module (@gcanti)
+  - `Decoder`
+    - remove `never` (@gcanti)
+  - `Guard`
+    - remove `never` (@gcanti)
   - `Schemable`
     - better `literal` signature (@gcanti)
     - better `union` signature (@gcanti)

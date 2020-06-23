@@ -12,7 +12,7 @@ Added in v2.2.7
 
 <h2 class="text-delta">Table of contents</h2>
 
-- [consrtuctors](#consrtuctors)
+- [constructors](#constructors)
   - [concat](#concat)
   - [of](#of)
 - [destructors](#destructors)
@@ -26,7 +26,7 @@ Added in v2.2.7
 
 ---
 
-# consrtuctors
+# constructors
 
 ## concat
 

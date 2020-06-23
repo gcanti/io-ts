@@ -36,7 +36,6 @@ Added in v2.2.0
   - [UnknownArray](#unknownarray)
   - [UnknownRecord](#unknownrecord)
   - [boolean](#boolean)
-  - [never](#never)
   - [number](#number)
   - [string](#string)
 - [utils](#utils)
@@ -253,16 +252,6 @@ Added in v2.2.0
 
 ```ts
 export declare const boolean: Guard<boolean>
-```
-
-Added in v2.2.0
-
-## never
-
-**Signature**
-
-```ts
-export declare const never: Guard<never>
 ```
 
 Added in v2.2.0

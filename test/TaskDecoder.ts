@@ -447,6 +447,14 @@ describe('TaskDecoder', () => {
         E.left(FS.of(DE.key('a', DE.required, FS.of(DE.leaf(1, 'string')))))
       )
     })
+
+    it('should support empty records', async () => {
+      const decoder = sum({})
+      assert.deepStrictEqual(
+        await decoder.decode({})(),
+        E.left(FS.of(DE.key('_tag', DE.required, FS.of(DE.leaf(undefined, 'never')))))
+      )
+    })
   })
 
   interface A {

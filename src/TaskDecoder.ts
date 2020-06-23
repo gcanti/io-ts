@@ -203,7 +203,13 @@ export const sum: <T extends string>(
 ) => <A>(members: { [K in keyof A]: TaskDecoder<A[K]> }) => TaskDecoder<A[keyof A]> = DT.sum(M)(
   UnknownRecord,
   (tag, value, keys) =>
-    FS.of(DE.key(tag, DE.required, FS.of(DE.leaf(value, keys.map((k) => JSON.stringify(k)).join(' | ')))))
+    FS.of(
+      DE.key(
+        tag,
+        DE.required,
+        FS.of(DE.leaf(value, keys.length === 0 ? 'never' : keys.map((k) => JSON.stringify(k)).join(' | ')))
+      )
+    )
 )
 
 /**
