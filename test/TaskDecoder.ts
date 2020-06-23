@@ -12,10 +12,13 @@ const undefinedGuard: G.Guard<undefined> = {
 }
 const undef: D.TaskDecoder<undefined> = D.fromGuard(undefinedGuard, 'undefined')
 
-const NumberFromString: D.TaskDecoder<number> = D.parse(D.string, (s) => {
-  const n = parseFloat(s)
-  return isNaN(n) ? D.failure(s, 'parsable to a number') : D.success(n)
-})
+const NumberFromString: D.TaskDecoder<number> = pipe(
+  D.string,
+  D.parse((s) => {
+    const n = parseFloat(s)
+    return isNaN(n) ? D.failure(s, 'parsable to a number') : D.success(n)
+  })
+)
 
 interface PositiveBrand {
   readonly Positive: unique symbol

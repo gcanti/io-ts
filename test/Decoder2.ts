@@ -11,10 +11,13 @@ const undefinedGuard: G.Guard<undefined> = {
 }
 const undef: D.Decoder<undefined> = D.fromGuard(undefinedGuard, 'undefined')
 
-const NumberFromString: D.Decoder<number> = D.parse(D.string, (s) => {
-  const n = parseFloat(s)
-  return isNaN(n) ? D.failure(s, 'parsable to a number') : D.success(n)
-})
+const NumberFromString: D.Decoder<number> = pipe(
+  D.string,
+  D.parse((s) => {
+    const n = parseFloat(s)
+    return isNaN(n) ? D.failure(s, 'parsable to a number') : D.success(n)
+  })
+)
 
 interface PositiveBrand {
   readonly Positive: unique symbol

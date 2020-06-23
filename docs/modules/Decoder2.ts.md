@@ -161,9 +161,8 @@ Added in v2.2.7
 
 ```ts
 export declare const parse: <A, B>(
-  from: Decoder<A>,
   parser: (a: A) => E.Either<FS.FreeSemigroup<DE.DecodeError<string>>, B>
-) => Decoder<B>
+) => (from: Decoder<A>) => Decoder<B>
 ```
 
 Added in v2.2.7

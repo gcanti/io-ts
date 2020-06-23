@@ -142,9 +142,8 @@ export const withExpected: <A>(
  * @since 2.2.7
  */
 export const parse: <A, B>(
-  from: TaskDecoder<A>,
   parser: (a: A) => TE.TaskEither<DecodeError, B>
-) => TaskDecoder<B> = DT.parse(M)
+) => (from: TaskDecoder<A>) => TaskDecoder<B> = DT.parse(M)
 
 /**
  * @category combinators
