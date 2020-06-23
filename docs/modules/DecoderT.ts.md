@@ -24,6 +24,7 @@ Added in v2.2.7
   - [tuple](#tuple)
   - [type](#type)
   - [union](#union)
+  - [withExpected](#withexpected)
 - [constructors](#constructors)
   - [fromGuard](#fromguard)
   - [literal](#literal)
@@ -191,6 +192,21 @@ export declare const union: <M extends 'io-ts/Codec' | 'io-ts/Encoder' | 'Either
 ) => <A extends readonly [unknown, ...unknown[]]>(
   ...members: { [K in keyof A]: DecoderT<M, E, A[K]> }
 ) => DecoderT<M, E, A[number]>
+```
+
+Added in v2.2.7
+
+## withExpected
+
+**Signature**
+
+```ts
+export declare const withExpected: <
+  M extends 'io-ts/Codec' | 'io-ts/Encoder' | 'Either' | 'IOEither' | 'TaskEither',
+  E
+>(
+  M: Monad2C<M, E> & Bifunctor2<M>
+) => <A>(decoder: DecoderT<M, E, A>, expected: (actual: unknown, e: E) => E) => DecoderT<M, E, A>
 ```
 
 Added in v2.2.7
