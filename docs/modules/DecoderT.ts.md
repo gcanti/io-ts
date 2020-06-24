@@ -138,7 +138,7 @@ export declare const refine: <M extends 'io-ts/Codec' | 'io-ts/Encoder' | 'Eithe
   M: MonadThrow2C<M, E> & Bifunctor2<M>
 ) => <A, B extends A>(
   refinement: (a: A) => a is B,
-  onError: (u: unknown) => E
+  onError: (a: A) => E
 ) => (from: DecoderT<M, E, A>) => DecoderT<M, E, B>
 ```
 
@@ -215,7 +215,7 @@ export declare const withExpected: <
   E
 >(
   M: Monad2C<M, E> & Bifunctor2<M>
-) => <A>(decoder: DecoderT<M, E, A>, expected: (actual: unknown, e: E) => E) => DecoderT<M, E, A>
+) => <A>(decoder: DecoderT<M, E, A>, expected: (u: unknown, e: E) => E) => DecoderT<M, E, A>
 ```
 
 Added in v2.2.7
@@ -239,11 +239,11 @@ Added in v2.2.7
 **Signature**
 
 ```ts
-export declare function literal<M extends URIS2, E>(
+export declare const literal: <M extends 'io-ts/Codec' | 'io-ts/Encoder' | 'Either' | 'IOEither' | 'TaskEither', E>(
   M: MonadThrow2C<M, E>
-): (
-  onError: (u: unknown, values: readonly [Literal, ...Array<Literal>]) => E
-) => <A extends readonly [Literal, ...Array<Literal>]>(...values: A) => DecoderT<M, E, A[number]>
+) => (
+  onError: (u: unknown, values: readonly [Literal, ...Literal[]]) => E
+) => <A extends readonly [Literal, ...Literal[]]>(...values: A) => DecoderT<M, E, A[number]>
 ```
 
 Added in v2.2.7
