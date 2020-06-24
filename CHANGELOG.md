@@ -21,6 +21,7 @@
   - add `DecoderT` module (@gcanti)
   - add `FreeSemigroup` module (@gcanti)
   - add `TaskDecoder` module (@gcanti)
+  - add `Kleisli` module (@gcanti)
   - (**bc**) remove `Tree` module (@gcanti)
   - `Decoder`
     - (**bc**) remove `never` (@gcanti)
