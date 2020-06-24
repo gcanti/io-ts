@@ -16,6 +16,7 @@ Added in v2.2.7
   - [array](#array)
   - [intersect](#intersect)
   - [lazy](#lazy)
+  - [mapLeftWithInput](#mapleftwithinput)
   - [nullable](#nullable)
   - [parse](#parse)
   - [partial](#partial)
@@ -25,7 +26,6 @@ Added in v2.2.7
   - [tuple](#tuple)
   - [type](#type)
   - [union](#union)
-  - [withExpected](#withexpected)
 - [constructors](#constructors)
   - [fromGuard](#fromguard)
   - [literal](#literal)
@@ -70,6 +70,23 @@ Added in v2.2.7
 export declare const lazy: <M extends 'io-ts/Codec' | 'io-ts/Encoder' | 'Either' | 'IOEither' | 'TaskEither'>(
   M: Bifunctor2<M>
 ) => <E>(onError: (id: string, e: E) => E) => <I, A>(id: string, f: () => Kleisli<M, I, E, A>) => Kleisli<M, I, E, A>
+```
+
+Added in v2.2.7
+
+## mapLeftWithInput
+
+**Signature**
+
+```ts
+export declare const mapLeftWithInput: <M extends
+  | 'io-ts/Codec'
+  | 'io-ts/Encoder'
+  | 'Either'
+  | 'IOEither'
+  | 'TaskEither'>(
+  M: Bifunctor2<M>
+) => <I, E, A>(f: (i: I, e: E) => E) => (decoder: Kleisli<M, I, E, A>) => Kleisli<M, I, E, A>
 ```
 
 Added in v2.2.7
@@ -205,18 +222,6 @@ export declare const union: <M extends 'io-ts/Codec' | 'io-ts/Encoder' | 'Either
 ) => <I, A extends readonly [unknown, ...unknown[]]>(
   ...members: { [K in keyof A]: Kleisli<M, I, E, A[K]> }
 ) => Kleisli<M, I, E, A[number]>
-```
-
-Added in v2.2.7
-
-## withExpected
-
-**Signature**
-
-```ts
-export declare const withExpected: <M extends 'io-ts/Codec' | 'io-ts/Encoder' | 'Either' | 'IOEither' | 'TaskEither'>(
-  M: Bifunctor2<M>
-) => <I, E, A>(decoder: Kleisli<M, I, E, A>, expected: (i: I, e: E) => E) => Kleisli<M, I, E, A>
 ```
 
 Added in v2.2.7

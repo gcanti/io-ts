@@ -66,10 +66,13 @@ describe('Codec', () => {
     assert.deepStrictEqual(codec.encode({ value: 'a' }), 'a')
   })
 
-  describe('withExpected', () => {
+  describe('mapLeftWithInput', () => {
     describe('decode', () => {
       it('should, return the provided expected', () => {
-        const decoder = C.withExpected(C.number, (u) => FS.of(DE.leaf(u, 'not a number')))
+        const decoder = pipe(
+          C.number,
+          C.mapLeftWithInput((u) => FS.of(DE.leaf(u, 'not a number')))
+        )
         assert.deepStrictEqual(decoder.decode('a'), left(FS.of(DE.leaf('a', 'not a number'))))
       })
     })

@@ -6,6 +6,7 @@ import * as D from './Decoder'
 import * as E from './Encoder'
 import { Literal } from './Schemable'
 import { identity } from 'fp-ts/lib/function'
+import { pipe } from 'fp-ts/lib/pipeable'
 
 // -------------------------------------------------------------------------------------
 // model
@@ -112,12 +113,9 @@ export const UnknownRecord: Codec<Record<string, unknown>, Record<string, unknow
  * @category combinators
  * @since 2.2.3
  */
-export function withExpected<O, A>(
-  codec: Codec<O, A>,
-  expected: (actual: unknown, e: D.DecodeError) => D.DecodeError
-): Codec<O, A> {
-  return make(D.withExpected(codec, expected), codec)
-}
+export const mapLeftWithInput = <O, A>(f: (actual: unknown, e: D.DecodeError) => D.DecodeError) => (
+  codec: Codec<O, A>
+): Codec<O, A> => make(pipe(codec, D.mapLeftWithInput(f)), codec)
 
 /**
  * @category combinators

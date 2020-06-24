@@ -25,6 +25,7 @@ Added in v2.2.7
   - [array](#array)
   - [intersect](#intersect)
   - [lazy](#lazy)
+  - [mapLeftWithInput](#mapleftwithinput)
   - [nullable](#nullable)
   - [parse](#parse)
   - [partial](#partial)
@@ -34,7 +35,6 @@ Added in v2.2.7
   - [tuple](#tuple)
   - [type](#type)
   - [union](#union)
-  - [withExpected](#withexpected)
 - [constructors](#constructors)
   - [fromDecoder](#fromdecoder)
   - [fromGuard](#fromguard)
@@ -159,6 +159,18 @@ export declare const lazy: <A>(id: string, f: () => TaskDecoder<A>) => TaskDecod
 
 Added in v2.2.7
 
+## mapLeftWithInput
+
+**Signature**
+
+```ts
+export declare const mapLeftWithInput: <A>(
+  f: (actual: unknown, e: FS.FreeSemigroup<DE.DecodeError<string>>) => FS.FreeSemigroup<DE.DecodeError<string>>
+) => (decoder: TaskDecoder<A>) => TaskDecoder<A>
+```
+
+Added in v2.2.7
+
 ## nullable
 
 **Signature**
@@ -260,19 +272,6 @@ Added in v2.2.7
 export declare const union: <A extends readonly [unknown, ...unknown[]]>(
   ...members: { [K in keyof A]: TaskDecoder<A[K]> }
 ) => TaskDecoder<A[number]>
-```
-
-Added in v2.2.7
-
-## withExpected
-
-**Signature**
-
-```ts
-export declare const withExpected: <A>(
-  decoder: TaskDecoder<A>,
-  expected: (actual: unknown, e: FS.FreeSemigroup<DE.DecodeError<string>>) => FS.FreeSemigroup<DE.DecodeError<string>>
-) => TaskDecoder<A>
 ```
 
 Added in v2.2.7

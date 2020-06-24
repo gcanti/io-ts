@@ -57,11 +57,10 @@ export const literal = <M extends URIS2, E>(M: MonadThrow2C<M, E>) => <I>(
  * @category combinators
  * @since 2.2.7
  */
-export const withExpected = <M extends URIS2>(M: Bifunctor2<M>) => <I, E, A>(
-  decoder: Kleisli<M, I, E, A>,
-  expected: (i: I, e: E) => E
+export const mapLeftWithInput = <M extends URIS2>(M: Bifunctor2<M>) => <I, E, A>(f: (i: I, e: E) => E) => (
+  decoder: Kleisli<M, I, E, A>
 ): Kleisli<M, I, E, A> => ({
-  decode: (i) => M.mapLeft(decoder.decode(i), (e) => expected(i, e))
+  decode: (i) => M.mapLeft(decoder.decode(i), (e) => f(i, e))
 })
 
 /**

@@ -18,6 +18,7 @@ Added in v2.2.3
   - [array](#array)
   - [intersect](#intersect)
   - [lazy](#lazy)
+  - [mapLeftWithInput](#mapleftwithinput)
   - [nullable](#nullable)
   - [partial](#partial)
   - [record](#record)
@@ -25,7 +26,6 @@ Added in v2.2.3
   - [sum](#sum)
   - [tuple](#tuple)
   - [type](#type)
-  - [withExpected](#withexpected)
 - [constructors](#constructors)
   - [literal](#literal)
   - [make](#make)
@@ -85,6 +85,18 @@ Added in v2.2.3
 
 ```ts
 export declare const lazy: <A>(id: string, f: () => JsonCodec<A>) => JsonCodec<A>
+```
+
+Added in v2.2.3
+
+## mapLeftWithInput
+
+**Signature**
+
+```ts
+export declare const mapLeftWithInput: <A>(
+  f: (actual: unknown, e: FreeSemigroup<DecodeError<string>>) => FreeSemigroup<DecodeError<string>>
+) => (codec: JsonCodec<A>) => JsonCodec<A>
 ```
 
 Added in v2.2.3
@@ -164,19 +176,6 @@ Added in v2.2.3
 
 ```ts
 export declare const type: <A>(properties: { [K in keyof A]: JsonCodec<A[K]> }) => JsonCodec<{ [K in keyof A]: A[K] }>
-```
-
-Added in v2.2.3
-
-## withExpected
-
-**Signature**
-
-```ts
-export declare const withExpected: <A>(
-  codec: JsonCodec<A>,
-  expected: (actual: unknown, e: FreeSemigroup<DecodeError<string>>) => FreeSemigroup<DecodeError<string>>
-) => JsonCodec<A>
 ```
 
 Added in v2.2.3
