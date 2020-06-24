@@ -17,12 +17,18 @@ import { Literal, Schemable1, WithRefine1, WithUnion1, WithUnknownContainers1 } 
 // DecoderT config
 // -------------------------------------------------------------------------------------
 
-const M = E.getValidation(DE.getSemigroup<string>())
-const fromGuardM = DT.fromGuard(M)
-const literalM = DT.literal(M)((u, values) =>
-  FS.of(DE.leaf(u, values.map((value) => JSON.stringify(value)).join(' | ')))
-)
-const refineM = DT.refine(M)
+const M =
+  /*#__PURE__*/
+  E.getValidation(DE.getSemigroup<string>())
+const fromGuardM =
+  /*#__PURE__*/
+  DT.fromGuard(M)
+const literalM =
+  /*#__PURE__*/
+  DT.literal(M)((u, values) => FS.of(DE.leaf(u, values.map((value) => JSON.stringify(value)).join(' | '))))
+const refineM =
+  /*#__PURE__*/
+  DT.refine(M)
 
 // -------------------------------------------------------------------------------------
 // model
@@ -50,25 +56,20 @@ export type DecodeError = FS.FreeSemigroup<DE.DecodeError<string>>
  * @category DecodeError
  * @since 2.2.7
  */
-export function error(actual: unknown, message: string): DecodeError {
-  return FS.of(DE.leaf(actual, message))
-}
+export const error = (actual: unknown, message: string): DecodeError => FS.of(DE.leaf(actual, message))
 
 /**
  * @category DecodeError
  * @since 2.2.7
  */
-export function success<A>(a: A): E.Either<DecodeError, A> {
-  return E.right(a)
-}
+export const success: <A>(a: A) => E.Either<DecodeError, A> = E.right
 
 /**
  * @category DecodeError
  * @since 2.2.7
  */
-export function failure<A = never>(actual: unknown, message: string): E.Either<DecodeError, A> {
-  return E.left(error(actual, message))
-}
+export const failure = <A = never>(actual: unknown, message: string): E.Either<DecodeError, A> =>
+  E.left(error(actual, message))
 
 // -------------------------------------------------------------------------------------
 // constructors
@@ -96,31 +97,41 @@ export const literal = <A extends readonly [Literal, ...Array<Literal>]>(...valu
  * @category primitives
  * @since 2.2.7
  */
-export const string: Decoder<string> = fromGuard(G.string, 'string')
+export const string: Decoder<string> =
+  /*#__PURE__*/
+  fromGuard(G.string, 'string')
 
 /**
  * @category primitives
  * @since 2.2.7
  */
-export const number: Decoder<number> = fromGuard(G.number, 'number')
+export const number: Decoder<number> =
+  /*#__PURE__*/
+  fromGuard(G.number, 'number')
 
 /**
  * @category primitives
  * @since 2.2.7
  */
-export const boolean: Decoder<boolean> = fromGuard(G.boolean, 'boolean')
+export const boolean: Decoder<boolean> =
+  /*#__PURE__*/
+  fromGuard(G.boolean, 'boolean')
 
 /**
  * @category primitives
  * @since 2.2.7
  */
-export const UnknownArray: Decoder<Array<unknown>> = fromGuard(G.UnknownArray, 'Array<unknown>')
+export const UnknownArray: Decoder<Array<unknown>> =
+  /*#__PURE__*/
+  fromGuard(G.UnknownArray, 'Array<unknown>')
 
 /**
  * @category primitives
  * @since 2.2.7
  */
-export const UnknownRecord: Decoder<Record<string, unknown>> = fromGuard(G.UnknownRecord, 'Record<string, unknown>')
+export const UnknownRecord: Decoder<Record<string, unknown>> =
+  /*#__PURE__*/
+  fromGuard(G.UnknownRecord, 'Record<string, unknown>')
 
 // -------------------------------------------------------------------------------------
 // combinators
@@ -133,7 +144,9 @@ export const UnknownRecord: Decoder<Record<string, unknown>> = fromGuard(G.Unkno
 export const withExpected: <A>(
   decoder: Decoder<A>,
   expected: (actual: unknown, e: DecodeError) => DecodeError
-) => Decoder<A> = DT.withExpected(M)
+) => Decoder<A> =
+  /*#__PURE__*/
+  DT.withExpected(M)
 
 /**
  * @category combinators
@@ -146,57 +159,57 @@ export const refine = <A, B extends A>(refinement: (a: A) => a is B, id: string)
  * @category combinators
  * @since 2.2.7
  */
-export const parse: <A, B>(parser: (a: A) => E.Either<DecodeError, B>) => (from: Decoder<A>) => Decoder<B> = DT.parse(M)
+export const parse: <A, B>(parser: (a: A) => E.Either<DecodeError, B>) => (from: Decoder<A>) => Decoder<B> =
+  /*#__PURE__*/
+  DT.parse(M)
 
 /**
  * @category combinators
  * @since 2.2.7
  */
-export const nullable: <A>(or: Decoder<A>) => Decoder<null | A> = DT.nullable(M)((u, e) =>
-  FS.concat(FS.of(DE.member(0, FS.of(DE.leaf(u, 'null')))), FS.of(DE.member(1, e)))
-)
+export const nullable: <A>(or: Decoder<A>) => Decoder<null | A> =
+  /*#__PURE__*/
+  DT.nullable(M)((u, e) => FS.concat(FS.of(DE.member(0, FS.of(DE.leaf(u, 'null')))), FS.of(DE.member(1, e))))
 
 /**
  * @category combinators
  * @since 2.2.7
  */
-export const type: <A>(properties: { [K in keyof A]: Decoder<A[K]> }) => Decoder<{ [K in keyof A]: A[K] }> = DT.type(
-  M
-)(UnknownRecord, (k, e) => FS.of(DE.key(k, DE.required, e)))
+export const type: <A>(properties: { [K in keyof A]: Decoder<A[K]> }) => Decoder<{ [K in keyof A]: A[K] }> =
+  /*#__PURE__*/
+  DT.type(M)(UnknownRecord, (k, e) => FS.of(DE.key(k, DE.required, e)))
 
 /**
  * @category combinators
  * @since 2.2.7
  */
-export const partial: <A>(
-  properties: { [K in keyof A]: Decoder<A[K]> }
-) => Decoder<Partial<{ [K in keyof A]: A[K] }>> = DT.partial(M)(UnknownRecord, (k, e) =>
-  FS.of(DE.key(k, DE.optional, e))
-)
+export const partial: <A>(properties: { [K in keyof A]: Decoder<A[K]> }) => Decoder<Partial<{ [K in keyof A]: A[K] }>> =
+  /*#__PURE__*/
+  DT.partial(M)(UnknownRecord, (k, e) => FS.of(DE.key(k, DE.optional, e)))
 
 /**
  * @category combinators
  * @since 2.2.7
  */
-export const array: <A>(items: Decoder<A>) => Decoder<Array<A>> = DT.array(M)(UnknownArray, (i, e) =>
-  FS.of(DE.index(i, DE.optional, e))
-)
+export const array: <A>(items: Decoder<A>) => Decoder<Array<A>> =
+  /*#__PURE__*/
+  DT.array(M)(UnknownArray, (i, e) => FS.of(DE.index(i, DE.optional, e)))
 
 /**
  * @category combinators
  * @since 2.2.7
  */
-export const record: <A>(codomain: Decoder<A>) => Decoder<Record<string, A>> = DT.record(M)(UnknownRecord, (k, e) =>
-  FS.of(DE.key(k, DE.optional, e))
-)
+export const record: <A>(codomain: Decoder<A>) => Decoder<Record<string, A>> =
+  /*#__PURE__*/
+  DT.record(M)(UnknownRecord, (k, e) => FS.of(DE.key(k, DE.optional, e)))
 
 /**
  * @category combinators
  * @since 2.2.7
  */
-export const tuple: <A extends ReadonlyArray<unknown>>(
-  ...components: { [K in keyof A]: Decoder<A[K]> }
-) => Decoder<A> = DT.tuple(M)(UnknownArray, (i, e) => FS.of(DE.index(i, DE.required, e))) as any
+export const tuple: <A extends ReadonlyArray<unknown>>(...components: { [K in keyof A]: Decoder<A[K]> }) => Decoder<A> =
+  /*#__PURE__*/
+  DT.tuple(M)(UnknownArray, (i, e) => FS.of(DE.index(i, DE.required, e))) as any
 
 /**
  * @category combinators
@@ -204,23 +217,25 @@ export const tuple: <A extends ReadonlyArray<unknown>>(
  */
 export const union: <A extends readonly [unknown, ...Array<unknown>]>(
   ...members: { [K in keyof A]: Decoder<A[K]> }
-) => Decoder<A[number]> = DT.union(M)((i, e) => FS.of(DE.member(i, e))) as any
+) => Decoder<A[number]> =
+  /*#__PURE__*/
+  DT.union(M)((i, e) => FS.of(DE.member(i, e))) as any
 
 /**
  * @category combinators
  * @since 2.2.7
  */
-export const intersect: <B>(right: Decoder<B>) => <A>(left: Decoder<A>) => Decoder<A & B> = DT.intersect(M)
+export const intersect: <B>(right: Decoder<B>) => <A>(left: Decoder<A>) => Decoder<A & B> =
+  /*#__PURE__*/
+  DT.intersect(M)
 
 /**
  * @category combinators
  * @since 2.2.7
  */
-export const sum: <T extends string>(
-  tag: T
-) => <A>(members: { [K in keyof A]: Decoder<A[K]> }) => Decoder<A[keyof A]> = DT.sum(M)(
-  UnknownRecord,
-  (tag, value, keys) =>
+export const sum: <T extends string>(tag: T) => <A>(members: { [K in keyof A]: Decoder<A[K]> }) => Decoder<A[keyof A]> =
+  /*#__PURE__*/
+  DT.sum(M)(UnknownRecord, (tag, value, keys) =>
     FS.of(
       DE.key(
         tag,
@@ -228,13 +243,15 @@ export const sum: <T extends string>(
         FS.of(DE.leaf(value, keys.length === 0 ? 'never' : keys.map((k) => JSON.stringify(k)).join(' | ')))
       )
     )
-)
+  )
 
 /**
  * @category combinators
  * @since 2.2.7
  */
-export const lazy: <A>(id: string, f: () => Decoder<A>) => Decoder<A> = DT.lazy(M)((id, e) => FS.of(DE.lazy(id, e)))
+export const lazy: <A>(id: string, f: () => Decoder<A>) => Decoder<A> =
+  /*#__PURE__*/
+  DT.lazy(M)((id, e) => FS.of(DE.lazy(id, e)))
 
 // -------------------------------------------------------------------------------------
 // non-pipeables

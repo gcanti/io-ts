@@ -19,12 +19,18 @@ import { Literal, Schemable1, WithRefine1, WithUnion1, WithUnknownContainers1 } 
 // DecoderT config
 // -------------------------------------------------------------------------------------
 
-const M = TE.getTaskValidation(DE.getSemigroup<string>())
-const fromGuardM = DT.fromGuard(M)
-const literalM = DT.literal(M)((u, values) =>
-  FS.of(DE.leaf(u, values.map((value) => JSON.stringify(value)).join(' | ')))
-)
-const refineM = DT.refine(M)
+const M =
+  /*#__PURE__*/
+  TE.getTaskValidation(DE.getSemigroup<string>())
+const fromGuardM =
+  /*#__PURE__*/
+  DT.fromGuard(M)
+const literalM =
+  /*#__PURE__*/
+  DT.literal(M)((u, values) => FS.of(DE.leaf(u, values.map((value) => JSON.stringify(value)).join(' | '))))
+const refineM =
+  /*#__PURE__*/
+  DT.refine(M)
 
 // -------------------------------------------------------------------------------------
 // model
@@ -52,25 +58,20 @@ export type DecodeError = FS.FreeSemigroup<DE.DecodeError<string>>
  * @category DecodeError
  * @since 2.2.7
  */
-export function error(actual: unknown, message: string): DecodeError {
-  return FS.of(DE.leaf(actual, message))
-}
+export const error = (actual: unknown, message: string): DecodeError => FS.of(DE.leaf(actual, message))
 
 /**
  * @category DecodeError
  * @since 2.2.7
  */
-export function success<A>(a: A): TE.TaskEither<DecodeError, A> {
-  return TE.right(a)
-}
+export const success: <A>(a: A) => TE.TaskEither<DecodeError, A> = TE.right
 
 /**
  * @category DecodeError
  * @since 2.2.7
  */
-export function failure<A = never>(actual: unknown, message: string): TE.TaskEither<DecodeError, A> {
-  return TE.left(error(actual, message))
-}
+export const failure = <A = never>(actual: unknown, message: string): TE.TaskEither<DecodeError, A> =>
+  TE.left(error(actual, message))
 
 // -------------------------------------------------------------------------------------
 // constructors
@@ -106,31 +107,41 @@ export const literal = <A extends readonly [Literal, ...Array<Literal>]>(...valu
  * @category primitives
  * @since 2.2.7
  */
-export const string: TaskDecoder<string> = fromDecoder(D.string)
+export const string: TaskDecoder<string> =
+  /*#__PURE__*/
+  fromDecoder(D.string)
 
 /**
  * @category primitives
  * @since 2.2.7
  */
-export const number: TaskDecoder<number> = fromDecoder(D.number)
+export const number: TaskDecoder<number> =
+  /*#__PURE__*/
+  fromDecoder(D.number)
 
 /**
  * @category primitives
  * @since 2.2.7
  */
-export const boolean: TaskDecoder<boolean> = fromDecoder(D.boolean)
+export const boolean: TaskDecoder<boolean> =
+  /*#__PURE__*/
+  fromDecoder(D.boolean)
 
 /**
  * @category primitives
  * @since 2.2.7
  */
-export const UnknownArray: TaskDecoder<Array<unknown>> = fromDecoder(D.UnknownArray)
+export const UnknownArray: TaskDecoder<Array<unknown>> =
+  /*#__PURE__*/
+  fromDecoder(D.UnknownArray)
 
 /**
  * @category primitives
  * @since 2.2.7
  */
-export const UnknownRecord: TaskDecoder<Record<string, unknown>> = fromDecoder(D.UnknownRecord)
+export const UnknownRecord: TaskDecoder<Record<string, unknown>> =
+  /*#__PURE__*/
+  fromDecoder(D.UnknownRecord)
 
 // -------------------------------------------------------------------------------------
 // combinators
@@ -143,15 +154,9 @@ export const UnknownRecord: TaskDecoder<Record<string, unknown>> = fromDecoder(D
 export const withExpected: <A>(
   decoder: TaskDecoder<A>,
   expected: (actual: unknown, e: DecodeError) => DecodeError
-) => TaskDecoder<A> = DT.withExpected(M)
-
-/**
- * @category combinators
- * @since 2.2.7
- */
-export const parse: <A, B>(
-  parser: (a: A) => TE.TaskEither<DecodeError, B>
-) => (from: TaskDecoder<A>) => TaskDecoder<B> = DT.parse(M)
+) => TaskDecoder<A> =
+  /*#__PURE__*/
+  DT.withExpected(M)
 
 /**
  * @category combinators
@@ -166,17 +171,27 @@ export const refine = <A, B extends A>(
  * @category combinators
  * @since 2.2.7
  */
-export const nullable: <A>(or: TaskDecoder<A>) => TaskDecoder<null | A> = DT.nullable(M)((u, e) =>
-  FS.concat(FS.of(DE.member(0, FS.of(DE.leaf(u, 'null')))), FS.of(DE.member(1, e)))
-)
+export const parse: <A, B>(
+  parser: (a: A) => TE.TaskEither<DecodeError, B>
+) => (from: TaskDecoder<A>) => TaskDecoder<B> =
+  /*#__PURE__*/
+  DT.parse(M)
 
 /**
  * @category combinators
  * @since 2.2.7
  */
-export const type: <A>(
-  properties: { [K in keyof A]: TaskDecoder<A[K]> }
-) => TaskDecoder<{ [K in keyof A]: A[K] }> = DT.type(M)(UnknownRecord, (k, e) => FS.of(DE.key(k, DE.required, e)))
+export const nullable: <A>(or: TaskDecoder<A>) => TaskDecoder<null | A> =
+  /*#__PURE__*/
+  DT.nullable(M)((u, e) => FS.concat(FS.of(DE.member(0, FS.of(DE.leaf(u, 'null')))), FS.of(DE.member(1, e))))
+
+/**
+ * @category combinators
+ * @since 2.2.7
+ */
+export const type: <A>(properties: { [K in keyof A]: TaskDecoder<A[K]> }) => TaskDecoder<{ [K in keyof A]: A[K] }> =
+  /*#__PURE__*/
+  DT.type(M)(UnknownRecord, (k, e) => FS.of(DE.key(k, DE.required, e)))
 
 /**
  * @category combinators
@@ -184,26 +199,25 @@ export const type: <A>(
  */
 export const partial: <A>(
   properties: { [K in keyof A]: TaskDecoder<A[K]> }
-) => TaskDecoder<Partial<{ [K in keyof A]: A[K] }>> = DT.partial(M)(UnknownRecord, (k, e) =>
-  FS.of(DE.key(k, DE.optional, e))
-)
+) => TaskDecoder<Partial<{ [K in keyof A]: A[K] }>> =
+  /*#__PURE__*/
+  DT.partial(M)(UnknownRecord, (k, e) => FS.of(DE.key(k, DE.optional, e)))
 
 /**
  * @category combinators
  * @since 2.2.7
  */
-export const array: <A>(items: TaskDecoder<A>) => TaskDecoder<Array<A>> = DT.array(M)(UnknownArray, (i, e) =>
-  FS.of(DE.index(i, DE.optional, e))
-)
+export const array: <A>(items: TaskDecoder<A>) => TaskDecoder<Array<A>> =
+  /*#__PURE__*/
+  DT.array(M)(UnknownArray, (i, e) => FS.of(DE.index(i, DE.optional, e)))
 
 /**
  * @category combinators
  * @since 2.2.7
  */
-export const record: <A>(codomain: TaskDecoder<A>) => TaskDecoder<Record<string, A>> = DT.record(M)(
-  UnknownRecord,
-  (k, e) => FS.of(DE.key(k, DE.optional, e))
-)
+export const record: <A>(codomain: TaskDecoder<A>) => TaskDecoder<Record<string, A>> =
+  /*#__PURE__*/
+  DT.record(M)(UnknownRecord, (k, e) => FS.of(DE.key(k, DE.optional, e)))
 
 /**
  * @category combinators
@@ -211,7 +225,9 @@ export const record: <A>(codomain: TaskDecoder<A>) => TaskDecoder<Record<string,
  */
 export const tuple: <A extends ReadonlyArray<unknown>>(
   ...components: { [K in keyof A]: TaskDecoder<A[K]> }
-) => TaskDecoder<A> = DT.tuple(M)(UnknownArray, (i, e) => FS.of(DE.index(i, DE.required, e))) as any
+) => TaskDecoder<A> =
+  /*#__PURE__*/
+  DT.tuple(M)(UnknownArray, (i, e) => FS.of(DE.index(i, DE.required, e))) as any
 
 /**
  * @category combinators
@@ -219,13 +235,17 @@ export const tuple: <A extends ReadonlyArray<unknown>>(
  */
 export const union: <A extends readonly [unknown, ...Array<unknown>]>(
   ...members: { [K in keyof A]: TaskDecoder<A[K]> }
-) => TaskDecoder<A[number]> = DT.union(M)((i, e) => FS.of(DE.member(i, e))) as any
+) => TaskDecoder<A[number]> =
+  /*#__PURE__*/
+  DT.union(M)((i, e) => FS.of(DE.member(i, e))) as any
 
 /**
  * @category combinators
  * @since 2.2.7
  */
-export const intersect: <B>(right: TaskDecoder<B>) => <A>(left: TaskDecoder<A>) => TaskDecoder<A & B> = DT.intersect(M)
+export const intersect: <B>(right: TaskDecoder<B>) => <A>(left: TaskDecoder<A>) => TaskDecoder<A & B> =
+  /*#__PURE__*/
+  DT.intersect(M)
 
 /**
  * @category combinators
@@ -233,9 +253,9 @@ export const intersect: <B>(right: TaskDecoder<B>) => <A>(left: TaskDecoder<A>) 
  */
 export const sum: <T extends string>(
   tag: T
-) => <A>(members: { [K in keyof A]: TaskDecoder<A[K]> }) => TaskDecoder<A[keyof A]> = DT.sum(M)(
-  UnknownRecord,
-  (tag, value, keys) =>
+) => <A>(members: { [K in keyof A]: TaskDecoder<A[K]> }) => TaskDecoder<A[keyof A]> =
+  /*#__PURE__*/
+  DT.sum(M)(UnknownRecord, (tag, value, keys) =>
     FS.of(
       DE.key(
         tag,
@@ -243,15 +263,15 @@ export const sum: <T extends string>(
         FS.of(DE.leaf(value, keys.length === 0 ? 'never' : keys.map((k) => JSON.stringify(k)).join(' | ')))
       )
     )
-)
+  )
 
 /**
  * @category combinators
  * @since 2.2.7
  */
-export const lazy: <A>(id: string, f: () => TaskDecoder<A>) => TaskDecoder<A> = DT.lazy(M)((id, e) =>
-  FS.of(DE.lazy(id, e))
-)
+export const lazy: <A>(id: string, f: () => TaskDecoder<A>) => TaskDecoder<A> =
+  /*#__PURE__*/
+  DT.lazy(M)((id, e) => FS.of(DE.lazy(id, e)))
 
 // -------------------------------------------------------------------------------------
 // non-pipeables

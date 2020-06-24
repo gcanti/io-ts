@@ -88,7 +88,7 @@ Added in v2.2.7
 **Signature**
 
 ```ts
-export declare function error(actual: unknown, message: string): DecodeError
+export declare const error: (actual: unknown, message: string) => FS.FreeSemigroup<DE.DecodeError<string>>
 ```
 
 Added in v2.2.7
@@ -98,7 +98,10 @@ Added in v2.2.7
 **Signature**
 
 ```ts
-export declare function failure<A = never>(actual: unknown, message: string): TE.TaskEither<DecodeError, A>
+export declare const failure: <A = never>(
+  actual: unknown,
+  message: string
+) => TE.TaskEither<FS.FreeSemigroup<DE.DecodeError<string>>, A>
 ```
 
 Added in v2.2.7
@@ -108,7 +111,7 @@ Added in v2.2.7
 **Signature**
 
 ```ts
-export declare function success<A>(a: A): TE.TaskEither<DecodeError, A>
+export declare const success: <A>(a: A) => TE.TaskEither<FS.FreeSemigroup<DE.DecodeError<string>>, A>
 ```
 
 Added in v2.2.7
