@@ -20,7 +20,7 @@ import { intersect_, Literal, memoize } from './Schemable'
  * @category model
  * @since 2.2.7
  */
-export interface Kleisli<M extends URIS2, I, E, A> {
+export interface Kleisli2<M extends URIS2, I, E, A> {
   readonly decode: (i: I) => Kind2<M, E, A>
 }
 
@@ -35,7 +35,7 @@ export interface Kleisli<M extends URIS2, I, E, A> {
 export const fromGuard = <M extends URIS2, E>(M: MonadThrow2C<M, E>) => <A, I>(
   guard: G.Guard<A>,
   onError: (i: I) => E
-): Kleisli<M, I, E, A> => ({
+): Kleisli2<M, I, E, A> => ({
   decode: (i) => (guard.is(i) ? M.of<A>(i) : M.throwError(onError(i)))
 })
 
@@ -45,7 +45,7 @@ export const fromGuard = <M extends URIS2, E>(M: MonadThrow2C<M, E>) => <A, I>(
  */
 export const literal = <M extends URIS2, E>(M: MonadThrow2C<M, E>) => <I>(
   onError: (i: I, values: readonly [Literal, ...Array<Literal>]) => E
-) => <A extends readonly [Literal, ...Array<Literal>]>(...values: A): Kleisli<M, I, E, A[number]> => ({
+) => <A extends readonly [Literal, ...Array<Literal>]>(...values: A): Kleisli2<M, I, E, A[number]> => ({
   decode: (i) => (G.literal(...values).is(i) ? M.of<A[number]>(i) : M.throwError(onError(i, values)))
 })
 
@@ -58,8 +58,8 @@ export const literal = <M extends URIS2, E>(M: MonadThrow2C<M, E>) => <I>(
  * @since 2.2.7
  */
 export const mapLeftWithInput = <M extends URIS2>(M: Bifunctor2<M>) => <I, E, A>(f: (i: I, e: E) => E) => (
-  decoder: Kleisli<M, I, E, A>
-): Kleisli<M, I, E, A> => ({
+  decoder: Kleisli2<M, I, E, A>
+): Kleisli2<M, I, E, A> => ({
   decode: (i) => M.mapLeft(decoder.decode(i), (e) => f(i, e))
 })
 
@@ -70,7 +70,7 @@ export const mapLeftWithInput = <M extends URIS2>(M: Bifunctor2<M>) => <I, E, A>
 export const refine = <M extends URIS2, E>(M: MonadThrow2C<M, E> & Bifunctor2<M>) => <A, B extends A, I>(
   refinement: (a: A) => a is B,
   onError: (a: A) => E
-) => (from: Kleisli<M, I, E, A>): Kleisli<M, I, E, B> => ({
+) => (from: Kleisli2<M, I, E, A>): Kleisli2<M, I, E, B> => ({
   decode: (u) => M.chain(from.decode(u), (a) => (refinement(a) ? M.of(a) : M.throwError(onError(a))))
 })
 
@@ -79,8 +79,8 @@ export const refine = <M extends URIS2, E>(M: MonadThrow2C<M, E> & Bifunctor2<M>
  * @since 2.2.7
  */
 export const parse = <M extends URIS2, E>(M: Monad2C<M, E>) => <A, B>(parser: (a: A) => Kind2<M, E, B>) => <I>(
-  from: Kleisli<M, I, E, A>
-): Kleisli<M, I, E, B> => ({
+  from: Kleisli2<M, I, E, A>
+): Kleisli2<M, I, E, B> => ({
   decode: (u) => M.chain(from.decode(u), (a) => parser(a))
 })
 
@@ -90,7 +90,7 @@ export const parse = <M extends URIS2, E>(M: Monad2C<M, E>) => <A, B>(parser: (a
  */
 export const nullable = <M extends URIS2, E>(M: Applicative2C<M, E> & Bifunctor2<M>) => <I>(
   onError: (i: I, e: E) => E
-) => <A>(or: Kleisli<M, I, E, A>): Kleisli<M, I, E, null | A> => ({
+) => <A>(or: Kleisli2<M, I, E, A>): Kleisli2<M, I, E, null | A> => ({
   decode: (i) =>
     i === null
       ? M.of<null | A>(null)
@@ -110,12 +110,12 @@ export function type<M extends URIS2, E>(
 ): (
   onKeyError: (key: string, e: E) => E
 ) => <I, A>(
-  properties: { [K in keyof A]: Kleisli<M, I, E, A[K]> }
-) => Kleisli<M, Record<string, I>, E, { [K in keyof A]: A[K] }> {
+  properties: { [K in keyof A]: Kleisli2<M, I, E, A[K]> }
+) => Kleisli2<M, Record<string, I>, E, { [K in keyof A]: A[K] }> {
   const traverse = traverseRecordWithIndex(M)
   return (onKeyError) => (properties) => ({
     decode: (i) =>
-      traverse(properties as Record<string, Kleisli<M, unknown, E, unknown>>, (k, decoder) =>
+      traverse(properties as Record<string, Kleisli2<M, unknown, E, unknown>>, (k, decoder) =>
         M.mapLeft(decoder.decode(i[k]), (e) => onKeyError(k, e))
       ) as any
   })
@@ -130,15 +130,15 @@ export function partial<M extends URIS2, E>(
 ): (
   onKeyError: (key: string, e: E) => E
 ) => <I, A>(
-  properties: { [K in keyof A]: Kleisli<M, I, E, A[K]> }
-) => Kleisli<M, Record<string, I>, E, Partial<{ [K in keyof A]: A[K] }>> {
+  properties: { [K in keyof A]: Kleisli2<M, I, E, A[K]> }
+) => Kleisli2<M, Record<string, I>, E, Partial<{ [K in keyof A]: A[K] }>> {
   const traverse = traverseRecordWithIndex(M)
   const skip = M.of<E.Either<void, unknown>>(E.left(undefined))
   const undef = M.of<E.Either<void, unknown>>(E.right(undefined))
   return (onKeyError) => (properties) => ({
     decode: (i) =>
       M.map(
-        traverse(properties as Record<string, Kleisli<M, unknown, E, unknown>>, (k, decoder) => {
+        traverse(properties as Record<string, Kleisli2<M, unknown, E, unknown>>, (k, decoder) => {
           const ik = i[k]
           if (ik === undefined) {
             return k in i
@@ -166,7 +166,7 @@ export function array<M extends URIS2, E>(
   M: Applicative2C<M, E> & Bifunctor2<M>
 ): (
   onItemError: (index: number, e: E) => E
-) => <I, A>(items: Kleisli<M, I, E, A>) => Kleisli<M, Array<I>, E, Array<A>> {
+) => <I, A>(items: Kleisli2<M, I, E, A>) => Kleisli2<M, Array<I>, E, Array<A>> {
   const traverse = traverseArrayWithIndex(M)
   return (onItemError) => (items) => ({
     decode: (is) => traverse(is, (index, i) => M.mapLeft(items.decode(i), (e) => onItemError(index, e)))
@@ -181,7 +181,7 @@ export function record<M extends URIS2, E>(
   M: Applicative2C<M, E> & Bifunctor2<M>
 ): (
   onKeyError: (key: string, e: E) => E
-) => <I, A>(codomain: Kleisli<M, I, E, A>) => Kleisli<M, Record<string, I>, E, Record<string, A>> {
+) => <I, A>(codomain: Kleisli2<M, I, E, A>) => Kleisli2<M, Record<string, I>, E, Record<string, A>> {
   const traverse = traverseRecordWithIndex(M)
   return (onKeyError) => (codomain) => ({
     decode: (ir) => traverse(ir, (key, i) => M.mapLeft(codomain.decode(i), (e) => onKeyError(key, e)))
@@ -197,12 +197,12 @@ export function tuple<M extends URIS2, E>(
 ): (
   onIndexError: (index: number, e: E) => E
 ) => <I, A extends ReadonlyArray<unknown>>(
-  ...components: { [K in keyof A]: Kleisli<M, I, E, A[K]> }
-) => Kleisli<M, Array<I>, E, A> {
+  ...components: { [K in keyof A]: Kleisli2<M, I, E, A[K]> }
+) => Kleisli2<M, Array<I>, E, A> {
   const traverse = traverseArrayWithIndex(M)
   return (onIndexError) => (...components) => ({
     decode: (is) =>
-      traverse((components as unknown) as Array<Kleisli<M, unknown, E, unknown>>, (index, decoder) =>
+      traverse((components as unknown) as Array<Kleisli2<M, unknown, E, unknown>>, (index, decoder) =>
         M.mapLeft(decoder.decode(is[index]), (e) => onIndexError(index, e))
       ) as any
   })
@@ -215,8 +215,8 @@ export function tuple<M extends URIS2, E>(
 export const union = <M extends URIS2, E>(M: Alt2C<M, E> & Bifunctor2<M>) => (
   onMemberError: (index: number, e: E) => E
 ) => <I, A extends readonly [unknown, ...Array<unknown>]>(
-  ...members: { [K in keyof A]: Kleisli<M, I, E, A[K]> }
-): Kleisli<M, I, E, A[number]> => ({
+  ...members: { [K in keyof A]: Kleisli2<M, I, E, A[K]> }
+): Kleisli2<M, I, E, A[number]> => ({
   decode: (i) => {
     let out: Kind2<M, E, unknown> = M.mapLeft(members[0].decode(i), (e) => onMemberError(0, e))
     for (let index = 1; index < members.length; index++) {
@@ -230,9 +230,9 @@ export const union = <M extends URIS2, E>(M: Alt2C<M, E> & Bifunctor2<M>) => (
  * @category combinators
  * @since 2.2.7
  */
-export const intersect = <M extends URIS2, E>(M: Apply2C<M, E>) => <IB, B>(right: Kleisli<M, IB, E, B>) => <IA, A>(
-  left: Kleisli<M, IA, E, A>
-): Kleisli<M, IA & IB, E, A & B> => ({
+export const intersect = <M extends URIS2, E>(M: Apply2C<M, E>) => <IB, B>(right: Kleisli2<M, IB, E, B>) => <IA, A>(
+  left: Kleisli2<M, IA, E, A>
+): Kleisli2<M, IA & IB, E, A & B> => ({
   decode: (i) =>
     M.ap(
       M.map(left.decode(i), (a: A) => (b: B) => intersect_(a, b)),
@@ -249,11 +249,11 @@ export const sum = <M extends URIS2, E>(M: MonadThrow2C<M, E>) => (
 ) => <T extends string>(
   tag: T
 ): (<I extends Record<string, unknown>, A>(
-  members: { [K in keyof A]: Kleisli<M, I, E, A[K]> }
-) => Kleisli<M, I, E, A[keyof A]>) => {
+  members: { [K in keyof A]: Kleisli2<M, I, E, A[K]> }
+) => Kleisli2<M, I, E, A[keyof A]>) => {
   return <I extends Record<string, unknown>, A>(
-    members: { [K in keyof A]: Kleisli<M, I, E, A[K]> }
-  ): Kleisli<M, I, E, A[keyof A]> => {
+    members: { [K in keyof A]: Kleisli2<M, I, E, A[K]> }
+  ): Kleisli2<M, I, E, A[keyof A]> => {
     const keys = Object.keys(members)
     return {
       decode: (ir) => {
@@ -273,9 +273,9 @@ export const sum = <M extends URIS2, E>(M: MonadThrow2C<M, E>) => (
  */
 export const lazy = <M extends URIS2>(M: Bifunctor2<M>) => <E>(
   onError: (id: string, e: E) => E
-): (<I, A>(id: string, f: () => Kleisli<M, I, E, A>) => Kleisli<M, I, E, A>) => {
-  return <I, A>(id: string, f: () => Kleisli<M, I, E, A>): Kleisli<M, I, E, A> => {
-    const get = memoize<void, Kleisli<M, I, E, A>>(f)
+): (<I, A>(id: string, f: () => Kleisli2<M, I, E, A>) => Kleisli2<M, I, E, A>) => {
+  return <I, A>(id: string, f: () => Kleisli2<M, I, E, A>): Kleisli2<M, I, E, A> => {
+    const get = memoize<void, Kleisli2<M, I, E, A>>(f)
     return {
       decode: (u) => M.mapLeft(get().decode(u), (e) => onError(id, e))
     }
@@ -339,8 +339,8 @@ const compactRecord = <A>(r: Record<string, E.Either<void, A>>): Record<string, 
  * @since 2.2.7
  */
 export const pipe = <M extends URIS2, E>(M: Monad2C<M, E>) => <I, A, B>(
-  ia: Kleisli<M, I, E, A>,
-  ab: Kleisli<M, A, E, B>
-): Kleisli<M, I, E, B> => ({
+  ia: Kleisli2<M, I, E, A>,
+  ab: Kleisli2<M, A, E, B>
+): Kleisli2<M, I, E, B> => ({
   decode: (i) => M.chain(ia.decode(i), ab.decode)
 })
