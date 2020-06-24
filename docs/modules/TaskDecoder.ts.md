@@ -55,7 +55,6 @@ Added in v2.2.7
   - [string](#string)
 - [utils](#utils)
   - [draw](#draw)
-  - [stringify](#stringify)
 
 ---
 
@@ -439,16 +438,6 @@ Added in v2.2.7
 
 ```ts
 export declare const draw: (e: FS.FreeSemigroup<DE.DecodeError<string>>) => string
-```
-
-Added in v2.2.7
-
-## stringify
-
-**Signature**
-
-```ts
-export declare const stringify: <A>(e: TE.TaskEither<FS.FreeSemigroup<DE.DecodeError<string>>, A>) => T.Task<string>
 ```
 
 Added in v2.2.7

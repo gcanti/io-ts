@@ -3,16 +3,14 @@
  */
 import { Alt1 } from 'fp-ts/lib/Alt'
 import { Functor1 } from 'fp-ts/lib/Functor'
-import * as NEA from 'fp-ts/lib/NonEmptyArray'
 import { pipe } from 'fp-ts/lib/pipeable'
 import * as T from 'fp-ts/lib/Task'
 import * as TE from 'fp-ts/lib/TaskEither'
-import { drawTree, make, Tree } from 'fp-ts/lib/Tree'
 import * as FS from '../src/FreeSemigroup'
 import * as DE from './DecodeError'
+import * as D from './Decoder'
 import * as DT from './DecoderT'
 import * as G from './Guard'
-import * as D from './Decoder'
 import { Literal, Schemable1, WithRefine1, WithUnion1, WithUnknownContainers1 } from './Schemable'
 
 // -------------------------------------------------------------------------------------
@@ -379,28 +377,13 @@ export const schemableTaskDecoder: Schemable1<URI> &
 // utils
 // -------------------------------------------------------------------------------------
 
-const toForest = (e: DecodeError): NEA.NonEmptyArray<Tree<string>> => {
-  const toTree: (e: DE.DecodeError<string>) => Tree<string> = DE.fold({
-    Leaf: (input, error) => make(`cannot decode ${JSON.stringify(input)}, should be ${error}`),
-    Key: (key, kind, errors) => make(`${kind} property ${JSON.stringify(key)}`, toForest(errors)),
-    Index: (index, kind, errors) => make(`${kind} index ${index}`, toForest(errors)),
-    Member: (index, errors) => make(`member ${index}`, toForest(errors)),
-    Lazy: (id, errors) => make(`lazy type ${id}`, toForest(errors))
-  })
-  const toForest: (f: DecodeError) => NEA.NonEmptyArray<Tree<string>> = FS.fold(
-    (value) => [toTree(value)],
-    (left, right) => NEA.concat(toForest(left), toForest(right))
-  )
-  return toForest(e)
-}
-
 /**
  * @since 2.2.7
  */
-export const draw = (e: DecodeError): string => toForest(e).map(drawTree).join('\n')
+export const draw: (e: DecodeError) => string = D.draw
 
 /**
- * @since 2.2.7
+ * @internal
  */
 export const stringify: <A>(e: TE.TaskEither<DecodeError, A>) => T.Task<string> = TE.fold(
   (e) => T.of(draw(e)),

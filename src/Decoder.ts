@@ -376,7 +376,7 @@ const toForest = (e: DecodeError): NEA.NonEmptyArray<T.Tree<string>> => {
 export const draw = (e: DecodeError): string => toForest(e).map(T.drawTree).join('\n')
 
 /**
- * @since 2.2.7
+ * @internal
  */
 export const stringify: <A>(e: E.Either<DecodeError, A>) => string = E.fold(
   (e) => draw(e),
