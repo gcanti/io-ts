@@ -302,7 +302,7 @@ Added in v2.2.7
 **Signature**
 
 ```ts
-export declare const URI: 'io-ts/Decoder2'
+export declare const URI: 'io-ts/Decoder'
 ```
 
 Added in v2.2.7
@@ -322,7 +322,7 @@ Added in v2.2.7
 **Signature**
 
 ```ts
-export declare const altDecoder: Alt1<'io-ts/Decoder2'>
+export declare const altDecoder: Alt1<'io-ts/Decoder'>
 ```
 
 Added in v2.2.7
@@ -332,7 +332,7 @@ Added in v2.2.7
 **Signature**
 
 ```ts
-export declare const functorDecoder: Functor1<'io-ts/Decoder2'>
+export declare const functorDecoder: Functor1<'io-ts/Decoder'>
 ```
 
 Added in v2.2.7
@@ -342,10 +342,10 @@ Added in v2.2.7
 **Signature**
 
 ```ts
-export declare const schemableDecoder: Schemable1<'io-ts/Decoder2'> &
-  WithUnknownContainers1<'io-ts/Decoder2'> &
-  WithUnion1<'io-ts/Decoder2'> &
-  WithRefine1<'io-ts/Decoder2'>
+export declare const schemableDecoder: Schemable1<'io-ts/Decoder'> &
+  WithUnknownContainers1<'io-ts/Decoder'> &
+  WithUnion1<'io-ts/Decoder'> &
+  WithRefine1<'io-ts/Decoder'>
 ```
 
 Added in v2.2.7

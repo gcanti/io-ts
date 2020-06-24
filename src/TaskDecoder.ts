@@ -10,7 +10,7 @@ import * as FS from '../src/FreeSemigroup'
 import * as DE from './DecodeError'
 import * as D from './Decoder'
 import * as G from './Guard'
-import * as D2 from './Kleisli2'
+import * as K2 from './Kleisli2'
 import { Literal, Schemable1, WithRefine1, WithUnion1, WithUnknownContainers1 } from './Schemable'
 
 // -------------------------------------------------------------------------------------
@@ -79,7 +79,7 @@ export const fromDecoder = <A>(decoder: D.Decoder<A>): TaskDecoder<A> => ({
  * @since 2.2.7
  */
 export const fromGuard = <A>(guard: G.Guard<A>, expected: string): TaskDecoder<A> =>
-  D2.fromGuard(M)(guard, (u) => FS.of(DE.leaf(u, expected)))
+  K2.fromGuard(M)(guard, (u) => FS.of(DE.leaf(u, expected)))
 
 /**
  * @category constructors
@@ -87,7 +87,7 @@ export const fromGuard = <A>(guard: G.Guard<A>, expected: string): TaskDecoder<A
  */
 export const literal: <A extends readonly [Literal, ...Array<Literal>]>(...values: A) => TaskDecoder<A[number]> =
   /*#__PURE__*/
-  D2.literal(M)((u, values) => FS.of(DE.leaf(u, values.map((value) => JSON.stringify(value)).join(' | '))))
+  K2.literal(M)((u, values) => FS.of(DE.leaf(u, values.map((value) => JSON.stringify(value)).join(' | '))))
 
 // -------------------------------------------------------------------------------------
 // primitives
@@ -145,7 +145,7 @@ export const mapLeftWithInput: <A>(
   f: (actual: unknown, e: DecodeError) => DecodeError
 ) => (decoder: TaskDecoder<A>) => TaskDecoder<A> =
   /*#__PURE__*/
-  D2.mapLeftWithInput(M)
+  K2.mapLeftWithInput(M)
 
 /**
  * @category combinators
@@ -154,7 +154,7 @@ export const mapLeftWithInput: <A>(
 export const refine = <A, B extends A>(
   refinement: (a: A) => a is B,
   id: string
-): ((from: TaskDecoder<A>) => TaskDecoder<B>) => D2.refine(M)(refinement, (a) => FS.of(DE.leaf(a, id)))
+): ((from: TaskDecoder<A>) => TaskDecoder<B>) => K2.refine(M)(refinement, (a) => FS.of(DE.leaf(a, id)))
 
 /**
  * @category combinators
@@ -164,7 +164,7 @@ export const parse: <A, B>(
   parser: (a: A) => TE.TaskEither<DecodeError, B>
 ) => (from: TaskDecoder<A>) => TaskDecoder<B> =
   /*#__PURE__*/
-  D2.parse(M)
+  K2.parse(M)
 
 /**
  * @category combinators
@@ -172,14 +172,14 @@ export const parse: <A, B>(
  */
 export const nullable: <A>(or: TaskDecoder<A>) => TaskDecoder<null | A> =
   /*#__PURE__*/
-  D2.nullable(M)((u, e) => FS.concat(FS.of(DE.member(0, FS.of(DE.leaf(u, 'null')))), FS.of(DE.member(1, e))))
+  K2.nullable(M)((u, e) => FS.concat(FS.of(DE.member(0, FS.of(DE.leaf(u, 'null')))), FS.of(DE.member(1, e))))
 
 /**
  * @category combinators
  * @since 2.2.7
  */
 export const type = <A>(properties: { [K in keyof A]: TaskDecoder<A[K]> }): TaskDecoder<{ [K in keyof A]: A[K] }> =>
-  D2.pipe(M)(UnknownRecord, D2.type(M)((k, e) => FS.of(DE.key(k, DE.required, e)))(properties))
+  K2.pipe(M)(UnknownRecord, K2.type(M)((k, e) => FS.of(DE.key(k, DE.required, e)))(properties))
 
 /**
  * @category combinators
@@ -188,21 +188,21 @@ export const type = <A>(properties: { [K in keyof A]: TaskDecoder<A[K]> }): Task
 export const partial = <A>(
   properties: { [K in keyof A]: TaskDecoder<A[K]> }
 ): TaskDecoder<Partial<{ [K in keyof A]: A[K] }>> =>
-  D2.pipe(M)(UnknownRecord, D2.partial(M)((k, e) => FS.of(DE.key(k, DE.optional, e)))(properties))
+  K2.pipe(M)(UnknownRecord, K2.partial(M)((k, e) => FS.of(DE.key(k, DE.optional, e)))(properties))
 
 /**
  * @category combinators
  * @since 2.2.7
  */
 export const array = <A>(items: TaskDecoder<A>): TaskDecoder<Array<A>> =>
-  D2.pipe(M)(UnknownArray, D2.array(M)((i, e) => FS.of(DE.index(i, DE.optional, e)))(items))
+  K2.pipe(M)(UnknownArray, K2.array(M)((i, e) => FS.of(DE.index(i, DE.optional, e)))(items))
 
 /**
  * @category combinators
  * @since 2.2.7
  */
 export const record = <A>(codomain: TaskDecoder<A>): TaskDecoder<Record<string, A>> =>
-  D2.pipe(M)(UnknownRecord, D2.record(M)((k, e) => FS.of(DE.key(k, DE.optional, e)))(codomain))
+  K2.pipe(M)(UnknownRecord, K2.record(M)((k, e) => FS.of(DE.key(k, DE.optional, e)))(codomain))
 
 /**
  * @category combinators
@@ -211,7 +211,7 @@ export const record = <A>(codomain: TaskDecoder<A>): TaskDecoder<Record<string, 
 export const tuple = <A extends ReadonlyArray<unknown>>(
   ...components: { [K in keyof A]: TaskDecoder<A[K]> }
 ): TaskDecoder<A> =>
-  D2.pipe(M)(UnknownArray, D2.tuple(M)((i, e) => FS.of(DE.index(i, DE.required, e)))(...(components as any)))
+  K2.pipe(M)(UnknownArray, K2.tuple(M)((i, e) => FS.of(DE.index(i, DE.required, e)))(...(components as any)))
 
 /**
  * @category combinators
@@ -221,7 +221,7 @@ export const union: <A extends readonly [unknown, ...Array<unknown>]>(
   ...members: { [K in keyof A]: TaskDecoder<A[K]> }
 ) => TaskDecoder<A[number]> =
   /*#__PURE__*/
-  D2.union(M)((i, e) => FS.of(DE.member(i, e))) as any
+  K2.union(M)((i, e) => FS.of(DE.member(i, e))) as any
 
 /**
  * @category combinators
@@ -229,7 +229,7 @@ export const union: <A extends readonly [unknown, ...Array<unknown>]>(
  */
 export const intersect: <B>(right: TaskDecoder<B>) => <A>(left: TaskDecoder<A>) => TaskDecoder<A & B> =
   /*#__PURE__*/
-  D2.intersect(M)
+  K2.intersect(M)
 
 /**
  * @category combinators
@@ -238,9 +238,9 @@ export const intersect: <B>(right: TaskDecoder<B>) => <A>(left: TaskDecoder<A>) 
 export const sum = <T extends string>(tag: T) => <A>(
   members: { [K in keyof A]: TaskDecoder<A[K]> }
 ): TaskDecoder<A[keyof A]> =>
-  D2.pipe(M)(
+  K2.pipe(M)(
     UnknownRecord,
-    D2.sum(M)((tag, value, keys) =>
+    K2.sum(M)((tag, value, keys) =>
       FS.of(
         DE.key(
           tag,
@@ -257,23 +257,15 @@ export const sum = <T extends string>(tag: T) => <A>(
  */
 export const lazy: <A>(id: string, f: () => TaskDecoder<A>) => TaskDecoder<A> =
   /*#__PURE__*/
-  D2.lazy(M)((id, e) => FS.of(DE.lazy(id, e)))
+  K2.lazy(M)((id, e) => FS.of(DE.lazy(id, e)))
 
 // -------------------------------------------------------------------------------------
 // non-pipeables
 // -------------------------------------------------------------------------------------
 
-const map_: <A, B>(fa: TaskDecoder<A>, f: (a: A) => B) => TaskDecoder<B> = (fa, f) => ({
-  decode: (u) => pipe(fa.decode(u), TE.map(f))
-})
+const map_: <A, B>(fa: TaskDecoder<A>, f: (a: A) => B) => TaskDecoder<B> = (fa, f) => pipe(fa, map(f))
 
-const alt_: <A>(me: TaskDecoder<A>, that: () => TaskDecoder<A>) => TaskDecoder<A> = (me, that) => ({
-  decode: (u) =>
-    pipe(
-      me.decode(u),
-      TE.alt(() => that().decode(u))
-    )
-})
+const alt_: <A>(me: TaskDecoder<A>, that: () => TaskDecoder<A>) => TaskDecoder<A> = (me, that) => pipe(me, alt(that))
 
 // -------------------------------------------------------------------------------------
 // pipeables
@@ -283,14 +275,17 @@ const alt_: <A>(me: TaskDecoder<A>, that: () => TaskDecoder<A>) => TaskDecoder<A
  * @category Functor
  * @since 2.2.7
  */
-export const map: <A, B>(f: (a: A) => B) => (fa: TaskDecoder<A>) => TaskDecoder<B> = (f) => (fa) => map_(fa, f)
+export const map: <A, B>(f: (a: A) => B) => (fa: TaskDecoder<A>) => TaskDecoder<B> =
+  /*#__PURE__*/
+  K2.map(M)
 
 /**
  * @category Alt
  * @since 2.2.7
  */
-export const alt: <A>(that: () => TaskDecoder<A>) => (me: TaskDecoder<A>) => TaskDecoder<A> = (that) => (fa) =>
-  alt_(fa, that)
+export const alt: <A>(that: () => TaskDecoder<A>) => (me: TaskDecoder<A>) => TaskDecoder<A> =
+  /*#__PURE__*/
+  K2.alt(M)
 
 // -------------------------------------------------------------------------------------
 // instances
@@ -318,7 +313,7 @@ declare module 'fp-ts/lib/HKT' {
  * @category instances
  * @since 2.2.7
  */
-export const functorDecoder: Functor1<URI> = {
+export const functorTaskDecoder: Functor1<URI> = {
   URI,
   map: map_
 }
@@ -327,7 +322,7 @@ export const functorDecoder: Functor1<URI> = {
  * @category instances
  * @since 2.2.7
  */
-export const altDecoder: Alt1<URI> = {
+export const altTaskDecoder: Alt1<URI> = {
   URI,
   map: map_,
   alt: alt_
