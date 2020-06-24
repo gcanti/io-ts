@@ -26,6 +26,7 @@
     - (**bc**) remove `never` (@gcanti)
     - (**bc**) make `parse` pipeable and change its `parser` argument (@gcanti)
     - (**bc**) change `DecoderError` (@gcanti)
+    - (**bc**) remove `withExpected` in favour of `mapLeftWithInput` (@gcanti)
   - `Guard`
     - (**bc**) remove `never` (@gcanti)
   - `Schemable`

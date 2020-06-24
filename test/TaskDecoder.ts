@@ -118,8 +118,11 @@ describe('TaskDecoder', () => {
   // combinators
   // -------------------------------------------------------------------------------------
 
-  it('withExpected', async () => {
-    const decoder = D.withExpected(D.number, (u) => FS.of(DE.leaf(u, 'not a number')))
+  it('mapLeftWithInput', async () => {
+    const decoder = pipe(
+      D.number,
+      D.mapLeftWithInput((u) => FS.of(DE.leaf(u, 'not a number')))
+    )
     assert.deepStrictEqual(await decoder.decode('a')(), E.left(FS.of(DE.leaf('a', 'not a number'))))
   })
 

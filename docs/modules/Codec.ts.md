@@ -18,6 +18,7 @@ Added in v2.2.3
   - [array](#array)
   - [intersect](#intersect)
   - [lazy](#lazy)
+  - [mapLeftWithInput](#mapleftwithinput)
   - [nullable](#nullable)
   - [partial](#partial)
   - [record](#record)
@@ -25,7 +26,6 @@ Added in v2.2.3
   - [sum](#sum)
   - [tuple](#tuple)
   - [type](#type)
-  - [withExpected](#withexpected)
 - [constructors](#constructors)
   - [fromDecoder](#fromdecoder)
   - [literal](#literal)
@@ -88,6 +88,18 @@ Added in v2.2.3
 
 ```ts
 export declare function lazy<O, A>(id: string, f: () => Codec<O, A>): Codec<O, A>
+```
+
+Added in v2.2.3
+
+## mapLeftWithInput
+
+**Signature**
+
+```ts
+export declare const mapLeftWithInput: <O, A>(
+  f: (actual: unknown, e: FreeSemigroup<DecodeError<string>>) => FreeSemigroup<DecodeError<string>>
+) => (codec: Codec<O, A>) => Codec<O, A>
 ```
 
 Added in v2.2.3
@@ -169,19 +181,6 @@ Added in v2.2.3
 export declare function type<P extends Record<string, Codec<any, any>>>(
   properties: P
 ): Codec<{ [K in keyof P]: OutputOf<P[K]> }, { [K in keyof P]: TypeOf<P[K]> }>
-```
-
-Added in v2.2.3
-
-## withExpected
-
-**Signature**
-
-```ts
-export declare function withExpected<O, A>(
-  codec: Codec<O, A>,
-  expected: (actual: unknown, e: D.DecodeError) => D.DecodeError
-): Codec<O, A>
 ```
 
 Added in v2.2.3

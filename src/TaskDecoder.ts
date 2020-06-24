@@ -141,12 +141,11 @@ export const UnknownRecord: TaskDecoder<Record<string, unknown>> =
  * @category combinators
  * @since 2.2.7
  */
-export const withExpected: <A>(
-  decoder: TaskDecoder<A>,
-  expected: (actual: unknown, e: DecodeError) => DecodeError
-) => TaskDecoder<A> =
+export const mapLeftWithInput: <A>(
+  f: (actual: unknown, e: DecodeError) => DecodeError
+) => (decoder: TaskDecoder<A>) => TaskDecoder<A> =
   /*#__PURE__*/
-  K.withExpected(M)
+  K.mapLeftWithInput(M)
 
 /**
  * @category combinators
