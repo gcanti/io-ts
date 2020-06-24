@@ -45,7 +45,7 @@ export declare function array<M extends URIS2, E>(
   M: Monad2C<M, E> & Bifunctor2<M>
 ): (
   UnknownArray: DecoderT<M, E, Array<unknown>>,
-  onItemError: (i: number, e: E) => E
+  onItemError: (index: number, e: E) => E
 ) => <A>(items: DecoderT<M, E, A>) => DecoderT<M, E, Array<A>>
 ```
 
@@ -108,7 +108,7 @@ export declare function partial<M extends URIS2, E>(
   M: Monad2C<M, E> & Bifunctor2<M>
 ): (
   UnknownRecord: DecoderT<M, E, Record<string, unknown>>,
-  onKeyError: (k: string, e: E) => E
+  onKeyError: (key: string, e: E) => E
 ) => <A>(properties: { [K in keyof A]: DecoderT<M, E, A[K]> }) => DecoderT<M, E, Partial<{ [K in keyof A]: A[K] }>>
 ```
 
@@ -123,7 +123,7 @@ export declare function record<M extends URIS2, E>(
   M: Monad2C<M, E> & Bifunctor2<M>
 ): (
   UnknownRecord: DecoderT<M, E, Record<string, unknown>>,
-  onKeyError: (k: string, e: E) => E
+  onKeyError: (key: string, e: E) => E
 ) => <A>(codomain: DecoderT<M, E, A>) => DecoderT<M, E, Record<string, A>>
 ```
 
@@ -168,7 +168,7 @@ export declare function tuple<M extends URIS2, E>(
   M: Monad2C<M, E> & Bifunctor2<M>
 ): (
   UnknownArray: DecoderT<M, E, Array<unknown>>,
-  onIndexError: (i: number, e: E) => E
+  onIndexError: (index: number, e: E) => E
 ) => <A extends ReadonlyArray<unknown>>(...components: { [K in keyof A]: DecoderT<M, E, A[K]> }) => DecoderT<M, E, A>
 ```
 
@@ -183,7 +183,7 @@ export declare function type<M extends URIS2, E>(
   M: Monad2C<M, E> & Bifunctor2<M>
 ): (
   UnknownRecord: DecoderT<M, E, Record<string, unknown>>,
-  onKeyError: (k: string, e: E) => E
+  onKeyError: (key: string, e: E) => E
 ) => <A>(properties: { [K in keyof A]: DecoderT<M, E, A[K]> }) => DecoderT<M, E, { [K in keyof A]: A[K] }>
 ```
 
@@ -210,12 +210,9 @@ Added in v2.2.7
 **Signature**
 
 ```ts
-export declare const withExpected: <
-  M extends 'io-ts/Codec' | 'io-ts/Encoder' | 'Either' | 'IOEither' | 'TaskEither',
-  E
->(
-  M: Monad2C<M, E> & Bifunctor2<M>
-) => <A>(decoder: DecoderT<M, E, A>, expected: (u: unknown, e: E) => E) => DecoderT<M, E, A>
+export declare const withExpected: <M extends 'io-ts/Codec' | 'io-ts/Encoder' | 'Either' | 'IOEither' | 'TaskEither'>(
+  M: Bifunctor2<M>
+) => <E, A>(decoder: DecoderT<M, E, A>, expected: (u: unknown, e: E) => E) => DecoderT<M, E, A>
 ```
 
 Added in v2.2.7

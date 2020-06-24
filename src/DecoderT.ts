@@ -57,7 +57,7 @@ export const literal = <M extends URIS2, E>(M: MonadThrow2C<M, E>) => (
  * @category combinators
  * @since 2.2.7
  */
-export const withExpected = <M extends URIS2, E>(M: Monad2C<M, E> & Bifunctor2<M>) => <A>(
+export const withExpected = <M extends URIS2>(M: Bifunctor2<M>) => <E, A>(
   decoder: DecoderT<M, E, A>,
   expected: (u: unknown, e: E) => E
 ): DecoderT<M, E, A> => ({
@@ -110,7 +110,7 @@ export function type<M extends URIS2, E>(
   M: Monad2C<M, E> & Bifunctor2<M>
 ): (
   UnknownRecord: DecoderT<M, E, Record<string, unknown>>,
-  onKeyError: (k: string, e: E) => E
+  onKeyError: (key: string, e: E) => E
 ) => <A>(properties: { [K in keyof A]: DecoderT<M, E, A[K]> }) => DecoderT<M, E, { [K in keyof A]: A[K] }> {
   const traverse = traverseRecordWithIndex(M)
   return (UnknownRecord, onKeyError) => (properties) => ({
@@ -131,7 +131,7 @@ export function partial<M extends URIS2, E>(
   M: Monad2C<M, E> & Bifunctor2<M>
 ): (
   UnknownRecord: DecoderT<M, E, Record<string, unknown>>,
-  onKeyError: (k: string, e: E) => E
+  onKeyError: (key: string, e: E) => E
 ) => <A>(properties: { [K in keyof A]: DecoderT<M, E, A[K]> }) => DecoderT<M, E, Partial<{ [K in keyof A]: A[K] }>> {
   const traverse = traverseRecordWithIndex(M)
   const skip = M.of<E.Either<void, unknown>>(E.left(undefined))
@@ -169,13 +169,13 @@ export function array<M extends URIS2, E>(
   M: Monad2C<M, E> & Bifunctor2<M>
 ): (
   UnknownArray: DecoderT<M, E, Array<unknown>>,
-  onItemError: (i: number, e: E) => E
+  onItemError: (index: number, e: E) => E
 ) => <A>(items: DecoderT<M, E, A>) => DecoderT<M, E, Array<A>> {
   const traverse = traverseArrayWithIndex(M)
   return (UnknownArray, onItemError) => (items) => ({
     decode: (u) =>
       M.chain(UnknownArray.decode(u), (us) =>
-        traverse(us, (i, u) => M.mapLeft(items.decode(u), (e) => onItemError(i, e)))
+        traverse(us, (index, u) => M.mapLeft(items.decode(u), (e) => onItemError(index, e)))
       )
   })
 }
@@ -188,13 +188,13 @@ export function record<M extends URIS2, E>(
   M: Monad2C<M, E> & Bifunctor2<M>
 ): (
   UnknownRecord: DecoderT<M, E, Record<string, unknown>>,
-  onKeyError: (k: string, e: E) => E
+  onKeyError: (key: string, e: E) => E
 ) => <A>(codomain: DecoderT<M, E, A>) => DecoderT<M, E, Record<string, A>> {
   const traverse = traverseRecordWithIndex(M)
   return (UnknownRecord, onKeyError) => (codomain) => ({
     decode: (u) =>
       M.chain(UnknownRecord.decode(u), (r) =>
-        traverse(r, (k, u) => M.mapLeft(codomain.decode(u), (e) => onKeyError(k, e)))
+        traverse(r, (key, u) => M.mapLeft(codomain.decode(u), (e) => onKeyError(key, e)))
       )
   })
 }
@@ -207,14 +207,14 @@ export function tuple<M extends URIS2, E>(
   M: Monad2C<M, E> & Bifunctor2<M>
 ): (
   UnknownArray: DecoderT<M, E, Array<unknown>>,
-  onIndexError: (i: number, e: E) => E
+  onIndexError: (index: number, e: E) => E
 ) => <A extends ReadonlyArray<unknown>>(...components: { [K in keyof A]: DecoderT<M, E, A[K]> }) => DecoderT<M, E, A> {
   const traverse = traverseArrayWithIndex(M)
   return (UnknownArray, onIndexError) => (...components) => ({
     decode: (u) =>
       M.chain(UnknownArray.decode(u), (us) =>
-        traverse((components as unknown) as Array<DecoderT<M, E, unknown>>, (i, decoder) =>
-          M.mapLeft(decoder.decode(us[i]), (e) => onIndexError(i, e))
+        traverse((components as unknown) as Array<DecoderT<M, E, unknown>>, (index, decoder) =>
+          M.mapLeft(decoder.decode(us[index]), (e) => onIndexError(index, e))
         )
       ) as any
   })
@@ -231,8 +231,8 @@ export const union = <M extends URIS2, E>(M: Alt2C<M, E> & Bifunctor2<M>) => (
 ): DecoderT<M, E, A[number]> => ({
   decode: (u) => {
     let out: Kind2<M, E, unknown> = M.mapLeft(members[0].decode(u), (e) => onMemberError(0, e))
-    for (let i = 1; i < members.length; i++) {
-      out = M.alt(out, () => M.mapLeft(members[i].decode(u), (e) => onMemberError(i, e)))
+    for (let index = 1; index < members.length; index++) {
+      out = M.alt(out, () => M.mapLeft(members[index].decode(u), (e) => onMemberError(index, e)))
     }
     return out
   }
@@ -301,13 +301,13 @@ const traverseArrayWithIndex = <M extends URIS2, E>(M: Applicative2C<M, E>) => <
   f: (i: number, a: A) => Kind2<M, E, B>
 ): Kind2<M, E, Array<B>> => {
   return as.reduce(
-    (mbs, a, i) =>
+    (mbs, a, index) =>
       M.ap(
         M.map(mbs, (bs) => (b: B) => {
           bs.push(b)
           return bs
         }),
-        f(i, a)
+        f(index, a)
       ),
     M.of<Array<B>>([])
   )
@@ -336,10 +336,10 @@ const traverseRecordWithIndex = <M extends URIS2, E>(M: Applicative2C<M, E>) => 
 
 const compactRecord = <A>(r: Record<string, E.Either<void, A>>): Record<string, A> => {
   const out: Record<string, A> = {}
-  for (const k in r) {
-    const rk = r[k]
+  for (const key in r) {
+    const rk = r[key]
     if (E.isRight(rk)) {
-      out[k] = rk.right
+      out[key] = rk.right
     }
   }
   return out
