@@ -1,10 +1,10 @@
 ---
-title: DecoderT.ts
-nav_order: 4
+title: Kleisli.ts
+nav_order: 12
 parent: Modules
 ---
 
-## DecoderT overview
+## Kleisli overview
 
 Added in v2.2.7
 
@@ -30,7 +30,9 @@ Added in v2.2.7
   - [fromGuard](#fromguard)
   - [literal](#literal)
 - [model](#model)
-  - [DecoderT (interface)](#decodert-interface)
+  - [Kleisli (interface)](#kleisli-interface)
+- [utils](#utils)
+  - [pipe](#pipe)
 
 ---
 
@@ -41,12 +43,9 @@ Added in v2.2.7
 **Signature**
 
 ```ts
-export declare const array: <M extends 'io-ts/Codec' | 'io-ts/Encoder' | 'Either' | 'IOEither' | 'TaskEither', E>(
-  M: Monad2C<M, E> & Bifunctor2<M>
-) => (
-  UnknownArray: DecoderT<M, E, unknown[]>,
-  onItemError: (index: number, e: E) => E
-) => <A>(items: DecoderT<M, E, A>) => DecoderT<M, E, A[]>
+export declare function array<M extends URIS2, E>(
+  M: Applicative2C<M, E> & Bifunctor2<M>
+): (onItemError: (index: number, e: E) => E) => <I, A>(items: Kleisli<M, I, E, A>) => Kleisli<M, Array<I>, E, Array<A>>
 ```
 
 Added in v2.2.7
@@ -58,7 +57,7 @@ Added in v2.2.7
 ```ts
 export declare const intersect: <M extends 'io-ts/Codec' | 'io-ts/Encoder' | 'Either' | 'IOEither' | 'TaskEither', E>(
   M: Apply2C<M, E>
-) => <B>(right: DecoderT<M, E, B>) => <A>(left: DecoderT<M, E, A>) => DecoderT<M, E, A & B>
+) => <IB, B>(right: Kleisli<M, IB, E, B>) => <IA, A>(left: Kleisli<M, IA, E, A>) => Kleisli<M, IA & IB, E, A & B>
 ```
 
 Added in v2.2.7
@@ -70,7 +69,7 @@ Added in v2.2.7
 ```ts
 export declare const lazy: <M extends 'io-ts/Codec' | 'io-ts/Encoder' | 'Either' | 'IOEither' | 'TaskEither'>(
   M: Bifunctor2<M>
-) => <E>(onError: (id: string, e: E) => E) => <A>(id: string, f: () => DecoderT<M, E, A>) => DecoderT<M, E, A>
+) => <E>(onError: (id: string, e: E) => E) => <I, A>(id: string, f: () => Kleisli<M, I, E, A>) => Kleisli<M, I, E, A>
 ```
 
 Added in v2.2.7
@@ -82,7 +81,7 @@ Added in v2.2.7
 ```ts
 export declare const nullable: <M extends 'io-ts/Codec' | 'io-ts/Encoder' | 'Either' | 'IOEither' | 'TaskEither', E>(
   M: Applicative2C<M, E> & Bifunctor2<M>
-) => (onError: (u: unknown, e: E) => E) => <A>(or: DecoderT<M, E, A>) => DecoderT<M, E, A>
+) => <I>(onError: (i: I, e: E) => E) => <A>(or: Kleisli<M, I, E, A>) => Kleisli<M, I, E, A>
 ```
 
 Added in v2.2.7
@@ -94,7 +93,7 @@ Added in v2.2.7
 ```ts
 export declare const parse: <M extends 'io-ts/Codec' | 'io-ts/Encoder' | 'Either' | 'IOEither' | 'TaskEither', E>(
   M: Monad2C<M, E>
-) => <A, B>(parser: (a: A) => Kind2<M, E, B>) => (from: DecoderT<M, E, A>) => DecoderT<M, E, B>
+) => <A, B>(parser: (a: A) => Kind2<M, E, B>) => <I>(from: Kleisli<M, I, E, A>) => Kleisli<M, I, E, B>
 ```
 
 Added in v2.2.7
@@ -104,12 +103,13 @@ Added in v2.2.7
 **Signature**
 
 ```ts
-export declare const partial: <M extends 'io-ts/Codec' | 'io-ts/Encoder' | 'Either' | 'IOEither' | 'TaskEither', E>(
-  M: Monad2C<M, E> & Bifunctor2<M>
-) => (
-  UnknownRecord: DecoderT<M, E, Record<string, unknown>>,
+export declare function partial<M extends URIS2, E>(
+  M: Applicative2C<M, E> & Bifunctor2<M>
+): (
   onKeyError: (key: string, e: E) => E
-) => <A>(properties: { [K in keyof A]: DecoderT<M, E, A[K]> }) => DecoderT<M, E, Partial<{ [K in keyof A]: A[K] }>>
+) => <I, A>(
+  properties: { [K in keyof A]: Kleisli<M, I, E, A[K]> }
+) => Kleisli<M, Record<string, I>, E, Partial<{ [K in keyof A]: A[K] }>>
 ```
 
 Added in v2.2.7
@@ -119,12 +119,11 @@ Added in v2.2.7
 **Signature**
 
 ```ts
-export declare const record: <M extends 'io-ts/Codec' | 'io-ts/Encoder' | 'Either' | 'IOEither' | 'TaskEither', E>(
-  M: Monad2C<M, E> & Bifunctor2<M>
-) => (
-  UnknownRecord: DecoderT<M, E, Record<string, unknown>>,
+export declare function record<M extends URIS2, E>(
+  M: Applicative2C<M, E> & Bifunctor2<M>
+): (
   onKeyError: (key: string, e: E) => E
-) => <A>(codomain: DecoderT<M, E, A>) => DecoderT<M, E, Record<string, A>>
+) => <I, A>(codomain: Kleisli<M, I, E, A>) => Kleisli<M, Record<string, I>, E, Record<string, A>>
 ```
 
 Added in v2.2.7
@@ -136,10 +135,10 @@ Added in v2.2.7
 ```ts
 export declare const refine: <M extends 'io-ts/Codec' | 'io-ts/Encoder' | 'Either' | 'IOEither' | 'TaskEither', E>(
   M: MonadThrow2C<M, E> & Bifunctor2<M>
-) => <A, B extends A>(
+) => <A, B extends A, I>(
   refinement: (a: A) => a is B,
   onError: (a: A) => E
-) => (from: DecoderT<M, E, A>) => DecoderT<M, E, B>
+) => (from: Kleisli<M, I, E, A>) => Kleisli<M, I, E, B>
 ```
 
 Added in v2.2.7
@@ -152,9 +151,12 @@ Added in v2.2.7
 export declare const sum: <M extends 'io-ts/Codec' | 'io-ts/Encoder' | 'Either' | 'IOEither' | 'TaskEither', E>(
   M: MonadThrow2C<M, E>
 ) => (
-  UnknownRecord: DecoderT<M, E, Record<string, unknown>>,
   onTagError: (tag: string, value: unknown, tags: readonly string[]) => E
-) => <T extends string>(tag: T) => <A>(members: { [K in keyof A]: DecoderT<M, E, A[K]> }) => DecoderT<M, E, A[keyof A]>
+) => <T extends string>(
+  tag: T
+) => <I extends Record<string, unknown>, A>(
+  members: { [K in keyof A]: Kleisli<M, I, E, A[K]> }
+) => Kleisli<M, I, E, A[keyof A]>
 ```
 
 Added in v2.2.7
@@ -164,12 +166,13 @@ Added in v2.2.7
 **Signature**
 
 ```ts
-export declare const tuple: <M extends 'io-ts/Codec' | 'io-ts/Encoder' | 'Either' | 'IOEither' | 'TaskEither', E>(
-  M: Monad2C<M, E> & Bifunctor2<M>
-) => (
-  UnknownArray: DecoderT<M, E, unknown[]>,
+export declare function tuple<M extends URIS2, E>(
+  M: Applicative2C<M, E> & Bifunctor2<M>
+): (
   onIndexError: (index: number, e: E) => E
-) => <A extends readonly unknown[]>(...components: { [K in keyof A]: DecoderT<M, E, A[K]> }) => DecoderT<M, E, A>
+) => <I, A extends ReadonlyArray<unknown>>(
+  ...components: { [K in keyof A]: Kleisli<M, I, E, A[K]> }
+) => Kleisli<M, Array<I>, E, A>
 ```
 
 Added in v2.2.7
@@ -179,12 +182,13 @@ Added in v2.2.7
 **Signature**
 
 ```ts
-export declare const type: <M extends 'io-ts/Codec' | 'io-ts/Encoder' | 'Either' | 'IOEither' | 'TaskEither', E>(
-  M: Monad2C<M, E> & Bifunctor2<M>
-) => (
-  UnknownRecord: DecoderT<M, E, Record<string, unknown>>,
+export declare function type<M extends URIS2, E>(
+  M: Applicative2C<M, E> & Bifunctor2<M>
+): (
   onKeyError: (key: string, e: E) => E
-) => <A>(properties: { [K in keyof A]: DecoderT<M, E, A[K]> }) => DecoderT<M, E, { [K in keyof A]: A[K] }>
+) => <I, A>(
+  properties: { [K in keyof A]: Kleisli<M, I, E, A[K]> }
+) => Kleisli<M, Record<string, I>, E, { [K in keyof A]: A[K] }>
 ```
 
 Added in v2.2.7
@@ -198,9 +202,9 @@ export declare const union: <M extends 'io-ts/Codec' | 'io-ts/Encoder' | 'Either
   M: Alt2C<M, E> & Bifunctor2<M>
 ) => (
   onMemberError: (index: number, e: E) => E
-) => <A extends readonly [unknown, ...unknown[]]>(
-  ...members: { [K in keyof A]: DecoderT<M, E, A[K]> }
-) => DecoderT<M, E, A[number]>
+) => <I, A extends readonly [unknown, ...unknown[]]>(
+  ...members: { [K in keyof A]: Kleisli<M, I, E, A[K]> }
+) => Kleisli<M, I, E, A[number]>
 ```
 
 Added in v2.2.7
@@ -212,7 +216,7 @@ Added in v2.2.7
 ```ts
 export declare const withExpected: <M extends 'io-ts/Codec' | 'io-ts/Encoder' | 'Either' | 'IOEither' | 'TaskEither'>(
   M: Bifunctor2<M>
-) => <E, A>(decoder: DecoderT<M, E, A>, expected: (u: unknown, e: E) => E) => DecoderT<M, E, A>
+) => <I, E, A>(decoder: Kleisli<M, I, E, A>, expected: (i: I, e: E) => E) => Kleisli<M, I, E, A>
 ```
 
 Added in v2.2.7
@@ -226,7 +230,7 @@ Added in v2.2.7
 ```ts
 export declare const fromGuard: <M extends 'io-ts/Codec' | 'io-ts/Encoder' | 'Either' | 'IOEither' | 'TaskEither', E>(
   M: MonadThrow2C<M, E>
-) => <A>(guard: G.Guard<A>, onError: (u: unknown) => E) => DecoderT<M, E, A>
+) => <A, I>(guard: G.Guard<A>, onError: (i: I) => E) => Kleisli<M, I, E, A>
 ```
 
 Added in v2.2.7
@@ -238,21 +242,37 @@ Added in v2.2.7
 ```ts
 export declare const literal: <M extends 'io-ts/Codec' | 'io-ts/Encoder' | 'Either' | 'IOEither' | 'TaskEither', E>(
   M: MonadThrow2C<M, E>
-) => (
-  onError: (u: unknown, values: readonly [Literal, ...Literal[]]) => E
-) => <A extends readonly [Literal, ...Literal[]]>(...values: A) => DecoderT<M, E, A[number]>
+) => <I>(
+  onError: (i: I, values: readonly [Literal, ...Literal[]]) => E
+) => <A extends readonly [Literal, ...Literal[]]>(...values: A) => Kleisli<M, I, E, A[number]>
 ```
 
 Added in v2.2.7
 
 # model
 
-## DecoderT (interface)
+## Kleisli (interface)
 
 **Signature**
 
 ```ts
-export interface DecoderT<M extends URIS2, E, A> extends K.Kleisli<M, unknown, E, A> {}
+export interface Kleisli<M extends URIS2, I, E, A> {
+  readonly decode: (i: I) => Kind2<M, E, A>
+}
+```
+
+Added in v2.2.7
+
+# utils
+
+## pipe
+
+**Signature**
+
+```ts
+export declare const pipe: <M extends 'io-ts/Codec' | 'io-ts/Encoder' | 'Either' | 'IOEither' | 'TaskEither', E>(
+  M: Monad2C<M, E>
+) => <I, A, B>(ia: Kleisli<M, I, E, A>, ab: Kleisli<M, A, E, B>) => Kleisli<M, I, E, B>
 ```
 
 Added in v2.2.7
