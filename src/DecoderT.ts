@@ -94,7 +94,7 @@ export const nullable = <M extends URIS2, E>(M: Applicative2C<M, E> & Bifunctor2
 ) => <A>(or: DecoderT<M, E, A>): DecoderT<M, E, null | A> => ({
   decode: (u) =>
     u === null
-      ? M.of<null | A>(u)
+      ? M.of<null | A>(null)
       : M.bimap(
           or.decode(u),
           (e) => onError(u, e),
