@@ -163,7 +163,7 @@ export const withExpected: <A>(
 export const refine = <A, B extends A>(
   refinement: (a: A) => a is B,
   id: string
-): ((from: TaskDecoder<A>) => TaskDecoder<B>) => refineM(refinement, (u) => FS.of(DE.leaf(u, id)))
+): ((from: TaskDecoder<A>) => TaskDecoder<B>) => refineM(refinement, (a) => FS.of(DE.leaf(a, id)))
 
 /**
  * @category combinators

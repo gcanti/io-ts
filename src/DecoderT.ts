@@ -43,15 +43,11 @@ export const fromGuard = <M extends URIS2, E>(M: MonadThrow2C<M, E>) => <A>(
  * @category constructors
  * @since 2.2.7
  */
-export function literal<M extends URIS2, E>(
-  M: MonadThrow2C<M, E>
-): (
+export const literal = <M extends URIS2, E>(M: MonadThrow2C<M, E>) => (
   onError: (u: unknown, values: readonly [Literal, ...Array<Literal>]) => E
-) => <A extends readonly [Literal, ...Array<Literal>]>(...values: A) => DecoderT<M, E, A[number]> {
-  return (onError) => (...values) => ({
-    decode: (u) => (G.literal(...values).is(u) ? M.of(u) : M.throwError(onError(u, values)))
-  })
-}
+) => <A extends readonly [Literal, ...Array<Literal>]>(...values: A): DecoderT<M, E, A[number]> => ({
+  decode: (u) => (G.literal(...values).is(u) ? M.of(u) : M.throwError(onError(u, values)))
+})
 
 // -------------------------------------------------------------------------------------
 // combinators
@@ -63,7 +59,7 @@ export function literal<M extends URIS2, E>(
  */
 export const withExpected = <M extends URIS2, E>(M: Monad2C<M, E> & Bifunctor2<M>) => <A>(
   decoder: DecoderT<M, E, A>,
-  expected: (actual: unknown, e: E) => E
+  expected: (u: unknown, e: E) => E
 ): DecoderT<M, E, A> => ({
   decode: (u) => M.mapLeft(decoder.decode(u), (e) => expected(u, e))
 })
@@ -74,9 +70,9 @@ export const withExpected = <M extends URIS2, E>(M: Monad2C<M, E> & Bifunctor2<M
  */
 export const refine = <M extends URIS2, E>(M: MonadThrow2C<M, E> & Bifunctor2<M>) => <A, B extends A>(
   refinement: (a: A) => a is B,
-  onError: (u: unknown) => E
+  onError: (a: A) => E
 ) => (from: DecoderT<M, E, A>): DecoderT<M, E, B> => ({
-  decode: (u) => M.chain(from.decode(u), (a) => (refinement(a) ? M.of(a) : M.throwError(onError(u))))
+  decode: (u) => M.chain(from.decode(u), (a) => (refinement(a) ? M.of(a) : M.throwError(onError(a))))
 })
 
 /**
@@ -120,8 +116,8 @@ export function type<M extends URIS2, E>(
   return (UnknownRecord, onKeyError) => (properties) => ({
     decode: (u) =>
       M.chain(UnknownRecord.decode(u), (r) =>
-        traverse(properties as Record<string, DecoderT<M, E, unknown>>, (k, decoder) =>
-          M.mapLeft(decoder.decode(r[k]), (e) => onKeyError(k, e))
+        traverse(properties as Record<string, DecoderT<M, E, unknown>>, (key, decoder) =>
+          M.mapLeft(decoder.decode(r[key]), (e) => onKeyError(key, e))
         )
       ) as any
   })
@@ -144,10 +140,10 @@ export function partial<M extends URIS2, E>(
     decode: (u) =>
       M.map(
         M.chain(UnknownRecord.decode(u), (r) =>
-          traverse(properties as Record<string, DecoderT<M, E, unknown>>, (k, decoder) => {
-            const rk = r[k]
+          traverse(properties as Record<string, DecoderT<M, E, unknown>>, (key, decoder) => {
+            const rk = r[key]
             if (rk === undefined) {
-              return k in r
+              return key in r
                 ? // don't strip undefined properties
                   undef
                 : // don't add missing properties
@@ -155,7 +151,7 @@ export function partial<M extends URIS2, E>(
             }
             return M.bimap(
               decoder.decode(rk),
-              (e) => onKeyError(k, e),
+              (e) => onKeyError(key, e),
               (a) => E.right<void, unknown>(a)
             )
           })
