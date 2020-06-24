@@ -68,9 +68,9 @@ Added in v2.2.7
 **Signature**
 
 ```ts
-export declare const lazy: <M extends 'io-ts/Codec' | 'io-ts/Encoder' | 'Either' | 'IOEither' | 'TaskEither', E>(
-  M: MonadThrow2C<M, E> & Bifunctor2<M>
-) => (onError: (id: string, e: E) => E) => <A>(id: string, f: () => DecoderT<M, E, A>) => DecoderT<M, E, A>
+export declare const lazy: <M extends 'io-ts/Codec' | 'io-ts/Encoder' | 'Either' | 'IOEither' | 'TaskEither'>(
+  M: Bifunctor2<M>
+) => <E>(onError: (id: string, e: E) => E) => <A>(id: string, f: () => DecoderT<M, E, A>) => DecoderT<M, E, A>
 ```
 
 Added in v2.2.7
