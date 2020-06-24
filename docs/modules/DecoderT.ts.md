@@ -93,7 +93,7 @@ Added in v2.2.7
 
 ```ts
 export declare const parse: <M extends 'io-ts/Codec' | 'io-ts/Encoder' | 'Either' | 'IOEither' | 'TaskEither', E>(
-  M: MonadThrow2C<M, E> & Bifunctor2<M>
+  M: Monad2C<M, E>
 ) => <A, B>(parser: (a: A) => Kind2<M, E, B>) => (from: DecoderT<M, E, A>) => DecoderT<M, E, B>
 ```
 
