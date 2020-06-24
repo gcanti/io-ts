@@ -13,13 +13,16 @@ Added in v2.2.7
 <h2 class="text-delta">Table of contents</h2>
 
 - [combinators](#combinators)
+  - [alt](#alt)
   - [array](#array)
   - [intersect](#intersect)
   - [lazy](#lazy)
+  - [map](#map)
   - [mapLeftWithInput](#mapleftwithinput)
   - [nullable](#nullable)
   - [parse](#parse)
   - [partial](#partial)
+  - [pipe](#pipe)
   - [record](#record)
   - [refine](#refine)
   - [sum](#sum)
@@ -31,12 +34,22 @@ Added in v2.2.7
   - [literal](#literal)
 - [model](#model)
   - [Kleisli2 (interface)](#kleisli2-interface)
-- [utils](#utils)
-  - [pipe](#pipe)
 
 ---
 
 # combinators
+
+## alt
+
+**Signature**
+
+```ts
+export declare const alt: <F extends 'io-ts/Codec' | 'io-ts/Encoder' | 'Either' | 'IOEither' | 'TaskEither', E>(
+  A: Alt2C<F, E>
+) => <I, A>(that: Lazy<Kleisli2<F, I, E, A>>) => (me: Kleisli2<F, I, E, A>) => Kleisli2<F, I, E, A>
+```
+
+Added in v2.2.7
 
 ## array
 
@@ -72,6 +85,18 @@ Added in v2.2.7
 export declare const lazy: <M extends 'io-ts/Codec' | 'io-ts/Encoder' | 'Either' | 'IOEither' | 'TaskEither'>(
   M: Bifunctor2<M>
 ) => <E>(onError: (id: string, e: E) => E) => <I, A>(id: string, f: () => Kleisli2<M, I, E, A>) => Kleisli2<M, I, E, A>
+```
+
+Added in v2.2.7
+
+## map
+
+**Signature**
+
+```ts
+export declare const map: <F extends 'io-ts/Codec' | 'io-ts/Encoder' | 'Either' | 'IOEither' | 'TaskEither', E>(
+  F: Functor2C<F, E>
+) => <A, B>(f: (a: A) => B) => <I>(ia: Kleisli2<F, I, E, A>) => Kleisli2<F, I, E, B>
 ```
 
 Added in v2.2.7
@@ -129,6 +154,18 @@ export declare function partial<M extends URIS2, E>(
 ) => <I, A>(
   properties: { [K in keyof A]: Kleisli2<M, I, E, A[K]> }
 ) => Kleisli2<M, Record<string, I>, E, Partial<{ [K in keyof A]: A[K] }>>
+```
+
+Added in v2.2.7
+
+## pipe
+
+**Signature**
+
+```ts
+export declare const pipe: <M extends 'io-ts/Codec' | 'io-ts/Encoder' | 'Either' | 'IOEither' | 'TaskEither', E>(
+  M: Monad2C<M, E>
+) => <I, A, B>(ia: Kleisli2<M, I, E, A>, ab: Kleisli2<M, A, E, B>) => Kleisli2<M, I, E, B>
 ```
 
 Added in v2.2.7
@@ -266,20 +303,6 @@ Added in v2.2.7
 export interface Kleisli2<M extends URIS2, I, E, A> {
   readonly decode: (i: I) => Kind2<M, E, A>
 }
-```
-
-Added in v2.2.7
-
-# utils
-
-## pipe
-
-**Signature**
-
-```ts
-export declare const pipe: <M extends 'io-ts/Codec' | 'io-ts/Encoder' | 'Either' | 'IOEither' | 'TaskEither', E>(
-  M: Monad2C<M, E>
-) => <I, A, B>(ia: Kleisli2<M, I, E, A>, ab: Kleisli2<M, A, E, B>) => Kleisli2<M, I, E, B>
 ```
 
 Added in v2.2.7

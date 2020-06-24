@@ -245,17 +245,9 @@ export const lazy: <A>(id: string, f: () => Decoder<A>) => Decoder<A> =
 // non-pipeables
 // -------------------------------------------------------------------------------------
 
-const map_: <A, B>(fa: Decoder<A>, f: (a: A) => B) => Decoder<B> = (fa, f) => ({
-  decode: (u) => pipe(fa.decode(u), E.map(f))
-})
+const map_: <A, B>(fa: Decoder<A>, f: (a: A) => B) => Decoder<B> = (fa, f) => pipe(fa, map(f))
 
-const alt_: <A>(me: Decoder<A>, that: () => Decoder<A>) => Decoder<A> = (me, that) => ({
-  decode: (u) =>
-    pipe(
-      me.decode(u),
-      E.alt(() => that().decode(u))
-    )
-})
+const alt_: <A>(me: Decoder<A>, that: () => Decoder<A>) => Decoder<A> = (me, that) => pipe(me, alt(that))
 
 // -------------------------------------------------------------------------------------
 // pipeables
@@ -265,13 +257,17 @@ const alt_: <A>(me: Decoder<A>, that: () => Decoder<A>) => Decoder<A> = (me, tha
  * @category Functor
  * @since 2.2.7
  */
-export const map: <A, B>(f: (a: A) => B) => (fa: Decoder<A>) => Decoder<B> = (f) => (fa) => map_(fa, f)
+export const map: <A, B>(f: (a: A) => B) => (fa: Decoder<A>) => Decoder<B> =
+  /*#__PURE__*/
+  K2.map(M)
 
 /**
  * @category Alt
  * @since 2.2.7
  */
-export const alt: <A>(that: () => Decoder<A>) => (me: Decoder<A>) => Decoder<A> = (that) => (fa) => alt_(fa, that)
+export const alt: <A>(that: () => Decoder<A>) => (me: Decoder<A>) => Decoder<A> =
+  /*#__PURE__*/
+  K2.alt(M)
 
 // -------------------------------------------------------------------------------------
 // instances
@@ -281,7 +277,7 @@ export const alt: <A>(that: () => Decoder<A>) => (me: Decoder<A>) => Decoder<A> 
  * @category instances
  * @since 2.2.7
  */
-export const URI = 'io-ts/Decoder2'
+export const URI = 'io-ts/Decoder'
 
 /**
  * @category instances

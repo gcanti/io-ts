@@ -6,11 +6,13 @@ import { Applicative2C } from 'fp-ts/lib/Applicative'
 import { Apply2C } from 'fp-ts/lib/Apply'
 import { Bifunctor2 } from 'fp-ts/lib/Bifunctor'
 import * as E from 'fp-ts/lib/Either'
+import { Functor2C } from 'fp-ts/lib/Functor'
 import { Kind2, URIS2 } from 'fp-ts/lib/HKT'
 import { Monad2C } from 'fp-ts/lib/Monad'
 import { MonadThrow2C } from 'fp-ts/lib/MonadThrow'
 import * as G from './Guard'
 import { intersect_, Literal, memoize } from './Schemable'
+import { Lazy } from 'fp-ts/lib/function'
 
 // -------------------------------------------------------------------------------------
 // model
@@ -282,6 +284,37 @@ export const lazy = <M extends URIS2>(M: Bifunctor2<M>) => <E>(
   }
 }
 
+/**
+ * @category combinators
+ * @since 2.2.7
+ */
+export const pipe = <M extends URIS2, E>(M: Monad2C<M, E>) => <I, A, B>(
+  ia: Kleisli2<M, I, E, A>,
+  ab: Kleisli2<M, A, E, B>
+): Kleisli2<M, I, E, B> => ({
+  decode: (i) => M.chain(ia.decode(i), ab.decode)
+})
+
+/**
+ * @category combinators
+ * @since 2.2.7
+ */
+export const map = <F extends URIS2, E>(F: Functor2C<F, E>) => <A, B>(f: (a: A) => B) => <I>(
+  ia: Kleisli2<F, I, E, A>
+): Kleisli2<F, I, E, B> => ({
+  decode: (i) => F.map(ia.decode(i), f)
+})
+
+/**
+ * @category combinators
+ * @since 2.2.7
+ */
+export const alt = <F extends URIS2, E>(A: Alt2C<F, E>) => <I, A>(that: Lazy<Kleisli2<F, I, E, A>>) => (
+  me: Kleisli2<F, I, E, A>
+): Kleisli2<F, I, E, A> => ({
+  decode: (i) => A.alt(me.decode(i), () => that().decode(i))
+})
+
 // -------------------------------------------------------------------------------------
 // utils
 // -------------------------------------------------------------------------------------
@@ -334,13 +367,3 @@ const compactRecord = <A>(r: Record<string, E.Either<void, A>>): Record<string, 
   }
   return out
 }
-
-/**
- * @since 2.2.7
- */
-export const pipe = <M extends URIS2, E>(M: Monad2C<M, E>) => <I, A, B>(
-  ia: Kleisli2<M, I, E, A>,
-  ab: Kleisli2<M, A, E, B>
-): Kleisli2<M, I, E, B> => ({
-  decode: (i) => M.chain(ia.decode(i), ab.decode)
-})

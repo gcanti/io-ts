@@ -42,8 +42,8 @@ Added in v2.2.7
 - [instances](#instances)
   - [URI](#uri)
   - [URI (type alias)](#uri-type-alias)
-  - [altDecoder](#altdecoder)
-  - [functorDecoder](#functordecoder)
+  - [altTaskDecoder](#alttaskdecoder)
+  - [functorTaskDecoder](#functortaskdecoder)
   - [schemableTaskDecoder](#schemabletaskdecoder)
 - [model](#model)
   - [TaskDecoder (interface)](#taskdecoder-interface)
@@ -330,22 +330,22 @@ export type URI = typeof URI
 
 Added in v2.2.7
 
-## altDecoder
+## altTaskDecoder
 
 **Signature**
 
 ```ts
-export declare const altDecoder: Alt1<'io-ts/TaskDecoder'>
+export declare const altTaskDecoder: Alt1<'io-ts/TaskDecoder'>
 ```
 
 Added in v2.2.7
 
-## functorDecoder
+## functorTaskDecoder
 
 **Signature**
 
 ```ts
-export declare const functorDecoder: Functor1<'io-ts/TaskDecoder'>
+export declare const functorTaskDecoder: Functor1<'io-ts/TaskDecoder'>
 ```
 
 Added in v2.2.7

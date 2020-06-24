@@ -40,21 +40,16 @@ const Int: D.TaskDecoder<Int> = pipe(
 
 describe('TaskDecoder', () => {
   // -------------------------------------------------------------------------------------
-  // pipeables
+  // instances
   // -------------------------------------------------------------------------------------
+
   it('map', async () => {
-    const decoder = pipe(
-      D.string,
-      D.map((s) => s + '!')
-    )
+    const decoder = D.functorTaskDecoder.map(D.string, (s) => s + '!')
     assert.deepStrictEqual(await decoder.decode('a')(), E.right('a!'))
   })
 
   it('alt', async () => {
-    const decoder = pipe(
-      D.string,
-      D.alt<string | number>(() => D.number)
-    )
+    const decoder = D.altTaskDecoder.alt<string | number>(D.string, () => D.number)
     assert.deepStrictEqual(await decoder.decode('a')(), E.right('a'))
     assert.deepStrictEqual(await decoder.decode(1)(), E.right(1))
   })

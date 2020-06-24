@@ -39,21 +39,16 @@ const Int: D.Decoder<Int> = pipe(
 
 describe('Decoder', () => {
   // -------------------------------------------------------------------------------------
-  // pipeables
+  // instances
   // -------------------------------------------------------------------------------------
-  it('map', () => {
-    const decoder = pipe(
-      D.string,
-      D.map((s) => s + '!')
-    )
+
+  it('functorDecoder', () => {
+    const decoder = D.functorDecoder.map(D.string, (s) => s + '!')
     assert.deepStrictEqual(decoder.decode('a'), E.right('a!'))
   })
 
-  it('alt', () => {
-    const decoder = pipe(
-      D.string,
-      D.alt<string | number>(() => D.number)
-    )
+  it('altDecoder', () => {
+    const decoder = D.altDecoder.alt<string | number>(D.string, () => D.number)
     assert.deepStrictEqual(decoder.decode('a'), E.right('a'))
     assert.deepStrictEqual(decoder.decode(1), E.right(1))
   })
