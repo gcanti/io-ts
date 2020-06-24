@@ -281,7 +281,7 @@ export const sum = <M extends URIS2, E>(M: MonadThrow2C<M, E>) => (
  * @category combinators
  * @since 2.2.7
  */
-export const lazy = <M extends URIS2, E>(M: MonadThrow2C<M, E> & Bifunctor2<M>) => (
+export const lazy = <M extends URIS2>(M: Bifunctor2<M>) => <E>(
   onError: (id: string, e: E) => E
 ): (<A>(id: string, f: () => DecoderT<M, E, A>) => DecoderT<M, E, A>) => {
   return <A>(id: string, f: () => DecoderT<M, E, A>): DecoderT<M, E, A> => {
