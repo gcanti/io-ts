@@ -79,9 +79,9 @@ export const refine = <M extends URIS2, E>(M: MonadThrow2C<M, E> & Bifunctor2<M>
  * @category combinators
  * @since 2.2.7
  */
-export const parse = <M extends URIS2, E>(M: MonadThrow2C<M, E> & Bifunctor2<M>) => <A, B>(
-  parser: (a: A) => Kind2<M, E, B>
-) => (from: DecoderT<M, E, A>): DecoderT<M, E, B> => ({
+export const parse = <M extends URIS2, E>(M: Monad2C<M, E>) => <A, B>(parser: (a: A) => Kind2<M, E, B>) => (
+  from: DecoderT<M, E, A>
+): DecoderT<M, E, B> => ({
   decode: (u) => M.chain(from.decode(u), (a) => parser(a))
 })
 
