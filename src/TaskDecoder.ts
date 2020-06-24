@@ -10,11 +10,11 @@ import * as FS from '../src/FreeSemigroup'
 import * as DE from './DecodeError'
 import * as D from './Decoder'
 import * as G from './Guard'
-import * as K from './Kleisli'
+import * as D2 from './Kleisli2'
 import { Literal, Schemable1, WithRefine1, WithUnion1, WithUnknownContainers1 } from './Schemable'
 
 // -------------------------------------------------------------------------------------
-// Kleisli config
+// Kleisli2 config
 // -------------------------------------------------------------------------------------
 
 const M =
@@ -79,7 +79,7 @@ export const fromDecoder = <A>(decoder: D.Decoder<A>): TaskDecoder<A> => ({
  * @since 2.2.7
  */
 export const fromGuard = <A>(guard: G.Guard<A>, expected: string): TaskDecoder<A> =>
-  K.fromGuard(M)(guard, (u) => FS.of(DE.leaf(u, expected)))
+  D2.fromGuard(M)(guard, (u) => FS.of(DE.leaf(u, expected)))
 
 /**
  * @category constructors
@@ -87,7 +87,7 @@ export const fromGuard = <A>(guard: G.Guard<A>, expected: string): TaskDecoder<A
  */
 export const literal: <A extends readonly [Literal, ...Array<Literal>]>(...values: A) => TaskDecoder<A[number]> =
   /*#__PURE__*/
-  K.literal(M)((u, values) => FS.of(DE.leaf(u, values.map((value) => JSON.stringify(value)).join(' | '))))
+  D2.literal(M)((u, values) => FS.of(DE.leaf(u, values.map((value) => JSON.stringify(value)).join(' | '))))
 
 // -------------------------------------------------------------------------------------
 // primitives
@@ -145,7 +145,7 @@ export const mapLeftWithInput: <A>(
   f: (actual: unknown, e: DecodeError) => DecodeError
 ) => (decoder: TaskDecoder<A>) => TaskDecoder<A> =
   /*#__PURE__*/
-  K.mapLeftWithInput(M)
+  D2.mapLeftWithInput(M)
 
 /**
  * @category combinators
@@ -154,7 +154,7 @@ export const mapLeftWithInput: <A>(
 export const refine = <A, B extends A>(
   refinement: (a: A) => a is B,
   id: string
-): ((from: TaskDecoder<A>) => TaskDecoder<B>) => K.refine(M)(refinement, (a) => FS.of(DE.leaf(a, id)))
+): ((from: TaskDecoder<A>) => TaskDecoder<B>) => D2.refine(M)(refinement, (a) => FS.of(DE.leaf(a, id)))
 
 /**
  * @category combinators
@@ -164,7 +164,7 @@ export const parse: <A, B>(
   parser: (a: A) => TE.TaskEither<DecodeError, B>
 ) => (from: TaskDecoder<A>) => TaskDecoder<B> =
   /*#__PURE__*/
-  K.parse(M)
+  D2.parse(M)
 
 /**
  * @category combinators
@@ -172,14 +172,14 @@ export const parse: <A, B>(
  */
 export const nullable: <A>(or: TaskDecoder<A>) => TaskDecoder<null | A> =
   /*#__PURE__*/
-  K.nullable(M)((u, e) => FS.concat(FS.of(DE.member(0, FS.of(DE.leaf(u, 'null')))), FS.of(DE.member(1, e))))
+  D2.nullable(M)((u, e) => FS.concat(FS.of(DE.member(0, FS.of(DE.leaf(u, 'null')))), FS.of(DE.member(1, e))))
 
 /**
  * @category combinators
  * @since 2.2.7
  */
 export const type = <A>(properties: { [K in keyof A]: TaskDecoder<A[K]> }): TaskDecoder<{ [K in keyof A]: A[K] }> =>
-  K.pipe(M)(UnknownRecord, K.type(M)((k, e) => FS.of(DE.key(k, DE.required, e)))(properties))
+  D2.pipe(M)(UnknownRecord, D2.type(M)((k, e) => FS.of(DE.key(k, DE.required, e)))(properties))
 
 /**
  * @category combinators
@@ -188,21 +188,21 @@ export const type = <A>(properties: { [K in keyof A]: TaskDecoder<A[K]> }): Task
 export const partial = <A>(
   properties: { [K in keyof A]: TaskDecoder<A[K]> }
 ): TaskDecoder<Partial<{ [K in keyof A]: A[K] }>> =>
-  K.pipe(M)(UnknownRecord, K.partial(M)((k, e) => FS.of(DE.key(k, DE.optional, e)))(properties))
+  D2.pipe(M)(UnknownRecord, D2.partial(M)((k, e) => FS.of(DE.key(k, DE.optional, e)))(properties))
 
 /**
  * @category combinators
  * @since 2.2.7
  */
 export const array = <A>(items: TaskDecoder<A>): TaskDecoder<Array<A>> =>
-  K.pipe(M)(UnknownArray, K.array(M)((i, e) => FS.of(DE.index(i, DE.optional, e)))(items))
+  D2.pipe(M)(UnknownArray, D2.array(M)((i, e) => FS.of(DE.index(i, DE.optional, e)))(items))
 
 /**
  * @category combinators
  * @since 2.2.7
  */
 export const record = <A>(codomain: TaskDecoder<A>): TaskDecoder<Record<string, A>> =>
-  K.pipe(M)(UnknownRecord, K.record(M)((k, e) => FS.of(DE.key(k, DE.optional, e)))(codomain))
+  D2.pipe(M)(UnknownRecord, D2.record(M)((k, e) => FS.of(DE.key(k, DE.optional, e)))(codomain))
 
 /**
  * @category combinators
@@ -211,7 +211,7 @@ export const record = <A>(codomain: TaskDecoder<A>): TaskDecoder<Record<string, 
 export const tuple = <A extends ReadonlyArray<unknown>>(
   ...components: { [K in keyof A]: TaskDecoder<A[K]> }
 ): TaskDecoder<A> =>
-  K.pipe(M)(UnknownArray, K.tuple(M)((i, e) => FS.of(DE.index(i, DE.required, e)))(...(components as any)))
+  D2.pipe(M)(UnknownArray, D2.tuple(M)((i, e) => FS.of(DE.index(i, DE.required, e)))(...(components as any)))
 
 /**
  * @category combinators
@@ -221,7 +221,7 @@ export const union: <A extends readonly [unknown, ...Array<unknown>]>(
   ...members: { [K in keyof A]: TaskDecoder<A[K]> }
 ) => TaskDecoder<A[number]> =
   /*#__PURE__*/
-  K.union(M)((i, e) => FS.of(DE.member(i, e))) as any
+  D2.union(M)((i, e) => FS.of(DE.member(i, e))) as any
 
 /**
  * @category combinators
@@ -229,7 +229,7 @@ export const union: <A extends readonly [unknown, ...Array<unknown>]>(
  */
 export const intersect: <B>(right: TaskDecoder<B>) => <A>(left: TaskDecoder<A>) => TaskDecoder<A & B> =
   /*#__PURE__*/
-  K.intersect(M)
+  D2.intersect(M)
 
 /**
  * @category combinators
@@ -238,9 +238,9 @@ export const intersect: <B>(right: TaskDecoder<B>) => <A>(left: TaskDecoder<A>) 
 export const sum = <T extends string>(tag: T) => <A>(
   members: { [K in keyof A]: TaskDecoder<A[K]> }
 ): TaskDecoder<A[keyof A]> =>
-  K.pipe(M)(
+  D2.pipe(M)(
     UnknownRecord,
-    K.sum(M)((tag, value, keys) =>
+    D2.sum(M)((tag, value, keys) =>
       FS.of(
         DE.key(
           tag,
@@ -257,7 +257,7 @@ export const sum = <T extends string>(tag: T) => <A>(
  */
 export const lazy: <A>(id: string, f: () => TaskDecoder<A>) => TaskDecoder<A> =
   /*#__PURE__*/
-  K.lazy(M)((id, e) => FS.of(DE.lazy(id, e)))
+  D2.lazy(M)((id, e) => FS.of(DE.lazy(id, e)))
 
 // -------------------------------------------------------------------------------------
 // non-pipeables
