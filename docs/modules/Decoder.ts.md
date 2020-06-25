@@ -23,6 +23,7 @@ Added in v2.2.7
   - [map](#map)
 - [combinators](#combinators)
   - [array](#array)
+  - [compose](#compose)
   - [intersect](#intersect)
   - [lazy](#lazy)
   - [mapLeftWithInput](#mapleftwithinput)
@@ -53,6 +54,7 @@ Added in v2.2.7
   - [number](#number)
   - [string](#string)
 - [utils](#utils)
+  - [TypeOf (type alias)](#typeof-type-alias)
   - [draw](#draw)
 
 ---
@@ -76,7 +78,7 @@ Added in v2.2.7
 **Signature**
 
 ```ts
-export type DecodeError = FS.FreeSemigroup<DE.DecodeError<string>>
+export type DecodeError = KD.DecodeError
 ```
 
 Added in v2.2.7
@@ -138,6 +140,16 @@ export declare const array: <A>(items: Decoder<A>) => Decoder<A[]>
 
 Added in v2.2.7
 
+## compose
+
+**Signature**
+
+```ts
+export declare const compose: <A, B>(to: KD.KleisliDecoder<A, B>) => (from: Decoder<A>) => Decoder<B>
+```
+
+Added in v2.2.7
+
 ## intersect
 
 **Signature**
@@ -164,7 +176,7 @@ Added in v2.2.7
 
 ```ts
 export declare const mapLeftWithInput: (
-  f: (actual: unknown, e: FS.FreeSemigroup<DE.DecodeError<string>>) => FS.FreeSemigroup<DE.DecodeError<string>>
+  f: (input: unknown, e: FS.FreeSemigroup<DE.DecodeError<string>>) => FS.FreeSemigroup<DE.DecodeError<string>>
 ) => <A>(decoder: Decoder<A>) => Decoder<A>
 ```
 
@@ -357,9 +369,7 @@ Added in v2.2.7
 **Signature**
 
 ```ts
-export interface Decoder<A> {
-  readonly decode: (u: unknown) => E.Either<DecodeError, A>
-}
+export interface Decoder<A> extends KD.KleisliDecoder<unknown, A> {}
 ```
 
 Added in v2.2.7
@@ -417,6 +427,16 @@ export declare const string: Decoder<string>
 Added in v2.2.7
 
 # utils
+
+## TypeOf (type alias)
+
+**Signature**
+
+```ts
+export type TypeOf<D> = KD.TypeOf<D>
+```
+
+Added in v2.2.7
 
 ## draw
 

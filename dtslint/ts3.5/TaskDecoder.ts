@@ -1,9 +1,9 @@
-import * as _ from '../../src/Decoder'
+import * as _ from '../../src/TaskDecoder'
 import * as DE from '../../src/DecodeError'
 import * as FS from '../../src/FreeSemigroup'
 import { pipe } from 'fp-ts/lib/pipeable'
 
-// $ExpectType Decoder<{ a: string; b: { c: number; }; }>
+// $ExpectType TaskDecoder<{ a: string; b: { c: number; }; }>
 const A = _.type({
   a: _.string,
   b: _.type({
@@ -11,7 +11,7 @@ const A = _.type({
   })
 })
 
-// $ExpectType Decoder<Partial<{ a: string; b: Partial<{ c: number; }>; }>>
+// $ExpectType TaskDecoder<Partial<{ a: string; b: Partial<{ c: number; }>; }>>
 _.partial({
   a: _.string,
   b: _.partial({
@@ -30,7 +30,7 @@ export type A = _.TypeOf<typeof A>
 // mapLeftWithInput
 //
 
-// $ExpectType Decoder<number>
+// $ExpectType TaskDecoder<number>
 pipe(
   _.number,
   _.mapLeftWithInput((u) => FS.of(DE.leaf(u, 'not a number')))

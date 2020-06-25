@@ -6,14 +6,11 @@ import * as G from '../src/Guard'
 
 /*
 
-Guard (good) x 35,916,863 ops/sec ±1.28% (86 runs sampled)
-Decoder (good) x 4,855,216 ops/sec ±0.83% (89 runs sampled)
-Decoder2 (good) x 2,397,112 ops/sec ±0.53% (87 runs sampled)
-Guard (bad) x 35,685,300 ops/sec ±1.45% (85 runs sampled)
-Decoder (bad) x 1,255,976 ops/sec ±0.60% (90 runs sampled)
-Decoder2 (bad) x 2,054,836 ops/sec ±0.73% (85 runs sampled)
-Decoder (draw) x 584,770 ops/sec ±1.83% (87 runs sampled)
-Decoder2 (draw) x 368,364 ops/sec ±0.45% (84 runs sampled)
+Guard (good) x 36,163,576 ops/sec ±1.45% (86 runs sampled)
+Decoder (good) x 2,365,294 ops/sec ±0.70% (87 runs sampled)
+Guard (bad) x 34,845,843 ops/sec ±1.27% (84 runs sampled)
+Decoder (bad) x 1,977,286 ops/sec ±0.86% (86 runs sampled)
+Decoder (draw) x 365,279 ops/sec ±1.17% (82 runs sampled)
 
 */
 
