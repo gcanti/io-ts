@@ -43,6 +43,7 @@ Added in v2.2.7
 - [model](#model)
   - [KleisliTaskDecoder (interface)](#kleislitaskdecoder-interface)
 - [utils](#utils)
+  - [InputOf (type alias)](#inputof-type-alias)
   - [TypeOf (type alias)](#typeof-type-alias)
 
 ---
@@ -203,9 +204,12 @@ Added in v2.2.7
 **Signature**
 
 ```ts
-export declare const partial: <I, A>(
-  properties: { [K in keyof A]: KleisliTaskDecoder<I, A[K]> }
-) => KleisliTaskDecoder<Record<string, I>, Partial<{ [K in keyof A]: A[K] }>>
+export declare const partial: <P extends Record<string, KleisliTaskDecoder<any, any>>>(
+  properties: P
+) => KleisliTaskDecoder<
+  { [K in keyof P]: K.InputOf<'TaskEither', P[K]> },
+  Partial<{ [K in keyof P]: K.TypeOf<'TaskEither', P[K]> }>
+>
 ```
 
 Added in v2.2.7
@@ -242,9 +246,9 @@ Added in v2.2.7
 ```ts
 export declare const sum: <T extends string>(
   tag: T
-) => <I extends Record<string, unknown>, A>(
-  members: { [K in keyof A]: KleisliTaskDecoder<I, A[K]> }
-) => KleisliTaskDecoder<I, A[keyof A]>
+) => <MS extends Record<string, KleisliTaskDecoder<any, any>>>(
+  members: MS
+) => KleisliTaskDecoder<K.InputOf<'TaskEither', MS[keyof MS]>, K.TypeOf<'TaskEither', MS[keyof MS]>>
 ```
 
 Added in v2.2.7
@@ -254,9 +258,12 @@ Added in v2.2.7
 **Signature**
 
 ```ts
-export declare const tuple: <I, A extends readonly unknown[]>(
-  ...components: { [K in keyof A]: KleisliTaskDecoder<I, A[K]> }
-) => KleisliTaskDecoder<I[], A>
+export declare const tuple: <C extends readonly KleisliTaskDecoder<any, any>[]>(
+  ...components: C
+) => KleisliTaskDecoder<
+  { [K in keyof C]: K.InputOf<'TaskEither', C[K]> },
+  { [K in keyof C]: K.TypeOf<'TaskEither', C[K]> }
+>
 ```
 
 Added in v2.2.7
@@ -266,9 +273,12 @@ Added in v2.2.7
 **Signature**
 
 ```ts
-export declare const type: <I, A>(
-  properties: { [K in keyof A]: KleisliTaskDecoder<I, A[K]> }
-) => KleisliTaskDecoder<Record<string, I>, { [K in keyof A]: A[K] }>
+export declare const type: <P extends Record<string, KleisliTaskDecoder<any, any>>>(
+  properties: P
+) => KleisliTaskDecoder<
+  { [K in keyof P]: K.InputOf<'TaskEither', P[K]> },
+  { [K in keyof P]: K.TypeOf<'TaskEither', P[K]> }
+>
 ```
 
 Added in v2.2.7
@@ -315,9 +325,9 @@ Added in v2.2.7
 **Signature**
 
 ```ts
-export declare const literal: <I, A extends readonly [Literal, ...Literal[]]>(
+export declare const literal: <A extends readonly [Literal, ...Literal[]]>(
   ...values: A
-) => KleisliTaskDecoder<I, A[number]>
+) => KleisliTaskDecoder<unknown, A[number]>
 ```
 
 Added in v2.2.7
@@ -338,12 +348,22 @@ Added in v2.2.7
 
 # utils
 
+## InputOf (type alias)
+
+**Signature**
+
+```ts
+export type InputOf<KTD> = K.InputOf<TE.URI, KTD>
+```
+
+Added in v2.2.7
+
 ## TypeOf (type alias)
 
 **Signature**
 
 ```ts
-export type TypeOf<KTD> = KTD extends KleisliTaskDecoder<any, infer A> ? A : never
+export type TypeOf<KTD> = K.TypeOf<TE.URI, KTD>
 ```
 
 Added in v2.2.7

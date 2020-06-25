@@ -72,9 +72,9 @@ export const fromRefinement = <I, A extends I>(refinement: Refinement<I, A>, exp
  * @category constructors
  * @since 2.2.7
  */
-export const literal: <I, A extends readonly [Literal, ...Array<Literal>]>(
+export const literal: <A extends readonly [Literal, ...Array<Literal>]>(
   ...values: A
-) => KleisliDecoder<I, A[number]> =
+) => KleisliDecoder<unknown, A[number]> =
   /*#__PURE__*/
   K.literal(M)((u, values) => error(u, values.map((value) => JSON.stringify(value)).join(' | ')))
 
@@ -123,18 +123,18 @@ export const nullable: <I, A>(or: KleisliDecoder<I, A>) => KleisliDecoder<null |
  * @category combinators
  * @since 2.2.7
  */
-export const type = <I, A>(
-  properties: { [K in keyof A]: KleisliDecoder<I, A[K]> }
-): KleisliDecoder<Record<string, I>, { [K in keyof A]: A[K] }> =>
+export const type = <P extends Record<string, KleisliDecoder<any, any>>>(
+  properties: P
+): KleisliDecoder<{ [K in keyof P]: InputOf<P[K]> }, { [K in keyof P]: TypeOf<P[K]> }> =>
   K.type(M)((k, e) => FS.of(DE.key(k, DE.required, e)))(properties)
 
 /**
  * @category combinators
  * @since 2.2.7
  */
-export const partial = <I, A>(
-  properties: { [K in keyof A]: KleisliDecoder<I, A[K]> }
-): KleisliDecoder<Record<string, I>, Partial<{ [K in keyof A]: A[K] }>> =>
+export const partial = <P extends Record<string, KleisliDecoder<any, any>>>(
+  properties: P
+): KleisliDecoder<{ [K in keyof P]: InputOf<P[K]> }, Partial<{ [K in keyof P]: TypeOf<P[K]> }>> =>
   K.partial(M)((k, e) => FS.of(DE.key(k, DE.optional, e)))(properties)
 
 /**
@@ -155,9 +155,10 @@ export const record = <I, A>(codomain: KleisliDecoder<I, A>): KleisliDecoder<Rec
  * @category combinators
  * @since 2.2.7
  */
-export const tuple = <I, A extends ReadonlyArray<unknown>>(
-  ...components: { [K in keyof A]: KleisliDecoder<I, A[K]> }
-): KleisliDecoder<Array<I>, A> => K.tuple(M)((i, e) => FS.of(DE.index(i, DE.required, e)))(...(components as any))
+export const tuple = <C extends ReadonlyArray<KleisliDecoder<any, any>>>(
+  ...components: C
+): KleisliDecoder<{ [K in keyof C]: InputOf<C[K]> }, { [K in keyof C]: TypeOf<C[K]> }> =>
+  K.tuple(M)((i, e) => FS.of(DE.index(i, DE.required, e)))(...components)
 
 /**
  * @category combinators
@@ -183,9 +184,9 @@ export const intersect: <IB, B>(
  * @category combinators
  * @since 2.2.7
  */
-export const sum = <T extends string>(tag: T) => <I extends Record<string, unknown>, A>(
-  members: { [K in keyof A]: KleisliDecoder<I, A[K]> }
-): KleisliDecoder<I, A[keyof A]> =>
+export const sum = <T extends string>(tag: T) => <MS extends Record<string, KleisliDecoder<any, any>>>(
+  members: MS
+): KleisliDecoder<InputOf<MS[keyof MS]>, TypeOf<MS[keyof MS]>> =>
   K.sum(M)((tag, value, keys) =>
     FS.of(
       DE.key(
@@ -238,4 +239,9 @@ export const alt: <I, A>(that: () => KleisliDecoder<I, A>) => (me: KleisliDecode
 /**
  * @since 2.2.7
  */
-export type TypeOf<KD> = KD extends KleisliDecoder<any, infer A> ? A : never
+export type TypeOf<KD> = K.TypeOf<E.URI, KD>
+
+/**
+ * @since 2.2.7
+ */
+export type InputOf<KD> = K.InputOf<E.URI, KD>
