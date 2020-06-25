@@ -15,3 +15,14 @@ _.partial({
     c: _.id<number>()
   })
 })
+
+//
+// Json type
+//
+
+const number: _.Json = 1
+const string: _.Json = 'a'
+const boolean: _.Json = true
+const nully: _.Json = null
+const array: _.Json = [1, 'a', true, null]
+const record: _.Json = { a: 1, b: 'b', c: true, d: null }
