@@ -25,9 +25,7 @@ const M =
  * @category model
  * @since 2.2.7
  */
-export interface KleisliTaskDecoder<I, A> {
-  readonly decode: (i: I) => TE.TaskEither<DecodeError, A>
-}
+export interface KleisliTaskDecoder<I, A> extends K.Kleisli<TE.URI, I, DecodeError, A> {}
 
 // -------------------------------------------------------------------------------------
 // DecodeError
@@ -222,9 +220,11 @@ export const lazy: <I, A>(id: string, f: () => KleisliTaskDecoder<I, A>) => Klei
  * @category combinators
  * @since 2.2.7
  */
-export const compose = <A, B>(to: KleisliTaskDecoder<A, B>) => <I>(
-  from: KleisliTaskDecoder<I, A>
-): KleisliTaskDecoder<I, B> => K.pipe(M)(from, to)
+export const compose: <A, B>(
+  to: KleisliTaskDecoder<A, B>
+) => <I>(from: KleisliTaskDecoder<I, A>) => KleisliTaskDecoder<I, B> =
+  /*#__PURE__*/
+  K.compose(M)
 
 // -------------------------------------------------------------------------------------
 // pipeables

@@ -15,6 +15,7 @@ Added in v2.2.7
 - [combinators](#combinators)
   - [alt](#alt)
   - [array](#array)
+  - [compose](#compose)
   - [intersect](#intersect)
   - [lazy](#lazy)
   - [map](#map)
@@ -22,7 +23,6 @@ Added in v2.2.7
   - [nullable](#nullable)
   - [parse](#parse)
   - [partial](#partial)
-  - [pipe](#pipe)
   - [record](#record)
   - [refine](#refine)
   - [sum](#sum)
@@ -62,6 +62,18 @@ Added in v2.2.7
 export declare function array<M extends URIS2, E>(
   M: Applicative2C<M, E> & Bifunctor2<M>
 ): (onItemError: (index: number, e: E) => E) => <I, A>(items: Kleisli<M, I, E, A>) => Kleisli<M, Array<I>, E, Array<A>>
+```
+
+Added in v2.2.7
+
+## compose
+
+**Signature**
+
+```ts
+export declare const compose: <M extends 'io-ts/Codec' | 'io-ts/Encoder' | 'Either' | 'IOEither' | 'TaskEither', E>(
+  M: Monad2C<M, E>
+) => <A, B>(ab: Kleisli<M, A, E, B>) => <I>(ia: Kleisli<M, I, E, A>) => Kleisli<M, I, E, B>
 ```
 
 Added in v2.2.7
@@ -155,18 +167,6 @@ export declare function partial<M extends URIS2, E>(
 ) => <P extends Record<string, Kleisli<M, any, E, any>>>(
   properties: P
 ) => Kleisli<M, { [K in keyof P]: InputOf<M, P[K]> }, E, Partial<{ [K in keyof P]: TypeOf<M, P[K]> }>>
-```
-
-Added in v2.2.7
-
-## pipe
-
-**Signature**
-
-```ts
-export declare const pipe: <M extends 'io-ts/Codec' | 'io-ts/Encoder' | 'Either' | 'IOEither' | 'TaskEither', E>(
-  M: Monad2C<M, E>
-) => <I, A, B>(ia: Kleisli<M, I, E, A>, ab: Kleisli<M, A, E, B>) => Kleisli<M, I, E, B>
 ```
 
 Added in v2.2.7

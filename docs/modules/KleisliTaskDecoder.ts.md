@@ -339,9 +339,7 @@ Added in v2.2.7
 **Signature**
 
 ```ts
-export interface KleisliTaskDecoder<I, A> {
-  readonly decode: (i: I) => TE.TaskEither<DecodeError, A>
-}
+export interface KleisliTaskDecoder<I, A> extends K.Kleisli<TE.URI, I, DecodeError, A> {}
 ```
 
 Added in v2.2.7

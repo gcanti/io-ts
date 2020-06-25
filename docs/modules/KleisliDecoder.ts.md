@@ -320,9 +320,7 @@ Added in v2.2.7
 **Signature**
 
 ```ts
-export interface KleisliDecoder<I, A> {
-  readonly decode: (i: I) => E.Either<DecodeError, A>
-}
+export interface KleisliDecoder<I, A> extends K.Kleisli<E.URI, I, DecodeError, A> {}
 ```
 
 Added in v2.2.7
