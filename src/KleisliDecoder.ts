@@ -164,11 +164,11 @@ export const tuple = <C extends ReadonlyArray<KleisliDecoder<any, any>>>(
  * @category combinators
  * @since 2.2.7
  */
-export const union: <I, A extends readonly [unknown, ...Array<unknown>]>(
-  ...members: { [K in keyof A]: KleisliDecoder<I, A[K]> }
-) => KleisliDecoder<I, A[number]> =
+export const union: <MS extends readonly [KleisliDecoder<any, any>, ...Array<KleisliDecoder<any, any>>]>(
+  ...members: MS
+) => KleisliDecoder<InputOf<MS[keyof MS]>, TypeOf<MS[keyof MS]>> =
   /*#__PURE__*/
-  K.union(M)((i, e) => FS.of(DE.member(i, e))) as any
+  K.union(M)((i, e) => FS.of(DE.member(i, e)))
 
 /**
  * @category combinators

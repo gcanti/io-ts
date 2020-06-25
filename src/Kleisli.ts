@@ -222,11 +222,11 @@ export function tuple<M extends URIS2, E>(
  */
 export const union = <M extends URIS2, E>(M: Alt2C<M, E> & Bifunctor2<M>) => (
   onMemberError: (index: number, e: E) => E
-) => <I, A extends readonly [unknown, ...Array<unknown>]>(
-  ...members: { [K in keyof A]: Kleisli<M, I, E, A[K]> }
-): Kleisli<M, I, E, A[number]> => ({
+) => <MS extends readonly [Kleisli<M, any, E, any>, ...Array<Kleisli<M, any, E, any>>]>(
+  ...members: MS
+): Kleisli<M, InputOf<M, MS[keyof MS]>, E, TypeOf<M, MS[keyof MS]>> => ({
   decode: (i) => {
-    let out: Kind2<M, E, unknown> = M.mapLeft(members[0].decode(i), (e) => onMemberError(0, e))
+    let out: Kind2<M, E, TypeOf<M, MS[keyof MS]>> = M.mapLeft(members[0].decode(i), (e) => onMemberError(0, e))
     for (let index = 1; index < members.length; index++) {
       out = M.alt(out, () => M.mapLeft(members[index].decode(i), (e) => onMemberError(index, e)))
     }

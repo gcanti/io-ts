@@ -1,5 +1,6 @@
 import * as _ from '../../src/KleisliDecoder'
 
+declare const string: _.KleisliDecoder<string, string>
 declare const NumberFromString: _.KleisliDecoder<string, number>
 
 //
@@ -36,3 +37,10 @@ _.sum('_tag')({
   A: _.type({ _tag: _.literal('A'), a: NumberFromString }),
   B: _.type({ _tag: _.literal('B'), b: NumberFromString })
 })
+
+//
+// union
+//
+
+// $ExpectType KleisliDecoder<string, string | number>
+_.union(NumberFromString, string)

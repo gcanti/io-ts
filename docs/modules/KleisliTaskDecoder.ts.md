@@ -288,9 +288,9 @@ Added in v2.2.7
 **Signature**
 
 ```ts
-export declare const union: <I, A extends readonly [unknown, ...unknown[]]>(
-  ...members: { [K in keyof A]: KleisliTaskDecoder<I, A[K]> }
-) => KleisliTaskDecoder<I, A[number]>
+export declare const union: <MS extends readonly [KleisliTaskDecoder<any, any>, ...KleisliTaskDecoder<any, any>[]]>(
+  ...members: MS
+) => KleisliTaskDecoder<K.InputOf<'TaskEither', MS[keyof MS]>, K.TypeOf<'TaskEither', MS[keyof MS]>>
 ```
 
 Added in v2.2.7

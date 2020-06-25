@@ -5,6 +5,7 @@ import { Alt2C } from 'fp-ts/lib/Alt'
 import { MonadThrow2C } from 'fp-ts/lib/MonadThrow'
 
 declare const M: MonadThrow2C<E.URI, string> & Bifunctor2<E.URI> & Alt2C<E.URI, string>
+declare const string: _.Kleisli<E.URI, string, string, string>
 declare const NumberFromString: _.Kleisli<E.URI, string, string, number>
 
 //
@@ -46,3 +47,10 @@ _.sum(M)(() => 'error')('_tag')({
   A: type({ _tag: literalA, a: NumberFromString }),
   B: type({ _tag: literalB, b: NumberFromString })
 })
+
+//
+// union
+//
+
+// $ExpectType Kleisli<"Either", string, string, string | number>
+_.union(M)((_, e) => e)(NumberFromString, string)
