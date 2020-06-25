@@ -78,9 +78,9 @@ export const boolean: JsonCodec<boolean> = C.boolean
  * @category combinators
  * @since 2.2.3
  */
-export const mapLeftWithInput: <A>(
+export const mapLeftWithInput: (
   f: (actual: unknown, e: D.DecodeError) => D.DecodeError
-) => (codec: JsonCodec<A>) => JsonCodec<A> = C.mapLeftWithInput
+) => <A>(codec: JsonCodec<A>) => JsonCodec<A> = C.mapLeftWithInput
 
 /**
  * @category combinators

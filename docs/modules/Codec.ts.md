@@ -97,9 +97,9 @@ Added in v2.2.3
 **Signature**
 
 ```ts
-export declare const mapLeftWithInput: <O, A>(
+export declare const mapLeftWithInput: (
   f: (actual: unknown, e: FreeSemigroup<DecodeError<string>>) => FreeSemigroup<DecodeError<string>>
-) => (codec: Codec<O, A>) => Codec<O, A>
+) => <O, A>(codec: Codec<O, A>) => Codec<O, A>
 ```
 
 Added in v2.2.3
@@ -141,10 +141,10 @@ Added in v2.2.3
 **Signature**
 
 ```ts
-export declare const refine: <O, A, B extends A>(
+export declare const refine: <A, B extends A>(
   refinement: (a: A) => a is B,
   id: string
-) => (from: Codec<O, A>) => Codec<O, B>
+) => <O>(from: Codec<O, A>) => Codec<O, B>
 ```
 
 Added in v2.2.3

@@ -113,7 +113,7 @@ export const UnknownRecord: Codec<Record<string, unknown>, Record<string, unknow
  * @category combinators
  * @since 2.2.3
  */
-export const mapLeftWithInput = <O, A>(f: (actual: unknown, e: D.DecodeError) => D.DecodeError) => (
+export const mapLeftWithInput = (f: (actual: unknown, e: D.DecodeError) => D.DecodeError) => <O, A>(
   codec: Codec<O, A>
 ): Codec<O, A> => make(pipe(codec, D.mapLeftWithInput(f)), codec)
 
@@ -121,10 +121,10 @@ export const mapLeftWithInput = <O, A>(f: (actual: unknown, e: D.DecodeError) =>
  * @category combinators
  * @since 2.2.3
  */
-export const refine = <O, A, B extends A>(
+export const refine = <A, B extends A>(
   refinement: (a: A) => a is B,
   id: string
-): ((from: Codec<O, A>) => Codec<O, B>) => {
+): (<O>(from: Codec<O, A>) => Codec<O, B>) => {
   const refine = D.refine(refinement, id)
   return (from) => make(refine(from), from)
 }

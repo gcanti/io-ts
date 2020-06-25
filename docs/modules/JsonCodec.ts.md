@@ -94,9 +94,9 @@ Added in v2.2.3
 **Signature**
 
 ```ts
-export declare const mapLeftWithInput: <A>(
+export declare const mapLeftWithInput: (
   f: (actual: unknown, e: FreeSemigroup<DecodeError<string>>) => FreeSemigroup<DecodeError<string>>
-) => (codec: JsonCodec<A>) => JsonCodec<A>
+) => <A>(codec: JsonCodec<A>) => JsonCodec<A>
 ```
 
 Added in v2.2.3

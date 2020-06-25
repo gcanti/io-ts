@@ -133,9 +133,9 @@ export const UnknownRecord: Decoder<Record<string, unknown>> =
  * @category combinators
  * @since 2.2.7
  */
-export const mapLeftWithInput: <A>(
+export const mapLeftWithInput: (
   f: (actual: unknown, e: DecodeError) => DecodeError
-) => (decoder: Decoder<A>) => Decoder<A> =
+) => <A>(decoder: Decoder<A>) => Decoder<A> =
   /*#__PURE__*/
   K2.mapLeftWithInput(M)
 
