@@ -259,9 +259,9 @@ export declare const union: <M extends 'io-ts/Codec' | 'io-ts/Encoder' | 'Either
   M: Alt2C<M, E> & Bifunctor2<M>
 ) => (
   onMemberError: (index: number, e: E) => E
-) => <I, A extends readonly [unknown, ...unknown[]]>(
-  ...members: { [K in keyof A]: Kleisli<M, I, E, A[K]> }
-) => Kleisli<M, I, E, A[number]>
+) => <MS extends readonly [Kleisli<M, any, E, any>, ...Kleisli<M, any, E, any>[]]>(
+  ...members: MS
+) => Kleisli<M, InputOf<M, MS[keyof MS]>, E, TypeOf<M, MS[keyof MS]>>
 ```
 
 Added in v2.2.7
