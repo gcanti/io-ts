@@ -113,7 +113,7 @@ export declare const mapLeftWithInput: <M extends
   | 'IOEither'
   | 'TaskEither'>(
   M: Bifunctor2<M>
-) => <I, E, A>(f: (i: I, e: E) => E) => (decoder: Kleisli2<M, I, E, A>) => Kleisli2<M, I, E, A>
+) => <I, E>(f: (i: I, e: E) => E) => <A>(decoder: Kleisli2<M, I, E, A>) => Kleisli2<M, I, E, A>
 ```
 
 Added in v2.2.7
@@ -191,10 +191,10 @@ Added in v2.2.7
 ```ts
 export declare const refine: <M extends 'io-ts/Codec' | 'io-ts/Encoder' | 'Either' | 'IOEither' | 'TaskEither', E>(
   M: MonadThrow2C<M, E> & Bifunctor2<M>
-) => <A, B extends A, I>(
+) => <A, B extends A>(
   refinement: (a: A) => a is B,
   onError: (a: A) => E
-) => (from: Kleisli2<M, I, E, A>) => Kleisli2<M, I, E, B>
+) => <I>(from: Kleisli2<M, I, E, A>) => Kleisli2<M, I, E, B>
 ```
 
 Added in v2.2.7

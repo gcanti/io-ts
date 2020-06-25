@@ -163,9 +163,9 @@ Added in v2.2.7
 **Signature**
 
 ```ts
-export declare const mapLeftWithInput: <A>(
+export declare const mapLeftWithInput: (
   f: (actual: unknown, e: FS.FreeSemigroup<DE.DecodeError<string>>) => FS.FreeSemigroup<DE.DecodeError<string>>
-) => (decoder: Decoder<A>) => Decoder<A>
+) => <A>(decoder: Decoder<A>) => Decoder<A>
 ```
 
 Added in v2.2.7

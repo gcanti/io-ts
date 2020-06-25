@@ -59,7 +59,7 @@ export const literal = <M extends URIS2, E>(M: MonadThrow2C<M, E>) => <I>(
  * @category combinators
  * @since 2.2.7
  */
-export const mapLeftWithInput = <M extends URIS2>(M: Bifunctor2<M>) => <I, E, A>(f: (i: I, e: E) => E) => (
+export const mapLeftWithInput = <M extends URIS2>(M: Bifunctor2<M>) => <I, E>(f: (i: I, e: E) => E) => <A>(
   decoder: Kleisli2<M, I, E, A>
 ): Kleisli2<M, I, E, A> => ({
   decode: (i) => M.mapLeft(decoder.decode(i), (e) => f(i, e))
@@ -69,10 +69,10 @@ export const mapLeftWithInput = <M extends URIS2>(M: Bifunctor2<M>) => <I, E, A>
  * @category combinators
  * @since 2.2.7
  */
-export const refine = <M extends URIS2, E>(M: MonadThrow2C<M, E> & Bifunctor2<M>) => <A, B extends A, I>(
+export const refine = <M extends URIS2, E>(M: MonadThrow2C<M, E> & Bifunctor2<M>) => <A, B extends A>(
   refinement: (a: A) => a is B,
   onError: (a: A) => E
-) => (from: Kleisli2<M, I, E, A>): Kleisli2<M, I, E, B> => ({
+) => <I>(from: Kleisli2<M, I, E, A>): Kleisli2<M, I, E, B> => ({
   decode: (u) => M.chain(from.decode(u), (a) => (refinement(a) ? M.of(a) : M.throwError(onError(a))))
 })
 
