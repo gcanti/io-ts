@@ -22,6 +22,7 @@
   - add `TaskDecoder` module (@gcanti)
   - add `Kleisli` module (@gcanti)
   - (**bc**) remove `Tree` module (@gcanti)
+  - (**bc**) make `Json` type immutable (@gcanti)
   - `Decoder`
     - (**bc**) remove `never` (@gcanti)
     - (**bc**) make `parse` pipeable and change its `parser` argument (@gcanti)

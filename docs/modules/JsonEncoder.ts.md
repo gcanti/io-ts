@@ -33,7 +33,7 @@ Added in v2.2.3
   - [Json (type alias)](#json-type-alias)
   - [JsonArray (interface)](#jsonarray-interface)
   - [JsonEncoder (interface)](#jsonencoder-interface)
-  - [JsonObject (type alias)](#jsonobject-type-alias)
+  - [JsonRecord (interface)](#jsonrecord-interface)
 - [primitives](#primitives)
   - [id](#id)
 - [utils](#utils)
@@ -202,7 +202,7 @@ Added in v2.2.3
 **Signature**
 
 ```ts
-export type Json = null | string | number | boolean | JsonObject | JsonArray
+export type Json = null | string | number | boolean | JsonRecord | JsonArray
 ```
 
 Added in v2.2.3
@@ -212,7 +212,7 @@ Added in v2.2.3
 **Signature**
 
 ```ts
-export interface JsonArray extends Array<Json> {}
+export interface JsonArray extends ReadonlyArray<Json> {}
 ```
 
 Added in v2.2.3
@@ -229,12 +229,14 @@ export interface JsonEncoder<A> {
 
 Added in v2.2.3
 
-## JsonObject (type alias)
+## JsonRecord (interface)
 
 **Signature**
 
 ```ts
-export type JsonObject = { [key: string]: Json }
+export interface JsonRecord {
+  [key: string]: Json
+}
 ```
 
 Added in v2.2.3

@@ -14,19 +14,21 @@ import { Schemable1 } from './Schemable'
  * @category model
  * @since 2.2.3
  */
-export interface JsonArray extends Array<Json> {}
+export interface JsonArray extends ReadonlyArray<Json> {}
 
 /**
  * @category model
  * @since 2.2.3
  */
-export type JsonObject = { [key: string]: Json }
+export interface JsonRecord {
+  [key: string]: Json
+}
 
 /**
  * @category model
  * @since 2.2.3
  */
-export type Json = null | string | number | boolean | JsonObject | JsonArray
+export type Json = null | string | number | boolean | JsonRecord | JsonArray
 
 /**
  * @category model
