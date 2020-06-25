@@ -81,6 +81,13 @@ export const UnknownRecord: Guard<Record<string, unknown>> = {
   is: (u: unknown): u is Record<string, unknown> => Object.prototype.toString.call(u) === '[object Object]'
 }
 
+/**
+ * @internal
+ */
+export const object: Guard<object> = {
+  is: (u: unknown): u is object => u != null && !string.is(u) && !number.is(u) && !boolean.is(u)
+}
+
 // -------------------------------------------------------------------------------------
 // combinators
 // -------------------------------------------------------------------------------------

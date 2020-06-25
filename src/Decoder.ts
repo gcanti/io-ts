@@ -111,6 +111,11 @@ export const UnknownRecord: Decoder<Record<string, unknown>> =
   /*#__PURE__*/
   fromGuard(G.UnknownRecord, 'Record<string, unknown>')
 
+/**
+ * @internal
+ */
+export const object: Decoder<object> = fromGuard(G.object, 'object')
+
 // -------------------------------------------------------------------------------------
 // combinators
 // -------------------------------------------------------------------------------------
@@ -147,14 +152,14 @@ export const nullable: <A>(or: Decoder<A>) => Decoder<null | A> = KD.nullable
  * @since 2.2.7
  */
 export const type = <A>(properties: { [K in keyof A]: Decoder<A[K]> }): Decoder<{ [K in keyof A]: A[K] }> =>
-  pipe(UnknownRecord as any, compose(KD.type(properties)))
+  pipe(object as any, compose(KD.type(properties)))
 
 /**
  * @category combinators
  * @since 2.2.7
  */
 export const partial = <A>(properties: { [K in keyof A]: Decoder<A[K]> }): Decoder<Partial<{ [K in keyof A]: A[K] }>> =>
-  pipe(UnknownRecord as any, compose(KD.partial(properties)))
+  pipe(object as any, compose(KD.partial(properties)))
 
 /**
  * @category combinators
@@ -195,7 +200,7 @@ export const intersect: <B>(right: Decoder<B>) => <A>(left: Decoder<A>) => Decod
  * @since 2.2.7
  */
 export const sum = <T extends string>(tag: T) => <A>(members: { [K in keyof A]: Decoder<A[K]> }): Decoder<A[keyof A]> =>
-  pipe(UnknownRecord as any, compose(KD.sum(tag)(members)))
+  pipe(object as any, compose(KD.sum(tag)(members)))
 
 /**
  * @category combinators

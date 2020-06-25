@@ -117,6 +117,13 @@ export const UnknownRecord: TaskDecoder<Record<string, unknown>> =
   /*#__PURE__*/
   fromDecoder(D.UnknownRecord)
 
+/**
+ * @internal
+ */
+export const object: TaskDecoder<object> =
+  /*#__PURE__*/
+  fromDecoder(D.object)
+
 // -------------------------------------------------------------------------------------
 // combinators
 // -------------------------------------------------------------------------------------
@@ -157,7 +164,7 @@ export const nullable: <A>(or: TaskDecoder<A>) => TaskDecoder<null | A> = KTD.nu
  * @since 2.2.7
  */
 export const type = <A>(properties: { [K in keyof A]: TaskDecoder<A[K]> }): TaskDecoder<{ [K in keyof A]: A[K] }> =>
-  pipe(UnknownRecord as any, compose(KTD.type(properties)))
+  pipe(object as any, compose(KTD.type(properties)))
 
 /**
  * @category combinators
@@ -165,7 +172,7 @@ export const type = <A>(properties: { [K in keyof A]: TaskDecoder<A[K]> }): Task
  */
 export const partial = <A>(
   properties: { [K in keyof A]: TaskDecoder<A[K]> }
-): TaskDecoder<Partial<{ [K in keyof A]: A[K] }>> => pipe(UnknownRecord as any, compose(KTD.partial(properties)))
+): TaskDecoder<Partial<{ [K in keyof A]: A[K] }>> => pipe(object as any, compose(KTD.partial(properties)))
 
 /**
  * @category combinators
@@ -208,7 +215,7 @@ export const intersect: <B>(right: TaskDecoder<B>) => <A>(left: TaskDecoder<A>) 
  */
 export const sum = <T extends string>(tag: T) => <A>(
   members: { [K in keyof A]: TaskDecoder<A[K]> }
-): TaskDecoder<A[keyof A]> => pipe(UnknownRecord as any, compose(KTD.sum(tag)(members)))
+): TaskDecoder<A[keyof A]> => pipe(object as any, compose(KTD.sum(tag)(members)))
 
 /**
  * @category combinators
