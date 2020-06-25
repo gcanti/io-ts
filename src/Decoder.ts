@@ -114,7 +114,9 @@ export const UnknownRecord: Decoder<Record<string, unknown>> =
 /**
  * @internal
  */
-export const object: Decoder<object> = fromGuard(G.object, 'object')
+export const object: Decoder<object> =
+  /*#__PURE__*/
+  fromGuard(G.object, 'object')
 
 // -------------------------------------------------------------------------------------
 // combinators

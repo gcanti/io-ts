@@ -47,9 +47,9 @@ Added in v2.2.7
 **Signature**
 
 ```ts
-export declare const alt: <F extends 'io-ts/Codec' | 'io-ts/Encoder' | 'Either' | 'IOEither' | 'TaskEither', E>(
+export declare function alt<F extends URIS2, E>(
   A: Alt2C<F, E>
-) => <I, A>(that: Lazy<Kleisli<F, I, E, A>>) => (me: Kleisli<F, I, E, A>) => Kleisli<F, I, E, A>
+): <I, A>(that: Lazy<Kleisli<F, I, E, A>>) => (me: Kleisli<F, I, E, A>) => Kleisli<F, I, E, A>
 ```
 
 Added in v2.2.7
@@ -71,9 +71,9 @@ Added in v2.2.7
 **Signature**
 
 ```ts
-export declare const compose: <M extends 'io-ts/Codec' | 'io-ts/Encoder' | 'Either' | 'IOEither' | 'TaskEither', E>(
+export declare function compose<M extends URIS2, E>(
   M: Monad2C<M, E>
-) => <A, B>(ab: Kleisli<M, A, E, B>) => <I>(ia: Kleisli<M, I, E, A>) => Kleisli<M, I, E, B>
+): <A, B>(ab: Kleisli<M, A, E, B>) => <I>(ia: Kleisli<M, I, E, A>) => Kleisli<M, I, E, B>
 ```
 
 Added in v2.2.7
@@ -83,9 +83,9 @@ Added in v2.2.7
 **Signature**
 
 ```ts
-export declare const intersect: <M extends 'io-ts/Codec' | 'io-ts/Encoder' | 'Either' | 'IOEither' | 'TaskEither', E>(
+export declare function intersect<M extends URIS2, E>(
   M: Apply2C<M, E>
-) => <IB, B>(right: Kleisli<M, IB, E, B>) => <IA, A>(left: Kleisli<M, IA, E, A>) => Kleisli<M, IA & IB, E, A & B>
+): <IB, B>(right: Kleisli<M, IB, E, B>) => <IA, A>(left: Kleisli<M, IA, E, A>) => Kleisli<M, IA & IB, E, A & B>
 ```
 
 Added in v2.2.7
@@ -95,9 +95,9 @@ Added in v2.2.7
 **Signature**
 
 ```ts
-export declare const lazy: <M extends 'io-ts/Codec' | 'io-ts/Encoder' | 'Either' | 'IOEither' | 'TaskEither'>(
+export declare function lazy<M extends URIS2>(
   M: Bifunctor2<M>
-) => <E>(onError: (id: string, e: E) => E) => <I, A>(id: string, f: () => Kleisli<M, I, E, A>) => Kleisli<M, I, E, A>
+): <E>(onError: (id: string, e: E) => E) => <I, A>(id: string, f: () => Kleisli<M, I, E, A>) => Kleisli<M, I, E, A>
 ```
 
 Added in v2.2.7
@@ -107,9 +107,9 @@ Added in v2.2.7
 **Signature**
 
 ```ts
-export declare const map: <F extends 'io-ts/Codec' | 'io-ts/Encoder' | 'Either' | 'IOEither' | 'TaskEither', E>(
+export declare function map<F extends URIS2, E>(
   F: Functor2C<F, E>
-) => <A, B>(f: (a: A) => B) => <I>(ia: Kleisli<F, I, E, A>) => Kleisli<F, I, E, B>
+): <A, B>(f: (a: A) => B) => <I>(ia: Kleisli<F, I, E, A>) => Kleisli<F, I, E, B>
 ```
 
 Added in v2.2.7
@@ -119,14 +119,9 @@ Added in v2.2.7
 **Signature**
 
 ```ts
-export declare const mapLeftWithInput: <M extends
-  | 'io-ts/Codec'
-  | 'io-ts/Encoder'
-  | 'Either'
-  | 'IOEither'
-  | 'TaskEither'>(
+export declare function mapLeftWithInput<M extends URIS2>(
   M: Bifunctor2<M>
-) => <I, E>(f: (i: I, e: E) => E) => <A>(decoder: Kleisli<M, I, E, A>) => Kleisli<M, I, E, A>
+): <I, E>(f: (i: I, e: E) => E) => <A>(decoder: Kleisli<M, I, E, A>) => Kleisli<M, I, E, A>
 ```
 
 Added in v2.2.7
@@ -136,9 +131,9 @@ Added in v2.2.7
 **Signature**
 
 ```ts
-export declare const nullable: <M extends 'io-ts/Codec' | 'io-ts/Encoder' | 'Either' | 'IOEither' | 'TaskEither', E>(
+export declare function nullable<M extends URIS2, E>(
   M: Applicative2C<M, E> & Bifunctor2<M>
-) => <I>(onError: (i: I, e: E) => E) => <A>(or: Kleisli<M, I, E, A>) => Kleisli<M, I, E, A>
+): <I>(onError: (i: I, e: E) => E) => <A>(or: Kleisli<M, I, E, A>) => Kleisli<M, null | I, E, null | A>
 ```
 
 Added in v2.2.7
@@ -148,9 +143,9 @@ Added in v2.2.7
 **Signature**
 
 ```ts
-export declare const parse: <M extends 'io-ts/Codec' | 'io-ts/Encoder' | 'Either' | 'IOEither' | 'TaskEither', E>(
+export declare function parse<M extends URIS2, E>(
   M: Monad2C<M, E>
-) => <A, B>(decode: (a: A) => Kind2<M, E, B>) => <I>(from: Kleisli<M, I, E, A>) => Kleisli<M, I, E, B>
+): <A, B>(decode: (a: A) => Kind2<M, E, B>) => <I>(from: Kleisli<M, I, E, A>) => Kleisli<M, I, E, B>
 ```
 
 Added in v2.2.7
@@ -190,9 +185,9 @@ Added in v2.2.7
 **Signature**
 
 ```ts
-export declare const refine: <M extends 'io-ts/Codec' | 'io-ts/Encoder' | 'Either' | 'IOEither' | 'TaskEither', E>(
+export declare function refine<M extends URIS2, E>(
   M: MonadThrow2C<M, E> & Bifunctor2<M>
-) => <A, B extends A>(
+): <A, B extends A>(
   refinement: (a: A) => a is B,
   onError: (a: A) => E
 ) => <I>(from: Kleisli<M, I, E, A>) => Kleisli<M, I, E, B>
@@ -205,10 +200,10 @@ Added in v2.2.7
 **Signature**
 
 ```ts
-export declare const sum: <M extends 'io-ts/Codec' | 'io-ts/Encoder' | 'Either' | 'IOEither' | 'TaskEither', E>(
+export declare function sum<M extends URIS2, E>(
   M: MonadThrow2C<M, E>
-) => (
-  onTagError: (tag: string, value: unknown, tags: readonly string[]) => E
+): (
+  onTagError: (tag: string, value: unknown, tags: ReadonlyArray<string>) => E
 ) => <T extends string>(
   tag: T
 ) => <MS extends Record<string, Kleisli<M, any, E, any>>>(
@@ -255,11 +250,11 @@ Added in v2.2.7
 **Signature**
 
 ```ts
-export declare const union: <M extends 'io-ts/Codec' | 'io-ts/Encoder' | 'Either' | 'IOEither' | 'TaskEither', E>(
+export declare function union<M extends URIS2, E>(
   M: Alt2C<M, E> & Bifunctor2<M>
-) => (
+): (
   onMemberError: (index: number, e: E) => E
-) => <MS extends readonly [Kleisli<M, any, E, any>, ...Kleisli<M, any, E, any>[]]>(
+) => <MS extends readonly [Kleisli<M, any, E, any>, ...Array<Kleisli<M, any, E, any>>]>(
   ...members: MS
 ) => Kleisli<M, InputOf<M, MS[keyof MS]>, E, TypeOf<M, MS[keyof MS]>>
 ```
@@ -273,12 +268,9 @@ Added in v2.2.7
 **Signature**
 
 ```ts
-export declare const fromRefinement: <
-  M extends 'io-ts/Codec' | 'io-ts/Encoder' | 'Either' | 'IOEither' | 'TaskEither',
-  E
->(
+export declare function fromRefinement<M extends URIS2, E>(
   M: MonadThrow2C<M, E>
-) => <I, A extends I>(refinement: Refinement<I, A>, onError: (i: I) => E) => Kleisli<M, I, E, A>
+): <I, A extends I>(refinement: Refinement<I, A>, onError: (i: I) => E) => Kleisli<M, I, E, A>
 ```
 
 Added in v2.2.7
@@ -288,11 +280,11 @@ Added in v2.2.7
 **Signature**
 
 ```ts
-export declare const literal: <M extends 'io-ts/Codec' | 'io-ts/Encoder' | 'Either' | 'IOEither' | 'TaskEither', E>(
+export declare function literal<M extends URIS2, E>(
   M: MonadThrow2C<M, E>
-) => <I>(
-  onError: (i: I, values: readonly [Literal, ...Literal[]]) => E
-) => <A extends readonly [Literal, ...Literal[]]>(...values: A) => Kleisli<M, I, E, A[number]>
+): <I>(
+  onError: (i: I, values: readonly [Literal, ...Array<Literal>]) => E
+) => <A extends readonly [Literal, ...Array<Literal>]>(...values: A) => Kleisli<M, I, E, A[number]>
 ```
 
 Added in v2.2.7
