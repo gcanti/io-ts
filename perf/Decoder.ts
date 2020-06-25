@@ -4,6 +4,9 @@ import * as t from '../src/Decoder'
 /*
 space-object (good) x 662,359 ops/sec ±0.65% (88 runs sampled)
 space-object (bad) x 379,528 ops/sec ±0.56% (89 runs sampled)
+
+space-object (good) x 295,284 ops/sec ±0.67% (85 runs sampled)
+space-object (bad) x 295,530 ops/sec ±0.53% (88 runs sampled)
 */
 
 const suite = new Benchmark.Suite()

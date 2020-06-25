@@ -1,7 +1,7 @@
 import * as _ from '../../src/Guard'
 
 // $ExpectType Guard<{ a: string; b: { c: number; }; }>
-_.type({
+const A = _.type({
   a: _.string,
   b: _.type({
     c: _.number
@@ -15,3 +15,10 @@ _.partial({
     c: _.number
   })
 })
+
+//
+// TypeOf
+//
+
+// $ExpectType { a: string; b: { c: number; }; }
+type A = _.TypeOf<typeof A>

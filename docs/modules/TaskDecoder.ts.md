@@ -1,6 +1,6 @@
 ---
 title: TaskDecoder.ts
-nav_order: 16
+nav_order: 18
 parent: Modules
 ---
 
@@ -23,6 +23,7 @@ Added in v2.2.7
   - [map](#map)
 - [combinators](#combinators)
   - [array](#array)
+  - [compose](#compose)
   - [intersect](#intersect)
   - [lazy](#lazy)
   - [mapLeftWithInput](#mapleftwithinput)
@@ -54,6 +55,7 @@ Added in v2.2.7
   - [number](#number)
   - [string](#string)
 - [utils](#utils)
+  - [TypeOf (type alias)](#typeof-type-alias)
   - [draw](#draw)
 
 ---
@@ -77,7 +79,7 @@ Added in v2.2.7
 **Signature**
 
 ```ts
-export type DecodeError = FS.FreeSemigroup<DE.DecodeError<string>>
+export type DecodeError = D.DecodeError
 ```
 
 Added in v2.2.7
@@ -87,7 +89,7 @@ Added in v2.2.7
 **Signature**
 
 ```ts
-export declare const error: (actual: unknown, message: string) => FS.FreeSemigroup<DE.DecodeError<string>>
+export declare const error: (actual: unknown, message: string) => FreeSemigroup<DecodeError<string>>
 ```
 
 Added in v2.2.7
@@ -100,7 +102,7 @@ Added in v2.2.7
 export declare const failure: <A = never>(
   actual: unknown,
   message: string
-) => TE.TaskEither<FS.FreeSemigroup<DE.DecodeError<string>>, A>
+) => TE.TaskEither<FreeSemigroup<DecodeError<string>>, A>
 ```
 
 Added in v2.2.7
@@ -110,7 +112,7 @@ Added in v2.2.7
 **Signature**
 
 ```ts
-export declare const success: <A>(a: A) => TE.TaskEither<FS.FreeSemigroup<DE.DecodeError<string>>, A>
+export declare const success: <A>(a: A) => TE.TaskEither<FreeSemigroup<DecodeError<string>>, A>
 ```
 
 Added in v2.2.7
@@ -135,6 +137,16 @@ Added in v2.2.7
 
 ```ts
 export declare const array: <A>(items: TaskDecoder<A>) => TaskDecoder<A[]>
+```
+
+Added in v2.2.7
+
+## compose
+
+**Signature**
+
+```ts
+export declare const compose: <A, B>(to: KTD.KleisliTaskDecoder<A, B>) => (from: TaskDecoder<A>) => TaskDecoder<B>
 ```
 
 Added in v2.2.7
@@ -165,7 +177,7 @@ Added in v2.2.7
 
 ```ts
 export declare const mapLeftWithInput: (
-  f: (actual: unknown, e: FS.FreeSemigroup<DE.DecodeError<string>>) => FS.FreeSemigroup<DE.DecodeError<string>>
+  f: (input: unknown, e: FreeSemigroup<DecodeError<string>>) => FreeSemigroup<DecodeError<string>>
 ) => <A>(decoder: TaskDecoder<A>) => TaskDecoder<A>
 ```
 
@@ -187,7 +199,7 @@ Added in v2.2.7
 
 ```ts
 export declare const parse: <A, B>(
-  parser: (a: A) => TE.TaskEither<FS.FreeSemigroup<DE.DecodeError<string>>, B>
+  parser: (a: A) => TE.TaskEither<FreeSemigroup<DecodeError<string>>, B>
 ) => (from: TaskDecoder<A>) => TaskDecoder<B>
 ```
 
@@ -370,9 +382,7 @@ Added in v2.2.7
 **Signature**
 
 ```ts
-export interface TaskDecoder<A> {
-  readonly decode: (u: unknown) => TE.TaskEither<DecodeError, A>
-}
+export interface TaskDecoder<A> extends KTD.KleisliTaskDecoder<unknown, A> {}
 ```
 
 Added in v2.2.7
@@ -431,12 +441,22 @@ Added in v2.2.7
 
 # utils
 
+## TypeOf (type alias)
+
+**Signature**
+
+```ts
+export type TypeOf<TD> = KTD.TypeOf<TD>
+```
+
+Added in v2.2.7
+
 ## draw
 
 **Signature**
 
 ```ts
-export declare const draw: (e: FS.FreeSemigroup<DE.DecodeError<string>>) => string
+export declare const draw: (e: FreeSemigroup<DecodeError<string>>) => string
 ```
 
 Added in v2.2.7

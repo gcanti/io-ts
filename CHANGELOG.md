@@ -21,6 +21,8 @@
   - add `FreeSemigroup` module (@gcanti)
   - add `TaskDecoder` module (@gcanti)
   - add `Kleisli` module (@gcanti)
+  - add `KleisliDecoder` module (@gcanti)
+  - add `KleisliTaskDecoder` module (@gcanti)
   - (**bc**) remove `Tree` module (@gcanti)
   - (**bc**) make `Json` type immutable (@gcanti)
   - `Decoder`
@@ -31,8 +33,8 @@
   - `Guard`
     - (**bc**) remove `never` (@gcanti)
   - `Schemable`
-    - better `literal` signature (@gcanti)
-    - better `union` signature (@gcanti)
+    - (**bc**) better `literal` signature (@gcanti)
+    - (**bc**) better `union` signature (@gcanti)
     - (**bc**) make intersections pipeables (@gcanti)
     - (**bc**) make refinements pipeables (@gcanti)
 

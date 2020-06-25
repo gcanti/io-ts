@@ -19,20 +19,6 @@ export interface Encoder<O, A> {
 }
 
 // -------------------------------------------------------------------------------------
-// utils
-// -------------------------------------------------------------------------------------
-
-/**
- * @since 2.2.3
- */
-export type TypeOf<E> = E extends Encoder<any, infer A> ? A : never
-
-/**
- * @since 2.2.3
- */
-export type OutputOf<E> = E extends Encoder<infer O, any> ? O : never
-
-// -------------------------------------------------------------------------------------
 // constructors
 // -------------------------------------------------------------------------------------
 
@@ -238,3 +224,17 @@ export const categoryEncoder: Category2<URI> = {
   compose: compose_,
   id
 }
+
+// -------------------------------------------------------------------------------------
+// utils
+// -------------------------------------------------------------------------------------
+
+/**
+ * @since 2.2.3
+ */
+export type TypeOf<E> = E extends Encoder<any, infer A> ? A : never
+
+/**
+ * @since 2.2.3
+ */
+export type OutputOf<E> = E extends Encoder<infer O, any> ? O : never
