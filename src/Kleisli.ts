@@ -72,7 +72,7 @@ export const mapLeftWithInput = <M extends URIS2>(M: Bifunctor2<M>) => <I, E>(f:
 export const refine = <M extends URIS2, E>(M: MonadThrow2C<M, E> & Bifunctor2<M>) => <A, B extends A>(
   refinement: (a: A) => a is B,
   onError: (a: A) => E
-) => <I>(from: Kleisli<M, I, E, A>): Kleisli<M, I, E, B> => pipe(M)(from, fromRefinement(M)(refinement, onError))
+) => <I>(from: Kleisli<M, I, E, A>): Kleisli<M, I, E, B> => compose(M)(fromRefinement(M)(refinement, onError))(from)
 
 /**
  * @category combinators
@@ -80,7 +80,7 @@ export const refine = <M extends URIS2, E>(M: MonadThrow2C<M, E> & Bifunctor2<M>
  */
 export const parse = <M extends URIS2, E>(M: Monad2C<M, E>) => <A, B>(decode: (a: A) => Kind2<M, E, B>) => <I>(
   from: Kleisli<M, I, E, A>
-): Kleisli<M, I, E, B> => pipe(M)(from, { decode })
+): Kleisli<M, I, E, B> => compose(M)({ decode })(from)
 
 /**
  * @category combinators
@@ -294,9 +294,8 @@ export const lazy = <M extends URIS2>(M: Bifunctor2<M>) => <E>(
  * @category combinators
  * @since 2.2.7
  */
-export const pipe = <M extends URIS2, E>(M: Monad2C<M, E>) => <I, A, B>(
-  ia: Kleisli<M, I, E, A>,
-  ab: Kleisli<M, A, E, B>
+export const compose = <M extends URIS2, E>(M: Monad2C<M, E>) => <A, B>(ab: Kleisli<M, A, E, B>) => <I>(
+  ia: Kleisli<M, I, E, A>
 ): Kleisli<M, I, E, B> => ({
   decode: (i) => M.chain(ia.decode(i), ab.decode)
 })
