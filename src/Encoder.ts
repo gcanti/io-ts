@@ -139,7 +139,9 @@ export const intersect = <P, B>(right: Encoder<P, B>) => <O, A>(left: Encoder<O,
  */
 export function sum<T extends string>(
   tag: T
-): <M extends Record<string, Encoder<any, any>>>(members: M) => Encoder<OutputOf<M[keyof M]>, TypeOf<M[keyof M]>> {
+): <MS extends Record<string, Encoder<any, any>>>(
+  members: MS
+) => Encoder<OutputOf<MS[keyof MS]>, TypeOf<MS[keyof MS]>> {
   return (members) => {
     return {
       encode: (a) => members[a[tag]].encode(a)

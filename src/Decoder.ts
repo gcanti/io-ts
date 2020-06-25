@@ -147,14 +147,14 @@ export const nullable: <A>(or: Decoder<A>) => Decoder<null | A> = KD.nullable
  * @since 2.2.7
  */
 export const type = <A>(properties: { [K in keyof A]: Decoder<A[K]> }): Decoder<{ [K in keyof A]: A[K] }> =>
-  pipe(UnknownRecord, compose(KD.type(properties)))
+  pipe(UnknownRecord as any, compose(KD.type(properties)))
 
 /**
  * @category combinators
  * @since 2.2.7
  */
 export const partial = <A>(properties: { [K in keyof A]: Decoder<A[K]> }): Decoder<Partial<{ [K in keyof A]: A[K] }>> =>
-  pipe(UnknownRecord, compose(KD.partial(properties)))
+  pipe(UnknownRecord as any, compose(KD.partial(properties)))
 
 /**
  * @category combinators
@@ -174,7 +174,7 @@ export const record = <A>(codomain: Decoder<A>): Decoder<Record<string, A>> =>
  * @since 2.2.7
  */
 export const tuple = <A extends ReadonlyArray<unknown>>(...components: { [K in keyof A]: Decoder<A[K]> }): Decoder<A> =>
-  pipe(UnknownArray, compose(KD.tuple(...(components as any))))
+  pipe(UnknownArray as any, compose(KD.tuple(...components))) as any
 
 /**
  * @category combinators
@@ -195,7 +195,7 @@ export const intersect: <B>(right: Decoder<B>) => <A>(left: Decoder<A>) => Decod
  * @since 2.2.7
  */
 export const sum = <T extends string>(tag: T) => <A>(members: { [K in keyof A]: Decoder<A[K]> }): Decoder<A[keyof A]> =>
-  pipe(UnknownRecord, compose(KD.sum(tag)(members)))
+  pipe(UnknownRecord as any, compose(KD.sum(tag)(members)))
 
 /**
  * @category combinators

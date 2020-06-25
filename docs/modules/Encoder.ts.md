@@ -136,7 +136,7 @@ Added in v2.2.3
 ```ts
 export declare function sum<T extends string>(
   tag: T
-): <M extends Record<string, Encoder<any, any>>>(members: M) => Encoder<OutputOf<M[keyof M]>, TypeOf<M[keyof M]>>
+): <MS extends Record<string, Encoder<any, any>>>(members: MS) => Encoder<OutputOf<MS[keyof MS]>, TypeOf<MS[keyof MS]>>
 ```
 
 Added in v2.2.3

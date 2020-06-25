@@ -42,6 +42,7 @@ Added in v2.2.7
 - [model](#model)
   - [KleisliDecoder (interface)](#kleislidecoder-interface)
 - [utils](#utils)
+  - [InputOf (type alias)](#inputof-type-alias)
   - [TypeOf (type alias)](#typeof-type-alias)
 
 ---
@@ -200,9 +201,12 @@ Added in v2.2.7
 **Signature**
 
 ```ts
-export declare const partial: <I, A>(
-  properties: { [K in keyof A]: KleisliDecoder<I, A[K]> }
-) => KleisliDecoder<Record<string, I>, Partial<{ [K in keyof A]: A[K] }>>
+export declare const partial: <P extends Record<string, KleisliDecoder<any, any>>>(
+  properties: P
+) => KleisliDecoder<
+  { [K in keyof P]: K.InputOf<'Either', P[K]> },
+  Partial<{ [K in keyof P]: K.TypeOf<'Either', P[K]> }>
+>
 ```
 
 Added in v2.2.7
@@ -239,9 +243,9 @@ Added in v2.2.7
 ```ts
 export declare const sum: <T extends string>(
   tag: T
-) => <I extends Record<string, unknown>, A>(
-  members: { [K in keyof A]: KleisliDecoder<I, A[K]> }
-) => KleisliDecoder<I, A[keyof A]>
+) => <MS extends Record<string, KleisliDecoder<any, any>>>(
+  members: MS
+) => KleisliDecoder<K.InputOf<'Either', MS[keyof MS]>, K.TypeOf<'Either', MS[keyof MS]>>
 ```
 
 Added in v2.2.7
@@ -251,9 +255,9 @@ Added in v2.2.7
 **Signature**
 
 ```ts
-export declare const tuple: <I, A extends readonly unknown[]>(
-  ...components: { [K in keyof A]: KleisliDecoder<I, A[K]> }
-) => KleisliDecoder<I[], A>
+export declare const tuple: <C extends readonly KleisliDecoder<any, any>[]>(
+  ...components: C
+) => KleisliDecoder<{ [K in keyof C]: K.InputOf<'Either', C[K]> }, { [K in keyof C]: K.TypeOf<'Either', C[K]> }>
 ```
 
 Added in v2.2.7
@@ -263,9 +267,9 @@ Added in v2.2.7
 **Signature**
 
 ```ts
-export declare const type: <I, A>(
-  properties: { [K in keyof A]: KleisliDecoder<I, A[K]> }
-) => KleisliDecoder<Record<string, I>, { [K in keyof A]: A[K] }>
+export declare const type: <P extends Record<string, KleisliDecoder<any, any>>>(
+  properties: P
+) => KleisliDecoder<{ [K in keyof P]: K.InputOf<'Either', P[K]> }, { [K in keyof P]: K.TypeOf<'Either', P[K]> }>
 ```
 
 Added in v2.2.7
@@ -302,9 +306,9 @@ Added in v2.2.7
 **Signature**
 
 ```ts
-export declare const literal: <I, A extends readonly [Literal, ...Literal[]]>(
+export declare const literal: <A extends readonly [Literal, ...Literal[]]>(
   ...values: A
-) => KleisliDecoder<I, A[number]>
+) => KleisliDecoder<unknown, A[number]>
 ```
 
 Added in v2.2.7
@@ -325,12 +329,22 @@ Added in v2.2.7
 
 # utils
 
+## InputOf (type alias)
+
+**Signature**
+
+```ts
+export type InputOf<KD> = K.InputOf<E.URI, KD>
+```
+
+Added in v2.2.7
+
 ## TypeOf (type alias)
 
 **Signature**
 
 ```ts
-export type TypeOf<KD> = KD extends KleisliDecoder<any, infer A> ? A : never
+export type TypeOf<KD> = K.TypeOf<E.URI, KD>
 ```
 
 Added in v2.2.7

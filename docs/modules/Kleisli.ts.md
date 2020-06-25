@@ -34,6 +34,9 @@ Added in v2.2.7
   - [literal](#literal)
 - [model](#model)
   - [Kleisli (interface)](#kleisli-interface)
+- [utils](#utils)
+  - [InputOf (type alias)](#inputof-type-alias)
+  - [TypeOf (type alias)](#typeof-type-alias)
 
 ---
 
@@ -149,9 +152,9 @@ export declare function partial<M extends URIS2, E>(
   M: Applicative2C<M, E> & Bifunctor2<M>
 ): (
   onKeyError: (key: string, e: E) => E
-) => <I, A>(
-  properties: { [K in keyof A]: Kleisli<M, I, E, A[K]> }
-) => Kleisli<M, Record<string, I>, E, Partial<{ [K in keyof A]: A[K] }>>
+) => <P extends Record<string, Kleisli<M, any, E, any>>>(
+  properties: P
+) => Kleisli<M, { [K in keyof P]: InputOf<M, P[K]> }, E, Partial<{ [K in keyof P]: TypeOf<M, P[K]> }>>
 ```
 
 Added in v2.2.7
@@ -208,9 +211,9 @@ export declare const sum: <M extends 'io-ts/Codec' | 'io-ts/Encoder' | 'Either' 
   onTagError: (tag: string, value: unknown, tags: readonly string[]) => E
 ) => <T extends string>(
   tag: T
-) => <I extends Record<string, unknown>, A>(
-  members: { [K in keyof A]: Kleisli<M, I, E, A[K]> }
-) => Kleisli<M, I, E, A[keyof A]>
+) => <MS extends Record<string, Kleisli<M, any, E, any>>>(
+  members: MS
+) => Kleisli<M, InputOf<M, MS[keyof MS]>, E, TypeOf<M, MS[keyof MS]>>
 ```
 
 Added in v2.2.7
@@ -224,9 +227,9 @@ export declare function tuple<M extends URIS2, E>(
   M: Applicative2C<M, E> & Bifunctor2<M>
 ): (
   onIndexError: (index: number, e: E) => E
-) => <I, A extends ReadonlyArray<unknown>>(
-  ...components: { [K in keyof A]: Kleisli<M, I, E, A[K]> }
-) => Kleisli<M, Array<I>, E, A>
+) => <C extends ReadonlyArray<Kleisli<M, any, E, any>>>(
+  ...components: C
+) => Kleisli<M, { [K in keyof C]: InputOf<M, C[K]> }, E, { [K in keyof C]: TypeOf<M, C[K]> }>
 ```
 
 Added in v2.2.7
@@ -240,9 +243,9 @@ export declare function type<M extends URIS2, E>(
   M: Applicative2C<M, E> & Bifunctor2<M>
 ): (
   onKeyError: (key: string, e: E) => E
-) => <I, A>(
-  properties: { [K in keyof A]: Kleisli<M, I, E, A[K]> }
-) => Kleisli<M, Record<string, I>, E, { [K in keyof A]: A[K] }>
+) => <P extends Record<string, Kleisli<M, any, E, any>>>(
+  properties: P
+) => Kleisli<M, { [K in keyof P]: InputOf<M, P[K]> }, E, { [K in keyof P]: TypeOf<M, P[K]> }>
 ```
 
 Added in v2.2.7
@@ -304,6 +307,28 @@ Added in v2.2.7
 export interface Kleisli<M extends URIS2, I, E, A> {
   readonly decode: (i: I) => Kind2<M, E, A>
 }
+```
+
+Added in v2.2.7
+
+# utils
+
+## InputOf (type alias)
+
+**Signature**
+
+```ts
+export type InputOf<M extends URIS2, KD> = KD extends Kleisli<M, infer I, any, any> ? I : never
+```
+
+Added in v2.2.7
+
+## TypeOf (type alias)
+
+**Signature**
+
+```ts
+export type TypeOf<M extends URIS2, KD> = KD extends Kleisli<M, any, any, infer A> ? A : never
 ```
 
 Added in v2.2.7
