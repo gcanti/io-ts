@@ -256,6 +256,8 @@ Added in v2.2.0
 
 ## number
 
+Note: `NaN` is excluded.
+
 **Signature**
 
 ```ts

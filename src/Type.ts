@@ -3,6 +3,8 @@
  */
 import * as t from './index'
 import { Literal, Schemable1, WithUnion1, WithRefine1, WithUnknownContainers1 } from './Schemable'
+import * as E from 'fp-ts/lib/Either'
+import { pipe } from 'fp-ts/lib/pipeable'
 
 // -------------------------------------------------------------------------------------
 // model
@@ -39,7 +41,16 @@ export const string: Type<string> = t.string
  * @category primitives
  * @since 2.2.3
  */
-export const number: Type<number> = t.number
+export const number: Type<number> = new t.Type(
+  t.number.name,
+  t.number.is,
+  (u, c) =>
+    pipe(
+      t.number.decode(u),
+      E.chain((n) => (isNaN(n) ? t.failure(u, c) : t.success(n)))
+    ),
+  t.number.encode
+)
 
 /**
  * @category primitives
