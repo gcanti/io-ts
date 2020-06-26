@@ -8,8 +8,12 @@
  *
  * @since 2.2.7
  */
+import { Alt2C } from 'fp-ts/lib/Alt'
+import { Bifunctor2 } from 'fp-ts/lib/Bifunctor'
 import * as E from 'fp-ts/lib/Either'
 import { Refinement } from 'fp-ts/lib/function'
+import { MonadThrow2C } from 'fp-ts/lib/MonadThrow'
+import { pipe } from 'fp-ts/lib/pipeable'
 import * as DE from './DecodeError'
 import * as FS from './FreeSemigroup'
 import * as K from './Kleisli'
@@ -19,9 +23,46 @@ import { Literal } from './Schemable'
 // Kleisli config
 // -------------------------------------------------------------------------------------
 
-const M =
+/**
+ * @internal
+ */
+export const SE =
   /*#__PURE__*/
-  E.getValidation(DE.getSemigroup<string>())
+  DE.getSemigroup<string>()
+
+/**
+ * @internal
+ */
+export const ap = <A, B>(
+  fab: E.Either<DecodeError, (a: A) => B>,
+  fa: E.Either<DecodeError, A>
+): E.Either<DecodeError, B> =>
+  E.isLeft(fab)
+    ? E.isLeft(fa)
+      ? E.left(SE.concat(fab.left, fa.left))
+      : fab
+    : E.isLeft(fa)
+    ? fa
+    : E.right(fab.right(fa.right))
+
+const M: MonadThrow2C<E.URI, DecodeError> & Bifunctor2<E.URI> & Alt2C<E.URI, DecodeError> = {
+  URI: E.URI,
+  _E: undefined as any,
+  map: (fa, f) => pipe(fa, E.map(f)),
+  ap,
+  of: E.right,
+  chain: (ma, f) => pipe(ma, E.chain(f)),
+  throwError: E.left,
+  bimap: (fa, f, g) => pipe(fa, E.bimap(f, g)),
+  mapLeft: (fa, f) => pipe(fa, E.mapLeft(f)),
+  alt: (me, that) => {
+    if (E.isRight(me)) {
+      return me
+    }
+    const ea = that()
+    return E.isLeft(ea) ? E.left(SE.concat(me.left, ea.left)) : ea
+  }
+}
 
 // -------------------------------------------------------------------------------------
 // model
