@@ -1,4 +1,11 @@
 /**
+ * **This module is experimental**
+ *
+ * Experimental features are published in order to get early feedback from the community, see these tracking
+ * [issues](https://github.com/gcanti/io-ts/issues?q=label%3Av2.2+) for further discussions and enhancements.
+ *
+ * A feature tagged as _Experimental_ is in a high state of flux, you're at risk of it changing without notice.
+ *
  * @since 2.2.3
  */
 import { Contravariant2 } from 'fp-ts/lib/Contravariant'
