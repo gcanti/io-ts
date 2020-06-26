@@ -158,7 +158,7 @@ Added in v2.2.7
 export declare function partial<M extends URIS2, E>(
   M: Applicative2C<M, E> & Bifunctor2<M>
 ): (
-  onKeyError: (key: string, e: E) => E
+  onPropertyError: (key: string, e: E) => E
 ) => <P extends Record<string, Kleisli<M, any, E, any>>>(
   properties: P
 ) => Kleisli<M, { [K in keyof P]: InputOf<M, P[K]> }, E, Partial<{ [K in keyof P]: TypeOf<M, P[K]> }>>
@@ -237,7 +237,7 @@ Added in v2.2.7
 export declare function type<M extends URIS2, E>(
   M: Applicative2C<M, E> & Bifunctor2<M>
 ): (
-  onKeyError: (key: string, e: E) => E
+  onPropertyError: (key: string, e: E) => E
 ) => <P extends Record<string, Kleisli<M, any, E, any>>>(
   properties: P
 ) => Kleisli<M, { [K in keyof P]: InputOf<M, P[K]> }, E, { [K in keyof P]: TypeOf<M, P[K]> }>

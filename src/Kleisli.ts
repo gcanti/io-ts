@@ -131,15 +131,15 @@ export type InputOf<M extends URIS2, KD> = KD extends Kleisli<M, infer I, any, a
 export function type<M extends URIS2, E>(
   M: Applicative2C<M, E> & Bifunctor2<M>
 ): (
-  onKeyError: (key: string, e: E) => E
+  onPropertyError: (key: string, e: E) => E
 ) => <P extends Record<string, Kleisli<M, any, E, any>>>(
   properties: P
 ) => Kleisli<M, { [K in keyof P]: InputOf<M, P[K]> }, E, { [K in keyof P]: TypeOf<M, P[K]> }> {
   const traverse = traverseRecordWithIndex(M)
-  return (onKeyError) => (properties) => ({
+  return (onPropertyError) => (properties) => ({
     decode: (i) =>
-      traverse(properties as Record<string, Kleisli<M, unknown, E, unknown>>, (k, decoder) =>
-        M.mapLeft(decoder.decode(i[k]), (e) => onKeyError(k, e))
+      traverse(properties as Record<string, Kleisli<M, unknown, E, unknown>>, (key, decoder) =>
+        M.mapLeft(decoder.decode(i[key]), (e) => onPropertyError(key, e))
       ) as any
   })
 }
@@ -151,28 +151,28 @@ export function type<M extends URIS2, E>(
 export function partial<M extends URIS2, E>(
   M: Applicative2C<M, E> & Bifunctor2<M>
 ): (
-  onKeyError: (key: string, e: E) => E
+  onPropertyError: (key: string, e: E) => E
 ) => <P extends Record<string, Kleisli<M, any, E, any>>>(
   properties: P
 ) => Kleisli<M, { [K in keyof P]: InputOf<M, P[K]> }, E, Partial<{ [K in keyof P]: TypeOf<M, P[K]> }>> {
   const traverse = traverseRecordWithIndex(M)
   const undefinedProperty = M.of<E.Either<void, unknown>>(E.right(undefined))
   const skipProperty = M.of<E.Either<void, unknown>>(E.left(undefined))
-  return (onKeyError) => (properties) => ({
+  return (onPropertyError) => (properties) => ({
     decode: (i) =>
       M.map(
-        traverse(properties as Record<string, Kleisli<M, unknown, E, unknown>>, (k, decoder) => {
-          const ik = i[k]
-          if (ik === undefined) {
-            return k in i
+        traverse(properties as Record<string, Kleisli<M, unknown, E, unknown>>, (key, decoder) => {
+          const ikey = i[key]
+          if (ikey === undefined) {
+            return key in i
               ? // don't strip undefined properties
                 undefinedProperty
               : // don't add missing properties
                 skipProperty
           }
           return M.bimap(
-            decoder.decode(ik),
-            (e) => onKeyError(k, e),
+            decoder.decode(ikey),
+            (e) => onPropertyError(key, e),
             (a) => E.right<void, unknown>(a)
           )
         }),
