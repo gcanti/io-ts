@@ -3,6 +3,12 @@ import * as G from '../src/Guard'
 import { pipe } from 'fp-ts/lib/pipeable'
 
 describe('Guard', () => {
+  describe('number', () => {
+    it('should exclude NaN', () => {
+      assert.deepStrictEqual(G.number.is(NaN), false)
+    })
+  })
+
   describe('refine', () => {
     it('should accepts valid inputs', () => {
       const guard = pipe(

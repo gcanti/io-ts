@@ -1,6 +1,6 @@
 import * as assert from 'assert'
 import * as fc from 'fast-check'
-import { isRight } from 'fp-ts/lib/Either'
+import { isRight, isLeft } from 'fp-ts/lib/Either'
 import { Kind, URIS, HKT } from 'fp-ts/lib/HKT'
 import * as t from '../src'
 import * as D from '../src/Decoder'
@@ -14,7 +14,7 @@ import {
   WithUnknownContainers,
   WithUnknownContainers1
 } from '../src/Schemable'
-import * as T from '../src/Type'
+import * as _ from '../src/Type'
 import * as A from './Arbitrary'
 import { pipe } from 'fp-ts/lib/pipeable'
 
@@ -36,7 +36,7 @@ function check<A>(schema: Schema<A>, type: t.Type<A>): void {
   const arb = interpreter(A.schemableArbitrary)(schema)
   const decoder = interpreter(D.schemableDecoder)(schema)
   const guard = interpreter(G.schemableGuard)(schema)
-  const itype = interpreter(T.schemableType)(schema)
+  const itype = interpreter(_.schemableType)(schema)
   // decoder and type should be aligned
   fc.assert(fc.property(arb, (a) => isRight(decoder.decode(a)) === isRight(type.decode(a))))
   // interpreted type and type should be aligned
@@ -53,11 +53,17 @@ describe('Type', () => {
     )
   })
 
-  it('number', () => {
-    check(
-      make((S) => S.number),
-      t.number
-    )
+  describe('number', () => {
+    it('number', () => {
+      check(
+        make((S) => S.number),
+        t.number
+      )
+    })
+
+    it('should exclude NaN', () => {
+      assert.deepStrictEqual(isLeft(_.number.decode(NaN)), true)
+    })
   })
 
   it('boolean', () => {
@@ -198,8 +204,8 @@ describe('Type', () => {
     }
     type NonEmptyString = string & NonEmptyStringBrand
     const type = pipe(
-      T.string,
-      T.refine((s): s is NonEmptyString => s.length > 0, 'NonEmptyString')
+      _.string,
+      _.refine((s): s is NonEmptyString => s.length > 0, 'NonEmptyString')
     )
     assert.deepStrictEqual(isRight(type.decode('a')), true)
     assert.deepStrictEqual(isRight(type.decode('')), false)

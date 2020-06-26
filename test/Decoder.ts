@@ -63,9 +63,15 @@ describe('Decoder', () => {
     assert.deepStrictEqual(_.string.decode(null), E.left(FS.of(DE.leaf(null, 'string'))))
   })
 
-  it('number', async () => {
-    assert.deepStrictEqual(_.number.decode(1), _.success(1))
-    assert.deepStrictEqual(_.number.decode(null), E.left(FS.of(DE.leaf(null, 'number'))))
+  describe('number', () => {
+    it('number', async () => {
+      assert.deepStrictEqual(_.number.decode(1), _.success(1))
+      assert.deepStrictEqual(_.number.decode(null), E.left(FS.of(DE.leaf(null, 'number'))))
+    })
+
+    it('should exclude NaN', () => {
+      assert.deepStrictEqual(_.number.decode(NaN), E.left(FS.of(DE.leaf(NaN, 'number'))))
+    })
   })
 
   it('boolean', async () => {

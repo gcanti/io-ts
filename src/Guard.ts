@@ -50,11 +50,13 @@ export const string: Guard<string> = {
 }
 
 /**
+ * Note: `NaN` is excluded.
+ *
  * @category primitives
  * @since 2.2.0
  */
 export const number: Guard<number> = {
-  is: (u: unknown): u is number => typeof u === 'number'
+  is: (u: unknown): u is number => typeof u === 'number' && !isNaN(u)
 }
 
 /**

@@ -23,22 +23,23 @@
   - add `Kleisli` module (@gcanti)
   - add `KleisliDecoder` module (@gcanti)
   - add `KleisliTaskDecoder` module (@gcanti)
-  - (**bc**) remove `Tree` module (@gcanti)
-  - (**bc**) make `Json` type immutable (@gcanti)
+  - (\*) remove `NaN` from `number` instances (@gcanti)
+  - (\*) remove `Tree` module (@gcanti)
+  - (\*) make `Json` type immutable (@gcanti)
   - `Decoder`
-    - (**bc**) remove `never` (@gcanti)
-    - (**bc**) make `parse` pipeable and change its `parser` argument (@gcanti)
-    - (**bc**) change `DecoderError` (@gcanti)
-    - (**bc**) remove `withExpected` in favour of `mapLeftWithInput` (@gcanti)
+    - (\*) remove `never` (@gcanti)
+    - (\*) make `parse` pipeable and change its `parser` argument (@gcanti)
+    - (\*) change `DecoderError` (@gcanti)
+    - (\*) remove `withExpected` in favour of `mapLeftWithInput` (@gcanti)
   - `Guard`
-    - (**bc**) remove `never` (@gcanti)
+    - (\*) remove `never` (@gcanti)
   - `Schemable`
-    - (**bc**) better `literal` signature (@gcanti)
-    - (**bc**) better `union` signature (@gcanti)
-    - (**bc**) make intersections pipeables (@gcanti)
-    - (**bc**) make refinements pipeables (@gcanti)
+    - (\*) better `literal` signature (@gcanti)
+    - (\*) better `union` signature (@gcanti)
+    - (\*) make intersections pipeables (@gcanti)
+    - (\*) make refinements pipeables (@gcanti)
 
-**bc** means "breaking change"
+(\*) breaking change
 
 # 2.2.6
 
