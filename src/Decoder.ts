@@ -11,9 +11,7 @@
 import { Alt1 } from 'fp-ts/lib/Alt'
 import * as E from 'fp-ts/lib/Either'
 import { Functor1 } from 'fp-ts/lib/Functor'
-import * as NEA from 'fp-ts/lib/NonEmptyArray'
 import { pipe } from 'fp-ts/lib/pipeable'
-import * as T from 'fp-ts/lib/Tree'
 import * as DE from './DecodeError'
 import * as FS from './FreeSemigroup'
 import * as G from './Guard'
@@ -322,25 +320,50 @@ export const schemableDecoder: Schemable1<URI> & WithUnknownContainers1<URI> & W
  */
 export type TypeOf<D> = KD.TypeOf<D>
 
-const toForest = (e: DecodeError): NEA.NonEmptyArray<T.Tree<string>> => {
-  const toTree: (e: DE.DecodeError<string>) => T.Tree<string> = DE.fold({
-    Leaf: (input, error) => T.make(`cannot decode ${JSON.stringify(input)}, should be ${error}`),
-    Key: (key, kind, errors) => T.make(`${kind} property ${JSON.stringify(key)}`, toForest(errors)),
-    Index: (index, kind, errors) => T.make(`${kind} index ${index}`, toForest(errors)),
-    Member: (index, errors) => T.make(`member ${index}`, toForest(errors)),
-    Lazy: (id, errors) => T.make(`lazy type ${id}`, toForest(errors))
-  })
-  const toForest: (f: DecodeError) => NEA.NonEmptyArray<T.Tree<string>> = FS.fold(
-    (value) => [toTree(value)],
-    (left, right) => NEA.concat(toForest(left), toForest(right))
-  )
-  return toForest(e)
+interface Tree<A> {
+  readonly value: A
+  readonly forest: ReadonlyArray<Tree<A>>
 }
+
+const empty: Array<never> = []
+
+const make = <A>(value: A, forest: ReadonlyArray<Tree<A>> = empty): Tree<A> => ({
+  value,
+  forest
+})
+
+const drawTree = (tree: Tree<string>): string => tree.value + drawForest('\n', tree.forest)
+
+const drawForest = (indentation: string, forest: ReadonlyArray<Tree<string>>): string => {
+  let r: string = ''
+  const len = forest.length
+  let tree: Tree<string>
+  for (let i = 0; i < len; i++) {
+    tree = forest[i]
+    const isLast = i === len - 1
+    r += indentation + (isLast ? '└' : '├') + '─ ' + tree.value
+    r += drawForest(indentation + (len > 1 && !isLast ? '│  ' : '   '), tree.forest)
+  }
+  return r
+}
+
+const toTree: (e: DE.DecodeError<string>) => Tree<string> = DE.fold({
+  Leaf: (input, error) => make(`cannot decode ${JSON.stringify(input)}, should be ${error}`),
+  Key: (key, kind, errors) => make(`${kind} property ${JSON.stringify(key)}`, toForest(errors)),
+  Index: (index, kind, errors) => make(`${kind} index ${index}`, toForest(errors)),
+  Member: (index, errors) => make(`member ${index}`, toForest(errors)),
+  Lazy: (id, errors) => make(`lazy type ${id}`, toForest(errors))
+})
+
+const toForest: (e: DecodeError) => ReadonlyArray<Tree<string>> = FS.fold(
+  (value) => [toTree(value)],
+  (left, right) => toForest(left).concat(toForest(right))
+)
 
 /**
  * @since 2.2.7
  */
-export const draw = (e: DecodeError): string => toForest(e).map(T.drawTree).join('\n')
+export const draw = (e: DecodeError): string => toForest(e).map(drawTree).join('\n')
 
 /**
  * @internal
