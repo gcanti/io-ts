@@ -11,10 +11,10 @@
   - [The `record` combinator](#the-record-combinator)
   - [The `array` combinator](#the-array-combinator)
   - [The `tuple` combinator](#the-tuple-combinator)
-  - [The `intersection` combinator](#the-intersection-combinator)
+  - [The `intersect` combinator](#the-intersect-combinator)
   - [The `sum` combinator](#the-sum-combinator)
   - [The `lazy` combinator](#the-lazy-combinator)
-  - [The `refinement` combinator](#the-refinement-combinator)
+  - [The `refine` combinator](#the-refine-combinator)
   - [The `parse` combinator](#the-parse-combinator)
 - [Extracting static types from decoders](#extracting-static-types-from-decoders)
 - [Built-in error reporter](#built-in-error-reporter)
@@ -25,7 +25,7 @@
 
 ```ts
 export interface Decoder<A> {
-  readonly decode: (u: unknown) => E.Either<NonEmptyArray<Tree<string>>, A>
+  readonly decode: (u: unknown) => E.Either<DecodeError, A>
 }
 ```
 
@@ -37,8 +37,7 @@ A decoder representing `string` can be defined as
 import * as D from 'io-ts/lib/Decoder'
 
 export const string: D.Decoder<string> = {
-  decode: (u) =>
-    typeof u === 'string' ? D.success(u) : D.failure(`cannot decode ${JSON.stringify(u)}, should be string`)
+  decode: (u) => (typeof u === 'string' ? D.success(u) : D.failure(u, 'string'))
 }
 ```
 
@@ -51,7 +50,7 @@ console.log(isRight(string.decode('a'))) // => true
 console.log(isRight(string.decode(null))) // => false
 ```
 
-More generally the result of calling `decode` can be handled using [`fold`](https://gcanti.github.io/fp-ts/modules/Either.ts.html#fold-function) along with `pipe` (which is similar to the pipeline operator)
+More generally the result of calling `decode` can be handled using [`fold`](https://gcanti.github.io/fp-ts/modules/Either.ts.html#fold) along with `pipe` (which is similar to the pipeline operator)
 
 ```ts
 import { pipe } from 'fp-ts/lib/pipeable'
@@ -62,18 +61,17 @@ console.log(
     string.decode(null),
     fold(
       // failure handler
-      (errors) => console.error(errors),
+      (errors) => `error: ${JSON.stringify(errors)}`,
       // success handler
-      (a) => console.log(a)
+      (a) => `success: ${JSON.stringify(a)}`
     )
   )
 )
-// => [ { value: 'cannot decode null, should be string', forest: [] } ]
+// => error: {"_tag":"Of","value":{"_tag":"Leaf","actual":null,"error":"string"}}
 ```
 
 # Built-in primitive decoders
 
-- `never: Decoder<never>`
 - `string: Decoder<string>`
 - `number: Decoder<number>`
 - `boolean: Decoder<boolean>`
@@ -179,18 +177,20 @@ The `tuple` combinator will strip additional components while decoding
 console.log(MyTuple.decode(['a', 1, true])) // => { _tag: 'Right', right: [ 'a', 1 ] }
 ```
 
-## The `intersection` combinator
+## The `intersect` combinator
 
-The `intersection` combinator is useful in order to mix required and optional props
+The `intersect` combinator is useful in order to mix required and optional props
 
 ```ts
-export const Person = D.intersection(
+export const Person = pipe(
   D.type({
     name: D.string
   }),
-  D.partial({
-    age: D.number
-  })
+  D.intersect(
+    D.partial({
+      age: D.number
+    })
+  )
 )
 
 console.log(isRight(Person.decode({ name: 'name' }))) // => true
@@ -270,9 +270,9 @@ const Bar: D.Decoder<Bar> = D.lazy('Bar', () =>
 )
 ```
 
-## The `refinement` combinator
+## The `refine` combinator
 
-The `refinement` combinator allows to define refinements, for example a branded type
+The `refine` combinator allows to define refinements, for example a branded type
 
 ```ts
 export interface PositiveBrand {
@@ -281,7 +281,10 @@ export interface PositiveBrand {
 
 export type Positive = number & PositiveBrand
 
-export const Positive: D.Decoder<Positive> = D.refinement(D.number, (n): n is Positive => n > 0, 'Positive')
+export const Positive: D.Decoder<Positive> = pipe(
+  D.number,
+  D.refine((n): n is Positive => n > 0, 'Positive')
+)
 
 console.log(isRight(Positive.decode(1))) // => true
 console.log(isRight(Positive.decode(-1))) // => false
@@ -289,15 +292,16 @@ console.log(isRight(Positive.decode(-1))) // => false
 
 ## The `parse` combinator
 
-The `parse` combinator is more powerful than `refinement` in that you can change the output type
+The `parse` combinator is more powerful than `refine` in that you can change the output type
 
 ```ts
-import { left, right } from 'fp-ts/lib/Either'
-
-export const NumberFromString: D.Decoder<number> = D.parse(D.string, (s) => {
-  const n = parseFloat(s)
-  return isNaN(n) ? left(`cannot decode ${JSON.stringify(s)}, should be NumberFromString`) : right(n)
-})
+export const NumberFromString: D.Decoder<number> = pipe(
+  D.string,
+  D.parse((s) => {
+    const n = parseFloat(s)
+    return isNaN(n) ? D.failure(s, 'NumberFromString') : D.success(n)
+  })
+)
 
 console.log(isRight(NumberFromString.decode('1'))) // => true
 console.log(isRight(NumberFromString.decode('a'))) // => false
@@ -332,7 +336,6 @@ export interface Person extends D.TypeOf<typeof Person> {}
 
 ```ts
 import { isLeft } from 'fp-ts/lib/Either'
-import { draw } from 'io-ts/lib/Tree'
 
 export const Person = D.type({
   name: D.string,
@@ -341,7 +344,7 @@ export const Person = D.type({
 
 const result = Person.decode({})
 if (isLeft(result)) {
-  console.log(draw(result.left))
+  console.log(D.draw(result.left))
 }
 /*
 required property "name"
