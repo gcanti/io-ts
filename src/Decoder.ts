@@ -368,7 +368,6 @@ export const draw = (e: DecodeError): string => toForest(e).map(drawTree).join('
 /**
  * @internal
  */
-export const stringify: <A>(e: E.Either<DecodeError, A>) => string = E.fold(
-  (e) => draw(e),
-  (a) => JSON.stringify(a, null, 2)
-)
+export const stringify: <A>(e: E.Either<DecodeError, A>) => string =
+  /*#__PURE__*/
+  E.fold(draw, (a) => JSON.stringify(a, null, 2))
