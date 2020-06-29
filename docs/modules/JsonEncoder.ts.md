@@ -242,7 +242,7 @@ Added in v2.2.3
 
 ```ts
 export interface JsonRecord {
-  [key: string]: Json
+  readonly [key: string]: Json
 }
 ```
 

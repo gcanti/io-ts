@@ -28,7 +28,7 @@ export interface JsonArray extends ReadonlyArray<Json> {}
  * @since 2.2.3
  */
 export interface JsonRecord {
-  [key: string]: Json
+  readonly [key: string]: Json
 }
 
 /**
