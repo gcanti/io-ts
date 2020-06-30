@@ -113,10 +113,7 @@ declare module 'fp-ts/lib/HKT' {
   }
 }
 
-export const schemableArbitrary: S.Schemable1<URI> &
-  S.WithUnknownContainers1<URI> &
-  S.WithUnion1<URI> &
-  S.WithRefine1<URI> = {
+export const Schemable: S.Schemable1<URI> & S.WithUnknownContainers1<URI> & S.WithUnion1<URI> & S.WithRefine1<URI> = {
   URI,
   literal,
   string,

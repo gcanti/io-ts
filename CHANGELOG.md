@@ -14,6 +14,41 @@
 **Note**: Gaps between patch versions are faulty/broken releases.
 **Note**: A feature tagged as Experimental is in a high state of flux, you're at risk of it changing without notice.
 
+# 2.2.8
+
+- **Experimental**
+  - `Codec`
+    - rename `invariantCodec` to `Invariant` (@gcanti)
+  - `Decoder`
+    - rename to `UnknownDecoder` (@gcanti)
+    - rename `functorDecoder` to `Functor` (@gcanti)
+    - rename `altDecoder` to `Alt` (@gcanti)
+    - rename `schemableDecoder` to `Schemable` (@gcanti)
+  - `Encoder`
+    - rename `contravariantEncoder` to `Contravariant` (@gcanti)
+    - rename `categoryEncoder` to `Category` (@gcanti)
+  - `Eq`
+    - rename `schemableEq` to `Schemable` (@gcanti)
+  - `Guard`
+    - rename `schemableGuard` to `Schemable` (@gcanti)
+  - `KleisliDecoder`
+    - rename to `Decoder` (@gcanti)
+  - `KleisliTaskDecoder`
+    - rename to `TaskDecoder` (@gcanti)
+  - `JsonCodec`
+    - rename `invariantJsonCodec` to `Invariant` (@gcanti)
+    - rename `schemableJsonCodec` to `Schemable` (@gcanti)
+  - `JsonEncoder`
+    - rename `contravariantJsonCodec` to `Contravariant` (@gcanti)
+    - rename `schemableJsonEncoder` to `Schemable` (@gcanti)
+  - `TaskDecoder`
+    - rename to `UnknownTaskDecoder` (@gcanti)
+    - rename `functorTaskDecoder` to `Functor` (@gcanti)
+    - rename `altTaskDecoder` to `Alt` (@gcanti)
+    - rename `schemableTaskDecoder` to `Schemable` (@gcanti)
+  - `Type`
+    - rename `schemableType` to `Schemable` (@gcanti)
+
 # 2.2.7
 
 - **Experimental**

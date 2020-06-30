@@ -170,16 +170,16 @@ declare module 'fp-ts/lib/HKT' {
  * @category instances
  * @since 2.2.3
  */
-export const contravariantJsonEncoder: Contravariant1<URI> = {
+export const Contravariant: Contravariant1<URI> = {
   URI,
-  contramap: E.contravariantEncoder.contramap
+  contramap: E.Contravariant.contramap
 }
 
 /**
  * @category instances
  * @since 2.2.3
  */
-export const schemableJsonEncoder: Schemable1<URI> = {
+export const Schemable: Schemable1<URI> = {
   URI,
   literal: () => id(),
   string: id(),

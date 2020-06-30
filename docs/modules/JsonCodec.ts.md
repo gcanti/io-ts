@@ -37,10 +37,10 @@ Added in v2.2.3
   - [literal](#literal)
   - [make](#make)
 - [instances](#instances)
+  - [Invariant](#invariant)
+  - [Schemable](#schemable)
   - [URI](#uri)
   - [URI (type alias)](#uri-type-alias)
-  - [invariantJsonCodec](#invariantjsoncodec)
-  - [schemableJsonCodec](#schemablejsoncodec)
 - [model](#model)
   - [JsonCodec (interface)](#jsoncodec-interface)
 - [primitives](#primitives)
@@ -204,12 +204,32 @@ Added in v2.2.3
 **Signature**
 
 ```ts
-export declare const make: <A>(decoder: D.Decoder<A>, encoder: JE.JsonEncoder<A>) => JsonCodec<A>
+export declare const make: <A>(decoder: UD.UnknownDecoder<A>, encoder: JE.JsonEncoder<A>) => JsonCodec<A>
 ```
 
 Added in v2.2.3
 
 # instances
+
+## Invariant
+
+**Signature**
+
+```ts
+export declare const Invariant: Invariant1<'io-ts/JsonCodec'>
+```
+
+Added in v2.2.3
+
+## Schemable
+
+**Signature**
+
+```ts
+export declare const Schemable: Schemable1<'io-ts/JsonCodec'> & WithRefine1<'io-ts/JsonCodec'>
+```
+
+Added in v2.2.3
 
 ## URI
 
@@ -227,26 +247,6 @@ Added in v2.2.3
 
 ```ts
 export type URI = typeof URI
-```
-
-Added in v2.2.3
-
-## invariantJsonCodec
-
-**Signature**
-
-```ts
-export declare const invariantJsonCodec: Invariant1<'io-ts/JsonCodec'>
-```
-
-Added in v2.2.3
-
-## schemableJsonCodec
-
-**Signature**
-
-```ts
-export declare const schemableJsonCodec: Schemable1<'io-ts/JsonCodec'> & WithRefine1<'io-ts/JsonCodec'>
 ```
 
 Added in v2.2.3

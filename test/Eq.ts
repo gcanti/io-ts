@@ -5,7 +5,7 @@ import { pipe } from 'fp-ts/lib/pipeable'
 
 describe('Eq', () => {
   it('literal', () => {
-    const eq = E.schemableEq.literal('a', null)
+    const eq = E.Schemable.literal('a', null)
     assert.deepStrictEqual(eq.equals('a', 'a'), true)
     assert.deepStrictEqual(eq.equals(null, null), true)
     assert.deepStrictEqual(eq.equals('a', null), false)
@@ -56,7 +56,7 @@ describe('Eq', () => {
       b: Array<A>
     }
 
-    const eq: Eq<A> = E.schemableEq.lazy('A', () =>
+    const eq: Eq<A> = E.Schemable.lazy('A', () =>
       E.type({
         a: E.number,
         b: E.array(eq)
@@ -71,8 +71,8 @@ describe('Eq', () => {
   it('sum', () => {
     const sum = E.sum('_tag')
     const eq = sum({
-      A: E.type({ _tag: E.schemableEq.literal('A'), a: E.string }),
-      B: E.type({ _tag: E.schemableEq.literal('B'), b: E.number })
+      A: E.type({ _tag: E.Schemable.literal('A'), a: E.string }),
+      B: E.type({ _tag: E.Schemable.literal('B'), b: E.number })
     })
     assert.strictEqual(eq.equals({ _tag: 'A', a: 'a' }, { _tag: 'A', a: 'a' }), true)
     assert.strictEqual(eq.equals({ _tag: 'B', b: 1 }, { _tag: 'B', b: 1 }), true)
@@ -88,7 +88,7 @@ describe('Eq', () => {
     type NonEmptyString = string & NonEmptyStringBrand
     const eq = pipe(
       E.string,
-      E.schemableEq.refine((s): s is NonEmptyString => s.length > 0, 'NonEmptyString')
+      E.Schemable.refine((s): s is NonEmptyString => s.length > 0, 'NonEmptyString')
     )
     const a: NonEmptyString = 'a' as any
     const b: NonEmptyString = 'b' as any

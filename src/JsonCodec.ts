@@ -9,7 +9,7 @@
  * @since 2.2.3
  */
 import { Invariant1 } from 'fp-ts/lib/Invariant'
-import * as D from './Decoder'
+import * as UD from './UnknownDecoder'
 import * as JE from './JsonEncoder'
 import * as C from './Codec'
 import { Literal, Schemable1, WithRefine1 } from './Schemable'
@@ -46,7 +46,7 @@ export type TypeOf<C> = JE.TypeOf<C>
  * @category constructors
  * @since 2.2.3
  */
-export const make: <A>(decoder: D.Decoder<A>, encoder: JE.JsonEncoder<A>) => JsonCodec<A> = C.make
+export const make: <A>(decoder: UD.UnknownDecoder<A>, encoder: JE.JsonEncoder<A>) => JsonCodec<A> = C.make
 
 /**
  * @category constructors
@@ -86,7 +86,7 @@ export const boolean: JsonCodec<boolean> = C.boolean
  * @since 2.2.3
  */
 export const mapLeftWithInput: (
-  f: (actual: unknown, e: D.DecodeError) => D.DecodeError
+  f: (actual: unknown, e: UD.DecodeError) => UD.DecodeError
 ) => <A>(codec: JsonCodec<A>) => JsonCodec<A> = C.mapLeftWithInput
 
 /**
@@ -196,16 +196,16 @@ declare module 'fp-ts/lib/HKT' {
  * @category instances
  * @since 2.2.3
  */
-export const invariantJsonCodec: Invariant1<URI> = {
+export const Invariant: Invariant1<URI> = {
   URI,
-  imap: C.invariantCodec.imap
+  imap: C.Invariant.imap
 }
 
 /**
  * @category instances
  * @since 2.2.3
  */
-export const schemableJsonCodec: Schemable1<URI> & WithRefine1<URI> = {
+export const Schemable: Schemable1<URI> & WithRefine1<URI> = {
   URI,
   literal,
   string,

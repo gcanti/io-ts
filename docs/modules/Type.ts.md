@@ -1,6 +1,6 @@
 ---
 title: Type.ts
-nav_order: 19
+nav_order: 17
 parent: Modules
 ---
 
@@ -34,9 +34,9 @@ Added in v2.2.3
 - [constructors](#constructors)
   - [literal](#literal)
 - [instances](#instances)
+  - [Schemable](#schemable)
   - [URI](#uri)
   - [URI (type alias)](#uri-type-alias)
-  - [schemableType](#schemabletype)
 - [model](#model)
   - [Type (interface)](#type-interface)
 - [primitives](#primitives)
@@ -178,6 +178,19 @@ Added in v2.2.3
 
 # instances
 
+## Schemable
+
+**Signature**
+
+```ts
+export declare const Schemable: Schemable1<'io-ts/Type'> &
+  WithUnknownContainers1<'io-ts/Type'> &
+  WithUnion1<'io-ts/Type'> &
+  WithRefine1<'io-ts/Type'>
+```
+
+Added in v2.2.3
+
 ## URI
 
 **Signature**
@@ -194,19 +207,6 @@ Added in v2.2.3
 
 ```ts
 export type URI = typeof URI
-```
-
-Added in v2.2.3
-
-## schemableType
-
-**Signature**
-
-```ts
-export declare const schemableType: Schemable1<'io-ts/Type'> &
-  WithUnknownContainers1<'io-ts/Type'> &
-  WithUnion1<'io-ts/Type'> &
-  WithRefine1<'io-ts/Type'>
 ```
 
 Added in v2.2.3

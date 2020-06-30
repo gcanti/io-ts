@@ -1,6 +1,6 @@
 import * as assert from 'assert'
 import * as C from '../src/Codec'
-import * as D from '../src/Decoder'
+import * as UD from '../src/UnknownDecoder'
 import * as G from '../src/Guard'
 import { pipe } from 'fp-ts/lib/pipeable'
 import * as DE from '../src/DecodeError'
@@ -9,10 +9,10 @@ import * as E from 'fp-ts/lib/Either'
 
 const NumberFromString: C.Codec<string, number> = C.make(
   pipe(
-    D.string,
-    D.parse((s) => {
+    UD.string,
+    UD.parse((s) => {
       const n = parseFloat(s)
-      return isNaN(n) ? D.failure(s, 'parsable to a number') : D.success(n)
+      return isNaN(n) ? UD.failure(s, 'parsable to a number') : UD.success(n)
     })
   ),
   { encode: String }
@@ -39,17 +39,17 @@ const Int: C.Codec<number, Int> = pipe(
 const undefinedGuard: G.Guard<undefined> = {
   is: (u): u is undefined => u === undefined
 }
-const undef: C.Codec<undefined, undefined> = C.fromDecoder(D.fromGuard(undefinedGuard, 'undefined'))
+const undef: C.Codec<undefined, undefined> = C.fromDecoder(UD.fromGuard(undefinedGuard, 'undefined'))
 
 describe('Codec', () => {
-  describe('invariantCodec', () => {
+  describe('Invariant', () => {
     it('imap', () => {
-      const codec = C.invariantCodec.imap(
+      const codec = C.Invariant.imap(
         C.string,
         (s) => ({ value: s }),
         ({ value }) => value
       )
-      assert.deepStrictEqual(codec.decode('a'), D.success({ value: 'a' }))
+      assert.deepStrictEqual(codec.decode('a'), UD.success({ value: 'a' }))
       assert.deepStrictEqual(codec.encode({ value: 'a' }), 'a')
     })
   })
@@ -62,7 +62,7 @@ describe('Codec', () => {
         ({ value }) => value
       )
     )
-    assert.deepStrictEqual(codec.decode('a'), D.success({ value: 'a' }))
+    assert.deepStrictEqual(codec.decode('a'), UD.success({ value: 'a' }))
     assert.deepStrictEqual(codec.encode({ value: 'a' }), 'a')
   })
 
@@ -73,7 +73,7 @@ describe('Codec', () => {
           C.number,
           C.mapLeftWithInput((u) => FS.of(DE.leaf(u, 'not a number')))
         )
-        assert.deepStrictEqual(decoder.decode('a'), D.failure('a', 'not a number'))
+        assert.deepStrictEqual(decoder.decode('a'), UD.failure('a', 'not a number'))
       })
     })
   })
@@ -82,12 +82,12 @@ describe('Codec', () => {
     describe('decode', () => {
       it('should decode a valid input', () => {
         const codec = C.string
-        assert.deepStrictEqual(codec.decode('a'), D.success('a'))
+        assert.deepStrictEqual(codec.decode('a'), UD.success('a'))
       })
 
       it('should reject an invalid input', () => {
         const codec = C.string
-        assert.deepStrictEqual(codec.decode(null), D.failure(null, 'string'))
+        assert.deepStrictEqual(codec.decode(null), UD.failure(null, 'string'))
       })
     })
   })
@@ -96,12 +96,12 @@ describe('Codec', () => {
     describe('decode', () => {
       it('should decode a valid input', () => {
         const codec = C.number
-        assert.deepStrictEqual(codec.decode(1), D.success(1))
+        assert.deepStrictEqual(codec.decode(1), UD.success(1))
       })
 
       it('should reject an invalid input', () => {
         const codec = C.number
-        assert.deepStrictEqual(codec.decode(null), D.failure(null, 'number'))
+        assert.deepStrictEqual(codec.decode(null), UD.failure(null, 'number'))
       })
     })
   })
@@ -110,13 +110,13 @@ describe('Codec', () => {
     describe('decode', () => {
       it('should decode a valid input', () => {
         const codec = C.boolean
-        assert.deepStrictEqual(codec.decode(true), D.success(true))
-        assert.deepStrictEqual(codec.decode(false), D.success(false))
+        assert.deepStrictEqual(codec.decode(true), UD.success(true))
+        assert.deepStrictEqual(codec.decode(false), UD.success(false))
       })
 
       it('should reject an invalid input', () => {
         const codec = C.boolean
-        assert.deepStrictEqual(codec.decode(null), D.failure(null, 'boolean'))
+        assert.deepStrictEqual(codec.decode(null), UD.failure(null, 'boolean'))
       })
     })
   })
@@ -125,13 +125,13 @@ describe('Codec', () => {
     describe('decode', () => {
       it('should decode a valid input', () => {
         const codec = C.literal('a', null, 'b', 1, true)
-        assert.deepStrictEqual(codec.decode('a'), D.success('a'))
-        assert.deepStrictEqual(codec.decode(null), D.success(null))
+        assert.deepStrictEqual(codec.decode('a'), UD.success('a'))
+        assert.deepStrictEqual(codec.decode(null), UD.success(null))
       })
 
       it('should reject an invalid input', () => {
         const codec = C.literal('a', null)
-        assert.deepStrictEqual(codec.decode('b'), D.failure('b', '"a" | null'))
+        assert.deepStrictEqual(codec.decode('b'), UD.failure('b', '"a" | null'))
       })
     })
 
@@ -150,7 +150,7 @@ describe('Codec', () => {
           C.string,
           C.refine((s): s is string => s.length > 0, 'NonEmptyString')
         )
-        assert.deepStrictEqual(codec.decode('a'), D.success('a'))
+        assert.deepStrictEqual(codec.decode('a'), UD.success('a'))
       })
 
       it('should reject an invalid input', () => {
@@ -158,8 +158,8 @@ describe('Codec', () => {
           C.string,
           C.refine((s): s is string => s.length > 0, 'NonEmptyString')
         )
-        assert.deepStrictEqual(codec.decode(undefined), D.failure(undefined, 'string'))
-        assert.deepStrictEqual(codec.decode(''), D.failure('', 'NonEmptyString'))
+        assert.deepStrictEqual(codec.decode(undefined), UD.failure(undefined, 'string'))
+        assert.deepStrictEqual(codec.decode(''), UD.failure('', 'NonEmptyString'))
       })
     })
 
@@ -178,8 +178,8 @@ describe('Codec', () => {
     describe('decode', () => {
       it('should decode a valid input', () => {
         const codec = C.nullable(NumberFromString)
-        assert.deepStrictEqual(codec.decode(null), D.success(null))
-        assert.deepStrictEqual(codec.decode('1'), D.success(1))
+        assert.deepStrictEqual(codec.decode(null), UD.success(null))
+        assert.deepStrictEqual(codec.decode('1'), UD.success(1))
       })
 
       it('should reject an invalid input', () => {
@@ -220,28 +220,28 @@ describe('Codec', () => {
         const codec = C.type({
           a: C.string
         })
-        assert.deepStrictEqual(codec.decode({ a: 'a' }), D.success({ a: 'a' }))
+        assert.deepStrictEqual(codec.decode({ a: 'a' }), UD.success({ a: 'a' }))
       })
 
       it('should strip additional fields', () => {
         const codec = C.type({
           a: C.string
         })
-        assert.deepStrictEqual(codec.decode({ a: 'a', b: 1 }), D.success({ a: 'a' }))
+        assert.deepStrictEqual(codec.decode({ a: 'a', b: 1 }), UD.success({ a: 'a' }))
       })
 
       it('should not strip fields corresponding to undefined values', () => {
         const codec = C.type({
           a: undef
         })
-        assert.deepStrictEqual(codec.decode({}), D.success({ a: undefined }))
+        assert.deepStrictEqual(codec.decode({}), UD.success({ a: undefined }))
       })
 
       it('should reject an invalid input', () => {
         const codec = C.type({
           a: C.string
         })
-        assert.deepStrictEqual(codec.decode(undefined), D.failure(undefined, 'object'))
+        assert.deepStrictEqual(codec.decode(undefined), UD.failure(undefined, 'object'))
         assert.deepStrictEqual(
           codec.decode({ a: 1 }),
           E.left(FS.of(DE.key('a', DE.required, FS.of(DE.leaf(1, 'string')))))
@@ -274,7 +274,7 @@ describe('Codec', () => {
           }
         }
         const codec = C.type({ a: C.string, b: C.string })
-        assert.deepStrictEqual(codec.decode(new A()), D.success({ a: 'a', b: 'b' }))
+        assert.deepStrictEqual(codec.decode(new A()), UD.success({ a: 'a', b: 'b' }))
       })
     })
 
@@ -296,28 +296,28 @@ describe('Codec', () => {
     describe('decode', () => {
       it('should decode a valid input', () => {
         const codec = C.partial({ a: C.string })
-        assert.deepStrictEqual(codec.decode({ a: 'a' }), D.success({ a: 'a' }))
-        assert.deepStrictEqual(codec.decode({}), D.success({}))
+        assert.deepStrictEqual(codec.decode({ a: 'a' }), UD.success({ a: 'a' }))
+        assert.deepStrictEqual(codec.decode({}), UD.success({}))
       })
 
       it('should strip additional fields', () => {
         const codec = C.partial({ a: C.string })
-        assert.deepStrictEqual(codec.decode({ a: 'a', b: 1 }), D.success({ a: 'a' }))
+        assert.deepStrictEqual(codec.decode({ a: 'a', b: 1 }), UD.success({ a: 'a' }))
       })
 
       it('should not add missing fields', () => {
         const codec = C.partial({ a: C.string })
-        assert.deepStrictEqual(codec.decode({}), D.success({}))
+        assert.deepStrictEqual(codec.decode({}), UD.success({}))
       })
 
       it('should not strip fields corresponding to undefined values', () => {
         const codec = C.partial({ a: C.string })
-        assert.deepStrictEqual(codec.decode({ a: undefined }), D.success({ a: undefined }))
+        assert.deepStrictEqual(codec.decode({ a: undefined }), UD.success({ a: undefined }))
       })
 
       it('should reject an invalid input', () => {
         const codec = C.partial({ a: C.string })
-        assert.deepStrictEqual(codec.decode(undefined), D.failure(undefined, 'object'))
+        assert.deepStrictEqual(codec.decode(undefined), UD.failure(undefined, 'object'))
         assert.deepStrictEqual(
           codec.decode({ a: 1 }),
           E.left(FS.of(DE.key('a', DE.optional, FS.of(DE.leaf(1, 'string')))))
@@ -350,7 +350,7 @@ describe('Codec', () => {
           }
         }
         const codec = C.partial({ a: C.string, b: C.string })
-        assert.deepStrictEqual(codec.decode(new A()), D.success({ a: 'a', b: 'b' }))
+        assert.deepStrictEqual(codec.decode(new A()), UD.success({ a: 'a', b: 'b' }))
       })
     })
 
@@ -383,13 +383,13 @@ describe('Codec', () => {
     describe('decode', () => {
       it('should decode a valid value', () => {
         const codec = C.record(C.number)
-        assert.deepStrictEqual(codec.decode({}), D.success({}))
-        assert.deepStrictEqual(codec.decode({ a: 1 }), D.success({ a: 1 }))
+        assert.deepStrictEqual(codec.decode({}), UD.success({}))
+        assert.deepStrictEqual(codec.decode({ a: 1 }), UD.success({ a: 1 }))
       })
 
       it('should reject an invalid value', () => {
         const codec = C.record(C.number)
-        assert.deepStrictEqual(codec.decode(undefined), D.failure(undefined, 'Record<string, unknown>'))
+        assert.deepStrictEqual(codec.decode(undefined), UD.failure(undefined, 'Record<string, unknown>'))
         assert.deepStrictEqual(
           codec.decode({ a: 'a' }),
           E.left(FS.of(DE.key('a', DE.optional, FS.of(DE.leaf('a', 'number')))))
@@ -422,13 +422,13 @@ describe('Codec', () => {
     describe('decode', () => {
       it('should decode a valid input', () => {
         const codec = C.array(C.string)
-        assert.deepStrictEqual(codec.decode([]), D.success([]))
-        assert.deepStrictEqual(codec.decode(['a']), D.success(['a']))
+        assert.deepStrictEqual(codec.decode([]), UD.success([]))
+        assert.deepStrictEqual(codec.decode(['a']), UD.success(['a']))
       })
 
       it('should reject an invalid input', () => {
         const codec = C.array(C.string)
-        assert.deepStrictEqual(codec.decode(undefined), D.failure(undefined, 'Array<unknown>'))
+        assert.deepStrictEqual(codec.decode(undefined), UD.failure(undefined, 'Array<unknown>'))
         assert.deepStrictEqual(codec.decode([1]), E.left(FS.of(DE.index(0, DE.optional, FS.of(DE.leaf(1, 'string'))))))
       })
 
@@ -458,16 +458,16 @@ describe('Codec', () => {
     describe('decode', () => {
       it('should decode a valid input', () => {
         const codec = C.tuple(C.string, C.number)
-        assert.deepStrictEqual(codec.decode(['a', 1]), D.success(['a', 1]))
+        assert.deepStrictEqual(codec.decode(['a', 1]), UD.success(['a', 1]))
       })
 
       it('should handle zero components', () => {
-        assert.deepStrictEqual(C.tuple().decode([]), D.success([]))
+        assert.deepStrictEqual(C.tuple().decode([]), UD.success([]))
       })
 
       it('should reject an invalid input', () => {
         const codec = C.tuple(C.string, C.number)
-        assert.deepStrictEqual(codec.decode(undefined), D.failure(undefined, 'Array<unknown>'))
+        assert.deepStrictEqual(codec.decode(undefined), UD.failure(undefined, 'Array<unknown>'))
         assert.deepStrictEqual(
           codec.decode(['a']),
           E.left(FS.of(DE.index(1, DE.required, FS.of(DE.leaf(undefined, 'number')))))
@@ -493,7 +493,7 @@ describe('Codec', () => {
 
       it('should strip additional components', () => {
         const codec = C.tuple(C.string, C.number)
-        assert.deepStrictEqual(codec.decode(['a', 1, true]), D.success(['a', 1]))
+        assert.deepStrictEqual(codec.decode(['a', 1, true]), UD.success(['a', 1]))
       })
     })
 
@@ -509,12 +509,12 @@ describe('Codec', () => {
     describe('decode', () => {
       it('should decode a valid input', () => {
         const codec = pipe(C.type({ a: C.string }), C.intersect(C.type({ b: C.number })))
-        assert.deepStrictEqual(codec.decode({ a: 'a', b: 1 }), D.success({ a: 'a', b: 1 }))
+        assert.deepStrictEqual(codec.decode({ a: 'a', b: 1 }), UD.success({ a: 'a', b: 1 }))
       })
 
       it('should handle primitives', () => {
         const codec = pipe(Int, C.intersect(Positive))
-        assert.deepStrictEqual(codec.decode(1), D.success(1))
+        assert.deepStrictEqual(codec.decode(1), UD.success(1))
       })
     })
 
@@ -539,15 +539,15 @@ describe('Codec', () => {
         const A = C.type({ _tag: C.literal('A'), a: C.string })
         const B = C.type({ _tag: C.literal('B'), b: C.number })
         const codec = sum({ A, B })
-        assert.deepStrictEqual(codec.decode({ _tag: 'A', a: 'a' }), D.success({ _tag: 'A', a: 'a' }))
-        assert.deepStrictEqual(codec.decode({ _tag: 'B', b: 1 }), D.success({ _tag: 'B', b: 1 }))
+        assert.deepStrictEqual(codec.decode({ _tag: 'A', a: 'a' }), UD.success({ _tag: 'A', a: 'a' }))
+        assert.deepStrictEqual(codec.decode({ _tag: 'B', b: 1 }), UD.success({ _tag: 'B', b: 1 }))
       })
 
       it('should reject an invalid input', () => {
         const A = C.type({ _tag: C.literal('A'), a: C.string })
         const B = C.type({ _tag: C.literal('B'), b: C.number })
         const codec = sum({ A, B })
-        assert.deepStrictEqual(codec.decode(null), D.failure(null, 'object'))
+        assert.deepStrictEqual(codec.decode(null), UD.failure(null, 'object'))
         assert.deepStrictEqual(
           codec.decode({}),
           E.left(FS.of(DE.key('_tag', DE.required, FS.of(DE.leaf(undefined, '"A" | "B"')))))
@@ -594,8 +594,8 @@ describe('Codec', () => {
 
     describe('decode', () => {
       it('should decode a valid input', () => {
-        assert.deepStrictEqual(lazyCodec.decode({ a: '1' }), D.success({ a: 1 }))
-        assert.deepStrictEqual(lazyCodec.decode({ a: '1', b: { a: '2' } }), D.success({ a: 1, b: { a: 2 } }))
+        assert.deepStrictEqual(lazyCodec.decode({ a: '1' }), UD.success({ a: 1 }))
+        assert.deepStrictEqual(lazyCodec.decode({ a: '1', b: { a: '2' } }), UD.success({ a: 1, b: { a: 2 } }))
       })
 
       it('should reject an invalid input', () => {
