@@ -415,7 +415,7 @@ type C = {
 }
 ```
 
-You can apply `partial` to an already defined codec via its `props` field
+You can apply `partial` to an already `type`-defined codec via its `props` field
 
 ```ts
 const PartialUser = t.partial(User.props)

@@ -36,10 +36,10 @@ Added in v2.2.3
 - [constructors](#constructors)
   - [id](#id)
 - [instances](#instances)
+  - [Category](#category)
+  - [Contravariant](#contravariant-1)
   - [URI](#uri)
   - [URI (type alias)](#uri-type-alias)
-  - [categoryEncoder](#categoryencoder)
-  - [contravariantEncoder](#contravariantencoder)
 - [model](#model)
   - [Encoder (interface)](#encoder-interface)
 - [utils](#utils)
@@ -186,6 +186,26 @@ Added in v2.2.3
 
 # instances
 
+## Category
+
+**Signature**
+
+```ts
+export declare const Category: Category2<'io-ts/Encoder'>
+```
+
+Added in v2.2.3
+
+## Contravariant
+
+**Signature**
+
+```ts
+export declare const Contravariant: Contravariant2<'io-ts/Encoder'>
+```
+
+Added in v2.2.3
+
 ## URI
 
 **Signature**
@@ -202,26 +222,6 @@ Added in v2.2.3
 
 ```ts
 export type URI = typeof URI
-```
-
-Added in v2.2.3
-
-## categoryEncoder
-
-**Signature**
-
-```ts
-export declare const categoryEncoder: Category2<'io-ts/Encoder'>
-```
-
-Added in v2.2.3
-
-## contravariantEncoder
-
-**Signature**
-
-```ts
-export declare const contravariantEncoder: Contravariant2<'io-ts/Encoder'>
 ```
 
 Added in v2.2.3

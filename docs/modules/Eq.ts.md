@@ -30,7 +30,7 @@ Added in v2.2.2
   - [tuple](#tuple)
   - [type](#type)
 - [instances](#instances)
-  - [schemableEq](#schemableeq)
+  - [Schemable](#schemable)
 - [primitives](#primitives)
   - [UnknownArray](#unknownarray)
   - [UnknownRecord](#unknownrecord)
@@ -137,12 +137,12 @@ Added in v2.2.2
 
 # instances
 
-## schemableEq
+## Schemable
 
 **Signature**
 
 ```ts
-export declare const schemableEq: Schemable1<'Eq'> & WithUnknownContainers1<'Eq'> & WithRefine1<'Eq'>
+export declare const Schemable: Schemable1<'Eq'> & WithUnknownContainers1<'Eq'> & WithRefine1<'Eq'>
 ```
 
 Added in v2.2.3

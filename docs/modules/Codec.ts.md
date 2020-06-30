@@ -38,9 +38,9 @@ Added in v2.2.3
   - [literal](#literal)
   - [make](#make)
 - [instances](#instances)
+  - [Invariant](#invariant-1)
   - [URI](#uri)
   - [URI (type alias)](#uri-type-alias)
-  - [invariantCodec](#invariantcodec)
 - [model](#model)
   - [Codec (interface)](#codec-interface)
 - [primitives](#primitives)
@@ -199,7 +199,7 @@ Added in v2.2.3
 **Signature**
 
 ```ts
-export declare function fromDecoder<A>(decoder: D.Decoder<A>): Codec<A, A>
+export declare function fromDecoder<A>(decoder: D.UnknownDecoder<A>): Codec<A, A>
 ```
 
 Added in v2.2.3
@@ -221,12 +221,22 @@ Added in v2.2.3
 **Signature**
 
 ```ts
-export declare function make<O, A>(decoder: D.Decoder<A>, encoder: E.Encoder<O, A>): Codec<O, A>
+export declare function make<O, A>(decoder: D.UnknownDecoder<A>, encoder: E.Encoder<O, A>): Codec<O, A>
 ```
 
 Added in v2.2.3
 
 # instances
+
+## Invariant
+
+**Signature**
+
+```ts
+export declare const Invariant: Invariant2<'io-ts/Codec'>
+```
+
+Added in v2.2.3
 
 ## URI
 
@@ -248,16 +258,6 @@ export type URI = typeof URI
 
 Added in v2.2.3
 
-## invariantCodec
-
-**Signature**
-
-```ts
-export declare const invariantCodec: Invariant2<'io-ts/Codec'>
-```
-
-Added in v2.2.3
-
 # model
 
 ## Codec (interface)
@@ -270,7 +270,7 @@ Laws:
 **Signature**
 
 ```ts
-export interface Codec<O, A> extends D.Decoder<A>, E.Encoder<O, A> {}
+export interface Codec<O, A> extends D.UnknownDecoder<A>, E.Encoder<O, A> {}
 ```
 
 Added in v2.2.3

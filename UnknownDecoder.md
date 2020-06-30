@@ -21,10 +21,10 @@
 
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
 
-# Decoder interface
+# Model
 
 ```ts
-export interface Decoder<A> {
+export interface UnknownDecoder<A> {
   readonly decode: (u: unknown) => E.Either<DecodeError, A>
 }
 ```

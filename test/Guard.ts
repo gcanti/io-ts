@@ -195,7 +195,7 @@ describe('Guard', () => {
       b: Array<A>
     }
 
-    const guard: G.Guard<A> = G.schemableGuard.lazy('A', () =>
+    const guard: G.Guard<A> = G.Schemable.lazy('A', () =>
       G.type({
         a: G.number,
         b: G.array(guard)

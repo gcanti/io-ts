@@ -1,6 +1,6 @@
 ---
 title: TaskDecoder.ts
-nav_order: 18
+nav_order: 16
 parent: Modules
 ---
 
@@ -44,26 +44,14 @@ Added in v2.2.7
   - [type](#type)
   - [union](#union)
 - [constructors](#constructors)
-  - [fromDecoder](#fromdecoder)
-  - [fromGuard](#fromguard)
+  - [fromKleisliDecoder](#fromkleislidecoder)
+  - [fromRefinement](#fromrefinement)
   - [literal](#literal)
-- [instances](#instances)
-  - [URI](#uri)
-  - [URI (type alias)](#uri-type-alias)
-  - [altTaskDecoder](#alttaskdecoder)
-  - [functorTaskDecoder](#functortaskdecoder)
-  - [schemableTaskDecoder](#schemabletaskdecoder)
 - [model](#model)
   - [TaskDecoder (interface)](#taskdecoder-interface)
-- [primitives](#primitives)
-  - [UnknownArray](#unknownarray)
-  - [UnknownRecord](#unknownrecord)
-  - [boolean](#boolean)
-  - [number](#number)
-  - [string](#string)
 - [utils](#utils)
+  - [InputOf (type alias)](#inputof-type-alias)
   - [TypeOf (type alias)](#typeof-type-alias)
-  - [draw](#draw)
 
 ---
 
@@ -74,7 +62,7 @@ Added in v2.2.7
 **Signature**
 
 ```ts
-export declare const alt: <A>(that: () => TaskDecoder<A>) => (me: TaskDecoder<A>) => TaskDecoder<A>
+export declare const alt: <I, A>(that: () => TaskDecoder<I, A>) => (me: TaskDecoder<I, A>) => TaskDecoder<I, A>
 ```
 
 Added in v2.2.7
@@ -96,7 +84,7 @@ Added in v2.2.7
 **Signature**
 
 ```ts
-export declare const error: (actual: unknown, message: string) => FreeSemigroup<DecodeError<string>>
+export declare const error: (actual: unknown, message: string) => FS.FreeSemigroup<DE.DecodeError<string>>
 ```
 
 Added in v2.2.7
@@ -109,7 +97,7 @@ Added in v2.2.7
 export declare const failure: <A = never>(
   actual: unknown,
   message: string
-) => TE.TaskEither<FreeSemigroup<DecodeError<string>>, A>
+) => TE.TaskEither<FS.FreeSemigroup<DE.DecodeError<string>>, A>
 ```
 
 Added in v2.2.7
@@ -119,7 +107,7 @@ Added in v2.2.7
 **Signature**
 
 ```ts
-export declare const success: <A>(a: A) => TE.TaskEither<FreeSemigroup<DecodeError<string>>, A>
+export declare const success: <A>(a: A) => TE.TaskEither<FS.FreeSemigroup<DE.DecodeError<string>>, A>
 ```
 
 Added in v2.2.7
@@ -131,7 +119,7 @@ Added in v2.2.7
 **Signature**
 
 ```ts
-export declare const map: <A, B>(f: (a: A) => B) => (fa: TaskDecoder<A>) => TaskDecoder<B>
+export declare const map: <A, B>(f: (a: A) => B) => <I>(fa: TaskDecoder<I, A>) => TaskDecoder<I, B>
 ```
 
 Added in v2.2.7
@@ -143,7 +131,7 @@ Added in v2.2.7
 **Signature**
 
 ```ts
-export declare const array: <A>(items: TaskDecoder<A>) => TaskDecoder<A[]>
+export declare const array: <I, A>(items: TaskDecoder<I, A>) => TaskDecoder<I[], A[]>
 ```
 
 Added in v2.2.7
@@ -153,7 +141,7 @@ Added in v2.2.7
 **Signature**
 
 ```ts
-export declare const compose: <A, B>(to: KTD.KleisliTaskDecoder<A, B>) => (from: TaskDecoder<A>) => TaskDecoder<B>
+export declare const compose: <A, B>(to: TaskDecoder<A, B>) => <I>(from: TaskDecoder<I, A>) => TaskDecoder<I, B>
 ```
 
 Added in v2.2.7
@@ -163,7 +151,9 @@ Added in v2.2.7
 **Signature**
 
 ```ts
-export declare const intersect: <B>(right: TaskDecoder<B>) => <A>(left: TaskDecoder<A>) => TaskDecoder<A & B>
+export declare const intersect: <IB, B>(
+  right: TaskDecoder<IB, B>
+) => <IA, A>(left: TaskDecoder<IA, A>) => TaskDecoder<IA & IB, A & B>
 ```
 
 Added in v2.2.7
@@ -173,7 +163,7 @@ Added in v2.2.7
 **Signature**
 
 ```ts
-export declare const lazy: <A>(id: string, f: () => TaskDecoder<A>) => TaskDecoder<A>
+export declare const lazy: <I, A>(id: string, f: () => TaskDecoder<I, A>) => TaskDecoder<I, A>
 ```
 
 Added in v2.2.7
@@ -183,9 +173,9 @@ Added in v2.2.7
 **Signature**
 
 ```ts
-export declare const mapLeftWithInput: (
-  f: (input: unknown, e: FreeSemigroup<DecodeError<string>>) => FreeSemigroup<DecodeError<string>>
-) => <A>(decoder: TaskDecoder<A>) => TaskDecoder<A>
+export declare const mapLeftWithInput: <I>(
+  f: (input: I, e: FS.FreeSemigroup<DE.DecodeError<string>>) => FS.FreeSemigroup<DE.DecodeError<string>>
+) => <A>(decoder: TaskDecoder<I, A>) => TaskDecoder<I, A>
 ```
 
 Added in v2.2.7
@@ -195,7 +185,7 @@ Added in v2.2.7
 **Signature**
 
 ```ts
-export declare const nullable: <A>(or: TaskDecoder<A>) => TaskDecoder<A>
+export declare const nullable: <I, A>(or: TaskDecoder<I, A>) => TaskDecoder<I, A>
 ```
 
 Added in v2.2.7
@@ -206,8 +196,8 @@ Added in v2.2.7
 
 ```ts
 export declare const parse: <A, B>(
-  parser: (a: A) => TE.TaskEither<FreeSemigroup<DecodeError<string>>, B>
-) => (from: TaskDecoder<A>) => TaskDecoder<B>
+  parser: (a: A) => TE.TaskEither<FS.FreeSemigroup<DE.DecodeError<string>>, B>
+) => <I>(from: TaskDecoder<I, A>) => TaskDecoder<I, B>
 ```
 
 Added in v2.2.7
@@ -217,9 +207,12 @@ Added in v2.2.7
 **Signature**
 
 ```ts
-export declare const partial: <A>(
-  properties: { [K in keyof A]: TaskDecoder<A[K]> }
-) => TaskDecoder<Partial<{ [K in keyof A]: A[K] }>>
+export declare const partial: <P extends Record<string, TaskDecoder<any, any>>>(
+  properties: P
+) => TaskDecoder<
+  { [K in keyof P]: K.InputOf<'TaskEither', P[K]> },
+  Partial<{ [K in keyof P]: K.TypeOf<'TaskEither', P[K]> }>
+>
 ```
 
 Added in v2.2.7
@@ -229,7 +222,7 @@ Added in v2.2.7
 **Signature**
 
 ```ts
-export declare const record: <A>(codomain: TaskDecoder<A>) => TaskDecoder<Record<string, A>>
+export declare const record: <I, A>(codomain: TaskDecoder<I, A>) => TaskDecoder<Record<string, I>, Record<string, A>>
 ```
 
 Added in v2.2.7
@@ -242,7 +235,7 @@ Added in v2.2.7
 export declare const refine: <A, B extends A>(
   refinement: (a: A) => a is B,
   id: string
-) => (from: TaskDecoder<A>) => TaskDecoder<B>
+) => <I>(from: TaskDecoder<I, A>) => TaskDecoder<I, B>
 ```
 
 Added in v2.2.7
@@ -254,7 +247,9 @@ Added in v2.2.7
 ```ts
 export declare const sum: <T extends string>(
   tag: T
-) => <A>(members: { [K in keyof A]: TaskDecoder<A[K]> }) => TaskDecoder<A[keyof A]>
+) => <MS extends Record<string, TaskDecoder<any, any>>>(
+  members: MS
+) => TaskDecoder<K.InputOf<'TaskEither', MS[keyof MS]>, K.TypeOf<'TaskEither', MS[keyof MS]>>
 ```
 
 Added in v2.2.7
@@ -264,9 +259,9 @@ Added in v2.2.7
 **Signature**
 
 ```ts
-export declare const tuple: <A extends readonly unknown[]>(
-  ...components: { [K in keyof A]: TaskDecoder<A[K]> }
-) => TaskDecoder<A>
+export declare const tuple: <C extends readonly TaskDecoder<any, any>[]>(
+  ...components: C
+) => TaskDecoder<{ [K in keyof C]: K.InputOf<'TaskEither', C[K]> }, { [K in keyof C]: K.TypeOf<'TaskEither', C[K]> }>
 ```
 
 Added in v2.2.7
@@ -276,9 +271,9 @@ Added in v2.2.7
 **Signature**
 
 ```ts
-export declare const type: <A>(
-  properties: { [K in keyof A]: TaskDecoder<A[K]> }
-) => TaskDecoder<{ [K in keyof A]: A[K] }>
+export declare const type: <P extends Record<string, TaskDecoder<any, any>>>(
+  properties: P
+) => TaskDecoder<{ [K in keyof P]: K.InputOf<'TaskEither', P[K]> }, { [K in keyof P]: K.TypeOf<'TaskEither', P[K]> }>
 ```
 
 Added in v2.2.7
@@ -288,31 +283,34 @@ Added in v2.2.7
 **Signature**
 
 ```ts
-export declare const union: <A extends readonly [unknown, ...unknown[]]>(
-  ...members: { [K in keyof A]: TaskDecoder<A[K]> }
-) => TaskDecoder<A[number]>
+export declare const union: <MS extends readonly [TaskDecoder<any, any>, ...TaskDecoder<any, any>[]]>(
+  ...members: MS
+) => TaskDecoder<K.InputOf<'TaskEither', MS[keyof MS]>, K.TypeOf<'TaskEither', MS[keyof MS]>>
 ```
 
 Added in v2.2.7
 
 # constructors
 
-## fromDecoder
+## fromKleisliDecoder
 
 **Signature**
 
 ```ts
-export declare const fromDecoder: <A>(decoder: D.Decoder<A>) => TaskDecoder<A>
+export declare const fromKleisliDecoder: <I, A>(decoder: D.Decoder<I, A>) => TaskDecoder<I, A>
 ```
 
 Added in v2.2.7
 
-## fromGuard
+## fromRefinement
 
 **Signature**
 
 ```ts
-export declare const fromGuard: <A>(guard: G.Guard<A>, expected: string) => TaskDecoder<A>
+export declare const fromRefinement: <I, A extends I>(
+  refinement: Refinement<I, A>,
+  expected: string
+) => TaskDecoder<I, A>
 ```
 
 Added in v2.2.7
@@ -322,62 +320,9 @@ Added in v2.2.7
 **Signature**
 
 ```ts
-export declare const literal: <A extends readonly [Literal, ...Literal[]]>(...values: A) => TaskDecoder<A[number]>
-```
-
-Added in v2.2.7
-
-# instances
-
-## URI
-
-**Signature**
-
-```ts
-export declare const URI: 'io-ts/TaskDecoder'
-```
-
-Added in v2.2.7
-
-## URI (type alias)
-
-**Signature**
-
-```ts
-export type URI = typeof URI
-```
-
-Added in v2.2.7
-
-## altTaskDecoder
-
-**Signature**
-
-```ts
-export declare const altTaskDecoder: Alt1<'io-ts/TaskDecoder'>
-```
-
-Added in v2.2.7
-
-## functorTaskDecoder
-
-**Signature**
-
-```ts
-export declare const functorTaskDecoder: Functor1<'io-ts/TaskDecoder'>
-```
-
-Added in v2.2.7
-
-## schemableTaskDecoder
-
-**Signature**
-
-```ts
-export declare const schemableTaskDecoder: Schemable1<'io-ts/TaskDecoder'> &
-  WithUnknownContainers1<'io-ts/TaskDecoder'> &
-  WithUnion1<'io-ts/TaskDecoder'> &
-  WithRefine1<'io-ts/TaskDecoder'>
+export declare const literal: <A extends readonly [Literal, ...Literal[]]>(
+  ...values: A
+) => TaskDecoder<unknown, A[number]>
 ```
 
 Added in v2.2.7
@@ -389,81 +334,29 @@ Added in v2.2.7
 **Signature**
 
 ```ts
-export interface TaskDecoder<A> extends KTD.KleisliTaskDecoder<unknown, A> {}
-```
-
-Added in v2.2.7
-
-# primitives
-
-## UnknownArray
-
-**Signature**
-
-```ts
-export declare const UnknownArray: TaskDecoder<unknown[]>
-```
-
-Added in v2.2.7
-
-## UnknownRecord
-
-**Signature**
-
-```ts
-export declare const UnknownRecord: TaskDecoder<Record<string, unknown>>
-```
-
-Added in v2.2.7
-
-## boolean
-
-**Signature**
-
-```ts
-export declare const boolean: TaskDecoder<boolean>
-```
-
-Added in v2.2.7
-
-## number
-
-**Signature**
-
-```ts
-export declare const number: TaskDecoder<number>
-```
-
-Added in v2.2.7
-
-## string
-
-**Signature**
-
-```ts
-export declare const string: TaskDecoder<string>
+export interface TaskDecoder<I, A> extends K.Kleisli<TE.URI, I, DecodeError, A> {}
 ```
 
 Added in v2.2.7
 
 # utils
 
+## InputOf (type alias)
+
+**Signature**
+
+```ts
+export type InputOf<KTD> = K.InputOf<TE.URI, KTD>
+```
+
+Added in v2.2.7
+
 ## TypeOf (type alias)
 
 **Signature**
 
 ```ts
-export type TypeOf<TD> = KTD.TypeOf<TD>
-```
-
-Added in v2.2.7
-
-## draw
-
-**Signature**
-
-```ts
-export declare const draw: (e: FreeSemigroup<DecodeError<string>>) => string
+export type TypeOf<KTD> = K.TypeOf<TE.URI, KTD>
 ```
 
 Added in v2.2.7

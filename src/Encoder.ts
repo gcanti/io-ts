@@ -219,7 +219,7 @@ declare module 'fp-ts/lib/HKT' {
  * @category instances
  * @since 2.2.3
  */
-export const contravariantEncoder: Contravariant2<URI> = {
+export const Contravariant: Contravariant2<URI> = {
   URI,
   contramap: contramap_
 }
@@ -228,7 +228,7 @@ export const contravariantEncoder: Contravariant2<URI> = {
  * @category instances
  * @since 2.2.3
  */
-export const categoryEncoder: Category2<URI> = {
+export const Category: Category2<URI> = {
   URI,
   compose: compose_,
   id

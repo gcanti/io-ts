@@ -32,10 +32,10 @@ Added in v2.2.3
   - [tuple](#tuple)
   - [type](#type)
 - [instances](#instances)
+  - [Contravariant](#contravariant-1)
+  - [Schemable](#schemable)
   - [URI](#uri)
   - [URI (type alias)](#uri-type-alias)
-  - [contravariantJsonEncoder](#contravariantjsonencoder)
-  - [schemableJsonEncoder](#schemablejsonencoder)
 - [model](#model)
   - [Json (type alias)](#json-type-alias)
   - [JsonArray (interface)](#jsonarray-interface)
@@ -162,6 +162,26 @@ Added in v2.2.3
 
 # instances
 
+## Contravariant
+
+**Signature**
+
+```ts
+export declare const Contravariant: Contravariant1<'io-ts/JsonEncoder'>
+```
+
+Added in v2.2.3
+
+## Schemable
+
+**Signature**
+
+```ts
+export declare const Schemable: Schemable1<'io-ts/JsonEncoder'>
+```
+
+Added in v2.2.3
+
 ## URI
 
 **Signature**
@@ -178,26 +198,6 @@ Added in v2.2.3
 
 ```ts
 export type URI = typeof URI
-```
-
-Added in v2.2.3
-
-## contravariantJsonEncoder
-
-**Signature**
-
-```ts
-export declare const contravariantJsonEncoder: Contravariant1<'io-ts/JsonEncoder'>
-```
-
-Added in v2.2.3
-
-## schemableJsonEncoder
-
-**Signature**
-
-```ts
-export declare const schemableJsonEncoder: Schemable1<'io-ts/JsonEncoder'>
 ```
 
 Added in v2.2.3

@@ -179,7 +179,7 @@ export function lazy<A>(f: () => Eq<A>): Eq<A> {
  * @category instances
  * @since 2.2.3
  */
-export const schemableEq: Schemable1<E.URI> & WithUnknownContainers1<E.URI> & WithRefine1<E.URI> = {
+export const Schemable: Schemable1<E.URI> & WithUnknownContainers1<E.URI> & WithRefine1<E.URI> = {
   URI: E.URI,
   literal: () => E.eqStrict,
   string,
