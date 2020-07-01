@@ -45,6 +45,19 @@
     - add `draw` function (@gcanti)
   - `KleisliTaskDecoder`
     - rename to `TaskDecoder` (@gcanti)
+    - rename `fromKleisliDecoder` to `fromDecoder` (@gcanti)
+    - add `fromGuard` (@gcanti)
+    - add `string`, `number`, `boolean`, `UnknownArray`, `UnknownRecord` primitives (@gcanti)
+    - rename `type` to `ktype`
+    - rename `partial` to `kpartial`
+    - rename `array` to `karray`
+    - rename `record` to `krecord`
+    - rename `tuple` to `ktuple`
+    - rename `sum` to `ksum`
+    - add `type`, `partial`, `array`, `record`, `tuple`, `sum` combinators (@gcanti)
+    - add `type`, `partial`, `array`, `record`, `tuple`, `sum` combinators (@gcanti)
+    - add `Functor2`, `Alt2`, `Category2`, `Schemable2c` instances (@gcanti)
+    - add `draw` function (@gcanti)
   - `JsonCodec`
     - rename `invariantJsonCodec` to `Invariant` (@gcanti)
     - rename `schemableJsonCodec` to `Schemable` (@gcanti)

@@ -64,7 +64,7 @@ export const failure: <A = never>(actual: unknown, message: string) => TE.TaskEi
  * @category constructors
  * @since 2.2.7
  */
-export const fromDecoder: <A>(decoder: D.Decoder<unknown, A>) => UnknownTaskDecoder<A> = KTD.fromKleisliDecoder
+export const fromDecoder: <A>(decoder: D.Decoder<unknown, A>) => UnknownTaskDecoder<A> = KTD.fromDecoder
 
 /**
  * @category constructors
@@ -172,7 +172,7 @@ export const nullable: <A>(or: UnknownTaskDecoder<A>) => UnknownTaskDecoder<null
  */
 export const type = <A>(
   properties: { [K in keyof A]: UnknownTaskDecoder<A[K]> }
-): UnknownTaskDecoder<{ [K in keyof A]: A[K] }> => pipe(object as any, compose(KTD.type(properties)))
+): UnknownTaskDecoder<{ [K in keyof A]: A[K] }> => pipe(object as any, compose(KTD.ktype(properties)))
 
 /**
  * @category combinators
@@ -180,21 +180,21 @@ export const type = <A>(
  */
 export const partial = <A>(
   properties: { [K in keyof A]: UnknownTaskDecoder<A[K]> }
-): UnknownTaskDecoder<Partial<{ [K in keyof A]: A[K] }>> => pipe(object as any, compose(KTD.partial(properties)))
+): UnknownTaskDecoder<Partial<{ [K in keyof A]: A[K] }>> => pipe(object as any, compose(KTD.kpartial(properties)))
 
 /**
  * @category combinators
  * @since 2.2.7
  */
 export const array = <A>(items: UnknownTaskDecoder<A>): UnknownTaskDecoder<Array<A>> =>
-  pipe(UnknownArray, compose(KTD.array(items)))
+  pipe(UnknownArray, compose(KTD.karray(items)))
 
 /**
  * @category combinators
  * @since 2.2.7
  */
 export const record = <A>(codomain: UnknownTaskDecoder<A>): UnknownTaskDecoder<Record<string, A>> =>
-  pipe(UnknownRecord, compose(KTD.record(codomain)))
+  pipe(UnknownRecord, compose(KTD.krecord(codomain)))
 
 /**
  * @category combinators
@@ -202,7 +202,7 @@ export const record = <A>(codomain: UnknownTaskDecoder<A>): UnknownTaskDecoder<R
  */
 export const tuple = <A extends ReadonlyArray<unknown>>(
   ...components: { [K in keyof A]: UnknownTaskDecoder<A[K]> }
-): UnknownTaskDecoder<A> => pipe(UnknownArray as any, compose(KTD.tuple(...components))) as any
+): UnknownTaskDecoder<A> => pipe(UnknownArray as any, compose(KTD.ktuple(...components))) as any
 
 /**
  * @category combinators
@@ -226,7 +226,7 @@ export const intersect: <B>(
  */
 export const sum = <T extends string>(tag: T) => <A>(
   members: { [K in keyof A]: UnknownTaskDecoder<A[K]> }
-): UnknownTaskDecoder<A[keyof A]> => pipe(object as any, compose(KTD.sum(tag)(members)))
+): UnknownTaskDecoder<A[keyof A]> => pipe(object as any, compose(KTD.ksum(tag)(members)))
 
 /**
  * @category combinators
