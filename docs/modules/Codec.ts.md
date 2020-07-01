@@ -236,7 +236,7 @@ Added in v2.2.3
 export declare const Invariant: Invariant2<'io-ts/Codec'>
 ```
 
-Added in v2.2.3
+Added in v2.2.8
 
 ## URI
 

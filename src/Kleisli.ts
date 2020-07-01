@@ -198,7 +198,7 @@ export function composePartial<M extends URIS2, E>(
 
 /**
  * @category combinators
- * @since 2.2.7
+ * @since 2.2.8
  */
 export function composeArray<M extends URIS2, E>(
   M: Monad2C<M, E> & Bifunctor2<M>
@@ -216,7 +216,7 @@ export function composeArray<M extends URIS2, E>(
 
 /**
  * @category combinators
- * @since 2.2.7
+ * @since 2.2.8
  */
 export function composeRecord<M extends URIS2, E>(
   M: Monad2C<M, E> & Bifunctor2<M>
@@ -236,7 +236,7 @@ export function composeRecord<M extends URIS2, E>(
 
 /**
  * @category combinators
- * @since 2.2.7
+ * @since 2.2.8
  */
 export function composeTuple<M extends URIS2, E>(
   M: Monad2C<M, E> & Bifunctor2<M>

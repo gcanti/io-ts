@@ -86,7 +86,7 @@ export declare function composeArray<M extends URIS2, E>(
 ) => <I, A>(item: Kleisli<M, I, E, A>) => <H>(decoder: Kleisli<M, H, E, Array<I>>) => Kleisli<M, H, E, Array<A>>
 ```
 
-Added in v2.2.7
+Added in v2.2.8
 
 ## composePartial
 
@@ -118,7 +118,7 @@ export declare function composeRecord<M extends URIS2, E>(
 ) => <H>(decoder: Kleisli<M, H, E, Record<string, I>>) => Kleisli<M, H, E, Record<string, A>>
 ```
 
-Added in v2.2.7
+Added in v2.2.8
 
 ## composeSum
 
@@ -152,7 +152,7 @@ export declare function composeTuple<M extends URIS2, E>(
 ) => <H>(decoder: Kleisli<M, H, E, Array<I>>) => Kleisli<M, H, E, A>
 ```
 
-Added in v2.2.7
+Added in v2.2.8
 
 ## composeType
 

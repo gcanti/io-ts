@@ -145,7 +145,7 @@ Added in v2.2.2
 export declare const Schemable: Schemable1<'Eq'> & WithUnknownContainers1<'Eq'> & WithRefine1<'Eq'>
 ```
 
-Added in v2.2.3
+Added in v2.2.8
 
 # primitives
 
