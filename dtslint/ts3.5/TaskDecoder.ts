@@ -21,13 +21,6 @@ export type TypeOfNumberFromString = _.TypeOf<typeof NumberFromString>
 export type InputOfNumberFromString = _.InputOf<typeof NumberFromString>
 
 //
-// ktuple
-//
-
-// $ExpectType TaskDecoder<[string], [number]>
-_.ktuple(NumberFromString)
-
-//
 // sum
 //
 
