@@ -19,11 +19,6 @@
 - **Experimental**
   - `Codec`
     - rename `invariantCodec` to `Invariant` (@gcanti)
-  - `Decoder`
-    - rename to `UnknownDecoder` (@gcanti)
-    - rename `functorDecoder` to `Functor` (@gcanti)
-    - rename `altDecoder` to `Alt` (@gcanti)
-    - rename `schemableDecoder` to `Schemable` (@gcanti)
   - `Encoder`
     - rename `contravariantEncoder` to `Contravariant` (@gcanti)
     - rename `categoryEncoder` to `Category` (@gcanti)
@@ -32,7 +27,7 @@
   - `Guard`
     - rename `schemableGuard` to `Schemable` (@gcanti)
   - `KleisliDecoder`
-    - rename to `Decoder` (@gcanti)
+    - remove old `Decoder.ts` module and rename `KleisliDecoder` to `Decoder` (@gcanti)
     - add `string`, `number`, `boolean`, `UnknownArray`, `UnknownRecord` primitives (@gcanti)
     - rename `type` to `ktype`
     - rename `partial` to `kpartial`
