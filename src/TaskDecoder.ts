@@ -179,13 +179,6 @@ export const UnknownRecord: TaskDecoder<unknown, Record<string, unknown>> =
   /*#__PURE__*/
   fromDecoder(D.UnknownRecord)
 
-/**
- * @internal
- */
-export const object: TaskDecoder<unknown, object> =
-  /*#__PURE__*/
-  fromDecoder(D.object)
-
 // -------------------------------------------------------------------------------------
 // combinators
 // -------------------------------------------------------------------------------------
@@ -331,20 +324,17 @@ export const intersect: <IB, B>(
 
 /**
  * @category combinators
- * @since 2.2.7
+ * @since 2.2.8
  */
-export const ksum = <T extends string>(tag: T) => <MS extends Record<string, TaskDecoder<any, any>>>(
-  members: MS
-): TaskDecoder<InputOf<MS[keyof MS]>, TypeOf<MS[keyof MS]>> =>
-  K.sum(M)((tag, value, keys) =>
-    FS.of(
-      DE.key(
-        tag,
-        DE.required,
-        error(value, keys.length === 0 ? 'never' : keys.map((k) => JSON.stringify(k)).join(' | '))
-      )
-    )
-  )(tag)(members)
+export const variants: <T extends string>(
+  tag: T
+) => <I, A>(
+  members: { [K in keyof A]: TaskDecoder<I, A[K]> }
+) => <H>(decoder: TaskDecoder<H, Record<string, I>>) => TaskDecoder<H, A[keyof A]> = K.variants(M)((tag, value, keys) =>
+  FS.of(
+    DE.key(tag, DE.required, error(value, keys.length === 0 ? 'never' : keys.map((k) => JSON.stringify(k)).join(' | ')))
+  )
+)
 
 /**
  * @category combinators
@@ -352,7 +342,7 @@ export const ksum = <T extends string>(tag: T) => <MS extends Record<string, Tas
  */
 export const sum = <T extends string>(tag: T) => <A>(
   members: { [K in keyof A]: TaskDecoder<unknown, A[K]> }
-): TaskDecoder<unknown, A[keyof A]> => pipe(object as any, compose(ksum(tag)(members)))
+): TaskDecoder<unknown, A[keyof A]> => pipe(UnknownRecord, variants(tag)(members))
 
 /**
  * @category combinators

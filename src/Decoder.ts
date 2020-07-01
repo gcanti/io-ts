@@ -178,13 +178,6 @@ export const UnknownRecord: Decoder<unknown, Record<string, unknown>> =
   /*#__PURE__*/
   fromGuard(G.UnknownRecord, 'Record<string, unknown>')
 
-/**
- * @internal
- */
-export const object: Decoder<unknown, object> =
-  /*#__PURE__*/
-  fromGuard(G.object, 'object')
-
 // -------------------------------------------------------------------------------------
 // combinators
 // -------------------------------------------------------------------------------------
@@ -326,20 +319,17 @@ export const intersect: <IB, B>(right: Decoder<IB, B>) => <IA, A>(left: Decoder<
 
 /**
  * @category combinators
- * @since 2.2.7
+ * @since 2.2.8
  */
-export const ksum = <T extends string>(tag: T) => <MS extends Record<string, Decoder<any, any>>>(
-  members: MS
-): Decoder<InputOf<MS[keyof MS]>, TypeOf<MS[keyof MS]>> =>
-  K.sum(M)((tag, value, keys) =>
-    FS.of(
-      DE.key(
-        tag,
-        DE.required,
-        error(value, keys.length === 0 ? 'never' : keys.map((k) => JSON.stringify(k)).join(' | '))
-      )
-    )
-  )(tag)(members)
+export const variants: <T extends string>(
+  tag: T
+) => <I, A>(
+  members: { [K in keyof A]: Decoder<I, A[K]> }
+) => <H>(decoder: Decoder<H, Record<string, I>>) => Decoder<H, A[keyof A]> = K.variants(M)((tag, value, keys) =>
+  FS.of(
+    DE.key(tag, DE.required, error(value, keys.length === 0 ? 'never' : keys.map((k) => JSON.stringify(k)).join(' | ')))
+  )
+)
 
 /**
  * @category combinators
@@ -347,7 +337,7 @@ export const ksum = <T extends string>(tag: T) => <MS extends Record<string, Dec
  */
 export const sum = <T extends string>(tag: T) => <A>(
   members: { [K in keyof A]: Decoder<unknown, A[K]> }
-): Decoder<unknown, A[keyof A]> => pipe(object as any, compose(ksum(tag)(members)))
+): Decoder<unknown, A[keyof A]> => pipe(UnknownRecord, variants(tag)(members))
 
 /**
  * @category combinators
