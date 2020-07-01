@@ -33,6 +33,7 @@
     - rename `array` to `items` (@gcanti)
     - rename `record` to `values` (@gcanti)
     - drop `tuple` in favour of `components` (@gcanti)
+    - drop `sum` in favour of `variants` (@gcanti)
   - `KleisliDecoder`
     - remove old `Decoder.ts` module and rename `KleisliDecoder` to `Decoder` (@gcanti)
     - add `string`, `number`, `boolean`, `UnknownArray`, `UnknownRecord` primitives (@gcanti)
@@ -41,7 +42,7 @@
     - rename `array` to `items`
     - rename `record` to `values`
     - rename `tuple` to `components`
-    - rename `sum` to `ksum`
+    - rename `sum` to `variants`
     - add `type`, `partial`, `array`, `record`, `tuple`, `sum` combinators (@gcanti)
     - add `Functor2`, `Alt2`, `Category2`, `Schemable2c` instances (@gcanti)
     - add `draw` function (@gcanti)
@@ -55,7 +56,7 @@
     - rename `array` to `items`
     - rename `record` to `values`
     - rename `tuple` to `components`
-    - rename `sum` to `ksum`
+    - rename `sum` to `variants`
     - add `type`, `partial`, `array`, `record`, `tuple`, `sum` combinators (@gcanti)
     - add `type`, `partial`, `array`, `record`, `tuple`, `sum` combinators (@gcanti)
     - add `Functor2`, `Alt2`, `Category2`, `Schemable2c` instances (@gcanti)

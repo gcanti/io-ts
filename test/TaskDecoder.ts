@@ -493,7 +493,7 @@ describe('UnknownTaskDecoder', () => {
       const A = _.type({ _tag: _.literal('A'), a: _.string })
       const B = _.type({ _tag: _.literal('B'), b: _.number })
       const decoder = sum({ A, B })
-      assert.deepStrictEqual(await decoder.decode(null)(), D.failure(null, 'object'))
+      assert.deepStrictEqual(await decoder.decode(null)(), D.failure(null, 'Record<string, unknown>'))
       assert.deepStrictEqual(
         await decoder.decode({})(),
         E.left(FS.of(DE.key('_tag', DE.required, FS.of(DE.leaf(undefined, '"A" | "B"')))))

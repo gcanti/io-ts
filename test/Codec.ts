@@ -547,7 +547,7 @@ describe('Codec', () => {
         const A = C.type({ _tag: C.literal('A'), a: C.string })
         const B = C.type({ _tag: C.literal('B'), b: C.number })
         const codec = sum({ A, B })
-        assert.deepStrictEqual(codec.decode(null), D.failure(null, 'object'))
+        assert.deepStrictEqual(codec.decode(null), D.failure(null, 'Record<string, unknown>'))
         assert.deepStrictEqual(
           codec.decode({}),
           E.left(FS.of(DE.key('_tag', DE.required, FS.of(DE.leaf(undefined, '"A" | "B"')))))
