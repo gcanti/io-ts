@@ -29,11 +29,12 @@
   - `Kleisli`
     - add `id` (@gcanti)
     - drop `type` in favour of `props` (@gcanti)
+    - drop `partial` in favour of `partialProps` (@gcanti)
   - `KleisliDecoder`
     - remove old `Decoder.ts` module and rename `KleisliDecoder` to `Decoder` (@gcanti)
     - add `string`, `number`, `boolean`, `UnknownArray`, `UnknownRecord` primitives (@gcanti)
     - drop `type` in favour of `props` (@gcanti)
-    - rename `partial` to `kpartial`
+    - drop `partial` in favour of `partialProps` (@gcanti)
     - rename `array` to `karray`
     - rename `record` to `krecord`
     - rename `tuple` to `ktuple`
@@ -47,7 +48,7 @@
     - add `fromGuard` (@gcanti)
     - add `string`, `number`, `boolean`, `UnknownArray`, `UnknownRecord` primitives (@gcanti)
     - drop `type` in favour of `props` (@gcanti)
-    - rename `partial` to `kpartial`
+    - drop `partial` in favour of `partialProps` (@gcanti)
     - rename `array` to `karray`
     - rename `record` to `krecord`
     - rename `tuple` to `ktuple`

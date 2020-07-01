@@ -145,48 +145,54 @@ export function props<M extends URIS2, E>(
   const traverse = traverseRecordWithIndex(M)
   return (onPropertyError) => (properties) => (decoder) => ({
     decode: (h) =>
-      M.chain(decoder.decode(h), (ri) => {
-        return traverse(properties as Record<string, Kleisli<M, unknown, E, unknown>>, (key, decoder) =>
-          M.mapLeft(decoder.decode(ri[key]), (e) => onPropertyError(key, e))
-        ) as any
-      })
+      M.chain(
+        decoder.decode(h),
+        (ri) =>
+          traverse(properties as Record<string, Kleisli<M, unknown, E, unknown>>, (key, decoder) =>
+            M.mapLeft(decoder.decode(ri[key]), (e) => onPropertyError(key, e))
+          ) as any
+      )
   })
 }
 
 /**
  * @category combinators
- * @since 2.2.7
+ * @since 2.2.8
  */
-export function partial<M extends URIS2, E>(
-  M: Applicative2C<M, E> & Bifunctor2<M>
+export function partialProps<M extends URIS2, E>(
+  M: Monad2C<M, E> & Bifunctor2<M>
 ): (
   onPropertyError: (key: string, e: E) => E
-) => <P extends Record<string, Kleisli<M, any, E, any>>>(
-  properties: P
-) => Kleisli<M, { [K in keyof P]: InputOf<M, P[K]> }, E, Partial<{ [K in keyof P]: TypeOf<M, P[K]> }>> {
+) => <I, A>(
+  properties: { [K in keyof A]: Kleisli<M, I, E, A[K]> }
+) => <H>(decoder: Kleisli<M, H, E, Record<string, I>>) => Kleisli<M, H, E, Partial<{ [K in keyof A]: A[K] }>> {
   const traverse = traverseRecordWithIndex(M)
   const undefinedProperty = M.of<E.Either<void, unknown>>(E.right(undefined))
   const skipProperty = M.of<E.Either<void, unknown>>(E.left(undefined))
-  return (onPropertyError) => (properties) => ({
-    decode: (i) =>
-      M.map(
-        traverse(properties as Record<string, Kleisli<M, unknown, E, unknown>>, (key, decoder) => {
-          const ikey = i[key]
-          if (ikey === undefined) {
-            return key in i
-              ? // don't strip undefined properties
-                undefinedProperty
-              : // don't add missing properties
-                skipProperty
-          }
-          return M.bimap(
-            decoder.decode(ikey),
-            (e) => onPropertyError(key, e),
-            (a) => E.right<void, unknown>(a)
-          )
-        }),
-        compactRecord
-      ) as any
+  return (onPropertyError) => (properties) => (decoder) => ({
+    decode: (h) =>
+      M.chain(
+        decoder.decode(h),
+        (ri) =>
+          M.map(
+            traverse(properties as Record<string, Kleisli<M, unknown, E, unknown>>, (key, decoder) => {
+              const ikey = ri[key]
+              if (ikey === undefined) {
+                return key in ri
+                  ? // don't strip undefined properties
+                    undefinedProperty
+                  : // don't add missing properties
+                    skipProperty
+              }
+              return M.bimap(
+                decoder.decode(ikey),
+                (e) => onPropertyError(key, e),
+                (a) => E.right<void, unknown>(a)
+              )
+            }),
+            compactRecord
+          ) as any
+      )
   })
 }
 

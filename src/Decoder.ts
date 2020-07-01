@@ -244,12 +244,13 @@ export const type = <A>(
 
 /**
  * @category combinators
- * @since 2.2.7
+ * @since 2.2.8
  */
-export const kpartial = <P extends Record<string, Decoder<any, any>>>(
-  properties: P
-): Decoder<{ [K in keyof P]: InputOf<P[K]> }, Partial<{ [K in keyof P]: TypeOf<P[K]> }>> =>
-  K.partial(M)((k, e) => FS.of(DE.key(k, DE.optional, e)))(properties)
+export const partialProps: <I, A>(
+  properties: { [K in keyof A]: Decoder<I, A[K]> }
+) => <H>(decoder: Decoder<H, Record<string, I>>) => Decoder<H, Partial<{ [K in keyof A]: A[K] }>> =
+  /*#__PURE__*/
+  K.partialProps(M)((k, e) => FS.of(DE.key(k, DE.optional, e)))
 
 /**
  * @category combinators
@@ -257,7 +258,7 @@ export const kpartial = <P extends Record<string, Decoder<any, any>>>(
  */
 export const partial = <A>(
   properties: { [K in keyof A]: Decoder<unknown, A[K]> }
-): Decoder<unknown, Partial<{ [K in keyof A]: A[K] }>> => pipe(object as any, compose(kpartial(properties)))
+): Decoder<unknown, Partial<{ [K in keyof A]: A[K] }>> => pipe(UnknownRecord, partialProps(properties))
 
 /**
  * @category combinators

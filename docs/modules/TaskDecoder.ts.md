@@ -36,7 +36,6 @@ Added in v2.2.7
   - [array](#array)
   - [intersect](#intersect)
   - [karray](#karray)
-  - [kpartial](#kpartial)
   - [krecord](#krecord)
   - [ksum](#ksum)
   - [ktuple](#ktuple)
@@ -45,6 +44,7 @@ Added in v2.2.7
   - [nullable](#nullable)
   - [parse](#parse)
   - [partial](#partial)
+  - [partialProps](#partialprops)
   - [props](#props)
   - [record](#record)
   - [refine](#refine)
@@ -206,21 +206,6 @@ export declare const karray: <I, A>(item: TaskDecoder<I, A>) => TaskDecoder<I[],
 
 Added in v2.2.7
 
-## kpartial
-
-**Signature**
-
-```ts
-export declare const kpartial: <P extends Record<string, TaskDecoder<any, any>>>(
-  properties: P
-) => TaskDecoder<
-  { [K in keyof P]: K.InputOf<'TaskEither', P[K]> },
-  Partial<{ [K in keyof P]: K.TypeOf<'TaskEither', P[K]> }>
->
-```
-
-Added in v2.2.7
-
 ## krecord
 
 **Signature**
@@ -311,7 +296,19 @@ export declare const partial: <A>(
 ) => TaskDecoder<unknown, Partial<{ [K in keyof A]: A[K] }>>
 ```
 
-Added in v2.2.5
+Added in v2.2.8
+
+## partialProps
+
+**Signature**
+
+```ts
+export declare const partialProps: <I, A>(
+  properties: { [K in keyof A]: TaskDecoder<I, A[K]> }
+) => <H>(decoder: TaskDecoder<H, Record<string, I>>) => TaskDecoder<H, Partial<{ [K in keyof A]: A[K] }>>
+```
+
+Added in v2.2.8
 
 ## props
 

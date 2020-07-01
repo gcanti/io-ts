@@ -36,7 +36,6 @@ Added in v2.2.7
   - [array](#array)
   - [intersect](#intersect)
   - [karray](#karray)
-  - [kpartial](#kpartial)
   - [krecord](#krecord)
   - [ksum](#ksum)
   - [ktuple](#ktuple)
@@ -45,6 +44,7 @@ Added in v2.2.7
   - [nullable](#nullable)
   - [parse](#parse)
   - [partial](#partial)
+  - [partialProps](#partialprops)
   - [props](#props)
   - [record](#record)
   - [refine](#refine)
@@ -205,18 +205,6 @@ export declare const karray: <I, A>(item: Decoder<I, A>) => Decoder<I[], A[]>
 
 Added in v2.2.7
 
-## kpartial
-
-**Signature**
-
-```ts
-export declare const kpartial: <P extends Record<string, Decoder<any, any>>>(
-  properties: P
-) => Decoder<{ [K in keyof P]: K.InputOf<'Either', P[K]> }, Partial<{ [K in keyof P]: K.TypeOf<'Either', P[K]> }>>
-```
-
-Added in v2.2.7
-
 ## krecord
 
 **Signature**
@@ -305,6 +293,18 @@ Added in v2.2.7
 export declare const partial: <A>(
   properties: { [K in keyof A]: Decoder<unknown, A[K]> }
 ) => Decoder<unknown, Partial<{ [K in keyof A]: A[K] }>>
+```
+
+Added in v2.2.8
+
+## partialProps
+
+**Signature**
+
+```ts
+export declare const partialProps: <I, A>(
+  properties: { [K in keyof A]: Decoder<I, A[K]> }
+) => <H>(decoder: Decoder<H, Record<string, I>>) => Decoder<H, Partial<{ [K in keyof A]: A[K] }>>
 ```
 
 Added in v2.2.8
