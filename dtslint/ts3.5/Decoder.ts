@@ -27,7 +27,7 @@ export type InputOfNumberFromString = _.InputOf<typeof NumberFromString>
 // $ExpectType Decoder<unknown, { a: string; b: { c: number; }; }>
 pipe(
   _.UnknownRecord,
-  _.props({
+  _.composeType({
     a: _.string,
     b: _.type({
       c: _.number
@@ -74,7 +74,7 @@ _.sum('_tag')({
 //
 
 // $ExpectType Decoder<unknown, string | number>
-pipe(_.string, _.members(NumberFromString, StringFromString))
+pipe(_.string, _.composeUnion(NumberFromString, StringFromString))
 
 //
 // union

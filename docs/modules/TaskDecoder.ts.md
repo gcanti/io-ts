@@ -34,25 +34,25 @@ Added in v2.2.7
   - [compose](#compose)
 - [combinators](#combinators)
   - [array](#array)
-  - [components](#components)
+  - [composeArray](#composearray)
+  - [composePartial](#composepartial)
+  - [composeRecord](#composerecord)
+  - [composeSum](#composesum)
+  - [composeTuple](#composetuple)
+  - [composeType](#composetype)
+  - [composeUnion](#composeunion)
   - [intersect](#intersect)
-  - [items](#items)
   - [lazy](#lazy)
   - [mapLeftWithInput](#mapleftwithinput)
-  - [members](#members)
   - [nullable](#nullable)
   - [parse](#parse)
   - [partial](#partial)
-  - [partialProps](#partialprops)
-  - [props](#props)
   - [record](#record)
   - [refine](#refine)
   - [sum](#sum)
   - [tuple](#tuple)
   - [type](#type)
   - [union](#union)
-  - [values](#values)
-  - [variants](#variants)
 - [constructors](#constructors)
   - [fromDecoder](#fromdecoder)
   - [fromGuard](#fromguard)
@@ -185,14 +185,88 @@ export declare const array: <A>(item: TaskDecoder<unknown, A>) => TaskDecoder<un
 
 Added in v2.2.7
 
-## components
+## composeArray
 
 **Signature**
 
 ```ts
-export declare const components: <I, A extends readonly unknown[]>(
-  ...list: { [K in keyof A]: TaskDecoder<I, A[K]> }
+export declare const composeArray: <I, A>(
+  item: TaskDecoder<I, A>
+) => <H>(decoder: TaskDecoder<H, I[]>) => TaskDecoder<H, A[]>
+```
+
+Added in v2.2.8
+
+## composePartial
+
+**Signature**
+
+```ts
+export declare const composePartial: <I, A>(
+  properties: { [K in keyof A]: TaskDecoder<I, A[K]> }
+) => <H>(decoder: TaskDecoder<H, Record<string, I>>) => TaskDecoder<H, Partial<{ [K in keyof A]: A[K] }>>
+```
+
+Added in v2.2.8
+
+## composeRecord
+
+**Signature**
+
+```ts
+export declare const composeRecord: <I, A>(
+  codomain: TaskDecoder<I, A>
+) => <H>(decoder: TaskDecoder<H, Record<string, I>>) => TaskDecoder<H, Record<string, A>>
+```
+
+Added in v2.2.8
+
+## composeSum
+
+**Signature**
+
+```ts
+export declare const composeSum: <T extends string>(
+  tag: T
+) => <I, A>(
+  members: { [K in keyof A]: TaskDecoder<I, A[K]> }
+) => <H>(decoder: TaskDecoder<H, Record<string, I>>) => TaskDecoder<H, A[keyof A]>
+```
+
+Added in v2.2.8
+
+## composeTuple
+
+**Signature**
+
+```ts
+export declare const composeTuple: <I, A extends readonly unknown[]>(
+  ...components: { [K in keyof A]: TaskDecoder<I, A[K]> }
 ) => <H>(decoder: TaskDecoder<H, I[]>) => TaskDecoder<H, A>
+```
+
+Added in v2.2.8
+
+## composeType
+
+**Signature**
+
+```ts
+export declare const composeType: <I, A>(
+  properties: { [K in keyof A]: TaskDecoder<I, A[K]> }
+) => <H>(decoder: TaskDecoder<H, Record<string, I>>) => TaskDecoder<H, { [K in keyof A]: A[K] }>
+```
+
+Added in v2.2.8
+
+## composeUnion
+
+**Signature**
+
+```ts
+export declare const composeUnion: <I, A extends readonly [unknown, ...unknown[]]>(
+  ...members: { [K in keyof A]: TaskDecoder<I, A[K]> }
+) => <H>(decoder: TaskDecoder<H, I>) => TaskDecoder<H, A[number]>
 ```
 
 Added in v2.2.8
@@ -208,16 +282,6 @@ export declare const intersect: <IB, B>(
 ```
 
 Added in v2.2.7
-
-## items
-
-**Signature**
-
-```ts
-export declare const items: <I, A>(item: TaskDecoder<I, A>) => <H>(decoder: TaskDecoder<H, I[]>) => TaskDecoder<H, A[]>
-```
-
-Added in v2.2.8
 
 ## lazy
 
@@ -240,18 +304,6 @@ export declare const mapLeftWithInput: <I>(
 ```
 
 Added in v2.2.7
-
-## members
-
-**Signature**
-
-```ts
-export declare const members: <I, A extends readonly [unknown, ...unknown[]]>(
-  ...list: { [K in keyof A]: TaskDecoder<I, A[K]> }
-) => <H>(decoder: TaskDecoder<H, I>) => TaskDecoder<H, A[number]>
-```
-
-Added in v2.2.8
 
 ## nullable
 
@@ -283,30 +335,6 @@ Added in v2.2.7
 export declare const partial: <A>(
   properties: { [K in keyof A]: TaskDecoder<unknown, A[K]> }
 ) => TaskDecoder<unknown, Partial<{ [K in keyof A]: A[K] }>>
-```
-
-Added in v2.2.8
-
-## partialProps
-
-**Signature**
-
-```ts
-export declare const partialProps: <I, A>(
-  properties: { [K in keyof A]: TaskDecoder<I, A[K]> }
-) => <H>(decoder: TaskDecoder<H, Record<string, I>>) => TaskDecoder<H, Partial<{ [K in keyof A]: A[K] }>>
-```
-
-Added in v2.2.8
-
-## props
-
-**Signature**
-
-```ts
-export declare const props: <I, A>(
-  properties: { [K in keyof A]: TaskDecoder<I, A[K]> }
-) => <H>(decoder: TaskDecoder<H, Record<string, I>>) => TaskDecoder<H, { [K in keyof A]: A[K] }>
 ```
 
 Added in v2.2.8
@@ -352,7 +380,7 @@ Added in v2.2.8
 
 ```ts
 export declare const tuple: <A extends readonly unknown[]>(
-  ...list: { [K in keyof A]: TaskDecoder<unknown, A[K]> }
+  ...components: { [K in keyof A]: TaskDecoder<unknown, A[K]> }
 ) => TaskDecoder<unknown, A>
 ```
 
@@ -376,37 +404,11 @@ Added in v2.2.8
 
 ```ts
 export declare const union: <A extends readonly [unknown, ...unknown[]]>(
-  ...list: { [K in keyof A]: TaskDecoder<unknown, A[K]> }
+  ...members: { [K in keyof A]: TaskDecoder<unknown, A[K]> }
 ) => TaskDecoder<unknown, A[number]>
 ```
 
 Added in v2.2.7
-
-## values
-
-**Signature**
-
-```ts
-export declare const values: <I, A>(
-  codomain: TaskDecoder<I, A>
-) => <H>(decoder: TaskDecoder<H, Record<string, I>>) => TaskDecoder<H, Record<string, A>>
-```
-
-Added in v2.2.8
-
-## variants
-
-**Signature**
-
-```ts
-export declare const variants: <T extends string>(
-  tag: T
-) => <I, A>(
-  members: { [K in keyof A]: TaskDecoder<I, A[K]> }
-) => <H>(decoder: TaskDecoder<H, Record<string, I>>) => TaskDecoder<H, A[keyof A]>
-```
-
-Added in v2.2.8
 
 # constructors
 
