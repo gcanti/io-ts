@@ -250,25 +250,24 @@ export function components<M extends URIS2, E>(
 
 /**
  * @category combinators
- * @since 2.2.7
+ * @since 2.2.8
  */
-export function union<M extends URIS2, E>(
-  M: Alt2C<M, E> & Bifunctor2<M>
+export function members<M extends URIS2, E>(
+  M: Monad2C<M, E> & Alt2C<M, E> & Bifunctor2<M>
 ): (
   onMemberError: (index: number, e: E) => E
-) => <MS extends readonly [Kleisli<M, any, E, any>, ...Array<Kleisli<M, any, E, any>>]>(
-  ...members: MS
-) => Kleisli<M, InputOf<M, MS[keyof MS]>, E, TypeOf<M, MS[keyof MS]>> {
-  return (onMemberError) => <MS extends readonly [Kleisli<M, any, E, any>, ...Array<Kleisli<M, any, E, any>>]>(
-    ...members: MS
-  ) => ({
-    decode: (i) => {
-      let out: Kind2<M, E, TypeOf<M, MS[keyof MS]>> = M.mapLeft(members[0].decode(i), (e) => onMemberError(0, e))
-      for (let index = 1; index < members.length; index++) {
-        out = M.alt(out, () => M.mapLeft(members[index].decode(i), (e) => onMemberError(index, e)))
-      }
-      return out
-    }
+) => <I, A extends readonly [unknown, ...Array<unknown>]>(
+  ...members: { [K in keyof A]: Kleisli<M, I, E, A[K]> }
+) => <H>(decoder: Kleisli<M, H, E, I>) => Kleisli<M, H, E, A[number]> {
+  return (onMemberError) => (...members) => (decoder) => ({
+    decode: (h) =>
+      M.chain(decoder.decode(h), (i) => {
+        let out = M.mapLeft(members[0].decode(i), (e) => onMemberError(0, e))
+        for (let index = 1; index < members.length; index++) {
+          out = M.alt(out, () => M.mapLeft(members[index].decode(i), (e) => onMemberError(index, e)))
+        }
+        return out
+      })
   })
 }
 

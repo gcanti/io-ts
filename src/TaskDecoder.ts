@@ -304,13 +304,21 @@ export const tuple = <A extends ReadonlyArray<unknown>>(
 
 /**
  * @category combinators
+ * @since 2.2.8
+ */
+export const members: <I, A extends readonly [unknown, ...Array<unknown>]>(
+  ...list: { [K in keyof A]: TaskDecoder<I, A[K]> }
+) => <H>(decoder: TaskDecoder<H, I>) => TaskDecoder<H, A[number]> =
+  /*#__PURE__*/
+  K.members(M)((i, e) => FS.of(DE.member(i, e))) as any
+
+/**
+ * @category combinators
  * @since 2.2.7
  */
-export const union: <MS extends readonly [TaskDecoder<any, any>, ...Array<TaskDecoder<any, any>>]>(
-  ...members: MS
-) => TaskDecoder<InputOf<MS[keyof MS]>, TypeOf<MS[keyof MS]>> =
-  /*#__PURE__*/
-  K.union(M)((i, e) => FS.of(DE.member(i, e)))
+export const union = <A extends readonly [unknown, ...Array<unknown>]>(
+  ...list: { [K in keyof A]: TaskDecoder<unknown, A[K]> }
+): TaskDecoder<unknown, A[number]> => pipe(id(), members(...(list as any)))
 
 /**
  * @category combinators
