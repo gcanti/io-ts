@@ -13,7 +13,7 @@ Experimental features are published in order to get early feedback from the comm
 
 A feature tagged as _Experimental_ is in a high state of flux, you're at risk of it changing without notice.
 
-Added in v2.2.7
+Added in v2.2.8
 
 ---
 
@@ -89,7 +89,7 @@ Added in v2.2.7
 export declare const alt: <I, A>(that: () => Decoder<I, A>) => (me: Decoder<I, A>) => Decoder<I, A>
 ```
 
-Added in v2.2.7
+Added in v2.2.8
 
 # Category
 
@@ -113,7 +113,7 @@ Added in v2.2.8
 export type DecodeError = FS.FreeSemigroup<DE.DecodeError<string>>
 ```
 
-Added in v2.2.7
+Added in v2.2.8
 
 ## error
 
@@ -123,7 +123,7 @@ Added in v2.2.7
 export declare const error: (actual: unknown, message: string) => FS.FreeSemigroup<DE.DecodeError<string>>
 ```
 
-Added in v2.2.7
+Added in v2.2.8
 
 ## failure
 
@@ -136,7 +136,7 @@ export declare const failure: <A = never>(
 ) => E.Either<FS.FreeSemigroup<DE.DecodeError<string>>, A>
 ```
 
-Added in v2.2.7
+Added in v2.2.8
 
 ## success
 
@@ -146,7 +146,7 @@ Added in v2.2.7
 export declare const success: <A>(a: A) => E.Either<FS.FreeSemigroup<DE.DecodeError<string>>, A>
 ```
 
-Added in v2.2.7
+Added in v2.2.8
 
 # Functor
 
@@ -158,7 +158,7 @@ Added in v2.2.7
 export declare const map: <A, B>(f: (a: A) => B) => <I>(fa: Decoder<I, A>) => Decoder<I, B>
 ```
 
-Added in v2.2.7
+Added in v2.2.8
 
 # Semigroupoid
 
@@ -170,7 +170,7 @@ Added in v2.2.7
 export declare const compose: <A, B>(to: Decoder<A, B>) => <I>(from: Decoder<I, A>) => Decoder<I, B>
 ```
 
-Added in v2.2.7
+Added in v2.2.8
 
 # combinators
 
@@ -278,7 +278,7 @@ export declare const intersect: <IB, B>(
 ) => <IA, A>(left: Decoder<IA, A>) => Decoder<IA & IB, A & B>
 ```
 
-Added in v2.2.7
+Added in v2.2.8
 
 ## lazy
 
@@ -288,7 +288,7 @@ Added in v2.2.7
 export declare const lazy: <I, A>(id: string, f: () => Decoder<I, A>) => Decoder<I, A>
 ```
 
-Added in v2.2.7
+Added in v2.2.8
 
 ## mapLeftWithInput
 
@@ -300,7 +300,7 @@ export declare const mapLeftWithInput: <I>(
 ) => <A>(decoder: Decoder<I, A>) => Decoder<I, A>
 ```
 
-Added in v2.2.7
+Added in v2.2.8
 
 ## nullable
 
@@ -310,7 +310,7 @@ Added in v2.2.7
 export declare const nullable: <I, A>(or: Decoder<I, A>) => Decoder<I, A>
 ```
 
-Added in v2.2.7
+Added in v2.2.8
 
 ## parse
 
@@ -322,7 +322,7 @@ export declare const parse: <A, B>(
 ) => <I>(from: Decoder<I, A>) => Decoder<I, B>
 ```
 
-Added in v2.2.7
+Added in v2.2.8
 
 ## partial
 
@@ -357,7 +357,7 @@ export declare const refine: <A, B extends A>(
 ) => <I>(from: Decoder<I, A>) => Decoder<I, B>
 ```
 
-Added in v2.2.7
+Added in v2.2.8
 
 ## sum
 
@@ -405,7 +405,7 @@ export declare const union: <A extends readonly [unknown, ...unknown[]]>(
 ) => Decoder<unknown, A[number]>
 ```
 
-Added in v2.2.7
+Added in v2.2.8
 
 # constructors
 
@@ -417,7 +417,7 @@ Added in v2.2.7
 export declare const fromGuard: <A>(guard: G.Guard<A>, expected: string) => Decoder<unknown, A>
 ```
 
-Added in v2.2.7
+Added in v2.2.8
 
 ## fromRefinement
 
@@ -427,7 +427,7 @@ Added in v2.2.7
 export declare const fromRefinement: <I, A extends I>(refinement: Refinement<I, A>, expected: string) => Decoder<I, A>
 ```
 
-Added in v2.2.7
+Added in v2.2.8
 
 ## literal
 
@@ -439,7 +439,7 @@ export declare const literal: <A extends readonly [S.Literal, ...S.Literal[]]>(
 ) => Decoder<unknown, A[number]>
 ```
 
-Added in v2.2.7
+Added in v2.2.8
 
 # instances
 
@@ -451,7 +451,7 @@ Added in v2.2.7
 export declare const Alt: Alt2<'io-ts/Decoder'>
 ```
 
-Added in v2.2.7
+Added in v2.2.8
 
 ## Category
 
@@ -471,7 +471,7 @@ Added in v2.2.8
 export declare const Functor: Functor2<'io-ts/Decoder'>
 ```
 
-Added in v2.2.7
+Added in v2.2.8
 
 ## Schemable
 
@@ -484,7 +484,7 @@ export declare const Schemable: S.Schemable2C<'io-ts/Decoder', unknown> &
   S.WithRefine2C<'io-ts/Decoder', unknown>
 ```
 
-Added in v2.2.7
+Added in v2.2.8
 
 ## URI
 
@@ -494,7 +494,7 @@ Added in v2.2.7
 export declare const URI: 'io-ts/Decoder'
 ```
 
-Added in v2.2.7
+Added in v2.2.8
 
 ## URI (type alias)
 
@@ -504,7 +504,7 @@ Added in v2.2.7
 export type URI = typeof URI
 ```
 
-Added in v2.2.7
+Added in v2.2.8
 
 # model
 
@@ -516,7 +516,7 @@ Added in v2.2.7
 export interface Decoder<I, A> extends K.Kleisli<E.URI, I, DecodeError, A> {}
 ```
 
-Added in v2.2.7
+Added in v2.2.8
 
 # primitives
 
@@ -580,7 +580,7 @@ Added in v2.2.8
 export type InputOf<KD> = K.InputOf<E.URI, KD>
 ```
 
-Added in v2.2.7
+Added in v2.2.8
 
 ## TypeOf (type alias)
 
@@ -590,7 +590,7 @@ Added in v2.2.7
 export type TypeOf<KD> = K.TypeOf<E.URI, KD>
 ```
 
-Added in v2.2.7
+Added in v2.2.8
 
 ## draw
 

@@ -194,7 +194,7 @@ declare module 'fp-ts/lib/HKT' {
 
 /**
  * @category instances
- * @since 2.2.3
+ * @since 2.2.8
  */
 export const Invariant: Invariant1<URI> = {
   URI,
@@ -203,7 +203,7 @@ export const Invariant: Invariant1<URI> = {
 
 /**
  * @category instances
- * @since 2.2.3
+ * @since 2.2.8
  */
 export const Schemable: Schemable1<URI> & WithRefine1<URI> = {
   URI,

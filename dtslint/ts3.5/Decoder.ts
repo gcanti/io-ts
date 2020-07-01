@@ -5,6 +5,7 @@ import * as FS from '../../src/FreeSemigroup'
 
 declare const StringFromString: _.Decoder<string, string>
 declare const NumberFromString: _.Decoder<string, number>
+declare const ArrayFromString: _.Decoder<string, Array<string>>
 
 //
 // TypeOf
@@ -21,7 +22,7 @@ export type TypeOfNumberFromString = _.TypeOf<typeof NumberFromString>
 export type InputOfNumberFromString = _.InputOf<typeof NumberFromString>
 
 //
-// props
+// composeType
 //
 
 // $ExpectType Decoder<unknown, { a: string; b: { c: number; }; }>
@@ -48,6 +49,21 @@ _.type({
 })
 
 //
+// composePartial
+//
+
+// $ExpectType Decoder<unknown, Partial<{ a: string; b: Partial<{ c: number; }>; }>>
+pipe(
+  _.UnknownRecord,
+  _.composePartial({
+    a: _.string,
+    b: _.partial({
+      c: _.number
+    })
+  })
+)
+
+//
 // partial
 //
 
@@ -60,6 +76,36 @@ _.partial({
 })
 
 //
+// composeArray
+//
+
+// $ExpectType Decoder<unknown, string[]>
+pipe(_.UnknownArray, _.composeArray(_.string))
+
+// $ExpectType Decoder<string, number[]>
+pipe(ArrayFromString, _.composeArray(NumberFromString))
+
+//
+// array
+//
+
+// $ExpectType Decoder<unknown, string[]>
+_.array(_.string)
+
+//
+// composeSum
+//
+
+// $ExpectType Decoder<unknown, { _tag: "A"; a: string; } | { _tag: "B"; b: number; }>
+pipe(
+  _.UnknownRecord,
+  _.composeSum('_tag')({
+    A: _.type({ _tag: _.literal('A'), a: _.string }),
+    B: _.type({ _tag: _.literal('B'), b: _.number })
+  })
+)
+
+//
 // sum
 //
 
@@ -70,7 +116,7 @@ _.sum('_tag')({
 })
 
 //
-// members
+// composeUnion
 //
 
 // $ExpectType Decoder<unknown, string | number>

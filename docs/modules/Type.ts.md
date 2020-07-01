@@ -189,7 +189,7 @@ export declare const Schemable: Schemable1<'io-ts/Type'> &
   WithRefine1<'io-ts/Type'>
 ```
 
-Added in v2.2.3
+Added in v2.2.8
 
 ## URI
 

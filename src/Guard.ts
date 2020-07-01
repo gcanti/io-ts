@@ -251,7 +251,7 @@ declare module 'fp-ts/lib/HKT' {
 
 /**
  * @category instances
- * @since 2.2.3
+ * @since 2.2.8
  */
 export const Schemable: Schemable1<URI> & WithUnknownContainers1<URI> & WithUnion1<URI> & WithRefine1<URI> = {
   URI,

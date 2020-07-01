@@ -168,7 +168,7 @@ declare module 'fp-ts/lib/HKT' {
 
 /**
  * @category instances
- * @since 2.2.3
+ * @since 2.2.8
  */
 export const Contravariant: Contravariant1<URI> = {
   URI,
@@ -177,7 +177,7 @@ export const Contravariant: Contravariant1<URI> = {
 
 /**
  * @category instances
- * @since 2.2.3
+ * @since 2.2.8
  */
 export const Schemable: Schemable1<URI> = {
   URI,

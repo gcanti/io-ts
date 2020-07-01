@@ -193,7 +193,7 @@ export declare const Schemable: Schemable1<'io-ts/Guard'> &
   WithRefine1<'io-ts/Guard'>
 ```
 
-Added in v2.2.3
+Added in v2.2.8
 
 ## URI
 

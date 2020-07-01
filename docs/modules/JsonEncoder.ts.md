@@ -170,7 +170,7 @@ Added in v2.2.3
 export declare const Contravariant: Contravariant1<'io-ts/JsonEncoder'>
 ```
 
-Added in v2.2.3
+Added in v2.2.8
 
 ## Schemable
 
@@ -180,7 +180,7 @@ Added in v2.2.3
 export declare const Schemable: Schemable1<'io-ts/JsonEncoder'>
 ```
 
-Added in v2.2.3
+Added in v2.2.8
 
 ## URI
 

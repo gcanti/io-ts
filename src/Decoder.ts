@@ -6,7 +6,7 @@
  *
  * A feature tagged as _Experimental_ is in a high state of flux, you're at risk of it changing without notice.
  *
- * @since 2.2.7
+ * @since 2.2.8
  */
 import { Alt2, Alt2C } from 'fp-ts/lib/Alt'
 import { Bifunctor2 } from 'fp-ts/lib/Bifunctor'
@@ -73,7 +73,7 @@ const M: MonadThrow2C<E.URI, DecodeError> & Bifunctor2<E.URI> & Alt2C<E.URI, Dec
 
 /**
  * @category model
- * @since 2.2.7
+ * @since 2.2.8
  */
 export interface Decoder<I, A> extends K.Kleisli<E.URI, I, DecodeError, A> {}
 
@@ -83,25 +83,25 @@ export interface Decoder<I, A> extends K.Kleisli<E.URI, I, DecodeError, A> {}
 
 /**
  * @category DecodeError
- * @since 2.2.7
+ * @since 2.2.8
  */
 export type DecodeError = FS.FreeSemigroup<DE.DecodeError<string>>
 
 /**
  * @category DecodeError
- * @since 2.2.7
+ * @since 2.2.8
  */
 export const error = (actual: unknown, message: string): DecodeError => FS.of(DE.leaf(actual, message))
 
 /**
  * @category DecodeError
- * @since 2.2.7
+ * @since 2.2.8
  */
 export const success: <A>(a: A) => E.Either<DecodeError, A> = E.right
 
 /**
  * @category DecodeError
- * @since 2.2.7
+ * @since 2.2.8
  */
 export const failure = <A = never>(actual: unknown, message: string): E.Either<DecodeError, A> =>
   E.left(error(actual, message))
@@ -112,21 +112,21 @@ export const failure = <A = never>(actual: unknown, message: string): E.Either<D
 
 /**
  * @category constructors
- * @since 2.2.7
+ * @since 2.2.8
  */
 export const fromRefinement = <I, A extends I>(refinement: Refinement<I, A>, expected: string): Decoder<I, A> =>
   K.fromRefinement(M)(refinement, (u) => error(u, expected))
 
 /**
  * @category constructors
- * @since 2.2.7
+ * @since 2.2.8
  */
 export const fromGuard = <A>(guard: G.Guard<A>, expected: string): Decoder<unknown, A> =>
   fromRefinement(guard.is, expected)
 
 /**
  * @category constructors
- * @since 2.2.7
+ * @since 2.2.8
  */
 export const literal: <A extends readonly [S.Literal, ...Array<S.Literal>]>(
   ...values: A
@@ -184,7 +184,7 @@ export const UnknownRecord: Decoder<unknown, Record<string, unknown>> =
 
 /**
  * @category combinators
- * @since 2.2.7
+ * @since 2.2.8
  */
 export const mapLeftWithInput: <I>(
   f: (input: I, e: DecodeError) => DecodeError
@@ -194,7 +194,7 @@ export const mapLeftWithInput: <I>(
 
 /**
  * @category combinators
- * @since 2.2.7
+ * @since 2.2.8
  */
 export const refine = <A, B extends A>(
   refinement: (a: A) => a is B,
@@ -203,7 +203,7 @@ export const refine = <A, B extends A>(
 
 /**
  * @category combinators
- * @since 2.2.7
+ * @since 2.2.8
  */
 export const parse: <A, B>(parser: (a: A) => E.Either<DecodeError, B>) => <I>(from: Decoder<I, A>) => Decoder<I, B> =
   /*#__PURE__*/
@@ -211,7 +211,7 @@ export const parse: <A, B>(parser: (a: A) => E.Either<DecodeError, B>) => <I>(fr
 
 /**
  * @category combinators
- * @since 2.2.7
+ * @since 2.2.8
  */
 export const nullable: <I, A>(or: Decoder<I, A>) => Decoder<null | I, null | A> =
   /*#__PURE__*/
@@ -315,7 +315,7 @@ export const composeUnion: <I, A extends readonly [unknown, ...Array<unknown>]>(
 
 /**
  * @category combinators
- * @since 2.2.7
+ * @since 2.2.8
  */
 export const union = <A extends readonly [unknown, ...Array<unknown>]>(
   ...members: { [K in keyof A]: Decoder<unknown, A[K]> }
@@ -323,7 +323,7 @@ export const union = <A extends readonly [unknown, ...Array<unknown>]>(
 
 /**
  * @category combinators
- * @since 2.2.7
+ * @since 2.2.8
  */
 export const intersect: <IB, B>(right: Decoder<IB, B>) => <IA, A>(left: Decoder<IA, A>) => Decoder<IA & IB, A & B> =
   /*#__PURE__*/
@@ -353,7 +353,7 @@ export const sum = <T extends string>(tag: T) => <A>(
 
 /**
  * @category combinators
- * @since 2.2.7
+ * @since 2.2.8
  */
 export const lazy: <I, A>(id: string, f: () => Decoder<I, A>) => Decoder<I, A> =
   /*#__PURE__*/
@@ -375,7 +375,7 @@ const compose_: Category2<URI>['compose'] = (ab, la) => pipe(la, compose(ab))
 
 /**
  * @category Functor
- * @since 2.2.7
+ * @since 2.2.8
  */
 export const map: <A, B>(f: (a: A) => B) => <I>(fa: Decoder<I, A>) => Decoder<I, B> =
   /*#__PURE__*/
@@ -383,7 +383,7 @@ export const map: <A, B>(f: (a: A) => B) => <I>(fa: Decoder<I, A>) => Decoder<I,
 
 /**
  * @category Alt
- * @since 2.2.7
+ * @since 2.2.8
  */
 export const alt: <I, A>(that: () => Decoder<I, A>) => (me: Decoder<I, A>) => Decoder<I, A> =
   /*#__PURE__*/
@@ -391,7 +391,7 @@ export const alt: <I, A>(that: () => Decoder<I, A>) => (me: Decoder<I, A>) => De
 
 /**
  * @category Semigroupoid
- * @since 2.2.7
+ * @since 2.2.8
  */
 export const compose: <A, B>(to: Decoder<A, B>) => <I>(from: Decoder<I, A>) => Decoder<I, B> =
   /*#__PURE__*/
@@ -411,13 +411,13 @@ export const id: <A>() => Decoder<A, A> =
 
 /**
  * @category instances
- * @since 2.2.7
+ * @since 2.2.8
  */
 export const URI = 'io-ts/Decoder'
 
 /**
  * @category instances
- * @since 2.2.7
+ * @since 2.2.8
  */
 export type URI = typeof URI
 
@@ -429,7 +429,7 @@ declare module 'fp-ts/lib/HKT' {
 
 /**
  * @category instances
- * @since 2.2.7
+ * @since 2.2.8
  */
 export const Functor: Functor2<URI> = {
   URI,
@@ -438,7 +438,7 @@ export const Functor: Functor2<URI> = {
 
 /**
  * @category instances
- * @since 2.2.7
+ * @since 2.2.8
  */
 export const Alt: Alt2<URI> = {
   URI,
@@ -458,7 +458,7 @@ export const Category: Category2<URI> = {
 
 /**
  * @category instances
- * @since 2.2.7
+ * @since 2.2.8
  */
 export const Schemable: S.Schemable2C<URI, unknown> &
   S.WithUnknownContainers2C<URI, unknown> &
@@ -489,12 +489,12 @@ export const Schemable: S.Schemable2C<URI, unknown> &
 // -------------------------------------------------------------------------------------
 
 /**
- * @since 2.2.7
+ * @since 2.2.8
  */
 export type TypeOf<KD> = K.TypeOf<E.URI, KD>
 
 /**
- * @since 2.2.7
+ * @since 2.2.8
  */
 export type InputOf<KD> = K.InputOf<E.URI, KD>
 

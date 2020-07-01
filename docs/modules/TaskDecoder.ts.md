@@ -13,7 +13,7 @@ Experimental features are published in order to get early feedback from the comm
 
 A feature tagged as _Experimental_ is in a high state of flux, you're at risk of it changing without notice.
 
-Added in v2.2.7
+Added in v2.2.8
 
 ---
 
@@ -90,7 +90,7 @@ Added in v2.2.7
 export declare const alt: <I, A>(that: () => TaskDecoder<I, A>) => (me: TaskDecoder<I, A>) => TaskDecoder<I, A>
 ```
 
-Added in v2.2.7
+Added in v2.2.8
 
 # Category
 
@@ -114,7 +114,7 @@ Added in v2.2.8
 export type DecodeError = D.DecodeError
 ```
 
-Added in v2.2.7
+Added in v2.2.8
 
 ## error
 
@@ -124,7 +124,7 @@ Added in v2.2.7
 export declare const error: (actual: unknown, message: string) => FS.FreeSemigroup<DE.DecodeError<string>>
 ```
 
-Added in v2.2.7
+Added in v2.2.8
 
 ## failure
 
@@ -137,7 +137,7 @@ export declare const failure: <A = never>(
 ) => TE.TaskEither<FS.FreeSemigroup<DE.DecodeError<string>>, A>
 ```
 
-Added in v2.2.7
+Added in v2.2.8
 
 ## success
 
@@ -147,7 +147,7 @@ Added in v2.2.7
 export declare const success: <A>(a: A) => TE.TaskEither<FS.FreeSemigroup<DE.DecodeError<string>>, A>
 ```
 
-Added in v2.2.7
+Added in v2.2.8
 
 # Functor
 
@@ -159,7 +159,7 @@ Added in v2.2.7
 export declare const map: <A, B>(f: (a: A) => B) => <I>(fa: TaskDecoder<I, A>) => TaskDecoder<I, B>
 ```
 
-Added in v2.2.7
+Added in v2.2.8
 
 # Semigroupoid
 
@@ -171,7 +171,7 @@ Added in v2.2.7
 export declare const compose: <A, B>(to: TaskDecoder<A, B>) => <I>(from: TaskDecoder<I, A>) => TaskDecoder<I, B>
 ```
 
-Added in v2.2.7
+Added in v2.2.8
 
 # combinators
 
@@ -183,7 +183,7 @@ Added in v2.2.7
 export declare const array: <A>(item: TaskDecoder<unknown, A>) => TaskDecoder<unknown, A[]>
 ```
 
-Added in v2.2.7
+Added in v2.2.8
 
 ## composeArray
 
@@ -281,7 +281,7 @@ export declare const intersect: <IB, B>(
 ) => <IA, A>(left: TaskDecoder<IA, A>) => TaskDecoder<IA & IB, A & B>
 ```
 
-Added in v2.2.7
+Added in v2.2.8
 
 ## lazy
 
@@ -291,7 +291,7 @@ Added in v2.2.7
 export declare const lazy: <I, A>(id: string, f: () => TaskDecoder<I, A>) => TaskDecoder<I, A>
 ```
 
-Added in v2.2.7
+Added in v2.2.8
 
 ## mapLeftWithInput
 
@@ -303,7 +303,7 @@ export declare const mapLeftWithInput: <I>(
 ) => <A>(decoder: TaskDecoder<I, A>) => TaskDecoder<I, A>
 ```
 
-Added in v2.2.7
+Added in v2.2.8
 
 ## nullable
 
@@ -313,7 +313,7 @@ Added in v2.2.7
 export declare const nullable: <I, A>(or: TaskDecoder<I, A>) => TaskDecoder<I, A>
 ```
 
-Added in v2.2.7
+Added in v2.2.8
 
 ## parse
 
@@ -325,7 +325,7 @@ export declare const parse: <A, B>(
 ) => <I>(from: TaskDecoder<I, A>) => TaskDecoder<I, B>
 ```
 
-Added in v2.2.7
+Added in v2.2.8
 
 ## partial
 
@@ -360,7 +360,7 @@ export declare const refine: <A, B extends A>(
 ) => <I>(from: TaskDecoder<I, A>) => TaskDecoder<I, B>
 ```
 
-Added in v2.2.7
+Added in v2.2.8
 
 ## sum
 
@@ -408,7 +408,7 @@ export declare const union: <A extends readonly [unknown, ...unknown[]]>(
 ) => TaskDecoder<unknown, A[number]>
 ```
 
-Added in v2.2.7
+Added in v2.2.8
 
 # constructors
 
@@ -420,7 +420,7 @@ Added in v2.2.7
 export declare const fromDecoder: <I, A>(decoder: D.Decoder<I, A>) => TaskDecoder<I, A>
 ```
 
-Added in v2.2.7
+Added in v2.2.8
 
 ## fromGuard
 
@@ -430,7 +430,7 @@ Added in v2.2.7
 export declare const fromGuard: <A>(guard: G.Guard<A>, expected: string) => TaskDecoder<unknown, A>
 ```
 
-Added in v2.2.7
+Added in v2.2.8
 
 ## fromRefinement
 
@@ -443,7 +443,7 @@ export declare const fromRefinement: <I, A extends I>(
 ) => TaskDecoder<I, A>
 ```
 
-Added in v2.2.7
+Added in v2.2.8
 
 ## literal
 
@@ -455,7 +455,7 @@ export declare const literal: <A extends readonly [S.Literal, ...S.Literal[]]>(
 ) => TaskDecoder<unknown, A[number]>
 ```
 
-Added in v2.2.7
+Added in v2.2.8
 
 # instances
 
@@ -532,7 +532,7 @@ Added in v2.2.8
 export interface TaskDecoder<I, A> extends K.Kleisli<TE.URI, I, DecodeError, A> {}
 ```
 
-Added in v2.2.7
+Added in v2.2.8
 
 # primitives
 
@@ -596,7 +596,7 @@ Added in v2.2.8
 export type InputOf<KTD> = K.InputOf<TE.URI, KTD>
 ```
 
-Added in v2.2.7
+Added in v2.2.8
 
 ## TypeOf (type alias)
 
@@ -606,7 +606,7 @@ Added in v2.2.7
 export type TypeOf<KTD> = K.TypeOf<TE.URI, KTD>
 ```
 
-Added in v2.2.7
+Added in v2.2.8
 
 ## draw
 

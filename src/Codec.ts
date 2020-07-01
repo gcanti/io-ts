@@ -263,7 +263,7 @@ declare module 'fp-ts/lib/HKT' {
 
 /**
  * @category instances
- * @since 2.2.3
+ * @since 2.2.8
  */
 export const Invariant: Invariant2<URI> = {
   URI,

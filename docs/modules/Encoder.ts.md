@@ -194,7 +194,7 @@ Added in v2.2.3
 export declare const Category: Category2<'io-ts/Encoder'>
 ```
 
-Added in v2.2.3
+Added in v2.2.8
 
 ## Contravariant
 
@@ -204,7 +204,7 @@ Added in v2.2.3
 export declare const Contravariant: Contravariant2<'io-ts/Encoder'>
 ```
 
-Added in v2.2.3
+Added in v2.2.8
 
 ## URI
 

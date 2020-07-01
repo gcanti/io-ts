@@ -219,7 +219,7 @@ Added in v2.2.3
 export declare const Invariant: Invariant1<'io-ts/JsonCodec'>
 ```
 
-Added in v2.2.3
+Added in v2.2.8
 
 ## Schemable
 
@@ -229,7 +229,7 @@ Added in v2.2.3
 export declare const Schemable: Schemable1<'io-ts/JsonCodec'> & WithRefine1<'io-ts/JsonCodec'>
 ```
 
-Added in v2.2.3
+Added in v2.2.8
 
 ## URI
 
