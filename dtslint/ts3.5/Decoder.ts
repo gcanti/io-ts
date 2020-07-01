@@ -21,15 +21,6 @@ export type TypeOfNumberFromString = _.TypeOf<typeof NumberFromString>
 export type InputOfNumberFromString = _.InputOf<typeof NumberFromString>
 
 //
-// kpartial
-//
-
-// $ExpectType Decoder<{ a: string; }, Partial<{ a: number; }>>
-_.kpartial({
-  a: NumberFromString
-})
-
-//
 // ktuple
 //
 

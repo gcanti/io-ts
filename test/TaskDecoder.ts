@@ -265,7 +265,7 @@ describe('UnknownTaskDecoder', () => {
 
     it('should reject an invalid input', async () => {
       const decoder = _.partial({ a: _.string })
-      assert.deepStrictEqual(await decoder.decode(undefined)(), D.failure(undefined, 'object'))
+      assert.deepStrictEqual(await decoder.decode(undefined)(), D.failure(undefined, 'Record<string, unknown>'))
       assert.deepStrictEqual(
         await decoder.decode({ a: 1 })(),
         E.left(FS.of(DE.key('a', DE.optional, FS.of(DE.leaf(1, 'string')))))

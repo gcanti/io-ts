@@ -317,7 +317,7 @@ describe('Codec', () => {
 
       it('should reject an invalid input', () => {
         const codec = C.partial({ a: C.string })
-        assert.deepStrictEqual(codec.decode(undefined), D.failure(undefined, 'object'))
+        assert.deepStrictEqual(codec.decode(undefined), D.failure(undefined, 'Record<string, unknown>'))
         assert.deepStrictEqual(
           codec.decode({ a: 1 }),
           E.left(FS.of(DE.key('a', DE.optional, FS.of(DE.leaf(1, 'string')))))
