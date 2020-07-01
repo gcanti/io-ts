@@ -306,7 +306,7 @@ Added in v2.2.7
 **Signature**
 
 ```ts
-export declare const fromDecoder: <A>(decoder: D.UnknownDecoder<A>) => UnknownTaskDecoder<A>
+export declare const fromDecoder: <A>(decoder: D.Decoder<unknown, A>) => UnknownTaskDecoder<A>
 ```
 
 Added in v2.2.7

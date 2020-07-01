@@ -199,7 +199,7 @@ Added in v2.2.3
 **Signature**
 
 ```ts
-export declare function fromDecoder<A>(decoder: D.UnknownDecoder<A>): Codec<A, A>
+export declare function fromDecoder<A>(decoder: D.Decoder<unknown, A>): Codec<A, A>
 ```
 
 Added in v2.2.3
@@ -221,7 +221,7 @@ Added in v2.2.3
 **Signature**
 
 ```ts
-export declare function make<O, A>(decoder: D.UnknownDecoder<A>, encoder: E.Encoder<O, A>): Codec<O, A>
+export declare function make<O, A>(decoder: D.Decoder<unknown, A>, encoder: E.Encoder<O, A>): Codec<O, A>
 ```
 
 Added in v2.2.3
@@ -270,7 +270,7 @@ Laws:
 **Signature**
 
 ```ts
-export interface Codec<O, A> extends D.UnknownDecoder<A>, E.Encoder<O, A> {}
+export interface Codec<O, A> extends D.Decoder<unknown, A>, E.Encoder<O, A> {}
 ```
 
 Added in v2.2.3

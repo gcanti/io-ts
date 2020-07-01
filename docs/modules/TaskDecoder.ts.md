@@ -320,7 +320,7 @@ Added in v2.2.7
 **Signature**
 
 ```ts
-export declare const literal: <A extends readonly [Literal, ...Literal[]]>(
+export declare const literal: <A extends readonly [S.Literal, ...S.Literal[]]>(
   ...values: A
 ) => TaskDecoder<unknown, A[number]>
 ```

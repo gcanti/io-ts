@@ -17,10 +17,10 @@ import { pipe } from 'fp-ts/lib/pipeable'
 import * as T from 'fp-ts/lib/Task'
 import * as TE from 'fp-ts/lib/TaskEither'
 import * as DE from './DecodeError'
+import * as D from './Decoder'
 import * as FS from './FreeSemigroup'
 import * as K from './Kleisli'
-import * as D from './Decoder'
-import { Literal } from './Schemable'
+import * as S from './Schemable'
 
 // -------------------------------------------------------------------------------------
 // Kleisli config
@@ -119,7 +119,7 @@ export const fromRefinement = <I, A extends I>(refinement: Refinement<I, A>, exp
  * @category constructors
  * @since 2.2.7
  */
-export const literal: <A extends readonly [Literal, ...Array<Literal>]>(
+export const literal: <A extends readonly [S.Literal, ...Array<S.Literal>]>(
   ...values: A
 ) => TaskDecoder<unknown, A[number]> =
   /*#__PURE__*/

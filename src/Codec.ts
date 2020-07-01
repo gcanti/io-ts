@@ -8,12 +8,12 @@
  *
  * @since 2.2.3
  */
+import { identity } from 'fp-ts/lib/function'
 import { Invariant2 } from 'fp-ts/lib/Invariant'
-import * as D from './UnknownDecoder'
+import { pipe } from 'fp-ts/lib/pipeable'
+import * as D from './Decoder'
 import * as E from './Encoder'
 import { Literal } from './Schemable'
-import { identity } from 'fp-ts/lib/function'
-import { pipe } from 'fp-ts/lib/pipeable'
 
 // -------------------------------------------------------------------------------------
 // model
@@ -28,7 +28,7 @@ import { pipe } from 'fp-ts/lib/pipeable'
  * @category model
  * @since 2.2.3
  */
-export interface Codec<O, A> extends D.UnknownDecoder<A>, E.Encoder<O, A> {}
+export interface Codec<O, A> extends D.Decoder<unknown, A>, E.Encoder<O, A> {}
 
 // -------------------------------------------------------------------------------------
 // utils
@@ -52,7 +52,7 @@ export type OutputOf<C> = E.OutputOf<C>
  * @category constructors
  * @since 2.2.3
  */
-export function make<O, A>(decoder: D.UnknownDecoder<A>, encoder: E.Encoder<O, A>): Codec<O, A> {
+export function make<O, A>(decoder: D.Decoder<unknown, A>, encoder: E.Encoder<O, A>): Codec<O, A> {
   return {
     decode: decoder.decode,
     encode: encoder.encode
@@ -63,7 +63,7 @@ export function make<O, A>(decoder: D.UnknownDecoder<A>, encoder: E.Encoder<O, A
  * @category constructors
  * @since 2.2.3
  */
-export function fromDecoder<A>(decoder: D.UnknownDecoder<A>): Codec<A, A> {
+export function fromDecoder<A>(decoder: D.Decoder<unknown, A>): Codec<A, A> {
   return {
     decode: decoder.decode,
     encode: identity
@@ -151,7 +151,7 @@ export function nullable<O, A>(or: Codec<O, A>): Codec<null | O, null | A> {
 export function type<P extends Record<string, Codec<any, any>>>(
   properties: P
 ): Codec<{ [K in keyof P]: OutputOf<P[K]> }, { [K in keyof P]: TypeOf<P[K]> }> {
-  const decoder: D.UnknownDecoder<{ [K in keyof P]: TypeOf<P[K]> }> = D.type(properties) as any
+  const decoder: D.Decoder<unknown, { [K in keyof P]: TypeOf<P[K]> }> = D.type(properties) as any
   return make(decoder, E.type(properties))
 }
 
@@ -190,7 +190,7 @@ export function array<O, A>(items: Codec<O, A>): Codec<Array<O>, Array<A>> {
 export function tuple<C extends ReadonlyArray<Codec<any, any>>>(
   ...components: C
 ): Codec<{ [K in keyof C]: OutputOf<C[K]> }, { [K in keyof C]: TypeOf<C[K]> }> {
-  const decoder: D.UnknownDecoder<{ [K in keyof C]: TypeOf<C[K]> }> = D.tuple(...components) as any
+  const decoder: D.Decoder<unknown, { [K in keyof C]: TypeOf<C[K]> }> = D.tuple(...components) as any
   const encoder = E.tuple(...components)
   return make(decoder, encoder)
 }

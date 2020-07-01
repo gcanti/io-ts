@@ -13,10 +13,10 @@ import { Functor1 } from 'fp-ts/lib/Functor'
 import { pipe } from 'fp-ts/lib/pipeable'
 import * as T from 'fp-ts/lib/Task'
 import * as TE from 'fp-ts/lib/TaskEither'
-import * as D from './UnknownDecoder'
+import * as D from './Decoder'
 import * as G from './Guard'
-import * as KTD from './TaskDecoder'
 import { Literal, Schemable1, WithRefine1, WithUnion1, WithUnknownContainers1 } from './Schemable'
+import * as KTD from './TaskDecoder'
 
 // -------------------------------------------------------------------------------------
 // model
@@ -64,7 +64,7 @@ export const failure: <A = never>(actual: unknown, message: string) => TE.TaskEi
  * @category constructors
  * @since 2.2.7
  */
-export const fromDecoder: <A>(decoder: D.UnknownDecoder<A>) => UnknownTaskDecoder<A> = KTD.fromKleisliDecoder
+export const fromDecoder: <A>(decoder: D.Decoder<unknown, A>) => UnknownTaskDecoder<A> = KTD.fromKleisliDecoder
 
 /**
  * @category constructors
