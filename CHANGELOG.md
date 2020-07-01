@@ -39,7 +39,7 @@
     - add `Functor2`, `Alt2`, `Category2`, `Schemable2c` instances (@gcanti)
     - add `draw` function (@gcanti)
   - `KleisliTaskDecoder`
-    - rename to `TaskDecoder` (@gcanti)
+    - remove old `TaskDecoder.ts` module and rename `KleisliTaskDecoder` to `TaskDecoder` (@gcanti)
     - rename `fromKleisliDecoder` to `fromDecoder` (@gcanti)
     - add `fromGuard` (@gcanti)
     - add `string`, `number`, `boolean`, `UnknownArray`, `UnknownRecord` primitives (@gcanti)
@@ -61,11 +61,6 @@
     - rename `schemableJsonEncoder` to `Schemable` (@gcanti)
   - `Schemable`
     - add `Schemable2C`, `WithUnknownContainers2C`, `WithUnion2C`, `WithRefine2C` (@gcanti)
-  - `TaskDecoder`
-    - rename to `UnknownTaskDecoder` (@gcanti)
-    - rename `functorTaskDecoder` to `Functor` (@gcanti)
-    - rename `altTaskDecoder` to `Alt` (@gcanti)
-    - rename `schemableTaskDecoder` to `Schemable` (@gcanti)
   - `Type`
     - rename `schemableType` to `Schemable` (@gcanti)
 

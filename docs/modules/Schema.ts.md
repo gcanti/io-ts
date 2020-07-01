@@ -92,7 +92,6 @@ export declare const interpreter: {
       | 'io-ts/JsonCodec'
       | 'io-ts/JsonEncoder'
       | 'io-ts/Type'
-      | 'io-ts/UnknownTaskDecoder'
       | 'Ord'
       | 'Option'
       | 'ReadonlyRecord'
