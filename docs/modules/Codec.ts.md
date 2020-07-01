@@ -74,7 +74,7 @@ Added in v2.2.3
 **Signature**
 
 ```ts
-export declare function array<O, A>(items: Codec<O, A>): Codec<Array<O>, Array<A>>
+export declare function array<O, A>(item: Codec<O, A>): Codec<Array<O>, Array<A>>
 ```
 
 Added in v2.2.3

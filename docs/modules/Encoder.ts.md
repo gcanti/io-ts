@@ -79,7 +79,7 @@ Added in v2.2.3
 **Signature**
 
 ```ts
-export declare function array<O, A>(items: Encoder<O, A>): Encoder<Array<O>, Array<A>>
+export declare function array<O, A>(item: Encoder<O, A>): Encoder<Array<O>, Array<A>>
 ```
 
 Added in v2.2.3

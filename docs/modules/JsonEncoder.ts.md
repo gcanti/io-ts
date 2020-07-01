@@ -67,7 +67,7 @@ Added in v2.2.3
 **Signature**
 
 ```ts
-export declare const array: <A>(items: JsonEncoder<A>) => JsonEncoder<A[]>
+export declare const array: <A>(item: JsonEncoder<A>) => JsonEncoder<A[]>
 ```
 
 Added in v2.2.3

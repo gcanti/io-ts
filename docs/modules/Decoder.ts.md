@@ -178,7 +178,7 @@ Added in v2.2.7
 **Signature**
 
 ```ts
-export declare const array: <A>(items: Decoder<unknown, A>) => Decoder<unknown, A[]>
+export declare const array: <A>(item: Decoder<unknown, A>) => Decoder<unknown, A[]>
 ```
 
 Added in v2.2.8
@@ -200,7 +200,7 @@ Added in v2.2.7
 **Signature**
 
 ```ts
-export declare const karray: <I, A>(items: Decoder<I, A>) => Decoder<I[], A[]>
+export declare const karray: <I, A>(item: Decoder<I, A>) => Decoder<I[], A[]>
 ```
 
 Added in v2.2.7

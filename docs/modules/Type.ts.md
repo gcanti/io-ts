@@ -55,7 +55,7 @@ Added in v2.2.3
 **Signature**
 
 ```ts
-export declare const array: <A>(items: Type<A>) => Type<A[]>
+export declare const array: <A>(item: Type<A>) => Type<A[]>
 ```
 
 Added in v2.2.3

@@ -104,7 +104,7 @@ export const record: <A>(codomain: JsonEncoder<A>) => JsonEncoder<Record<string,
  * @category combinators
  * @since 2.2.3
  */
-export const array: <A>(items: JsonEncoder<A>) => JsonEncoder<Array<A>> = E.array
+export const array: <A>(item: JsonEncoder<A>) => JsonEncoder<Array<A>> = E.array
 
 /**
  * @category combinators

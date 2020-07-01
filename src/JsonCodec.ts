@@ -130,7 +130,7 @@ export const record: <A>(codomain: JsonCodec<A>) => JsonCodec<Record<string, A>>
  * @category combinators
  * @since 2.2.3
  */
-export const array: <A>(items: JsonCodec<A>) => JsonCodec<Array<A>> = C.array
+export const array: <A>(item: JsonCodec<A>) => JsonCodec<Array<A>> = C.array
 
 /**
  * @category combinators

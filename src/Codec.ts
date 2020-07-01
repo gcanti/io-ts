@@ -179,8 +179,8 @@ export function record<O, A>(codomain: Codec<O, A>): Codec<Record<string, O>, Re
  * @category combinators
  * @since 2.2.3
  */
-export function array<O, A>(items: Codec<O, A>): Codec<Array<O>, Array<A>> {
-  return make(D.array(items), E.array(items))
+export function array<O, A>(item: Codec<O, A>): Codec<Array<O>, Array<A>> {
+  return make(D.array(item), E.array(item))
 }
 
 /**

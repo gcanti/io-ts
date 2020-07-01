@@ -265,15 +265,15 @@ export const partial = <A>(
  * @category combinators
  * @since 2.2.7
  */
-export const karray = <I, A>(items: TaskDecoder<I, A>): TaskDecoder<Array<I>, Array<A>> =>
-  K.array(M)((i, e) => FS.of(DE.index(i, DE.optional, e)))(items)
+export const karray = <I, A>(item: TaskDecoder<I, A>): TaskDecoder<Array<I>, Array<A>> =>
+  K.array(M)((i, e) => FS.of(DE.index(i, DE.optional, e)))(item)
 
 /**
  * @category combinators
  * @since 2.2.7
  */
-export const array = <A>(items: TaskDecoder<unknown, A>): TaskDecoder<unknown, Array<A>> =>
-  pipe(UnknownArray, compose(karray(items)))
+export const array = <A>(item: TaskDecoder<unknown, A>): TaskDecoder<unknown, Array<A>> =>
+  pipe(UnknownArray, compose(karray(item)))
 
 /**
  * @category combinators
