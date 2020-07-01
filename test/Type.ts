@@ -1,9 +1,9 @@
 import * as assert from 'assert'
 import * as fc from 'fast-check'
 import { isRight, isLeft } from 'fp-ts/lib/Either'
-import { Kind, URIS, HKT } from 'fp-ts/lib/HKT'
+import { Kind, URIS, HKT, URIS2, Kind2 } from 'fp-ts/lib/HKT'
 import * as t from '../src'
-import * as UD from '../src/UnknownDecoder'
+import * as D from '../src/Decoder'
 import * as G from '../src/Guard'
 import {
   memoize,
@@ -12,7 +12,10 @@ import {
   Schemable1,
   WithUnion1,
   WithUnknownContainers,
-  WithUnknownContainers1
+  WithUnknownContainers1,
+  Schemable2C,
+  WithUnknownContainers2C,
+  WithUnion2C
 } from '../src/Schemable'
 import * as _ from '../src/Type'
 import * as A from './Arbitrary'
@@ -26,15 +29,16 @@ function make<A>(f: Schema<A>): Schema<A> {
   return memoize(f)
 }
 
-function interpreter<S extends URIS>(
-  S: Schemable1<S> & WithUnknownContainers1<S> & WithUnion1<S>
-): <A>(schema: Schema<A>) => Kind<S, A> {
-  return (schema: any) => schema(S)
-}
+const interpreter: {
+  <S extends URIS2>(S: Schemable2C<S, unknown> & WithUnknownContainers2C<S, unknown> & WithUnion2C<S, unknown>): <A>(
+    schema: Schema<A>
+  ) => Kind2<S, unknown, A>
+  <S extends URIS>(S: Schemable1<S> & WithUnknownContainers1<S> & WithUnion1<S>): <A>(schema: Schema<A>) => Kind<S, A>
+} = (S: any) => (schema: any) => schema(S)
 
 function check<A>(schema: Schema<A>, type: t.Type<A>): void {
   const arb = interpreter(A.Schemable)(schema)
-  const decoder = interpreter(UD.Schemable)(schema)
+  const decoder = interpreter(D.Schemable)(schema)
   const guard = interpreter(G.Schemable)(schema)
   const itype = interpreter(_.Schemable)(schema)
   // decoder and type should be aligned

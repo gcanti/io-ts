@@ -23,12 +23,16 @@ Added in v2.2.0
   - [Literal (type alias)](#literal-type-alias)
   - [Schemable (interface)](#schemable-interface)
   - [Schemable1 (interface)](#schemable1-interface)
+  - [Schemable2C (interface)](#schemable2c-interface)
   - [WithRefine (interface)](#withrefine-interface)
   - [WithRefine1 (interface)](#withrefine1-interface)
+  - [WithRefine2C (interface)](#withrefine2c-interface)
   - [WithUnion (interface)](#withunion-interface)
   - [WithUnion1 (interface)](#withunion1-interface)
+  - [WithUnion2C (interface)](#withunion2c-interface)
   - [WithUnknownContainers (interface)](#withunknowncontainers-interface)
   - [WithUnknownContainers1 (interface)](#withunknowncontainers1-interface)
+  - [WithUnknownContainers2C (interface)](#withunknowncontainers2c-interface)
   - [memoize](#memoize)
 
 ---
@@ -95,6 +99,37 @@ export interface Schemable1<S extends URIS> {
 
 Added in v2.2.3
 
+## Schemable2C (interface)
+
+**Signature**
+
+```ts
+export interface Schemable2C<S extends URIS2, E> {
+  readonly URI: S
+  readonly literal: <A extends readonly [Literal, ...Array<Literal>]>(...values: A) => Kind2<S, E, A[number]>
+  readonly string: Kind2<S, E, string>
+  readonly number: Kind2<S, E, number>
+  readonly boolean: Kind2<S, E, boolean>
+  readonly nullable: <A>(or: Kind2<S, E, A>) => Kind2<S, E, null | A>
+  readonly type: <A>(properties: { [K in keyof A]: Kind2<S, E, A[K]> }) => Kind2<S, E, { [K in keyof A]: A[K] }>
+  readonly partial: <A>(
+    properties: { [K in keyof A]: Kind2<S, E, A[K]> }
+  ) => Kind2<S, E, Partial<{ [K in keyof A]: A[K] }>>
+  readonly record: <A>(codomain: Kind2<S, E, A>) => Kind2<S, E, Record<string, A>>
+  readonly array: <A>(items: Kind2<S, E, A>) => Kind2<S, E, Array<A>>
+  readonly tuple: <A extends ReadonlyArray<unknown>>(
+    ...components: { [K in keyof A]: Kind2<S, E, A[K]> }
+  ) => Kind2<S, E, A>
+  readonly intersect: <B>(right: Kind2<S, E, B>) => <A>(left: Kind2<S, E, A>) => Kind2<S, E, A & B>
+  readonly sum: <T extends string>(
+    tag: T
+  ) => <A>(members: { [K in keyof A]: Kind2<S, E, A[K]> }) => Kind2<S, E, A[keyof A]>
+  readonly lazy: <A>(id: string, f: () => Kind2<S, E, A>) => Kind2<S, E, A>
+}
+```
+
+Added in v2.2.8
+
 ## WithRefine (interface)
 
 **Signature**
@@ -118,6 +153,21 @@ export interface WithRefine1<S extends URIS> {
 ```
 
 Added in v2.2.3
+
+## WithRefine2C (interface)
+
+**Signature**
+
+```ts
+export interface WithRefine2C<S extends URIS2, E> {
+  readonly refine: <A, B extends A>(
+    refinement: (a: A) => a is B,
+    id: string
+  ) => (from: Kind2<S, E, A>) => Kind2<S, E, B>
+}
+```
+
+Added in v2.2.8
 
 ## WithUnion (interface)
 
@@ -147,6 +197,20 @@ export interface WithUnion1<S extends URIS> {
 
 Added in v2.2.3
 
+## WithUnion2C (interface)
+
+**Signature**
+
+```ts
+export interface WithUnion2C<S extends URIS2, E> {
+  readonly union: <A extends readonly [unknown, ...Array<unknown>]>(
+    ...members: { [K in keyof A]: Kind2<S, E, A[K]> }
+  ) => Kind2<S, E, A[number]>
+}
+```
+
+Added in v2.2.8
+
 ## WithUnknownContainers (interface)
 
 **Signature**
@@ -172,6 +236,19 @@ export interface WithUnknownContainers1<S extends URIS> {
 ```
 
 Added in v2.2.3
+
+## WithUnknownContainers2C (interface)
+
+**Signature**
+
+```ts
+export interface WithUnknownContainers2C<S extends URIS2, E> {
+  readonly UnknownArray: Kind2<S, E, Array<unknown>>
+  readonly UnknownRecord: Kind2<S, E, Record<string, unknown>>
+}
+```
+
+Added in v2.2.8
 
 ## memoize
 

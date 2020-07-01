@@ -204,7 +204,7 @@ Added in v2.2.3
 **Signature**
 
 ```ts
-export declare const make: <A>(decoder: UD.UnknownDecoder<A>, encoder: JE.JsonEncoder<A>) => JsonCodec<A>
+export declare const make: <A>(decoder: D.Decoder<unknown, A>, encoder: JE.JsonEncoder<A>) => JsonCodec<A>
 ```
 
 Added in v2.2.3

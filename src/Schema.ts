@@ -8,8 +8,8 @@
  *
  * @since 2.2.0
  */
-import { HKT, URIS, Kind } from 'fp-ts/lib/HKT'
-import { memoize, Schemable, Schemable1 } from './Schemable'
+import { HKT, Kind, Kind2, URIS, URIS2 } from 'fp-ts/lib/HKT'
+import { memoize, Schemable, Schemable1, Schemable2C } from './Schemable'
 
 // -------------------------------------------------------------------------------------
 // model
@@ -47,6 +47,7 @@ export type TypeOf<S> = S extends Schema<infer A> ? A : never
 /**
  * @since 2.2.3
  */
-export function interpreter<S extends URIS>(S: Schemable1<S>): <A>(schema: Schema<A>) => Kind<S, A> {
-  return (schema: any) => schema(S)
-}
+export const interpreter: {
+  <S extends URIS2>(S: Schemable2C<S, unknown>): <A>(schema: Schema<A>) => Kind2<S, unknown, A>
+  <S extends URIS>(S: Schemable1<S>): <A>(schema: Schema<A>) => Kind<S, A>
+} = (S: any) => (schema: any) => schema(S)

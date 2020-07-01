@@ -33,6 +33,16 @@
     - rename `schemableGuard` to `Schemable` (@gcanti)
   - `KleisliDecoder`
     - rename to `Decoder` (@gcanti)
+    - add `string`, `number`, `boolean`, `UnknownArray`, `UnknownRecord` primitives (@gcanti)
+    - rename `type` to `ktype`
+    - rename `partial` to `kpartial`
+    - rename `array` to `karray`
+    - rename `record` to `krecord`
+    - rename `tuple` to `ktuple`
+    - rename `sum` to `ksum`
+    - add `type`, `partial`, `array`, `record`, `tuple`, `sum` combinators (@gcanti)
+    - add `Functor2`, `Alt2`, `Category2`, `Schemable2c` instances (@gcanti)
+    - add `draw` function (@gcanti)
   - `KleisliTaskDecoder`
     - rename to `TaskDecoder` (@gcanti)
   - `JsonCodec`
@@ -41,6 +51,8 @@
   - `JsonEncoder`
     - rename `contravariantJsonCodec` to `Contravariant` (@gcanti)
     - rename `schemableJsonEncoder` to `Schemable` (@gcanti)
+  - `Schemable`
+    - add `Schemable2C`, `WithUnknownContainers2C`, `WithUnion2C`, `WithRefine2C` (@gcanti)
   - `TaskDecoder`
     - rename to `UnknownTaskDecoder` (@gcanti)
     - rename `functorTaskDecoder` to `Functor` (@gcanti)

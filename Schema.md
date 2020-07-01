@@ -33,11 +33,11 @@ export const Person = S.make((S) =>
   })
 )
 
-export const decoderPerson = S.interpreter(D.schemableDecoder)(Person)
-export const encoderPerson = S.interpreter(JE.schemableJsonEncoder)(Person)
-export const codecPerson = S.interpreter(JC.schemableJsonCodec)(Person)
-export const guardPerson = S.interpreter(G.schemableGuard)(Person)
-export const eqPerson = S.interpreter(Eq.schemableEq)(Person)
+export const decoderPerson = S.interpreter(D.Schemable)(Person)
+export const encoderPerson = S.interpreter(JE.Schemable)(Person)
+export const codecPerson = S.interpreter(JC.Schemable)(Person)
+export const guardPerson = S.interpreter(G.Schemable)(Person)
+export const eqPerson = S.interpreter(Eq.Schemable)(Person)
 ```
 
 # How to extend the built-in `Schema`
