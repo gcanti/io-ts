@@ -204,7 +204,7 @@ describe('UnknownTaskDecoder', () => {
       const decoder = _.type({
         a: _.string
       })
-      assert.deepStrictEqual(await decoder.decode(undefined)(), D.failure(undefined, 'object'))
+      assert.deepStrictEqual(await decoder.decode(undefined)(), D.failure(undefined, 'Record<string, unknown>'))
       assert.deepStrictEqual(
         await decoder.decode({ a: 1 })(),
         E.left(FS.of(DE.key('a', DE.required, FS.of(DE.leaf(1, 'string')))))

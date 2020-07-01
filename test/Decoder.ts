@@ -192,7 +192,7 @@ describe('Decoder', () => {
       const decoder = _.type({
         a: _.string
       })
-      assert.deepStrictEqual(decoder.decode(undefined), E.left(FS.of(DE.leaf(undefined, 'object'))))
+      assert.deepStrictEqual(decoder.decode(undefined), E.left(FS.of(DE.leaf(undefined, 'Record<string, unknown>'))))
       assert.deepStrictEqual(
         decoder.decode({ a: 1 }),
         E.left(FS.of(DE.key('a', DE.required, FS.of(DE.leaf(1, 'string')))))

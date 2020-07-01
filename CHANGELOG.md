@@ -26,10 +26,13 @@
     - rename `schemableEq` to `Schemable` (@gcanti)
   - `Guard`
     - rename `schemableGuard` to `Schemable` (@gcanti)
+  - `Kleisli`
+    - add `id` (@gcanti)
+    - drop `type` in favour of `props` (@gcanti)
   - `KleisliDecoder`
     - remove old `Decoder.ts` module and rename `KleisliDecoder` to `Decoder` (@gcanti)
     - add `string`, `number`, `boolean`, `UnknownArray`, `UnknownRecord` primitives (@gcanti)
-    - rename `type` to `ktype`
+    - drop `type` in favour of `props` (@gcanti)
     - rename `partial` to `kpartial`
     - rename `array` to `karray`
     - rename `record` to `krecord`
@@ -43,7 +46,7 @@
     - rename `fromKleisliDecoder` to `fromDecoder` (@gcanti)
     - add `fromGuard` (@gcanti)
     - add `string`, `number`, `boolean`, `UnknownArray`, `UnknownRecord` primitives (@gcanti)
-    - rename `type` to `ktype`
+    - drop `type` in favour of `props` (@gcanti)
     - rename `partial` to `kpartial`
     - rename `array` to `karray`
     - rename `record` to `krecord`
