@@ -175,10 +175,10 @@ export const record = <A>(codomain: Guard<A>): Guard<Record<string, A>> =>
  * @category combinators
  * @since 2.2.0
  */
-export const array = <A>(items: Guard<A>): Guard<Array<A>> =>
+export const array = <A>(item: Guard<A>): Guard<Array<A>> =>
   pipe(
     UnknownArray,
-    refine((us): us is Array<A> => us.every(items.is))
+    refine((us): us is Array<A> => us.every(item.is))
   )
 
 /**

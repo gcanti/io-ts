@@ -114,9 +114,9 @@ export function record<O, A>(codomain: Encoder<O, A>): Encoder<Record<string, O>
  * @category combinators
  * @since 2.2.3
  */
-export function array<O, A>(items: Encoder<O, A>): Encoder<Array<O>, Array<A>> {
+export function array<O, A>(item: Encoder<O, A>): Encoder<Array<O>, Array<A>> {
   return {
-    encode: (as) => as.map(items.encode)
+    encode: (as) => as.map(item.encode)
   }
 }
 

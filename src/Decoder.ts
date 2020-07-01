@@ -262,15 +262,15 @@ export const partial = <A>(
  * @category combinators
  * @since 2.2.7
  */
-export const karray = <I, A>(items: Decoder<I, A>): Decoder<Array<I>, Array<A>> =>
-  K.array(M)((i, e) => FS.of(DE.index(i, DE.optional, e)))(items)
+export const karray = <I, A>(item: Decoder<I, A>): Decoder<Array<I>, Array<A>> =>
+  K.array(M)((i, e) => FS.of(DE.index(i, DE.optional, e)))(item)
 
 /**
  * @category combinators
  * @since 2.2.8
  */
-export const array = <A>(items: Decoder<unknown, A>): Decoder<unknown, Array<A>> =>
-  pipe(UnknownArray, compose(karray(items)))
+export const array = <A>(item: Decoder<unknown, A>): Decoder<unknown, Array<A>> =>
+  pipe(UnknownArray, compose(karray(item)))
 
 /**
  * @category combinators

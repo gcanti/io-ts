@@ -66,8 +66,8 @@ export function record<A>(codomain: Arbitrary<A>): Arbitrary<Record<string, A>> 
   return fc.dictionary(string, codomain)
 }
 
-export function array<A>(items: Arbitrary<A>): Arbitrary<Array<A>> {
-  return fc.array(items)
+export function array<A>(item: Arbitrary<A>): Arbitrary<Array<A>> {
+  return fc.array(item)
 }
 
 export function tuple<A extends ReadonlyArray<unknown>>(

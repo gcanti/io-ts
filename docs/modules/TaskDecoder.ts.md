@@ -179,7 +179,7 @@ Added in v2.2.7
 **Signature**
 
 ```ts
-export declare const array: <A>(items: TaskDecoder<unknown, A>) => TaskDecoder<unknown, A[]>
+export declare const array: <A>(item: TaskDecoder<unknown, A>) => TaskDecoder<unknown, A[]>
 ```
 
 Added in v2.2.7
@@ -201,7 +201,7 @@ Added in v2.2.7
 **Signature**
 
 ```ts
-export declare const karray: <I, A>(items: TaskDecoder<I, A>) => TaskDecoder<I[], A[]>
+export declare const karray: <I, A>(item: TaskDecoder<I, A>) => TaskDecoder<I[], A[]>
 ```
 
 Added in v2.2.7

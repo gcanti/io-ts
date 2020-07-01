@@ -194,12 +194,10 @@ export function partial<M extends URIS2, E>(
  */
 export function array<M extends URIS2, E>(
   M: Applicative2C<M, E> & Bifunctor2<M>
-): (
-  onItemError: (index: number, e: E) => E
-) => <I, A>(items: Kleisli<M, I, E, A>) => Kleisli<M, Array<I>, E, Array<A>> {
+): (onItemError: (index: number, e: E) => E) => <I, A>(item: Kleisli<M, I, E, A>) => Kleisli<M, Array<I>, E, Array<A>> {
   const traverse = traverseArrayWithIndex(M)
-  return (onItemError) => (items) => ({
-    decode: (is) => traverse(is, (index, i) => M.mapLeft(items.decode(i), (e) => onItemError(index, e)))
+  return (onItemError) => (item) => ({
+    decode: (is) => traverse(is, (index, i) => M.mapLeft(item.decode(i), (e) => onItemError(index, e)))
   })
 }
 

@@ -57,7 +57,7 @@ Added in v2.2.0
 **Signature**
 
 ```ts
-export declare const array: <A>(items: Guard<A>) => Guard<A[]>
+export declare const array: <A>(item: Guard<A>) => Guard<A[]>
 ```
 
 Added in v2.2.0

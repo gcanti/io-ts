@@ -119,7 +119,7 @@ export const record = <A>(codomain: Type<A>): Type<Record<string, A>> => t.recor
  * @category combinators
  * @since 2.2.3
  */
-export const array = <A>(items: Type<A>): Type<Array<A>> => t.array(items)
+export const array = <A>(item: Type<A>): Type<Array<A>> => t.array(item)
 
 /**
  * @category combinators
