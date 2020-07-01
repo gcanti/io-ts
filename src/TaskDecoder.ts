@@ -275,17 +275,20 @@ export const array = <A>(item: TaskDecoder<unknown, A>): TaskDecoder<unknown, Ar
 
 /**
  * @category combinators
- * @since 2.2.7
+ * @since 2.2.8
  */
-export const values = <I, A>(codomain: TaskDecoder<I, A>): TaskDecoder<Record<string, I>, Record<string, A>> =>
-  K.values(M)((k, e) => FS.of(DE.key(k, DE.optional, e)))(codomain)
+export const values: <I, A>(
+  codomain: TaskDecoder<I, A>
+) => <H>(decoder: TaskDecoder<H, Record<string, I>>) => TaskDecoder<H, Record<string, A>> =
+  /*#__PURE__*/
+  K.values(M)((k, e) => FS.of(DE.key(k, DE.optional, e)))
 
 /**
  * @category combinators
  * @since 2.2.8
  */
 export const record = <A>(codomain: TaskDecoder<unknown, A>): TaskDecoder<unknown, Record<string, A>> =>
-  pipe(UnknownRecord, compose(values(codomain)))
+  pipe(UnknownRecord, values(codomain))
 
 /**
  * @category combinators
