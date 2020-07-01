@@ -278,15 +278,15 @@ export const array = <A>(item: Decoder<unknown, A>): Decoder<unknown, Array<A>> 
  * @category combinators
  * @since 2.2.7
  */
-export const krecord = <I, A>(codomain: Decoder<I, A>): Decoder<Record<string, I>, Record<string, A>> =>
-  K.record(M)((k, e) => FS.of(DE.key(k, DE.optional, e)))(codomain)
+export const values = <I, A>(codomain: Decoder<I, A>): Decoder<Record<string, I>, Record<string, A>> =>
+  K.values(M)((k, e) => FS.of(DE.key(k, DE.optional, e)))(codomain)
 
 /**
  * @category combinators
  * @since 2.2.8
  */
 export const record = <A>(codomain: Decoder<unknown, A>): Decoder<unknown, Record<string, A>> =>
-  pipe(UnknownRecord, compose(krecord(codomain)))
+  pipe(UnknownRecord, compose(values(codomain)))
 
 /**
  * @category combinators

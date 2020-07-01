@@ -36,7 +36,6 @@ Added in v2.2.7
   - [array](#array)
   - [intersect](#intersect)
   - [items](#items)
-  - [krecord](#krecord)
   - [ksum](#ksum)
   - [ktuple](#ktuple)
   - [lazy](#lazy)
@@ -52,6 +51,7 @@ Added in v2.2.7
   - [tuple](#tuple)
   - [type](#type)
   - [union](#union)
+  - [values](#values)
 - [constructors](#constructors)
   - [fromDecoder](#fromdecoder)
   - [fromGuard](#fromguard)
@@ -202,16 +202,6 @@ Added in v2.2.7
 
 ```ts
 export declare const items: <I, A>(item: TaskDecoder<I, A>) => TaskDecoder<I[], A[]>
-```
-
-Added in v2.2.7
-
-## krecord
-
-**Signature**
-
-```ts
-export declare const krecord: <I, A>(codomain: TaskDecoder<I, A>) => TaskDecoder<Record<string, I>, Record<string, A>>
 ```
 
 Added in v2.2.7
@@ -389,6 +379,16 @@ Added in v2.2.8
 export declare const union: <MS extends readonly [TaskDecoder<any, any>, ...TaskDecoder<any, any>[]]>(
   ...members: MS
 ) => TaskDecoder<K.InputOf<'TaskEither', MS[keyof MS]>, K.TypeOf<'TaskEither', MS[keyof MS]>>
+```
+
+Added in v2.2.7
+
+## values
+
+**Signature**
+
+```ts
+export declare const values: <I, A>(codomain: TaskDecoder<I, A>) => TaskDecoder<Record<string, I>, Record<string, A>>
 ```
 
 Added in v2.2.7

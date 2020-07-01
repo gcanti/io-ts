@@ -31,13 +31,14 @@
     - drop `type` in favour of `props` (@gcanti)
     - drop `partial` in favour of `partialProps` (@gcanti)
     - rename `array` to `items` (@gcanti)
+    - rename `record` to `values` (@gcanti)
   - `KleisliDecoder`
     - remove old `Decoder.ts` module and rename `KleisliDecoder` to `Decoder` (@gcanti)
     - add `string`, `number`, `boolean`, `UnknownArray`, `UnknownRecord` primitives (@gcanti)
     - drop `type` in favour of `props` (@gcanti)
     - drop `partial` in favour of `partialProps` (@gcanti)
     - rename `array` to `items`
-    - rename `record` to `krecord`
+    - rename `record` to `values`
     - rename `tuple` to `ktuple`
     - rename `sum` to `ksum`
     - add `type`, `partial`, `array`, `record`, `tuple`, `sum` combinators (@gcanti)
@@ -51,7 +52,7 @@
     - drop `type` in favour of `props` (@gcanti)
     - drop `partial` in favour of `partialProps` (@gcanti)
     - rename `array` to `items`
-    - rename `record` to `krecord`
+    - rename `record` to `values`
     - rename `tuple` to `ktuple`
     - rename `sum` to `ksum`
     - add `type`, `partial`, `array`, `record`, `tuple`, `sum` combinators (@gcanti)

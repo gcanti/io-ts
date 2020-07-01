@@ -32,11 +32,11 @@ Added in v2.2.7
   - [parse](#parse)
   - [partialProps](#partialprops)
   - [props](#props)
-  - [record](#record)
   - [refine](#refine)
   - [sum](#sum)
   - [tuple](#tuple)
   - [union](#union)
+  - [values](#values)
 - [constructors](#constructors)
   - [fromRefinement](#fromrefinement)
   - [literal](#literal)
@@ -200,20 +200,6 @@ export declare function props<M extends URIS2, E>(
 
 Added in v2.2.8
 
-## record
-
-**Signature**
-
-```ts
-export declare function record<M extends URIS2, E>(
-  M: Applicative2C<M, E> & Bifunctor2<M>
-): (
-  onKeyError: (key: string, e: E) => E
-) => <I, A>(codomain: Kleisli<M, I, E, A>) => Kleisli<M, Record<string, I>, E, Record<string, A>>
-```
-
-Added in v2.2.7
-
 ## refine
 
 **Signature**
@@ -275,6 +261,20 @@ export declare function union<M extends URIS2, E>(
 ) => <MS extends readonly [Kleisli<M, any, E, any>, ...Array<Kleisli<M, any, E, any>>]>(
   ...members: MS
 ) => Kleisli<M, InputOf<M, MS[keyof MS]>, E, TypeOf<M, MS[keyof MS]>>
+```
+
+Added in v2.2.7
+
+## values
+
+**Signature**
+
+```ts
+export declare function values<M extends URIS2, E>(
+  M: Applicative2C<M, E> & Bifunctor2<M>
+): (
+  onKeyError: (key: string, e: E) => E
+) => <I, A>(codomain: Kleisli<M, I, E, A>) => Kleisli<M, Record<string, I>, E, Record<string, A>>
 ```
 
 Added in v2.2.7
