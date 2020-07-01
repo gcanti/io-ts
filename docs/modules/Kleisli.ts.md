@@ -21,10 +21,10 @@ Added in v2.2.7
 
 - [combinators](#combinators)
   - [alt](#alt)
-  - [array](#array)
   - [compose](#compose)
   - [id](#id)
   - [intersect](#intersect)
+  - [items](#items)
   - [lazy](#lazy)
   - [map](#map)
   - [mapLeftWithInput](#mapleftwithinput)
@@ -62,18 +62,6 @@ export declare function alt<F extends URIS2, E>(
 
 Added in v2.2.7
 
-## array
-
-**Signature**
-
-```ts
-export declare function array<M extends URIS2, E>(
-  M: Applicative2C<M, E> & Bifunctor2<M>
-): (onItemError: (index: number, e: E) => E) => <I, A>(item: Kleisli<M, I, E, A>) => Kleisli<M, Array<I>, E, Array<A>>
-```
-
-Added in v2.2.7
-
 ## compose
 
 **Signature**
@@ -104,6 +92,18 @@ Added in v2.2.8
 export declare function intersect<M extends URIS2, E>(
   M: Apply2C<M, E>
 ): <IB, B>(right: Kleisli<M, IB, E, B>) => <IA, A>(left: Kleisli<M, IA, E, A>) => Kleisli<M, IA & IB, E, A & B>
+```
+
+Added in v2.2.7
+
+## items
+
+**Signature**
+
+```ts
+export declare function items<M extends URIS2, E>(
+  M: Applicative2C<M, E> & Bifunctor2<M>
+): (onItemError: (index: number, e: E) => E) => <I, A>(item: Kleisli<M, I, E, A>) => Kleisli<M, Array<I>, E, Array<A>>
 ```
 
 Added in v2.2.7

@@ -200,7 +200,7 @@ export function partialProps<M extends URIS2, E>(
  * @category combinators
  * @since 2.2.7
  */
-export function array<M extends URIS2, E>(
+export function items<M extends URIS2, E>(
   M: Applicative2C<M, E> & Bifunctor2<M>
 ): (onItemError: (index: number, e: E) => E) => <I, A>(item: Kleisli<M, I, E, A>) => Kleisli<M, Array<I>, E, Array<A>> {
   const traverse = traverseArrayWithIndex(M)
