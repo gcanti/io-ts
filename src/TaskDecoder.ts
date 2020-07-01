@@ -293,20 +293,21 @@ export const record = <A>(codomain: TaskDecoder<unknown, A>): TaskDecoder<unknow
 
 /**
  * @category combinators
- * @since 2.2.7
+ * @since 2.2.8
  */
-export const ktuple = <C extends ReadonlyArray<TaskDecoder<any, any>>>(
-  ...components: C
-): TaskDecoder<{ [K in keyof C]: InputOf<C[K]> }, { [K in keyof C]: TypeOf<C[K]> }> =>
-  K.tuple(M)((i, e) => FS.of(DE.index(i, DE.required, e)))(...components)
+export const components: <I, A extends ReadonlyArray<unknown>>(
+  ...list: { [K in keyof A]: TaskDecoder<I, A[K]> }
+) => <H>(decoder: TaskDecoder<H, Array<I>>) => TaskDecoder<H, A> =
+  /*#__PURE__*/
+  K.components(M)((i, e) => FS.of(DE.index(i, DE.required, e))) as any
 
 /**
  * @category combinators
  * @since 2.2.8
  */
 export const tuple = <A extends ReadonlyArray<unknown>>(
-  ...components: { [K in keyof A]: TaskDecoder<unknown, A[K]> }
-): TaskDecoder<unknown, A> => pipe(UnknownArray as any, compose(ktuple(...components))) as any
+  ...list: { [K in keyof A]: TaskDecoder<unknown, A[K]> }
+): TaskDecoder<unknown, A> => pipe(UnknownArray, components(...(list as any)))
 
 /**
  * @category combinators

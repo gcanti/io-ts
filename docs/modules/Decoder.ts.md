@@ -34,10 +34,10 @@ Added in v2.2.7
   - [compose](#compose)
 - [combinators](#combinators)
   - [array](#array)
+  - [components](#components)
   - [intersect](#intersect)
   - [items](#items)
   - [ksum](#ksum)
-  - [ktuple](#ktuple)
   - [lazy](#lazy)
   - [mapLeftWithInput](#mapleftwithinput)
   - [nullable](#nullable)
@@ -183,6 +183,18 @@ export declare const array: <A>(item: Decoder<unknown, A>) => Decoder<unknown, A
 
 Added in v2.2.8
 
+## components
+
+**Signature**
+
+```ts
+export declare const components: <I, A extends readonly unknown[]>(
+  ...list: { [K in keyof A]: Decoder<I, A[K]> }
+) => <H>(decoder: Decoder<H, I[]>) => Decoder<H, A>
+```
+
+Added in v2.2.8
+
 ## intersect
 
 **Signature**
@@ -215,18 +227,6 @@ export declare const ksum: <T extends string>(
 ) => <MS extends Record<string, Decoder<any, any>>>(
   members: MS
 ) => Decoder<K.InputOf<'Either', MS[keyof MS]>, K.TypeOf<'Either', MS[keyof MS]>>
-```
-
-Added in v2.2.7
-
-## ktuple
-
-**Signature**
-
-```ts
-export declare const ktuple: <C extends readonly Decoder<any, any>[]>(
-  ...components: C
-) => Decoder<{ [K in keyof C]: K.InputOf<'Either', C[K]> }, { [K in keyof C]: K.TypeOf<'Either', C[K]> }>
 ```
 
 Added in v2.2.7
@@ -352,7 +352,7 @@ Added in v2.2.8
 
 ```ts
 export declare const tuple: <A extends readonly unknown[]>(
-  ...components: { [K in keyof A]: Decoder<unknown, A[K]> }
+  ...list: { [K in keyof A]: Decoder<unknown, A[K]> }
 ) => Decoder<unknown, A>
 ```
 

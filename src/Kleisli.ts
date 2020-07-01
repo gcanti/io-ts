@@ -228,19 +228,23 @@ export function values<M extends URIS2, E>(
  * @category combinators
  * @since 2.2.7
  */
-export function tuple<M extends URIS2, E>(
-  M: Applicative2C<M, E> & Bifunctor2<M>
+export function components<M extends URIS2, E>(
+  M: Monad2C<M, E> & Bifunctor2<M>
 ): (
   onIndexError: (index: number, e: E) => E
-) => <C extends ReadonlyArray<Kleisli<M, any, E, any>>>(
-  ...components: C
-) => Kleisli<M, { [K in keyof C]: InputOf<M, C[K]> }, E, { [K in keyof C]: TypeOf<M, C[K]> }> {
+) => <I, A extends ReadonlyArray<unknown>>(
+  ...list: { [K in keyof A]: Kleisli<M, I, E, A[K]> }
+) => <H>(decoder: Kleisli<M, H, E, Array<I>>) => Kleisli<M, H, E, A> {
   const traverse = traverseArrayWithIndex(M)
-  return (onIndexError) => (...components) => ({
-    decode: (is) =>
-      traverse((components as unknown) as Array<Kleisli<M, unknown, E, unknown>>, (index, decoder) =>
-        M.mapLeft(decoder.decode(is[index]), (e) => onIndexError(index, e))
-      ) as any
+  return (onIndexError) => (...components) => (decoder) => ({
+    decode: (h) =>
+      M.chain(
+        decoder.decode(h),
+        (is) =>
+          traverse((components as unknown) as Array<Kleisli<M, unknown, E, unknown>>, (index, decoder) =>
+            M.mapLeft(decoder.decode(is[index]), (e) => onIndexError(index, e))
+          ) as any
+      )
   })
 }
 

@@ -21,6 +21,7 @@ Added in v2.2.7
 
 - [combinators](#combinators)
   - [alt](#alt)
+  - [components](#components)
   - [compose](#compose)
   - [id](#id)
   - [intersect](#intersect)
@@ -34,7 +35,6 @@ Added in v2.2.7
   - [props](#props)
   - [refine](#refine)
   - [sum](#sum)
-  - [tuple](#tuple)
   - [union](#union)
   - [values](#values)
 - [constructors](#constructors)
@@ -58,6 +58,22 @@ Added in v2.2.7
 export declare function alt<F extends URIS2, E>(
   A: Alt2C<F, E>
 ): <I, A>(that: Lazy<Kleisli<F, I, E, A>>) => (me: Kleisli<F, I, E, A>) => Kleisli<F, I, E, A>
+```
+
+Added in v2.2.7
+
+## components
+
+**Signature**
+
+```ts
+export declare function components<M extends URIS2, E>(
+  M: Monad2C<M, E> & Bifunctor2<M>
+): (
+  onIndexError: (index: number, e: E) => E
+) => <I, A extends ReadonlyArray<unknown>>(
+  ...list: { [K in keyof A]: Kleisli<M, I, E, A[K]> }
+) => <H>(decoder: Kleisli<M, H, E, Array<I>>) => Kleisli<M, H, E, A>
 ```
 
 Added in v2.2.7
@@ -229,22 +245,6 @@ export declare function sum<M extends URIS2, E>(
 ) => <MS extends Record<string, Kleisli<M, any, E, any>>>(
   members: MS
 ) => Kleisli<M, InputOf<M, MS[keyof MS]>, E, TypeOf<M, MS[keyof MS]>>
-```
-
-Added in v2.2.7
-
-## tuple
-
-**Signature**
-
-```ts
-export declare function tuple<M extends URIS2, E>(
-  M: Applicative2C<M, E> & Bifunctor2<M>
-): (
-  onIndexError: (index: number, e: E) => E
-) => <C extends ReadonlyArray<Kleisli<M, any, E, any>>>(
-  ...components: C
-) => Kleisli<M, { [K in keyof C]: InputOf<M, C[K]> }, E, { [K in keyof C]: TypeOf<M, C[K]> }>
 ```
 
 Added in v2.2.7
