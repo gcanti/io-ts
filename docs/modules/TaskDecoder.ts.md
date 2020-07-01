@@ -387,10 +387,12 @@ Added in v2.2.7
 **Signature**
 
 ```ts
-export declare const values: <I, A>(codomain: TaskDecoder<I, A>) => TaskDecoder<Record<string, I>, Record<string, A>>
+export declare const values: <I, A>(
+  codomain: TaskDecoder<I, A>
+) => <H>(decoder: TaskDecoder<H, Record<string, I>>) => TaskDecoder<H, Record<string, A>>
 ```
 
-Added in v2.2.7
+Added in v2.2.8
 
 ## variants
 

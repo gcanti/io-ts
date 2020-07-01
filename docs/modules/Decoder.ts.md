@@ -386,10 +386,12 @@ Added in v2.2.7
 **Signature**
 
 ```ts
-export declare const values: <I, A>(codomain: Decoder<I, A>) => Decoder<Record<string, I>, Record<string, A>>
+export declare const values: <I, A>(
+  codomain: Decoder<I, A>
+) => <H>(decoder: Decoder<H, Record<string, I>>) => Decoder<H, Record<string, A>>
 ```
 
-Added in v2.2.7
+Added in v2.2.8
 
 ## variants
 

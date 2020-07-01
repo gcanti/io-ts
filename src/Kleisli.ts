@@ -219,13 +219,18 @@ export function items<M extends URIS2, E>(
  * @since 2.2.7
  */
 export function values<M extends URIS2, E>(
-  M: Applicative2C<M, E> & Bifunctor2<M>
+  M: Monad2C<M, E> & Bifunctor2<M>
 ): (
   onKeyError: (key: string, e: E) => E
-) => <I, A>(codomain: Kleisli<M, I, E, A>) => Kleisli<M, Record<string, I>, E, Record<string, A>> {
+) => <I, A>(
+  codomain: Kleisli<M, I, E, A>
+) => <H>(decoder: Kleisli<M, H, E, Record<string, I>>) => Kleisli<M, H, E, Record<string, A>> {
   const traverse = traverseRecordWithIndex(M)
-  return (onKeyError) => (codomain) => ({
-    decode: (ri) => traverse(ri, (key, i) => M.mapLeft(codomain.decode(i), (e) => onKeyError(key, e)))
+  return (onKeyError) => (codomain) => (decoder) => ({
+    decode: (h) =>
+      M.chain(decoder.decode(h), (ri) =>
+        traverse(ri, (key, i) => M.mapLeft(codomain.decode(i), (e) => onKeyError(key, e)))
+      )
   })
 }
 

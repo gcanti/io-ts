@@ -255,10 +255,12 @@ Added in v2.2.7
 
 ```ts
 export declare function values<M extends URIS2, E>(
-  M: Applicative2C<M, E> & Bifunctor2<M>
+  M: Monad2C<M, E> & Bifunctor2<M>
 ): (
   onKeyError: (key: string, e: E) => E
-) => <I, A>(codomain: Kleisli<M, I, E, A>) => Kleisli<M, Record<string, I>, E, Record<string, A>>
+) => <I, A>(
+  codomain: Kleisli<M, I, E, A>
+) => <H>(decoder: Kleisli<M, H, E, Record<string, I>>) => Kleisli<M, H, E, Record<string, A>>
 ```
 
 Added in v2.2.7
