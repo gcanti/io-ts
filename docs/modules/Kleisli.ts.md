@@ -118,8 +118,10 @@ Added in v2.2.7
 
 ```ts
 export declare function items<M extends URIS2, E>(
-  M: Applicative2C<M, E> & Bifunctor2<M>
-): (onItemError: (index: number, e: E) => E) => <I, A>(item: Kleisli<M, I, E, A>) => Kleisli<M, Array<I>, E, Array<A>>
+  M: Monad2C<M, E> & Bifunctor2<M>
+): (
+  onItemError: (index: number, e: E) => E
+) => <I, A>(item: Kleisli<M, I, E, A>) => <H>(decoder: Kleisli<M, H, E, Array<I>>) => Kleisli<M, H, E, Array<A>>
 ```
 
 Added in v2.2.7

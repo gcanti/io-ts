@@ -213,10 +213,10 @@ Added in v2.2.7
 **Signature**
 
 ```ts
-export declare const items: <I, A>(item: Decoder<I, A>) => Decoder<I[], A[]>
+export declare const items: <I, A>(item: Decoder<I, A>) => <H>(decoder: Decoder<H, I[]>) => Decoder<H, A[]>
 ```
 
-Added in v2.2.7
+Added in v2.2.8
 
 ## lazy
 
@@ -247,7 +247,7 @@ Added in v2.2.7
 ```ts
 export declare const members: <I, A extends readonly [unknown, ...unknown[]]>(
   ...list: { [K in keyof A]: Decoder<I, A[K]> }
-) => <H>(decoder: Decoder<H, I>) => Decoder<I, A[number]>
+) => <H>(decoder: Decoder<H, I>) => Decoder<H, A[number]>
 ```
 
 Added in v2.2.8
