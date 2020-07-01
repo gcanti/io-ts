@@ -224,11 +224,11 @@ export const nullable: <I, A>(or: TaskDecoder<I, A>) => TaskDecoder<null | I, nu
  * @category combinators
  * @since 2.2.8
  */
-export const props: <I, A>(
+export const composeType: <I, A>(
   properties: { [K in keyof A]: TaskDecoder<I, A[K]> }
 ) => <H>(decoder: TaskDecoder<H, Record<string, I>>) => TaskDecoder<H, { [K in keyof A]: A[K] }> =
   /*#__PURE__*/
-  K.props(M)((k, e) => FS.of(DE.key(k, DE.required, e)))
+  K.composeType(M)((k, e) => FS.of(DE.key(k, DE.required, e)))
 
 /**
  * @category combinators
@@ -236,17 +236,17 @@ export const props: <I, A>(
  */
 export const type = <A>(
   properties: { [K in keyof A]: TaskDecoder<unknown, A[K]> }
-): TaskDecoder<unknown, { [K in keyof A]: A[K] }> => pipe(UnknownRecord, props(properties))
+): TaskDecoder<unknown, { [K in keyof A]: A[K] }> => pipe(UnknownRecord, composeType(properties))
 
 /**
  * @category combinators
  * @since 2.2.8
  */
-export const partialProps: <I, A>(
+export const composePartial: <I, A>(
   properties: { [K in keyof A]: TaskDecoder<I, A[K]> }
 ) => <H>(decoder: TaskDecoder<H, Record<string, I>>) => TaskDecoder<H, Partial<{ [K in keyof A]: A[K] }>> =
   /*#__PURE__*/
-  K.partialProps(M)((k, e) => FS.of(DE.key(k, DE.optional, e)))
+  K.composePartial(M)((k, e) => FS.of(DE.key(k, DE.optional, e)))
 
 /**
  * @category combinators
@@ -254,77 +254,77 @@ export const partialProps: <I, A>(
  */
 export const partial = <A>(
   properties: { [K in keyof A]: TaskDecoder<unknown, A[K]> }
-): TaskDecoder<unknown, Partial<{ [K in keyof A]: A[K] }>> => pipe(UnknownRecord, partialProps(properties))
+): TaskDecoder<unknown, Partial<{ [K in keyof A]: A[K] }>> => pipe(UnknownRecord, composePartial(properties))
 
 /**
  * @category combinators
  * @since 2.2.8
  */
-export const items: <I, A>(
+export const composeArray: <I, A>(
   item: TaskDecoder<I, A>
 ) => <H>(decoder: TaskDecoder<H, Array<I>>) => TaskDecoder<H, Array<A>> =
   /*#__PURE__*/
-  K.items(M)((i, e) => FS.of(DE.index(i, DE.optional, e)))
+  K.composeArray(M)((i, e) => FS.of(DE.index(i, DE.optional, e)))
 
 /**
  * @category combinators
  * @since 2.2.7
  */
 export const array = <A>(item: TaskDecoder<unknown, A>): TaskDecoder<unknown, Array<A>> =>
-  pipe(UnknownArray, items(item))
+  pipe(UnknownArray, composeArray(item))
 
 /**
  * @category combinators
  * @since 2.2.8
  */
-export const values: <I, A>(
+export const composeRecord: <I, A>(
   codomain: TaskDecoder<I, A>
 ) => <H>(decoder: TaskDecoder<H, Record<string, I>>) => TaskDecoder<H, Record<string, A>> =
   /*#__PURE__*/
-  K.values(M)((k, e) => FS.of(DE.key(k, DE.optional, e)))
+  K.composeRecord(M)((k, e) => FS.of(DE.key(k, DE.optional, e)))
 
 /**
  * @category combinators
  * @since 2.2.8
  */
 export const record = <A>(codomain: TaskDecoder<unknown, A>): TaskDecoder<unknown, Record<string, A>> =>
-  pipe(UnknownRecord, values(codomain))
+  pipe(UnknownRecord, composeRecord(codomain))
 
 /**
  * @category combinators
  * @since 2.2.8
  */
-export const components: <I, A extends ReadonlyArray<unknown>>(
-  ...list: { [K in keyof A]: TaskDecoder<I, A[K]> }
+export const composeTuple: <I, A extends ReadonlyArray<unknown>>(
+  ...components: { [K in keyof A]: TaskDecoder<I, A[K]> }
 ) => <H>(decoder: TaskDecoder<H, Array<I>>) => TaskDecoder<H, A> =
   /*#__PURE__*/
-  K.components(M)((i, e) => FS.of(DE.index(i, DE.required, e))) as any
+  K.composeTuple(M)((i, e) => FS.of(DE.index(i, DE.required, e))) as any
 
 /**
  * @category combinators
  * @since 2.2.8
  */
 export const tuple = <A extends ReadonlyArray<unknown>>(
-  ...list: { [K in keyof A]: TaskDecoder<unknown, A[K]> }
-): TaskDecoder<unknown, A> => pipe(UnknownArray, components(...(list as any)))
+  ...components: { [K in keyof A]: TaskDecoder<unknown, A[K]> }
+): TaskDecoder<unknown, A> => pipe(UnknownArray, composeTuple(...(components as any)))
 
 /**
  * @category combinators
  * @since 2.2.8
  */
-export const members: <I, A extends readonly [unknown, ...Array<unknown>]>(
-  ...list: { [K in keyof A]: TaskDecoder<I, A[K]> }
+export const composeUnion: <I, A extends readonly [unknown, ...Array<unknown>]>(
+  ...members: { [K in keyof A]: TaskDecoder<I, A[K]> }
 ) => <H>(decoder: TaskDecoder<H, I>) => TaskDecoder<H, A[number]> =
   /*#__PURE__*/
-  K.members(M)((i, e) => FS.of(DE.member(i, e))) as any
+  K.composeUnion(M)((i, e) => FS.of(DE.member(i, e))) as any
 
 /**
  * @category combinators
  * @since 2.2.7
  */
 export const union = <A extends readonly [unknown, ...Array<unknown>]>(
-  ...list: { [K in keyof A]: TaskDecoder<unknown, A[K]> }
-): TaskDecoder<unknown, A[number]> => pipe(id(), members(...(list as any)))
+  ...members: { [K in keyof A]: TaskDecoder<unknown, A[K]> }
+): TaskDecoder<unknown, A[number]> => pipe(id(), composeUnion(...(members as any)))
 
 /**
  * @category combinators
@@ -340,11 +340,13 @@ export const intersect: <IB, B>(
  * @category combinators
  * @since 2.2.8
  */
-export const variants: <T extends string>(
+export const composeSum: <T extends string>(
   tag: T
 ) => <I, A>(
   members: { [K in keyof A]: TaskDecoder<I, A[K]> }
-) => <H>(decoder: TaskDecoder<H, Record<string, I>>) => TaskDecoder<H, A[keyof A]> = K.variants(M)((tag, value, keys) =>
+) => <H>(decoder: TaskDecoder<H, Record<string, I>>) => TaskDecoder<H, A[keyof A]> = K.composeSum(
+  M
+)((tag, value, keys) =>
   FS.of(
     DE.key(tag, DE.required, error(value, keys.length === 0 ? 'never' : keys.map((k) => JSON.stringify(k)).join(' | ')))
   )
@@ -356,7 +358,7 @@ export const variants: <T extends string>(
  */
 export const sum = <T extends string>(tag: T) => <A>(
   members: { [K in keyof A]: TaskDecoder<unknown, A[K]> }
-): TaskDecoder<unknown, A[keyof A]> => pipe(UnknownRecord, variants(tag)(members))
+): TaskDecoder<unknown, A[keyof A]> => pipe(UnknownRecord, composeSum(tag)(members))
 
 /**
  * @category combinators

@@ -28,23 +28,23 @@
     - rename `schemableGuard` to `Schemable` (@gcanti)
   - `Kleisli`
     - add `id` (@gcanti)
-    - drop `type` in favour of `props` (@gcanti)
-    - drop `partial` in favour of `partialProps` (@gcanti)
-    - drop `array` in favour of `items` (@gcanti)
-    - drop `record` in favour of `values` (@gcanti)
-    - drop `tuple` in favour of `components` (@gcanti)
-    - drop `union` in favour of `members` (@gcanti)
-    - drop `sum` in favour of `variants` (@gcanti)
+    - drop `type` in favour of `composeType` (@gcanti)
+    - drop `partial` in favour of `composePartial` (@gcanti)
+    - drop `array` in favour of `composeArray` (@gcanti)
+    - drop `record` in favour of `composeRecord` (@gcanti)
+    - drop `tuple` in favour of `composeTuple` (@gcanti)
+    - drop `union` in favour of `composeUnion` (@gcanti)
+    - drop `sum` in favour of `composeSum` (@gcanti)
   - `KleisliDecoder`
     - remove old `Decoder.ts` module and rename `KleisliDecoder` to `Decoder` (@gcanti)
     - add `string`, `number`, `boolean`, `UnknownArray`, `UnknownRecord` primitives (@gcanti)
-    - drop `type` in favour of `props` (@gcanti)
-    - drop `partial` in favour of `partialProps` (@gcanti)
-    - rename `array` to `items`
-    - rename `record` to `values`
-    - rename `tuple` to `components`
-    - rename `union` to `members`
-    - rename `sum` to `variants`
+    - drop `type` in favour of `composeType` (@gcanti)
+    - drop `partial` in favour of `composePartial` (@gcanti)
+    - rename `array` to `composeArray`
+    - rename `record` to `composeRecord`
+    - rename `tuple` to `composeTuple`
+    - rename `union` to `composeUnion`
+    - rename `sum` to `composeSum`
     - add `type`, `partial`, `array`, `record`, `tuple`, `union`, `sum` combinators (@gcanti)
     - add `Functor2`, `Alt2`, `Category2`, `Schemable2c` instances (@gcanti)
     - add `draw` function (@gcanti)
@@ -53,13 +53,13 @@
     - rename `fromKleisliDecoder` to `fromDecoder` (@gcanti)
     - add `fromGuard` (@gcanti)
     - add `string`, `number`, `boolean`, `UnknownArray`, `UnknownRecord` primitives (@gcanti)
-    - drop `type` in favour of `props` (@gcanti)
-    - drop `partial` in favour of `partialProps` (@gcanti)
-    - rename `array` to `items`
-    - rename `record` to `values`
-    - rename `tuple` to `components`
-    - rename `union` to `members`
-    - rename `sum` to `variants`
+    - drop `type` in favour of `composeType` (@gcanti)
+    - drop `partial` in favour of `composePartial` (@gcanti)
+    - rename `array` to `composeArray`
+    - rename `record` to `composeRecord`
+    - rename `tuple` to `composeTuple`
+    - rename `union` to `composeUnion`
+    - rename `sum` to `composeSum`
     - add `type`, `partial`, `array`, `record`, `tuple`, `union`, `sum` combinators (@gcanti)
     - add `Functor2`, `Alt2`, `Category2`, `Schemable2c` instances (@gcanti)
     - add `draw` function (@gcanti)

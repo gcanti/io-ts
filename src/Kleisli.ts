@@ -135,7 +135,7 @@ export type InputOf<M extends URIS2, KD> = KD extends Kleisli<M, infer I, any, a
  * @category combinators
  * @since 2.2.8
  */
-export function props<M extends URIS2, E>(
+export function composeType<M extends URIS2, E>(
   M: Monad2C<M, E> & Bifunctor2<M>
 ): (
   onPropertyError: (key: string, e: E) => E
@@ -159,7 +159,7 @@ export function props<M extends URIS2, E>(
  * @category combinators
  * @since 2.2.8
  */
-export function partialProps<M extends URIS2, E>(
+export function composePartial<M extends URIS2, E>(
   M: Monad2C<M, E> & Bifunctor2<M>
 ): (
   onPropertyError: (key: string, e: E) => E
@@ -200,7 +200,7 @@ export function partialProps<M extends URIS2, E>(
  * @category combinators
  * @since 2.2.7
  */
-export function items<M extends URIS2, E>(
+export function composeArray<M extends URIS2, E>(
   M: Monad2C<M, E> & Bifunctor2<M>
 ): (
   onItemError: (index: number, e: E) => E
@@ -218,7 +218,7 @@ export function items<M extends URIS2, E>(
  * @category combinators
  * @since 2.2.7
  */
-export function values<M extends URIS2, E>(
+export function composeRecord<M extends URIS2, E>(
   M: Monad2C<M, E> & Bifunctor2<M>
 ): (
   onKeyError: (key: string, e: E) => E
@@ -238,12 +238,12 @@ export function values<M extends URIS2, E>(
  * @category combinators
  * @since 2.2.7
  */
-export function components<M extends URIS2, E>(
+export function composeTuple<M extends URIS2, E>(
   M: Monad2C<M, E> & Bifunctor2<M>
 ): (
   onIndexError: (index: number, e: E) => E
 ) => <I, A extends ReadonlyArray<unknown>>(
-  ...list: { [K in keyof A]: Kleisli<M, I, E, A[K]> }
+  ...components: { [K in keyof A]: Kleisli<M, I, E, A[K]> }
 ) => <H>(decoder: Kleisli<M, H, E, Array<I>>) => Kleisli<M, H, E, A> {
   const traverse = traverseArrayWithIndex(M)
   return (onIndexError) => (...components) => (decoder) => ({
@@ -262,7 +262,7 @@ export function components<M extends URIS2, E>(
  * @category combinators
  * @since 2.2.8
  */
-export function members<M extends URIS2, E>(
+export function composeUnion<M extends URIS2, E>(
   M: Monad2C<M, E> & Alt2C<M, E> & Bifunctor2<M>
 ): (
   onMemberError: (index: number, e: E) => E
@@ -303,7 +303,7 @@ export function intersect<M extends URIS2, E>(
  * @category combinators
  * @since 2.2.8
  */
-export function variants<M extends URIS2, E>(
+export function composeSum<M extends URIS2, E>(
   M: MonadThrow2C<M, E>
 ): (
   onTagError: (tag: string, value: unknown, tags: ReadonlyArray<string>) => E

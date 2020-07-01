@@ -21,22 +21,22 @@ Added in v2.2.7
 
 - [combinators](#combinators)
   - [alt](#alt)
-  - [components](#components)
   - [compose](#compose)
+  - [composeArray](#composearray)
+  - [composePartial](#composepartial)
+  - [composeRecord](#composerecord)
+  - [composeSum](#composesum)
+  - [composeTuple](#composetuple)
+  - [composeType](#composetype)
+  - [composeUnion](#composeunion)
   - [id](#id)
   - [intersect](#intersect)
-  - [items](#items)
   - [lazy](#lazy)
   - [map](#map)
   - [mapLeftWithInput](#mapleftwithinput)
-  - [members](#members)
   - [nullable](#nullable)
   - [parse](#parse)
-  - [partialProps](#partialprops)
-  - [props](#props)
   - [refine](#refine)
-  - [values](#values)
-  - [variants](#variants)
 - [constructors](#constructors)
   - [fromRefinement](#fromrefinement)
   - [literal](#literal)
@@ -62,22 +62,6 @@ export declare function alt<F extends URIS2, E>(
 
 Added in v2.2.7
 
-## components
-
-**Signature**
-
-```ts
-export declare function components<M extends URIS2, E>(
-  M: Monad2C<M, E> & Bifunctor2<M>
-): (
-  onIndexError: (index: number, e: E) => E
-) => <I, A extends ReadonlyArray<unknown>>(
-  ...list: { [K in keyof A]: Kleisli<M, I, E, A[K]> }
-) => <H>(decoder: Kleisli<M, H, E, Array<I>>) => Kleisli<M, H, E, A>
-```
-
-Added in v2.2.7
-
 ## compose
 
 **Signature**
@@ -89,6 +73,118 @@ export declare function compose<M extends URIS2, E>(
 ```
 
 Added in v2.2.7
+
+## composeArray
+
+**Signature**
+
+```ts
+export declare function composeArray<M extends URIS2, E>(
+  M: Monad2C<M, E> & Bifunctor2<M>
+): (
+  onItemError: (index: number, e: E) => E
+) => <I, A>(item: Kleisli<M, I, E, A>) => <H>(decoder: Kleisli<M, H, E, Array<I>>) => Kleisli<M, H, E, Array<A>>
+```
+
+Added in v2.2.7
+
+## composePartial
+
+**Signature**
+
+```ts
+export declare function composePartial<M extends URIS2, E>(
+  M: Monad2C<M, E> & Bifunctor2<M>
+): (
+  onPropertyError: (key: string, e: E) => E
+) => <I, A>(
+  properties: { [K in keyof A]: Kleisli<M, I, E, A[K]> }
+) => <H>(decoder: Kleisli<M, H, E, Record<string, I>>) => Kleisli<M, H, E, Partial<{ [K in keyof A]: A[K] }>>
+```
+
+Added in v2.2.8
+
+## composeRecord
+
+**Signature**
+
+```ts
+export declare function composeRecord<M extends URIS2, E>(
+  M: Monad2C<M, E> & Bifunctor2<M>
+): (
+  onKeyError: (key: string, e: E) => E
+) => <I, A>(
+  codomain: Kleisli<M, I, E, A>
+) => <H>(decoder: Kleisli<M, H, E, Record<string, I>>) => Kleisli<M, H, E, Record<string, A>>
+```
+
+Added in v2.2.7
+
+## composeSum
+
+**Signature**
+
+```ts
+export declare function composeSum<M extends URIS2, E>(
+  M: MonadThrow2C<M, E>
+): (
+  onTagError: (tag: string, value: unknown, tags: ReadonlyArray<string>) => E
+) => <T extends string>(
+  tag: T
+) => <I, A>(
+  members: { [K in keyof A]: Kleisli<M, I, E, A[K]> }
+) => <H>(decoder: Kleisli<M, H, E, Record<string, I>>) => Kleisli<M, H, E, A[keyof A]>
+```
+
+Added in v2.2.8
+
+## composeTuple
+
+**Signature**
+
+```ts
+export declare function composeTuple<M extends URIS2, E>(
+  M: Monad2C<M, E> & Bifunctor2<M>
+): (
+  onIndexError: (index: number, e: E) => E
+) => <I, A extends ReadonlyArray<unknown>>(
+  ...components: { [K in keyof A]: Kleisli<M, I, E, A[K]> }
+) => <H>(decoder: Kleisli<M, H, E, Array<I>>) => Kleisli<M, H, E, A>
+```
+
+Added in v2.2.7
+
+## composeType
+
+**Signature**
+
+```ts
+export declare function composeType<M extends URIS2, E>(
+  M: Monad2C<M, E> & Bifunctor2<M>
+): (
+  onPropertyError: (key: string, e: E) => E
+) => <I, A>(
+  properties: { [K in keyof A]: Kleisli<M, I, E, A[K]> }
+) => <H>(decoder: Kleisli<M, H, E, Record<string, I>>) => Kleisli<M, H, E, { [K in keyof A]: A[K] }>
+```
+
+Added in v2.2.8
+
+## composeUnion
+
+**Signature**
+
+```ts
+export declare function composeUnion<M extends URIS2, E>(
+  M: Monad2C<M, E> & Alt2C<M, E> & Bifunctor2<M>
+): (
+  onMemberError: (index: number, e: E) => E
+) => <I, A extends readonly [unknown, ...Array<unknown>]>(
+  ...members: { [K in keyof A]: Kleisli<M, I, E, A[K]> }
+) => <H>(decoder: Kleisli<M, H, E, I>) => Kleisli<M, H, E, A[number]>
+```
+
+Added in v2.2.8
 
 ## id
 
@@ -108,20 +204,6 @@ Added in v2.2.8
 export declare function intersect<M extends URIS2, E>(
   M: Apply2C<M, E>
 ): <IB, B>(right: Kleisli<M, IB, E, B>) => <IA, A>(left: Kleisli<M, IA, E, A>) => Kleisli<M, IA & IB, E, A & B>
-```
-
-Added in v2.2.7
-
-## items
-
-**Signature**
-
-```ts
-export declare function items<M extends URIS2, E>(
-  M: Monad2C<M, E> & Bifunctor2<M>
-): (
-  onItemError: (index: number, e: E) => E
-) => <I, A>(item: Kleisli<M, I, E, A>) => <H>(decoder: Kleisli<M, H, E, Array<I>>) => Kleisli<M, H, E, Array<A>>
 ```
 
 Added in v2.2.7
@@ -162,22 +244,6 @@ export declare function mapLeftWithInput<M extends URIS2>(
 
 Added in v2.2.7
 
-## members
-
-**Signature**
-
-```ts
-export declare function members<M extends URIS2, E>(
-  M: Monad2C<M, E> & Alt2C<M, E> & Bifunctor2<M>
-): (
-  onMemberError: (index: number, e: E) => E
-) => <I, A extends readonly [unknown, ...Array<unknown>]>(
-  ...members: { [K in keyof A]: Kleisli<M, I, E, A[K]> }
-) => <H>(decoder: Kleisli<M, H, E, I>) => Kleisli<M, H, E, A[number]>
-```
-
-Added in v2.2.8
-
 ## nullable
 
 **Signature**
@@ -202,38 +268,6 @@ export declare function parse<M extends URIS2, E>(
 
 Added in v2.2.7
 
-## partialProps
-
-**Signature**
-
-```ts
-export declare function partialProps<M extends URIS2, E>(
-  M: Monad2C<M, E> & Bifunctor2<M>
-): (
-  onPropertyError: (key: string, e: E) => E
-) => <I, A>(
-  properties: { [K in keyof A]: Kleisli<M, I, E, A[K]> }
-) => <H>(decoder: Kleisli<M, H, E, Record<string, I>>) => Kleisli<M, H, E, Partial<{ [K in keyof A]: A[K] }>>
-```
-
-Added in v2.2.8
-
-## props
-
-**Signature**
-
-```ts
-export declare function props<M extends URIS2, E>(
-  M: Monad2C<M, E> & Bifunctor2<M>
-): (
-  onPropertyError: (key: string, e: E) => E
-) => <I, A>(
-  properties: { [K in keyof A]: Kleisli<M, I, E, A[K]> }
-) => <H>(decoder: Kleisli<M, H, E, Record<string, I>>) => Kleisli<M, H, E, { [K in keyof A]: A[K] }>
-```
-
-Added in v2.2.8
-
 ## refine
 
 **Signature**
@@ -248,40 +282,6 @@ export declare function refine<M extends URIS2, E>(
 ```
 
 Added in v2.2.7
-
-## values
-
-**Signature**
-
-```ts
-export declare function values<M extends URIS2, E>(
-  M: Monad2C<M, E> & Bifunctor2<M>
-): (
-  onKeyError: (key: string, e: E) => E
-) => <I, A>(
-  codomain: Kleisli<M, I, E, A>
-) => <H>(decoder: Kleisli<M, H, E, Record<string, I>>) => Kleisli<M, H, E, Record<string, A>>
-```
-
-Added in v2.2.7
-
-## variants
-
-**Signature**
-
-```ts
-export declare function variants<M extends URIS2, E>(
-  M: MonadThrow2C<M, E>
-): (
-  onTagError: (tag: string, value: unknown, tags: ReadonlyArray<string>) => E
-) => <T extends string>(
-  tag: T
-) => <I, A>(
-  members: { [K in keyof A]: Kleisli<M, I, E, A[K]> }
-) => <H>(decoder: Kleisli<M, H, E, Record<string, I>>) => Kleisli<M, H, E, A[keyof A]>
-```
-
-Added in v2.2.8
 
 # constructors
 
