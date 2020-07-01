@@ -29,14 +29,14 @@ Added in v2.2.7
   - [lazy](#lazy)
   - [map](#map)
   - [mapLeftWithInput](#mapleftwithinput)
+  - [members](#members)
   - [nullable](#nullable)
   - [parse](#parse)
   - [partialProps](#partialprops)
   - [props](#props)
   - [refine](#refine)
-  - [sum](#sum)
-  - [union](#union)
   - [values](#values)
+  - [variants](#variants)
 - [constructors](#constructors)
   - [fromRefinement](#fromrefinement)
   - [literal](#literal)
@@ -160,6 +160,22 @@ export declare function mapLeftWithInput<M extends URIS2>(
 
 Added in v2.2.7
 
+## members
+
+**Signature**
+
+```ts
+export declare function members<M extends URIS2, E>(
+  M: Monad2C<M, E> & Alt2C<M, E> & Bifunctor2<M>
+): (
+  onMemberError: (index: number, e: E) => E
+) => <I, A extends readonly [unknown, ...Array<unknown>]>(
+  ...members: { [K in keyof A]: Kleisli<M, I, E, A[K]> }
+) => <H>(decoder: Kleisli<M, H, E, I>) => Kleisli<M, H, E, A[number]>
+```
+
+Added in v2.2.8
+
 ## nullable
 
 **Signature**
@@ -231,40 +247,6 @@ export declare function refine<M extends URIS2, E>(
 
 Added in v2.2.7
 
-## sum
-
-**Signature**
-
-```ts
-export declare function sum<M extends URIS2, E>(
-  M: MonadThrow2C<M, E>
-): (
-  onTagError: (tag: string, value: unknown, tags: ReadonlyArray<string>) => E
-) => <T extends string>(
-  tag: T
-) => <MS extends Record<string, Kleisli<M, any, E, any>>>(
-  members: MS
-) => Kleisli<M, InputOf<M, MS[keyof MS]>, E, TypeOf<M, MS[keyof MS]>>
-```
-
-Added in v2.2.7
-
-## union
-
-**Signature**
-
-```ts
-export declare function union<M extends URIS2, E>(
-  M: Alt2C<M, E> & Bifunctor2<M>
-): (
-  onMemberError: (index: number, e: E) => E
-) => <MS extends readonly [Kleisli<M, any, E, any>, ...Array<Kleisli<M, any, E, any>>]>(
-  ...members: MS
-) => Kleisli<M, InputOf<M, MS[keyof MS]>, E, TypeOf<M, MS[keyof MS]>>
-```
-
-Added in v2.2.7
-
 ## values
 
 **Signature**
@@ -278,6 +260,24 @@ export declare function values<M extends URIS2, E>(
 ```
 
 Added in v2.2.7
+
+## variants
+
+**Signature**
+
+```ts
+export declare function variants<M extends URIS2, E>(
+  M: MonadThrow2C<M, E>
+): (
+  onTagError: (tag: string, value: unknown, tags: ReadonlyArray<string>) => E
+) => <T extends string>(
+  tag: T
+) => <I, A>(
+  members: { [K in keyof A]: Kleisli<M, I, E, A[K]> }
+) => <H>(decoder: Kleisli<M, H, E, Record<string, I>>) => Kleisli<M, H, E, A[keyof A]>
+```
+
+Added in v2.2.8
 
 # constructors
 

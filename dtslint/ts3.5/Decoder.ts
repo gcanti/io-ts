@@ -21,6 +21,45 @@ export type TypeOfNumberFromString = _.TypeOf<typeof NumberFromString>
 export type InputOfNumberFromString = _.InputOf<typeof NumberFromString>
 
 //
+// props
+//
+
+// $ExpectType Decoder<unknown, { a: string; b: { c: number; }; }>
+pipe(
+  _.UnknownRecord,
+  _.props({
+    a: _.string,
+    b: _.type({
+      c: _.number
+    })
+  })
+)
+
+//
+// type
+//
+
+// $ExpectType Decoder<unknown, { a: string; b: { c: number; }; }>
+_.type({
+  a: _.string,
+  b: _.type({
+    c: _.number
+  })
+})
+
+//
+// partial
+//
+
+// $ExpectType Decoder<unknown, Partial<{ a: string; b: Partial<{ c: number; }>; }>>
+_.partial({
+  a: _.string,
+  b: _.partial({
+    c: _.number
+  })
+})
+
+//
 // sum
 //
 
@@ -31,34 +70,18 @@ _.sum('_tag')({
 })
 
 //
+// members
+//
+
+// $ExpectType Decoder<unknown, string | number>
+pipe(_.string, _.members(NumberFromString, StringFromString))
+
+//
 // union
 //
 
 // $ExpectType Decoder<unknown, string | number>
 _.union(_.number, _.string)
-
-// $ExpectType Decoder<string, string | number>
-_.union(NumberFromString, StringFromString)
-
-// -------------------------------------------------------------------------------------
-// unknown input
-// -------------------------------------------------------------------------------------
-
-// $ExpectType Decoder<unknown, { a: string; b: { c: number; }; }>
-const A = _.type({
-  a: _.string,
-  b: _.type({
-    c: _.number
-  })
-})
-
-// $ExpectType Decoder<unknown, Partial<{ a: string; b: Partial<{ c: number; }>; }>>
-_.partial({
-  a: _.string,
-  b: _.partial({
-    c: _.number
-  })
-})
 
 //
 // mapLeftWithInput

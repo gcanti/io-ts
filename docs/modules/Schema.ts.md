@@ -76,10 +76,10 @@ export declare const interpreter: {
   <
     S extends
       | 'io-ts/Codec'
-      | 'Either'
       | 'io-ts/Decoder'
       | 'io-ts/Encoder'
       | 'io-ts/TaskDecoder'
+      | 'Either'
       | 'IOEither'
       | 'TaskEither'
   >(

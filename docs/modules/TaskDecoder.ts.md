@@ -37,9 +37,9 @@ Added in v2.2.7
   - [components](#components)
   - [intersect](#intersect)
   - [items](#items)
-  - [ksum](#ksum)
   - [lazy](#lazy)
   - [mapLeftWithInput](#mapleftwithinput)
+  - [members](#members)
   - [nullable](#nullable)
   - [parse](#parse)
   - [partial](#partial)
@@ -52,6 +52,7 @@ Added in v2.2.7
   - [type](#type)
   - [union](#union)
   - [values](#values)
+  - [variants](#variants)
 - [constructors](#constructors)
   - [fromDecoder](#fromdecoder)
   - [fromGuard](#fromguard)
@@ -218,20 +219,6 @@ export declare const items: <I, A>(item: TaskDecoder<I, A>) => TaskDecoder<I[], 
 
 Added in v2.2.7
 
-## ksum
-
-**Signature**
-
-```ts
-export declare const ksum: <T extends string>(
-  tag: T
-) => <MS extends Record<string, TaskDecoder<any, any>>>(
-  members: MS
-) => TaskDecoder<K.InputOf<'TaskEither', MS[keyof MS]>, K.TypeOf<'TaskEither', MS[keyof MS]>>
-```
-
-Added in v2.2.7
-
 ## lazy
 
 **Signature**
@@ -253,6 +240,18 @@ export declare const mapLeftWithInput: <I>(
 ```
 
 Added in v2.2.7
+
+## members
+
+**Signature**
+
+```ts
+export declare const members: <I, A extends readonly [unknown, ...unknown[]]>(
+  ...list: { [K in keyof A]: TaskDecoder<I, A[K]> }
+) => <H>(decoder: TaskDecoder<H, I>) => TaskDecoder<I, A[number]>
+```
+
+Added in v2.2.8
 
 ## nullable
 
@@ -376,9 +375,9 @@ Added in v2.2.8
 **Signature**
 
 ```ts
-export declare const union: <MS extends readonly [TaskDecoder<any, any>, ...TaskDecoder<any, any>[]]>(
-  ...members: MS
-) => TaskDecoder<K.InputOf<'TaskEither', MS[keyof MS]>, K.TypeOf<'TaskEither', MS[keyof MS]>>
+export declare const union: <A extends readonly [unknown, ...unknown[]]>(
+  ...list: { [K in keyof A]: TaskDecoder<unknown, A[K]> }
+) => TaskDecoder<unknown, A[number]>
 ```
 
 Added in v2.2.7
@@ -392,6 +391,20 @@ export declare const values: <I, A>(codomain: TaskDecoder<I, A>) => TaskDecoder<
 ```
 
 Added in v2.2.7
+
+## variants
+
+**Signature**
+
+```ts
+export declare const variants: <T extends string>(
+  tag: T
+) => <I, A>(
+  members: { [K in keyof A]: TaskDecoder<I, A[K]> }
+) => <H>(decoder: TaskDecoder<H, Record<string, I>>) => TaskDecoder<H, A[keyof A]>
+```
+
+Added in v2.2.8
 
 # constructors
 

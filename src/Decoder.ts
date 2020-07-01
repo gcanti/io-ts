@@ -301,13 +301,21 @@ export const tuple = <A extends ReadonlyArray<unknown>>(
 
 /**
  * @category combinators
+ * @since 2.2.8
+ */
+export const members: <I, A extends readonly [unknown, ...Array<unknown>]>(
+  ...list: { [K in keyof A]: Decoder<I, A[K]> }
+) => <H>(decoder: Decoder<H, I>) => Decoder<H, A[number]> =
+  /*#__PURE__*/
+  K.members(M)((i, e) => FS.of(DE.member(i, e))) as any
+
+/**
+ * @category combinators
  * @since 2.2.7
  */
-export const union: <MS extends readonly [Decoder<any, any>, ...Array<Decoder<any, any>>]>(
-  ...members: MS
-) => Decoder<InputOf<MS[keyof MS]>, TypeOf<MS[keyof MS]>> =
-  /*#__PURE__*/
-  K.union(M)((i, e) => FS.of(DE.member(i, e)))
+export const union = <A extends readonly [unknown, ...Array<unknown>]>(
+  ...list: { [K in keyof A]: Decoder<unknown, A[K]> }
+): Decoder<unknown, A[number]> => pipe(id(), members(...(list as any)))
 
 /**
  * @category combinators
