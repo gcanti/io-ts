@@ -40,12 +40,12 @@ Added in v2.2.7
   - [krecord](#krecord)
   - [ksum](#ksum)
   - [ktuple](#ktuple)
-  - [ktype](#ktype)
   - [lazy](#lazy)
   - [mapLeftWithInput](#mapleftwithinput)
   - [nullable](#nullable)
   - [parse](#parse)
   - [partial](#partial)
+  - [props](#props)
   - [record](#record)
   - [refine](#refine)
   - [sum](#sum)
@@ -253,18 +253,6 @@ export declare const ktuple: <C extends readonly Decoder<any, any>[]>(
 
 Added in v2.2.7
 
-## ktype
-
-**Signature**
-
-```ts
-export declare const ktype: <P extends Record<string, Decoder<any, any>>>(
-  properties: P
-) => Decoder<{ [K in keyof P]: K.InputOf<'Either', P[K]> }, { [K in keyof P]: K.TypeOf<'Either', P[K]> }>
-```
-
-Added in v2.2.7
-
 ## lazy
 
 **Signature**
@@ -317,6 +305,18 @@ Added in v2.2.7
 export declare const partial: <A>(
   properties: { [K in keyof A]: Decoder<unknown, A[K]> }
 ) => Decoder<unknown, Partial<{ [K in keyof A]: A[K] }>>
+```
+
+Added in v2.2.8
+
+## props
+
+**Signature**
+
+```ts
+export declare const props: <I, A>(
+  properties: { [K in keyof A]: Decoder<I, A[K]> }
+) => <H>(decoder: Decoder<H, Record<string, I>>) => Decoder<H, { [K in keyof A]: A[K] }>
 ```
 
 Added in v2.2.8

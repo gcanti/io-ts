@@ -229,12 +229,13 @@ export const nullable: <I, A>(or: TaskDecoder<I, A>) => TaskDecoder<null | I, nu
 
 /**
  * @category combinators
- * @since 2.2.7
+ * @since 2.2.8
  */
-export const ktype = <P extends Record<string, TaskDecoder<any, any>>>(
-  properties: P
-): TaskDecoder<{ [K in keyof P]: InputOf<P[K]> }, { [K in keyof P]: TypeOf<P[K]> }> =>
-  K.type(M)((k, e) => FS.of(DE.key(k, DE.required, e)))(properties)
+export const props: <I, A>(
+  properties: { [K in keyof A]: TaskDecoder<I, A[K]> }
+) => <H>(decoder: TaskDecoder<H, Record<string, I>>) => TaskDecoder<H, { [K in keyof A]: A[K] }> =
+  /*#__PURE__*/
+  K.props(M)((k, e) => FS.of(DE.key(k, DE.required, e)))
 
 /**
  * @category combinators
@@ -242,7 +243,7 @@ export const ktype = <P extends Record<string, TaskDecoder<any, any>>>(
  */
 export const type = <A>(
   properties: { [K in keyof A]: TaskDecoder<unknown, A[K]> }
-): TaskDecoder<unknown, { [K in keyof A]: A[K] }> => pipe(object as any, compose(ktype(properties)))
+): TaskDecoder<unknown, { [K in keyof A]: A[K] }> => pipe(UnknownRecord, props(properties))
 
 /**
  * @category combinators
@@ -401,9 +402,9 @@ export const compose: <A, B>(to: TaskDecoder<A, B>) => <I>(from: TaskDecoder<I, 
  * @category Category
  * @since 2.2.8
  */
-export const id = <A>(): TaskDecoder<A, A> => ({
-  decode: success
-})
+export const id: <A>() => TaskDecoder<A, A> =
+  /*#__PURE__*/
+  K.id(M)
 
 // -------------------------------------------------------------------------------------
 // instances

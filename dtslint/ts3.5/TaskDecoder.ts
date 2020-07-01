@@ -21,15 +21,6 @@ export type TypeOfNumberFromString = _.TypeOf<typeof NumberFromString>
 export type InputOfNumberFromString = _.InputOf<typeof NumberFromString>
 
 //
-// ktype
-//
-
-// $ExpectType TaskDecoder<{ a: string; }, { a: number; }>
-_.ktype({
-  a: NumberFromString
-})
-
-//
 // kpartial
 //
 
@@ -46,13 +37,13 @@ _.kpartial({
 _.ktuple(NumberFromString)
 
 //
-// ksum
+// sum
 //
 
-// $ExpectType TaskDecoder<{ _tag: unknown; a: string; } | { _tag: unknown; b: string; }, { _tag: "A"; a: number; } | { _tag: "B"; b: number; }>
-_.ksum('_tag')({
-  A: _.ktype({ _tag: _.literal('A'), a: NumberFromString }),
-  B: _.ktype({ _tag: _.literal('B'), b: NumberFromString })
+// $ExpectType TaskDecoder<unknown, { _tag: "A"; a: string; } | { _tag: "B"; b: number; }>
+_.sum('_tag')({
+  A: _.type({ _tag: _.literal('A'), a: _.string }),
+  B: _.type({ _tag: _.literal('B'), b: _.number })
 })
 
 //
