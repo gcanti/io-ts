@@ -201,11 +201,16 @@ export function partialProps<M extends URIS2, E>(
  * @since 2.2.7
  */
 export function items<M extends URIS2, E>(
-  M: Applicative2C<M, E> & Bifunctor2<M>
-): (onItemError: (index: number, e: E) => E) => <I, A>(item: Kleisli<M, I, E, A>) => Kleisli<M, Array<I>, E, Array<A>> {
+  M: Monad2C<M, E> & Bifunctor2<M>
+): (
+  onItemError: (index: number, e: E) => E
+) => <I, A>(item: Kleisli<M, I, E, A>) => <H>(decoder: Kleisli<M, H, E, Array<I>>) => Kleisli<M, H, E, Array<A>> {
   const traverse = traverseArrayWithIndex(M)
-  return (onItemError) => (item) => ({
-    decode: (is) => traverse(is, (index, i) => M.mapLeft(item.decode(i), (e) => onItemError(index, e)))
+  return (onItemError) => (item) => (decoder) => ({
+    decode: (h) =>
+      M.chain(decoder.decode(h), (is) =>
+        traverse(is, (index, i) => M.mapLeft(item.decode(i), (e) => onItemError(index, e)))
+      )
   })
 }
 

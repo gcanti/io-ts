@@ -255,17 +255,17 @@ export const partial = <A>(
 
 /**
  * @category combinators
- * @since 2.2.7
+ * @since 2.2.8
  */
-export const items = <I, A>(item: Decoder<I, A>): Decoder<Array<I>, Array<A>> =>
-  K.items(M)((i, e) => FS.of(DE.index(i, DE.optional, e)))(item)
+export const items: <I, A>(item: Decoder<I, A>) => <H>(decoder: Decoder<H, Array<I>>) => Decoder<H, Array<A>> =
+  /*#__PURE__*/
+  K.items(M)((i, e) => FS.of(DE.index(i, DE.optional, e)))
 
 /**
  * @category combinators
  * @since 2.2.8
  */
-export const array = <A>(item: Decoder<unknown, A>): Decoder<unknown, Array<A>> =>
-  pipe(UnknownArray, compose(items(item)))
+export const array = <A>(item: Decoder<unknown, A>): Decoder<unknown, Array<A>> => pipe(UnknownArray, items(item))
 
 /**
  * @category combinators
