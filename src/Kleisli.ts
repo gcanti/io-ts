@@ -213,7 +213,7 @@ export function items<M extends URIS2, E>(
  * @category combinators
  * @since 2.2.7
  */
-export function record<M extends URIS2, E>(
+export function values<M extends URIS2, E>(
   M: Applicative2C<M, E> & Bifunctor2<M>
 ): (
   onKeyError: (key: string, e: E) => E

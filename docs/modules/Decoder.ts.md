@@ -36,7 +36,6 @@ Added in v2.2.7
   - [array](#array)
   - [intersect](#intersect)
   - [items](#items)
-  - [krecord](#krecord)
   - [ksum](#ksum)
   - [ktuple](#ktuple)
   - [lazy](#lazy)
@@ -52,6 +51,7 @@ Added in v2.2.7
   - [tuple](#tuple)
   - [type](#type)
   - [union](#union)
+  - [values](#values)
 - [constructors](#constructors)
   - [fromGuard](#fromguard)
   - [fromRefinement](#fromrefinement)
@@ -201,16 +201,6 @@ Added in v2.2.7
 
 ```ts
 export declare const items: <I, A>(item: Decoder<I, A>) => Decoder<I[], A[]>
-```
-
-Added in v2.2.7
-
-## krecord
-
-**Signature**
-
-```ts
-export declare const krecord: <I, A>(codomain: Decoder<I, A>) => Decoder<Record<string, I>, Record<string, A>>
 ```
 
 Added in v2.2.7
@@ -388,6 +378,16 @@ Added in v2.2.8
 export declare const union: <MS extends readonly [Decoder<any, any>, ...Decoder<any, any>[]]>(
   ...members: MS
 ) => Decoder<K.InputOf<'Either', MS[keyof MS]>, K.TypeOf<'Either', MS[keyof MS]>>
+```
+
+Added in v2.2.7
+
+## values
+
+**Signature**
+
+```ts
+export declare const values: <I, A>(codomain: Decoder<I, A>) => Decoder<Record<string, I>, Record<string, A>>
 ```
 
 Added in v2.2.7
