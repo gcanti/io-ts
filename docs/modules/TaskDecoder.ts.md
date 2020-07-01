@@ -35,7 +35,7 @@ Added in v2.2.7
 - [combinators](#combinators)
   - [array](#array)
   - [intersect](#intersect)
-  - [karray](#karray)
+  - [items](#items)
   - [krecord](#krecord)
   - [ksum](#ksum)
   - [ktuple](#ktuple)
@@ -196,12 +196,12 @@ export declare const intersect: <IB, B>(
 
 Added in v2.2.7
 
-## karray
+## items
 
 **Signature**
 
 ```ts
-export declare const karray: <I, A>(item: TaskDecoder<I, A>) => TaskDecoder<I[], A[]>
+export declare const items: <I, A>(item: TaskDecoder<I, A>) => TaskDecoder<I[], A[]>
 ```
 
 Added in v2.2.7
