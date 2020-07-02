@@ -17,10 +17,10 @@ import { Literal, memoize, Schemable1, WithRefine1, WithUnion1, WithUnknownConta
 
 /**
  * @category model
- * @since 2.2.0
+ * @since 2.2.8
  */
-export interface Guard<A> {
-  is: (u: unknown) => u is A
+export interface Guard<I, A extends I> {
+  is: (i: I) => i is A
 }
 
 // -------------------------------------------------------------------------------------
@@ -30,7 +30,12 @@ export interface Guard<A> {
 /**
  * @since 2.2.2
  */
-export type TypeOf<G> = G extends Guard<infer A> ? A : never
+export type TypeOf<G> = G extends Guard<any, infer A> ? A : never
+
+/**
+ * @since 2.2.8
+ */
+export type InputOf<G> = G extends Guard<infer I, any> ? I : never
 
 // -------------------------------------------------------------------------------------
 // constructors
@@ -40,7 +45,7 @@ export type TypeOf<G> = G extends Guard<infer A> ? A : never
  * @category constructors
  * @since 2.2.0
  */
-export const literal = <A extends readonly [Literal, ...Array<Literal>]>(...values: A): Guard<A[number]> => ({
+export const literal = <A extends readonly [Literal, ...Array<Literal>]>(...values: A): Guard<unknown, A[number]> => ({
   is: (u: unknown): u is A[number] => values.findIndex((a) => a === u) !== -1
 })
 
@@ -52,7 +57,7 @@ export const literal = <A extends readonly [Literal, ...Array<Literal>]>(...valu
  * @category primitives
  * @since 2.2.0
  */
-export const string: Guard<string> = {
+export const string: Guard<unknown, string> = {
   is: (u: unknown): u is string => typeof u === 'string'
 }
 
@@ -62,7 +67,7 @@ export const string: Guard<string> = {
  * @category primitives
  * @since 2.2.0
  */
-export const number: Guard<number> = {
+export const number: Guard<unknown, number> = {
   is: (u: unknown): u is number => typeof u === 'number' && !isNaN(u)
 }
 
@@ -70,7 +75,7 @@ export const number: Guard<number> = {
  * @category primitives
  * @since 2.2.0
  */
-export const boolean: Guard<boolean> = {
+export const boolean: Guard<unknown, boolean> = {
   is: (u: unknown): u is boolean => typeof u === 'boolean'
 }
 
@@ -78,7 +83,7 @@ export const boolean: Guard<boolean> = {
  * @category primitives
  * @since 2.2.0
  */
-export const UnknownArray: Guard<Array<unknown>> = {
+export const UnknownArray: Guard<unknown, Array<unknown>> = {
   is: Array.isArray
 }
 
@@ -86,7 +91,7 @@ export const UnknownArray: Guard<Array<unknown>> = {
  * @category primitives
  * @since 2.2.0
  */
-export const UnknownRecord: Guard<Record<string, unknown>> = {
+export const UnknownRecord: Guard<unknown, Record<string, unknown>> = {
   is: (u: unknown): u is Record<string, unknown> => Object.prototype.toString.call(u) === '[object Object]'
 }
 
@@ -98,23 +103,27 @@ export const UnknownRecord: Guard<Record<string, unknown>> = {
  * @category combinators
  * @since 2.2.0
  */
-export const refine = <A, B extends A>(refinement: (a: A) => a is B) => (from: Guard<A>): Guard<B> => ({
-  is: (u: unknown): u is B => from.is(u) && refinement(u)
+export const refine = <I, A extends I, B extends A>(refinement: (a: A) => a is B) => (
+  from: Guard<I, A>
+): Guard<I, B> => ({
+  is: (i: I): i is B => from.is(i) && refinement(i)
 })
 
 /**
  * @category combinators
  * @since 2.2.0
  */
-export const nullable = <A>(or: Guard<A>): Guard<null | A> => ({
-  is: (u): u is null | A => u === null || or.is(u)
+export const nullable = <I, A extends I>(or: Guard<I, A>): Guard<null | I, null | A> => ({
+  is: (i): i is null | A => i === null || or.is(i)
 })
 
 /**
  * @category combinators
  * @since 2.2.0
  */
-export const type = <A>(properties: { [K in keyof A]: Guard<A[K]> }): Guard<{ [K in keyof A]: A[K] }> =>
+export const type = <A>(
+  properties: { [K in keyof A]: Guard<unknown, A[K]> }
+): Guard<unknown, { [K in keyof A]: A[K] }> =>
   pipe(
     UnknownRecord,
     refine((r): r is {
@@ -133,7 +142,9 @@ export const type = <A>(properties: { [K in keyof A]: Guard<A[K]> }): Guard<{ [K
  * @category combinators
  * @since 2.2.0
  */
-export const partial = <A>(properties: { [K in keyof A]: Guard<A[K]> }): Guard<Partial<{ [K in keyof A]: A[K] }>> =>
+export const partial = <A>(
+  properties: { [K in keyof A]: Guard<unknown, A[K]> }
+): Guard<unknown, Partial<{ [K in keyof A]: A[K] }>> =>
   pipe(
     UnknownRecord,
     refine((r): r is Partial<A> => {
@@ -151,7 +162,17 @@ export const partial = <A>(properties: { [K in keyof A]: Guard<A[K]> }): Guard<P
  * @category combinators
  * @since 2.2.0
  */
-export const record = <A>(codomain: Guard<A>): Guard<Record<string, A>> =>
+export const array = <A>(item: Guard<unknown, A>): Guard<unknown, Array<A>> =>
+  pipe(
+    UnknownArray,
+    refine((us): us is Array<A> => us.every(item.is))
+  )
+
+/**
+ * @category combinators
+ * @since 2.2.0
+ */
+export const record = <A>(codomain: Guard<unknown, A>): Guard<unknown, Record<string, A>> =>
   pipe(
     UnknownRecord,
     refine((r): r is Record<string, A> => {
@@ -168,17 +189,9 @@ export const record = <A>(codomain: Guard<A>): Guard<Record<string, A>> =>
  * @category combinators
  * @since 2.2.0
  */
-export const array = <A>(item: Guard<A>): Guard<Array<A>> =>
-  pipe(
-    UnknownArray,
-    refine((us): us is Array<A> => us.every(item.is))
-  )
-
-/**
- * @category combinators
- * @since 2.2.0
- */
-export const tuple = <A extends ReadonlyArray<unknown>>(...components: { [K in keyof A]: Guard<A[K]> }): Guard<A> => ({
+export const tuple = <A extends ReadonlyArray<unknown>>(
+  ...components: { [K in keyof A]: Guard<unknown, A[K]> }
+): Guard<unknown, A> => ({
   is: (u): u is A => Array.isArray(u) && u.length === components.length && components.every((c, i) => c.is(u[i]))
 })
 
@@ -186,7 +199,7 @@ export const tuple = <A extends ReadonlyArray<unknown>>(...components: { [K in k
  * @category combinators
  * @since 2.2.0
  */
-export const intersect = <B>(right: Guard<B>) => <A>(left: Guard<A>): Guard<A & B> => ({
+export const intersect = <B>(right: Guard<unknown, B>) => <A>(left: Guard<unknown, A>): Guard<unknown, A & B> => ({
   is: (u: unknown): u is A & B => left.is(u) && right.is(u)
 })
 
@@ -195,8 +208,8 @@ export const intersect = <B>(right: Guard<B>) => <A>(left: Guard<A>): Guard<A & 
  * @since 2.2.0
  */
 export const union = <A extends readonly [unknown, ...Array<unknown>]>(
-  ...members: { [K in keyof A]: Guard<A[K]> }
-): Guard<A[number]> => ({
+  ...members: { [K in keyof A]: Guard<unknown, A[K]> }
+): Guard<unknown, A[number]> => ({
   is: (u: unknown): u is A | A[number] => members.some((m) => m.is(u))
 })
 
@@ -204,7 +217,9 @@ export const union = <A extends readonly [unknown, ...Array<unknown>]>(
  * @category combinators
  * @since 2.2.0
  */
-export const sum = <T extends string>(tag: T) => <A>(members: { [K in keyof A]: Guard<A[K]> }): Guard<A[keyof A]> =>
+export const sum = <T extends string>(tag: T) => <A>(
+  members: { [K in keyof A]: Guard<unknown, A[K]> }
+): Guard<unknown, A[keyof A]> =>
   pipe(
     UnknownRecord,
     refine((r): r is any => {
@@ -220,12 +235,36 @@ export const sum = <T extends string>(tag: T) => <A>(members: { [K in keyof A]: 
  * @category combinators
  * @since 2.2.0
  */
-export const lazy = <A>(f: () => Guard<A>): Guard<A> => {
-  const get = memoize<void, Guard<A>>(f)
+export const lazy = <A>(f: () => Guard<unknown, A>): Guard<unknown, A> => {
+  const get = memoize<void, Guard<unknown, A>>(f)
   return {
     is: (u: unknown): u is A => get().is(u)
   }
 }
+
+/**
+ * @category combinators
+ * @since 2.2.8
+ */
+export const alt = <I, A extends I>(that: () => Guard<I, A>) => (me: Guard<I, A>): Guard<I, A> => ({
+  is: (i): i is A => me.is(i) || that().is(i)
+})
+
+/**
+ * @category combinators
+ * @since 2.2.8
+ */
+export const compose = <I, A extends I, B extends A>(to: Guard<A, B>) => (from: Guard<I, A>): Guard<I, B> => ({
+  is: (i): i is B => from.is(i) && to.is(i)
+})
+
+/**
+ * @category combinators
+ * @since 2.2.8
+ */
+export const id = <A>(): Guard<A, A> => ({
+  is: (_): _ is A => true
+})
 
 // -------------------------------------------------------------------------------------
 // instances
@@ -245,7 +284,7 @@ export type URI = typeof URI
 
 declare module 'fp-ts/lib/HKT' {
   interface URItoKind<A> {
-    readonly [URI]: Guard<A>
+    readonly [URI]: Guard<unknown, A>
   }
 }
 

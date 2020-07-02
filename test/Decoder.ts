@@ -6,7 +6,7 @@ import * as FS from '../src/FreeSemigroup'
 import * as G from '../src/Guard'
 import * as _ from '../src/Decoder'
 
-const undefinedGuard: G.Guard<undefined> = {
+const undefinedGuard: G.Guard<unknown, undefined> = {
   is: (u): u is undefined => u === undefined
 }
 const undef: _.Decoder<unknown, undefined> = _.fromGuard(undefinedGuard, 'undefined')

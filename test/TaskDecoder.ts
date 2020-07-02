@@ -8,7 +8,7 @@ import * as G from '../src/Guard'
 import * as D from '../src/Decoder'
 import * as _ from '../src/TaskDecoder'
 
-const undefinedGuard: G.Guard<undefined> = {
+const undefinedGuard: G.Guard<unknown, undefined> = {
   is: (u): u is undefined => u === undefined
 }
 const undef: _.TaskDecoder<unknown, undefined> = _.fromGuard(undefinedGuard, 'undefined')

@@ -427,7 +427,7 @@ Added in v2.2.8
 **Signature**
 
 ```ts
-export declare const fromGuard: <A>(guard: G.Guard<A>, expected: string) => TaskDecoder<unknown, A>
+export declare const fromGuard: <I, A extends I>(guard: G.Guard<I, A>, expected: string) => TaskDecoder<I, A>
 ```
 
 Added in v2.2.8
