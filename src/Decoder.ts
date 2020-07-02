@@ -121,7 +121,7 @@ export const fromRefinement = <I, A extends I>(refinement: Refinement<I, A>, exp
  * @category constructors
  * @since 2.2.8
  */
-export const fromGuard = <A>(guard: G.Guard<A>, expected: string): Decoder<unknown, A> =>
+export const fromGuard = <I, A extends I>(guard: G.Guard<I, A>, expected: string): Decoder<I, A> =>
   fromRefinement(guard.is, expected)
 
 /**

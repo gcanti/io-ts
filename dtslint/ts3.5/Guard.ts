@@ -1,6 +1,10 @@
 import * as _ from '../../src/Guard'
 
-// $ExpectType Guard<{ a: string; b: { c: number; }; }>
+//
+// type
+//
+
+// $ExpectType Guard<unknown, { a: string; b: { c: number; }; }>
 const A = _.type({
   a: _.string,
   b: _.type({
@@ -8,7 +12,11 @@ const A = _.type({
   })
 })
 
-// $ExpectType Guard<Partial<{ a: string; b: Partial<{ c: number; }>; }>>
+//
+// partial
+//
+
+// $ExpectType Guard<unknown, Partial<{ a: string; b: Partial<{ c: number; }>; }>>
 _.partial({
   a: _.string,
   b: _.partial({
@@ -21,4 +29,4 @@ _.partial({
 //
 
 // $ExpectType { a: string; b: { c: number; }; }
-type A = _.TypeOf<typeof A>
+export type A = _.TypeOf<typeof A>

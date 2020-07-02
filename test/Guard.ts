@@ -2,7 +2,39 @@ import * as assert from 'assert'
 import * as G from '../src/Guard'
 import { pipe } from 'fp-ts/lib/pipeable'
 
+interface NonEmptyStringBrand {
+  readonly NonEmptyString: unique symbol
+}
+
+type NonEmptyString = string & NonEmptyStringBrand
+
+const NonEmptyString: G.Guard<string, NonEmptyString> = {
+  is: (s): s is NonEmptyString => s.length > 0
+}
+
 describe('Guard', () => {
+  it('alt', () => {
+    const guard = pipe(
+      G.string,
+      G.alt<unknown, string | number>(() => G.number)
+    )
+    assert.strictEqual(guard.is('a'), true)
+    assert.strictEqual(guard.is(1), true)
+    assert.strictEqual(guard.is(null), false)
+  })
+
+  it('compose', () => {
+    const guard = pipe(G.string, G.compose(NonEmptyString))
+    assert.strictEqual(guard.is('a'), true)
+    assert.strictEqual(guard.is(null), false)
+    assert.strictEqual(guard.is(''), false)
+  })
+
+  it('id', () => {
+    const guard = G.id<string>()
+    assert.strictEqual(guard.is('a'), true)
+  })
+
   describe('number', () => {
     it('should exclude NaN', () => {
       assert.deepStrictEqual(G.number.is(NaN), false)
@@ -59,7 +91,7 @@ describe('Guard', () => {
     })
 
     it('should check missing fields', () => {
-      const undef: G.Guard<undefined> = {
+      const undef: G.Guard<unknown, undefined> = {
         is: (u): u is undefined => u === undefined
       }
       const guard = G.type({ a: undef })
@@ -195,7 +227,7 @@ describe('Guard', () => {
       b: Array<A>
     }
 
-    const guard: G.Guard<A> = G.Schemable.lazy('A', () =>
+    const guard: G.Guard<unknown, A> = G.Schemable.lazy('A', () =>
       G.type({
         a: G.number,
         b: G.array(guard)

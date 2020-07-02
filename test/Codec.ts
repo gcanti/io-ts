@@ -36,7 +36,7 @@ const Int: C.Codec<number, Int> = pipe(
   C.refine((n): n is Int => Number.isInteger(n), 'Int')
 )
 
-const undefinedGuard: G.Guard<undefined> = {
+const undefinedGuard: G.Guard<unknown, undefined> = {
   is: (u): u is undefined => u === undefined
 }
 const undef: C.Codec<undefined, undefined> = C.fromDecoder(D.fromGuard(undefinedGuard, 'undefined'))

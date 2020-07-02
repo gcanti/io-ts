@@ -25,6 +25,7 @@
   - `Eq`
     - rename `schemableEq` to `Schemable` (@gcanti)
   - `Guard`
+    - make `Guard` more general by adding a `I` type parameter (@gcanti)
     - rename `schemableGuard` to `Schemable` (@gcanti)
   - `Kleisli`
     - add `id` (@gcanti)
