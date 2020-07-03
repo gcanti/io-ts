@@ -32,7 +32,7 @@ npm i io-ts fp-ts
 
 Experimental features (\*) are published in order to get early feedback from the community, see these tracking [issues](https://github.com/gcanti/io-ts/issues?q=label%3Av2.2+) for further discussions and enhancements.
 
-- [`UnknownDecoder.ts` module](UnknownDecoder.md)
+- [`Decoder.ts` module](Decoder.md)
 - [`Encoder.ts` module](Encoder.md)
 - [`Codec.ts` module](Codec.md)
 - [`Eq.ts` module](Eq.md)
