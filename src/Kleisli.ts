@@ -141,7 +141,7 @@ export function type<M extends URIS2, E>(
   onPropertyError: (key: string, e: E) => E
 ) => <P extends Record<string, Kleisli<M, any, E, any>>>(
   properties: P
-) => Kleisli<M, { [K in keyof P]: InputOf<M, P[K]> }, E, { [K in keyof P]: TypeOf<M, P[K]> }> {
+) => Kleisli<M, Partial<{ [K in keyof P]: InputOf<M, P[K]> }>, E, { [K in keyof P]: TypeOf<M, P[K]> }> {
   const traverse = traverseRecordWithIndex(M)
   return (onPropertyError) => (properties) => ({
     decode: (i) =>
@@ -161,7 +161,7 @@ export function partial<M extends URIS2, E>(
   onPropertyError: (key: string, e: E) => E
 ) => <P extends Record<string, Kleisli<M, any, E, any>>>(
   properties: P
-) => Kleisli<M, { [K in keyof P]: InputOf<M, P[K]> }, E, Partial<{ [K in keyof P]: TypeOf<M, P[K]> }>> {
+) => Kleisli<M, Partial<{ [K in keyof P]: InputOf<M, P[K]> }>, E, Partial<{ [K in keyof P]: TypeOf<M, P[K]> }>> {
   const traverse = traverseRecordWithIndex(M)
   const undefinedProperty = M.of<E.Either<void, unknown>>(E.right(undefined))
   const skipProperty = M.of<E.Either<void, unknown>>(E.left(undefined))
@@ -290,7 +290,7 @@ export function sum<M extends URIS2, E>(
   tag: T
 ) => <MS extends Record<string, Kleisli<M, any, E, any>>>(
   members: MS
-) => Kleisli<M, InputOf<M, MS[keyof MS]>, E, TypeOf<M, MS[keyof MS]>> {
+) => Kleisli<M, Partial<InputOf<M, MS[keyof MS]>>, E, TypeOf<M, MS[keyof MS]>> {
   return (onTagError) => (tag) => <I extends Record<string, unknown>, A>(
     members: { [K in keyof A]: Kleisli<M, I, E, A[K]> }
   ): Kleisli<M, I, E, A[keyof A]> => {
