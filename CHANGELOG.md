@@ -19,6 +19,7 @@
 - **Experimental**
   - (\*) remove `KleisliDecoder` module (@gcanti)
   - (\*) remove `KleisliTaskDecoder` module (@gcanti)
+  - (\*) remove `JsonCodec` module (@gcanti)
   - `Decoder`
     - (\*) make `Decoder` more general by adding a `I` type parameter (@gcanti)
     - add `fromRefinement` function (@gcanti)
@@ -78,9 +79,6 @@
     - (\*) drop `tuple` in favour of `composeTuple` (@gcanti)
     - (\*) drop `union` in favour of `composeUnion` (@gcanti)
     - (\*) drop `sum` in favour of `composeSum` (@gcanti)
-  - `JsonCodec`
-    - (\*) rename `invariantJsonCodec` to `Invariant` (@gcanti)
-    - (\*) rename `schemableJsonCodec` to `Schemable` (@gcanti)
   - `JsonEncoder`
     - (\*) rename `contravariantJsonCodec` to `Contravariant` (@gcanti)
     - (\*) rename `schemableJsonEncoder` to `Schemable` (@gcanti)
