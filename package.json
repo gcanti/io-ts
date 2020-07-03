@@ -22,7 +22,7 @@
     "perf": "ts-node perf/index",
     "dtslint": "dtslint dtslint",
     "mocha": "TS_NODE_CACHE=false mocha -r ts-node/register test/*.ts",
-    "doctoc": "doctoc README.md index.md UnknownDecoder.md Encoder.md Codec.md Eq.md Schema.md",
+    "doctoc": "doctoc README.md index.md Decoder.md Encoder.md Codec.md Eq.md Schema.md",
     "docs": "docs-ts",
     "import-path-rewrite": "import-path-rewrite"
   },

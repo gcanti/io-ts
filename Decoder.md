@@ -1,7 +1,7 @@
 <!-- START doctoc generated TOC please keep comment here to allow auto update -->
 <!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
 
-- [Decoder interface](#decoder-interface)
+- [Model](#model)
 - [Built-in primitive decoders](#built-in-primitive-decoders)
 - [Combinators](#combinators)
   - [The `literal` constructor](#the-literal-constructor)
@@ -13,6 +13,7 @@
   - [The `tuple` combinator](#the-tuple-combinator)
   - [The `intersect` combinator](#the-intersect-combinator)
   - [The `sum` combinator](#the-sum-combinator)
+  - [The `union` combinator](#the-union-combinator)
   - [The `lazy` combinator](#the-lazy-combinator)
   - [The `refine` combinator](#the-refine-combinator)
   - [The `parse` combinator](#the-parse-combinator)
@@ -24,8 +25,8 @@
 # Model
 
 ```ts
-export interface UnknownDecoder<A> {
-  readonly decode: (u: unknown) => E.Either<DecodeError, A>
+interface Decoder<I, A> {
+  readonly decode: (i: I) => E.Either<DecodeError, A>
 }
 ```
 
@@ -36,7 +37,7 @@ A decoder representing `string` can be defined as
 ```ts
 import * as D from 'io-ts/lib/Decoder'
 
-export const string: D.Decoder<string> = {
+export const string: D.Decoder<unknown, string> = {
   decode: (u) => (typeof u === 'string' ? D.success(u) : D.failure(u, 'string'))
 }
 ```
@@ -72,11 +73,11 @@ console.log(
 
 # Built-in primitive decoders
 
-- `string: Decoder<string>`
-- `number: Decoder<number>`
-- `boolean: Decoder<boolean>`
-- `UnknownArray: Decoder<Array<unknown>>`
-- `UnknownRecord: Decoder<Record<string, unknown>>`
+- `string: Decoder<unknown, string>`
+- `number: Decoder<unknown, number>`
+- `boolean: Decoder<unknown, boolean>`
+- `UnknownArray: Decoder<unknown, Array<unknown>>`
+- `UnknownRecord: Decoder<unknown, Record<string, unknown>>`
 
 # Combinators
 
@@ -220,6 +221,18 @@ export const MySum: D.Decoder<
   //                           v----- this value must be equal to its corresponding dictionary key ("B" in this case)
   B: D.type({ type: D.literal('B'), b: D.number })
 })
+```
+
+## The `union` combinator
+
+The `union` combinator describes untagged unions
+
+```ts
+const MyUnion = D.union(D.string, D.number)
+
+console.log(isRight(MyUnion.decode('a'))) // => true
+console.log(isRight(MyUnion.decode(1))) // => true
+console.log(isRight(MyUnion.decode(null))) // => false
 ```
 
 ## The `lazy` combinator
