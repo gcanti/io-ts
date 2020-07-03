@@ -71,6 +71,7 @@ Added in v2.2.7
   - [UnknownRecord](#unknownrecord)
   - [boolean](#boolean)
   - [number](#number)
+  - [object](#object)
   - [string](#string)
 - [utils](#utils)
   - [InputOf (type alias)](#inputof-type-alias)
@@ -214,7 +215,7 @@ Added in v2.2.8
 export declare const kpartial: <P extends Record<string, TaskDecoder<any, any>>>(
   properties: P
 ) => TaskDecoder<
-  { [K in keyof P]: K.InputOf<'TaskEither', P[K]> },
+  Partial<{ [K in keyof P]: K.InputOf<'TaskEither', P[K]> }>,
   Partial<{ [K in keyof P]: K.TypeOf<'TaskEither', P[K]> }>
 >
 ```
@@ -240,7 +241,7 @@ export declare const ksum: <T extends string>(
   tag: T
 ) => <MS extends Record<string, TaskDecoder<any, any>>>(
   members: MS
-) => TaskDecoder<K.InputOf<'TaskEither', MS[keyof MS]>, K.TypeOf<'TaskEither', MS[keyof MS]>>
+) => TaskDecoder<Partial<K.InputOf<'TaskEither', MS[keyof MS]>>, K.TypeOf<'TaskEither', MS[keyof MS]>>
 ```
 
 Added in v2.2.8
@@ -264,7 +265,10 @@ Added in v2.2.8
 ```ts
 export declare const ktype: <P extends Record<string, TaskDecoder<any, any>>>(
   properties: P
-) => TaskDecoder<{ [K in keyof P]: K.InputOf<'TaskEither', P[K]> }, { [K in keyof P]: K.TypeOf<'TaskEither', P[K]> }>
+) => TaskDecoder<
+  Partial<{ [K in keyof P]: K.InputOf<'TaskEither', P[K]> }>,
+  { [K in keyof P]: K.TypeOf<'TaskEither', P[K]> }
+>
 ```
 
 Added in v2.2.8
@@ -561,6 +565,16 @@ export declare const number: TaskDecoder<unknown, number>
 ```
 
 Added in v2.2.7
+
+## object
+
+**Signature**
+
+```ts
+export declare const object: TaskDecoder<unknown, object>
+```
+
+Added in v2.2.8
 
 ## string
 

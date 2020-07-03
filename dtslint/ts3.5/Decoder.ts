@@ -34,6 +34,18 @@ _.type({
 })
 
 //
+// kpartial
+//
+
+// $ExpectType Decoder<Partial<{ a: unknown; b: Partial<{ c: unknown; }>; }>, Partial<{ a: string; b: Partial<{ c: number; }>; }>>
+_.kpartial({
+  a: _.string,
+  b: _.kpartial({
+    c: _.number
+  })
+})
+
+//
 // partial
 //
 

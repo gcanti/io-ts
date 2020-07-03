@@ -179,6 +179,14 @@ export const UnknownRecord: TaskDecoder<unknown, Record<string, unknown>> =
   /*#__PURE__*/
   fromDecoder(D.UnknownRecord)
 
+/**
+ * @category primitives
+ * @since 2.2.8
+ */
+export const object: TaskDecoder<unknown, object> =
+  /*#__PURE__*/
+  fromDecoder(D.object)
+
 // -------------------------------------------------------------------------------------
 // combinators
 // -------------------------------------------------------------------------------------
@@ -226,7 +234,7 @@ export const nullable: <I, A>(or: TaskDecoder<I, A>) => TaskDecoder<null | I, nu
  */
 export const ktype = <P extends Record<string, TaskDecoder<any, any>>>(
   properties: P
-): TaskDecoder<{ [K in keyof P]: InputOf<P[K]> }, { [K in keyof P]: TypeOf<P[K]> }> =>
+): TaskDecoder<Partial<{ [K in keyof P]: InputOf<P[K]> }>, { [K in keyof P]: TypeOf<P[K]> }> =>
   K.type(M)((k, e) => FS.of(DE.key(k, DE.required, e)))(properties)
 
 /**
@@ -235,7 +243,7 @@ export const ktype = <P extends Record<string, TaskDecoder<any, any>>>(
  */
 export const type = <A>(
   properties: { [K in keyof A]: TaskDecoder<unknown, A[K]> }
-): TaskDecoder<unknown, { [K in keyof A]: A[K] }> => pipe(UnknownRecord as any, compose(ktype(properties)))
+): TaskDecoder<unknown, { [K in keyof A]: A[K] }> => pipe(object, compose(ktype(properties)))
 
 /**
  * @category combinators
@@ -243,7 +251,7 @@ export const type = <A>(
  */
 export const kpartial = <P extends Record<string, TaskDecoder<any, any>>>(
   properties: P
-): TaskDecoder<{ [K in keyof P]: InputOf<P[K]> }, Partial<{ [K in keyof P]: TypeOf<P[K]> }>> =>
+): TaskDecoder<Partial<{ [K in keyof P]: InputOf<P[K]> }>, Partial<{ [K in keyof P]: TypeOf<P[K]> }>> =>
   K.partial(M)((k, e) => FS.of(DE.key(k, DE.optional, e)))(properties)
 
 /**
@@ -252,7 +260,7 @@ export const kpartial = <P extends Record<string, TaskDecoder<any, any>>>(
  */
 export const partial = <A>(
   properties: { [K in keyof A]: TaskDecoder<unknown, A[K]> }
-): TaskDecoder<unknown, Partial<{ [K in keyof A]: A[K] }>> => pipe(UnknownRecord as any, compose(kpartial(properties)))
+): TaskDecoder<unknown, Partial<{ [K in keyof A]: A[K] }>> => pipe(object, compose(kpartial(properties)))
 
 /**
  * @category combinators
@@ -325,7 +333,7 @@ export const intersect: <IB, B>(
  */
 export const ksum = <T extends string>(tag: T) => <MS extends Record<string, TaskDecoder<any, any>>>(
   members: MS
-): TaskDecoder<InputOf<MS[keyof MS]>, TypeOf<MS[keyof MS]>> =>
+): TaskDecoder<Partial<InputOf<MS[keyof MS]>>, TypeOf<MS[keyof MS]>> =>
   K.sum(M)((tag, value, keys) =>
     FS.of(
       DE.key(
@@ -342,7 +350,7 @@ export const ksum = <T extends string>(tag: T) => <MS extends Record<string, Tas
  */
 export const sum = <T extends string>(tag: T) => <A>(
   members: { [K in keyof A]: TaskDecoder<unknown, A[K]> }
-): TaskDecoder<unknown, A[keyof A]> => pipe(UnknownRecord as any, compose(ksum(tag)(members)))
+): TaskDecoder<unknown, A[keyof A]> => pipe(object, compose(ksum(tag)(members)))
 
 /**
  * @category combinators

@@ -22,6 +22,7 @@
   - (\*) remove `JsonCodec` module (@gcanti)
   - `Decoder`
     - (\*) make `Decoder` more general by adding a `I` type parameter (@gcanti)
+    - add `object` primitive (@gcanti)
     - add `fromRefinement` function (@gcanti)
     - change `fromGuard` signature (@gcanti)
     - add `ktype` function (@gcanti)
@@ -39,6 +40,7 @@
     - add `InputOf` type (@gcanti)
   - `TaskDecoder`
     - (\*) make `TaskDecoder` more general by adding a `I` type parameter (@gcanti)
+    - add `object` primitive (@gcanti)
     - add `fromRefinement` function (@gcanti)
     - change `fromDecoder` signature (@gcanti)
     - add `ktype` function (@gcanti)
@@ -57,6 +59,7 @@
   - `Guard`
     - (\*) make `Guard` more general by adding a `I` type parameter (@gcanti)
     - (\*) rename `schemableGuard` to `Schemable` (@gcanti)
+    - add `object` primitive (@gcanti)
     - add `InputOf` type (@gcanti)
     - add `alt` function (@gcanti)
     - add `zero` function (@gcanti)

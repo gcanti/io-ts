@@ -70,6 +70,7 @@ Added in v2.2.7
   - [UnknownRecord](#unknownrecord)
   - [boolean](#boolean)
   - [number](#number)
+  - [object](#object)
   - [string](#string)
 - [utils](#utils)
   - [InputOf (type alias)](#inputof-type-alias)
@@ -212,7 +213,10 @@ Added in v2.2.8
 ```ts
 export declare const kpartial: <P extends Record<string, Decoder<any, any>>>(
   properties: P
-) => Decoder<{ [K in keyof P]: K.InputOf<'Either', P[K]> }, Partial<{ [K in keyof P]: K.TypeOf<'Either', P[K]> }>>
+) => Decoder<
+  Partial<{ [K in keyof P]: K.InputOf<'Either', P[K]> }>,
+  Partial<{ [K in keyof P]: K.TypeOf<'Either', P[K]> }>
+>
 ```
 
 Added in v2.2.8
@@ -236,7 +240,7 @@ export declare const ksum: <T extends string>(
   tag: T
 ) => <MS extends Record<string, Decoder<any, any>>>(
   members: MS
-) => Decoder<K.InputOf<'Either', MS[keyof MS]>, K.TypeOf<'Either', MS[keyof MS]>>
+) => Decoder<Partial<K.InputOf<'Either', MS[keyof MS]>>, K.TypeOf<'Either', MS[keyof MS]>>
 ```
 
 Added in v2.2.8
@@ -260,7 +264,7 @@ Added in v2.2.8
 ```ts
 export declare const ktype: <P extends Record<string, Decoder<any, any>>>(
   properties: P
-) => Decoder<{ [K in keyof P]: K.InputOf<'Either', P[K]> }, { [K in keyof P]: K.TypeOf<'Either', P[K]> }>
+) => Decoder<Partial<{ [K in keyof P]: K.InputOf<'Either', P[K]> }>, { [K in keyof P]: K.TypeOf<'Either', P[K]> }>
 ```
 
 Added in v2.2.8
@@ -544,6 +548,16 @@ export declare const number: Decoder<unknown, number>
 ```
 
 Added in v2.2.7
+
+## object
+
+**Signature**
+
+```ts
+export declare const object: Decoder<unknown, object>
+```
+
+Added in v2.2.8
 
 ## string
 
