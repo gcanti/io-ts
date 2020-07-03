@@ -6,7 +6,7 @@
  *
  * A feature tagged as _Experimental_ is in a high state of flux, you're at risk of it changing without notice.
  *
- * @since 2.2.8
+ * @since 2.2.7
  */
 import { Alt2, Alt2C } from 'fp-ts/lib/Alt'
 import { Bifunctor2 } from 'fp-ts/lib/Bifunctor'
@@ -83,25 +83,25 @@ export interface Decoder<I, A> extends K.Kleisli<E.URI, I, DecodeError, A> {}
 
 /**
  * @category DecodeError
- * @since 2.2.8
+ * @since 2.2.7
  */
 export type DecodeError = FS.FreeSemigroup<DE.DecodeError<string>>
 
 /**
  * @category DecodeError
- * @since 2.2.8
+ * @since 2.2.7
  */
 export const error = (actual: unknown, message: string): DecodeError => FS.of(DE.leaf(actual, message))
 
 /**
  * @category DecodeError
- * @since 2.2.8
+ * @since 2.2.7
  */
 export const success: <A>(a: A) => E.Either<DecodeError, A> = E.right
 
 /**
  * @category DecodeError
- * @since 2.2.8
+ * @since 2.2.7
  */
 export const failure = <A = never>(actual: unknown, message: string): E.Either<DecodeError, A> =>
   E.left(error(actual, message))
@@ -126,7 +126,7 @@ export const fromGuard = <I, A extends I>(guard: G.Guard<I, A>, expected: string
 
 /**
  * @category constructors
- * @since 2.2.8
+ * @since 2.2.7
  */
 export const literal: <A extends readonly [S.Literal, ...Array<S.Literal>]>(
   ...values: A
@@ -140,7 +140,7 @@ export const literal: <A extends readonly [S.Literal, ...Array<S.Literal>]>(
 
 /**
  * @category primitives
- * @since 2.2.8
+ * @since 2.2.7
  */
 export const string: Decoder<unknown, string> =
   /*#__PURE__*/
@@ -148,7 +148,7 @@ export const string: Decoder<unknown, string> =
 
 /**
  * @category primitives
- * @since 2.2.8
+ * @since 2.2.7
  */
 export const number: Decoder<unknown, number> =
   /*#__PURE__*/
@@ -156,7 +156,7 @@ export const number: Decoder<unknown, number> =
 
 /**
  * @category primitives
- * @since 2.2.8
+ * @since 2.2.7
  */
 export const boolean: Decoder<unknown, boolean> =
   /*#__PURE__*/
@@ -164,7 +164,7 @@ export const boolean: Decoder<unknown, boolean> =
 
 /**
  * @category primitives
- * @since 2.2.8
+ * @since 2.2.7
  */
 export const UnknownArray: Decoder<unknown, Array<unknown>> =
   /*#__PURE__*/
@@ -172,7 +172,7 @@ export const UnknownArray: Decoder<unknown, Array<unknown>> =
 
 /**
  * @category primitives
- * @since 2.2.8
+ * @since 2.2.7
  */
 export const UnknownRecord: Decoder<unknown, Record<string, unknown>> =
   /*#__PURE__*/
@@ -184,7 +184,7 @@ export const UnknownRecord: Decoder<unknown, Record<string, unknown>> =
 
 /**
  * @category combinators
- * @since 2.2.8
+ * @since 2.2.7
  */
 export const mapLeftWithInput: <I>(
   f: (input: I, e: DecodeError) => DecodeError
@@ -194,7 +194,7 @@ export const mapLeftWithInput: <I>(
 
 /**
  * @category combinators
- * @since 2.2.8
+ * @since 2.2.7
  */
 export const refine = <A, B extends A>(
   refinement: (a: A) => a is B,
@@ -203,7 +203,7 @@ export const refine = <A, B extends A>(
 
 /**
  * @category combinators
- * @since 2.2.8
+ * @since 2.2.7
  */
 export const parse: <A, B>(parser: (a: A) => E.Either<DecodeError, B>) => <I>(from: Decoder<I, A>) => Decoder<I, B> =
   /*#__PURE__*/
@@ -211,7 +211,7 @@ export const parse: <A, B>(parser: (a: A) => E.Either<DecodeError, B>) => <I>(fr
 
 /**
  * @category combinators
- * @since 2.2.8
+ * @since 2.2.7
  */
 export const nullable: <I, A>(or: Decoder<I, A>) => Decoder<null | I, null | A> =
   /*#__PURE__*/
@@ -229,7 +229,7 @@ export const composeType: <I, A>(
 
 /**
  * @category combinators
- * @since 2.2.8
+ * @since 2.2.7
  */
 export const type = <A>(
   properties: { [K in keyof A]: Decoder<unknown, A[K]> }
@@ -247,7 +247,7 @@ export const composePartial: <I, A>(
 
 /**
  * @category combinators
- * @since 2.2.8
+ * @since 2.2.7
  */
 export const partial = <A>(
   properties: { [K in keyof A]: Decoder<unknown, A[K]> }
@@ -263,7 +263,7 @@ export const composeArray: <I, A>(item: Decoder<I, A>) => <H>(decoder: Decoder<H
 
 /**
  * @category combinators
- * @since 2.2.8
+ * @since 2.2.7
  */
 export const array = <A>(item: Decoder<unknown, A>): Decoder<unknown, Array<A>> =>
   pipe(UnknownArray, composeArray(item))
@@ -280,7 +280,7 @@ export const composeRecord: <I, A>(
 
 /**
  * @category combinators
- * @since 2.2.8
+ * @since 2.2.7
  */
 export const record = <A>(codomain: Decoder<unknown, A>): Decoder<unknown, Record<string, A>> =>
   pipe(UnknownRecord, composeRecord(codomain))
@@ -297,7 +297,7 @@ export const composeTuple: <I, A extends ReadonlyArray<unknown>>(
 
 /**
  * @category combinators
- * @since 2.2.8
+ * @since 2.2.7
  */
 export const tuple = <A extends ReadonlyArray<unknown>>(
   ...components: { [K in keyof A]: Decoder<unknown, A[K]> }
@@ -305,7 +305,7 @@ export const tuple = <A extends ReadonlyArray<unknown>>(
 
 /**
  * @category combinators
- * @since 2.2.8
+ * @since 2.2.7
  */
 export const composeUnion: <I, A extends readonly [unknown, ...Array<unknown>]>(
   ...members: { [K in keyof A]: Decoder<I, A[K]> }
@@ -323,7 +323,7 @@ export const union = <A extends readonly [unknown, ...Array<unknown>]>(
 
 /**
  * @category combinators
- * @since 2.2.8
+ * @since 2.2.7
  */
 export const intersect: <IB, B>(right: Decoder<IB, B>) => <IA, A>(left: Decoder<IA, A>) => Decoder<IA & IB, A & B> =
   /*#__PURE__*/
@@ -345,7 +345,7 @@ export const composeSum: <T extends string>(
 
 /**
  * @category combinators
- * @since 2.2.8
+ * @since 2.2.7
  */
 export const sum = <T extends string>(tag: T) => <A>(
   members: { [K in keyof A]: Decoder<unknown, A[K]> }
@@ -353,7 +353,7 @@ export const sum = <T extends string>(tag: T) => <A>(
 
 /**
  * @category combinators
- * @since 2.2.8
+ * @since 2.2.7
  */
 export const lazy: <I, A>(id: string, f: () => Decoder<I, A>) => Decoder<I, A> =
   /*#__PURE__*/
@@ -375,7 +375,7 @@ const compose_: Category2<URI>['compose'] = (ab, la) => pipe(la, compose(ab))
 
 /**
  * @category Functor
- * @since 2.2.8
+ * @since 2.2.7
  */
 export const map: <A, B>(f: (a: A) => B) => <I>(fa: Decoder<I, A>) => Decoder<I, B> =
   /*#__PURE__*/
@@ -383,7 +383,7 @@ export const map: <A, B>(f: (a: A) => B) => <I>(fa: Decoder<I, A>) => Decoder<I,
 
 /**
  * @category Alt
- * @since 2.2.8
+ * @since 2.2.7
  */
 export const alt: <I, A>(that: () => Decoder<I, A>) => (me: Decoder<I, A>) => Decoder<I, A> =
   /*#__PURE__*/
@@ -411,13 +411,13 @@ export const id: <A>() => Decoder<A, A> =
 
 /**
  * @category instances
- * @since 2.2.8
+ * @since 2.2.7
  */
 export const URI = 'io-ts/Decoder'
 
 /**
  * @category instances
- * @since 2.2.8
+ * @since 2.2.7
  */
 export type URI = typeof URI
 
@@ -489,7 +489,7 @@ export const Schemable: S.Schemable2C<URI, unknown> &
 // -------------------------------------------------------------------------------------
 
 /**
- * @since 2.2.8
+ * @since 2.2.7
  */
 export type TypeOf<KD> = K.TypeOf<E.URI, KD>
 
@@ -539,7 +539,7 @@ const toForest: (e: DecodeError) => ReadonlyArray<Tree<string>> = FS.fold(
 )
 
 /**
- * @since 2.2.8
+ * @since 2.2.7
  */
 export const draw = (e: DecodeError): string => toForest(e).map(drawTree).join('\n')
 

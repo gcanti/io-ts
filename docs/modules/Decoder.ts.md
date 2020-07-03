@@ -13,7 +13,7 @@ Experimental features are published in order to get early feedback from the comm
 
 A feature tagged as _Experimental_ is in a high state of flux, you're at risk of it changing without notice.
 
-Added in v2.2.8
+Added in v2.2.7
 
 ---
 
@@ -89,7 +89,7 @@ Added in v2.2.8
 export declare const alt: <I, A>(that: () => Decoder<I, A>) => (me: Decoder<I, A>) => Decoder<I, A>
 ```
 
-Added in v2.2.8
+Added in v2.2.7
 
 # Category
 
@@ -113,7 +113,7 @@ Added in v2.2.8
 export type DecodeError = FS.FreeSemigroup<DE.DecodeError<string>>
 ```
 
-Added in v2.2.8
+Added in v2.2.7
 
 ## error
 
@@ -123,7 +123,7 @@ Added in v2.2.8
 export declare const error: (actual: unknown, message: string) => FS.FreeSemigroup<DE.DecodeError<string>>
 ```
 
-Added in v2.2.8
+Added in v2.2.7
 
 ## failure
 
@@ -136,7 +136,7 @@ export declare const failure: <A = never>(
 ) => E.Either<FS.FreeSemigroup<DE.DecodeError<string>>, A>
 ```
 
-Added in v2.2.8
+Added in v2.2.7
 
 ## success
 
@@ -146,7 +146,7 @@ Added in v2.2.8
 export declare const success: <A>(a: A) => E.Either<FS.FreeSemigroup<DE.DecodeError<string>>, A>
 ```
 
-Added in v2.2.8
+Added in v2.2.7
 
 # Functor
 
@@ -158,7 +158,7 @@ Added in v2.2.8
 export declare const map: <A, B>(f: (a: A) => B) => <I>(fa: Decoder<I, A>) => Decoder<I, B>
 ```
 
-Added in v2.2.8
+Added in v2.2.7
 
 # Semigroupoid
 
@@ -182,7 +182,7 @@ Added in v2.2.8
 export declare const array: <A>(item: Decoder<unknown, A>) => Decoder<unknown, A[]>
 ```
 
-Added in v2.2.8
+Added in v2.2.7
 
 ## composeArray
 
@@ -266,7 +266,7 @@ export declare const composeUnion: <I, A extends readonly [unknown, ...unknown[]
 ) => <H>(decoder: Decoder<H, I>) => Decoder<H, A[number]>
 ```
 
-Added in v2.2.8
+Added in v2.2.7
 
 ## intersect
 
@@ -278,7 +278,7 @@ export declare const intersect: <IB, B>(
 ) => <IA, A>(left: Decoder<IA, A>) => Decoder<IA & IB, A & B>
 ```
 
-Added in v2.2.8
+Added in v2.2.7
 
 ## lazy
 
@@ -288,7 +288,7 @@ Added in v2.2.8
 export declare const lazy: <I, A>(id: string, f: () => Decoder<I, A>) => Decoder<I, A>
 ```
 
-Added in v2.2.8
+Added in v2.2.7
 
 ## mapLeftWithInput
 
@@ -300,7 +300,7 @@ export declare const mapLeftWithInput: <I>(
 ) => <A>(decoder: Decoder<I, A>) => Decoder<I, A>
 ```
 
-Added in v2.2.8
+Added in v2.2.7
 
 ## nullable
 
@@ -310,7 +310,7 @@ Added in v2.2.8
 export declare const nullable: <I, A>(or: Decoder<I, A>) => Decoder<I, A>
 ```
 
-Added in v2.2.8
+Added in v2.2.7
 
 ## parse
 
@@ -322,7 +322,7 @@ export declare const parse: <A, B>(
 ) => <I>(from: Decoder<I, A>) => Decoder<I, B>
 ```
 
-Added in v2.2.8
+Added in v2.2.7
 
 ## partial
 
@@ -334,7 +334,7 @@ export declare const partial: <A>(
 ) => Decoder<unknown, Partial<{ [K in keyof A]: A[K] }>>
 ```
 
-Added in v2.2.8
+Added in v2.2.7
 
 ## record
 
@@ -344,7 +344,7 @@ Added in v2.2.8
 export declare const record: <A>(codomain: Decoder<unknown, A>) => Decoder<unknown, Record<string, A>>
 ```
 
-Added in v2.2.8
+Added in v2.2.7
 
 ## refine
 
@@ -357,7 +357,7 @@ export declare const refine: <A, B extends A>(
 ) => <I>(from: Decoder<I, A>) => Decoder<I, B>
 ```
 
-Added in v2.2.8
+Added in v2.2.7
 
 ## sum
 
@@ -369,7 +369,7 @@ export declare const sum: <T extends string>(
 ) => <A>(members: { [K in keyof A]: Decoder<unknown, A[K]> }) => Decoder<unknown, A[keyof A]>
 ```
 
-Added in v2.2.8
+Added in v2.2.7
 
 ## tuple
 
@@ -381,7 +381,7 @@ export declare const tuple: <A extends readonly unknown[]>(
 ) => Decoder<unknown, A>
 ```
 
-Added in v2.2.8
+Added in v2.2.7
 
 ## type
 
@@ -393,7 +393,7 @@ export declare const type: <A>(
 ) => Decoder<unknown, { [K in keyof A]: A[K] }>
 ```
 
-Added in v2.2.8
+Added in v2.2.7
 
 ## union
 
@@ -439,7 +439,7 @@ export declare const literal: <A extends readonly [S.Literal, ...S.Literal[]]>(
 ) => Decoder<unknown, A[number]>
 ```
 
-Added in v2.2.8
+Added in v2.2.7
 
 # instances
 
@@ -494,7 +494,7 @@ Added in v2.2.8
 export declare const URI: 'io-ts/Decoder'
 ```
 
-Added in v2.2.8
+Added in v2.2.7
 
 ## URI (type alias)
 
@@ -504,7 +504,7 @@ Added in v2.2.8
 export type URI = typeof URI
 ```
 
-Added in v2.2.8
+Added in v2.2.7
 
 # model
 
@@ -528,7 +528,7 @@ Added in v2.2.8
 export declare const UnknownArray: Decoder<unknown, unknown[]>
 ```
 
-Added in v2.2.8
+Added in v2.2.7
 
 ## UnknownRecord
 
@@ -538,7 +538,7 @@ Added in v2.2.8
 export declare const UnknownRecord: Decoder<unknown, Record<string, unknown>>
 ```
 
-Added in v2.2.8
+Added in v2.2.7
 
 ## boolean
 
@@ -548,7 +548,7 @@ Added in v2.2.8
 export declare const boolean: Decoder<unknown, boolean>
 ```
 
-Added in v2.2.8
+Added in v2.2.7
 
 ## number
 
@@ -558,7 +558,7 @@ Added in v2.2.8
 export declare const number: Decoder<unknown, number>
 ```
 
-Added in v2.2.8
+Added in v2.2.7
 
 ## string
 
@@ -568,7 +568,7 @@ Added in v2.2.8
 export declare const string: Decoder<unknown, string>
 ```
 
-Added in v2.2.8
+Added in v2.2.7
 
 # utils
 
@@ -590,7 +590,7 @@ Added in v2.2.8
 export type TypeOf<KD> = K.TypeOf<E.URI, KD>
 ```
 
-Added in v2.2.8
+Added in v2.2.7
 
 ## draw
 
@@ -600,4 +600,4 @@ Added in v2.2.8
 export declare const draw: (e: FS.FreeSemigroup<DE.DecodeError<string>>) => string
 ```
 
-Added in v2.2.8
+Added in v2.2.7
