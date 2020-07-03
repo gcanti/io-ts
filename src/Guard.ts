@@ -254,6 +254,14 @@ export const alt = <I, A extends I>(that: () => Guard<I, A>) => (me: Guard<I, A>
  * @category combinators
  * @since 2.2.8
  */
+export const zero = <I, A extends I>(): Guard<I, A> => ({
+  is: (_): _ is A => false
+})
+
+/**
+ * @category combinators
+ * @since 2.2.8
+ */
 export const compose = <I, A extends I, B extends A>(to: Guard<A, B>) => (from: Guard<I, A>): Guard<I, B> => ({
   is: (i): i is B => from.is(i) && to.is(i)
 })
