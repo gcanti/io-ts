@@ -61,6 +61,7 @@
     - (\*) rename `schemableGuard` to `Schemable` (@gcanti)
     - add `InputOf` type (@gcanti)
     - add `alt` function (@gcanti)
+    - add `zero` function (@gcanti)
     - add `compose` function (@gcanti)
     - add `id` function (@gcanti)
   - `Codec`

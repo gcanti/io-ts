@@ -23,6 +23,11 @@ describe('Guard', () => {
     assert.strictEqual(guard.is(null), false)
   })
 
+  it('zero', () => {
+    const guard = G.zero()
+    assert.strictEqual(guard.is('a'), false)
+  })
+
   it('compose', () => {
     const guard = pipe(G.string, G.compose(NonEmptyString))
     assert.strictEqual(guard.is('a'), true)

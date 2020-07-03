@@ -34,6 +34,7 @@ Added in v2.2.0
   - [tuple](#tuple)
   - [type](#type)
   - [union](#union)
+  - [zero](#zero)
 - [constructors](#constructors)
   - [literal](#literal)
 - [instances](#instances)
@@ -207,6 +208,16 @@ export declare const union: <A extends readonly [unknown, ...unknown[]]>(
 ```
 
 Added in v2.2.0
+
+## zero
+
+**Signature**
+
+```ts
+export declare const zero: <I, A extends I>() => Guard<I, A>
+```
+
+Added in v2.2.8
 
 # constructors
 
