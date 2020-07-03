@@ -17,63 +17,79 @@
 # 2.2.8
 
 - **Experimental**
-  - `Codec`
-    - rename `invariantCodec` to `Invariant` (@gcanti)
-  - `Encoder`
-    - rename `contravariantEncoder` to `Contravariant` (@gcanti)
-    - rename `categoryEncoder` to `Category` (@gcanti)
-  - `Eq`
-    - rename `schemableEq` to `Schemable` (@gcanti)
+  - (\*) remove `KleisliDecoder` module (@gcanti)
+  - (\*) remove `KleisliTaskDecoder` module (@gcanti)
+  - `Decoder`
+    - (\*) make `Decoder` more general by adding a `I` type parameter (@gcanti)
+    - add `fromRefinement` function (@gcanti)
+    - change `fromGuard` signature (@gcanti)
+    - add `composeType` function (@gcanti)
+    - add `composePartial` function (@gcanti)
+    - add `composeArray` function (@gcanti)
+    - add `composeRecord` function (@gcanti)
+    - add `composeTuple` function (@gcanti)
+    - add `composeUnion` function (@gcanti)
+    - add `composeSum` function (@gcanti)
+    - add `compose` function (@gcanti)
+    - add `id` function (@gcanti)
+    - (\*) rename `functorDecoder` instance to `Functor` (@gcanti)
+    - (\*) rename `altDecoder` instance to `Alt` (@gcanti)
+    - (\*) rename `schemableDecoder` instance to `Schemable` (@gcanti)
+    - add `Category` instance (@gcanti)
+    - add `InputOf` type (@gcanti)
+  - `TaskDecoder`
+    - (\*) make `TaskDecoder` more general by adding a `I` type parameter (@gcanti)
+    - add `fromRefinement` function (@gcanti)
+    - change `fromDecoder` signature (@gcanti)
+    - add `composeType` function (@gcanti)
+    - add `composePartial` function (@gcanti)
+    - add `composeArray` function (@gcanti)
+    - add `composeRecord` function (@gcanti)
+    - add `composeTuple` function (@gcanti)
+    - add `composeUnion` function (@gcanti)
+    - add `composeSum` function (@gcanti)
+    - add `compose` function (@gcanti)
+    - add `id` function (@gcanti)
+    - (\*) rename `functorTaskDecoder` instance to `Functor` (@gcanti)
+    - (\*) rename `altTaskDecoder` instance to `Alt` (@gcanti)
+    - (\*) rename `schemableTaskDecoder` instance to `Schemable` (@gcanti)
+    - add `Category` instance (@gcanti)
+    - add `InputOf` type (@gcanti)
   - `Guard`
-    - make `Guard` more general by adding a `I` type parameter (@gcanti)
-    - rename `schemableGuard` to `Schemable` (@gcanti)
+    - (\*) make `Guard` more general by adding a `I` type parameter (@gcanti)
+    - (\*) rename `schemableGuard` to `Schemable` (@gcanti)
+    - add `InputOf` type (@gcanti)
+    - add `alt` function (@gcanti)
+    - add `compose` function (@gcanti)
+    - add `id` function (@gcanti)
+  - `Codec`
+    - (\*) rename `invariantCodec` to `Invariant` (@gcanti)
+  - `Encoder`
+    - (\*) rename `contravariantEncoder` to `Contravariant` (@gcanti)
+    - (\*) rename `categoryEncoder` to `Category` (@gcanti)
+  - `Eq`
+    - (\*) rename `schemableEq` to `Schemable` (@gcanti)
   - `Kleisli`
     - add `id` (@gcanti)
-    - drop `type` in favour of `composeType` (@gcanti)
-    - drop `partial` in favour of `composePartial` (@gcanti)
-    - drop `array` in favour of `composeArray` (@gcanti)
-    - drop `record` in favour of `composeRecord` (@gcanti)
-    - drop `tuple` in favour of `composeTuple` (@gcanti)
-    - drop `union` in favour of `composeUnion` (@gcanti)
-    - drop `sum` in favour of `composeSum` (@gcanti)
-  - `KleisliDecoder`
-    - remove old `Decoder.ts` module and rename `KleisliDecoder` to `Decoder` (@gcanti)
-    - add `string`, `number`, `boolean`, `UnknownArray`, `UnknownRecord` primitives (@gcanti)
-    - drop `type` in favour of `composeType` (@gcanti)
-    - drop `partial` in favour of `composePartial` (@gcanti)
-    - rename `array` to `composeArray`
-    - rename `record` to `composeRecord`
-    - rename `tuple` to `composeTuple`
-    - rename `union` to `composeUnion`
-    - rename `sum` to `composeSum`
-    - add `type`, `partial`, `array`, `record`, `tuple`, `union`, `sum` combinators (@gcanti)
-    - add `Functor2`, `Alt2`, `Category2`, `Schemable2c` instances (@gcanti)
-    - add `draw` function (@gcanti)
-  - `KleisliTaskDecoder`
-    - remove old `TaskDecoder.ts` module and rename `KleisliTaskDecoder` to `TaskDecoder` (@gcanti)
-    - rename `fromKleisliDecoder` to `fromDecoder` (@gcanti)
-    - add `fromGuard` (@gcanti)
-    - add `string`, `number`, `boolean`, `UnknownArray`, `UnknownRecord` primitives (@gcanti)
-    - drop `type` in favour of `composeType` (@gcanti)
-    - drop `partial` in favour of `composePartial` (@gcanti)
-    - rename `array` to `composeArray`
-    - rename `record` to `composeRecord`
-    - rename `tuple` to `composeTuple`
-    - rename `union` to `composeUnion`
-    - rename `sum` to `composeSum`
-    - add `type`, `partial`, `array`, `record`, `tuple`, `union`, `sum` combinators (@gcanti)
-    - add `Functor2`, `Alt2`, `Category2`, `Schemable2c` instances (@gcanti)
-    - add `draw` function (@gcanti)
+    - (\*) drop `type` in favour of `composeType` (@gcanti)
+    - (\*) drop `partial` in favour of `composePartial` (@gcanti)
+    - (\*) drop `array` in favour of `composeArray` (@gcanti)
+    - (\*) drop `record` in favour of `composeRecord` (@gcanti)
+    - (\*) drop `tuple` in favour of `composeTuple` (@gcanti)
+    - (\*) drop `union` in favour of `composeUnion` (@gcanti)
+    - (\*) drop `sum` in favour of `composeSum` (@gcanti)
   - `JsonCodec`
-    - rename `invariantJsonCodec` to `Invariant` (@gcanti)
-    - rename `schemableJsonCodec` to `Schemable` (@gcanti)
+    - (\*) rename `invariantJsonCodec` to `Invariant` (@gcanti)
+    - (\*) rename `schemableJsonCodec` to `Schemable` (@gcanti)
   - `JsonEncoder`
-    - rename `contravariantJsonCodec` to `Contravariant` (@gcanti)
-    - rename `schemableJsonEncoder` to `Schemable` (@gcanti)
+    - (\*) rename `contravariantJsonCodec` to `Contravariant` (@gcanti)
+    - (\*) rename `schemableJsonEncoder` to `Schemable` (@gcanti)
   - `Schemable`
     - add `Schemable2C`, `WithUnknownContainers2C`, `WithUnion2C`, `WithRefine2C` (@gcanti)
   - `Type`
-    - rename `schemableType` to `Schemable` (@gcanti)
+    - (\*) rename `schemableType` to `Schemable` (@gcanti)
+
+(\*) breaking change
 
 # 2.2.7
 

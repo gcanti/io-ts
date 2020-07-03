@@ -13,7 +13,7 @@ Experimental features are published in order to get early feedback from the comm
 
 A feature tagged as _Experimental_ is in a high state of flux, you're at risk of it changing without notice.
 
-Added in v2.2.8
+Added in v2.2.7
 
 ---
 
@@ -90,7 +90,7 @@ Added in v2.2.8
 export declare const alt: <I, A>(that: () => TaskDecoder<I, A>) => (me: TaskDecoder<I, A>) => TaskDecoder<I, A>
 ```
 
-Added in v2.2.8
+Added in v2.2.7
 
 # Category
 
@@ -114,7 +114,7 @@ Added in v2.2.8
 export type DecodeError = D.DecodeError
 ```
 
-Added in v2.2.8
+Added in v2.2.7
 
 ## error
 
@@ -124,7 +124,7 @@ Added in v2.2.8
 export declare const error: (actual: unknown, message: string) => FS.FreeSemigroup<DE.DecodeError<string>>
 ```
 
-Added in v2.2.8
+Added in v2.2.7
 
 ## failure
 
@@ -137,7 +137,7 @@ export declare const failure: <A = never>(
 ) => TE.TaskEither<FS.FreeSemigroup<DE.DecodeError<string>>, A>
 ```
 
-Added in v2.2.8
+Added in v2.2.7
 
 ## success
 
@@ -147,7 +147,7 @@ Added in v2.2.8
 export declare const success: <A>(a: A) => TE.TaskEither<FS.FreeSemigroup<DE.DecodeError<string>>, A>
 ```
 
-Added in v2.2.8
+Added in v2.2.7
 
 # Functor
 
@@ -159,7 +159,7 @@ Added in v2.2.8
 export declare const map: <A, B>(f: (a: A) => B) => <I>(fa: TaskDecoder<I, A>) => TaskDecoder<I, B>
 ```
 
-Added in v2.2.8
+Added in v2.2.7
 
 # Semigroupoid
 
@@ -183,7 +183,7 @@ Added in v2.2.8
 export declare const array: <A>(item: TaskDecoder<unknown, A>) => TaskDecoder<unknown, A[]>
 ```
 
-Added in v2.2.8
+Added in v2.2.7
 
 ## composeArray
 
@@ -281,7 +281,7 @@ export declare const intersect: <IB, B>(
 ) => <IA, A>(left: TaskDecoder<IA, A>) => TaskDecoder<IA & IB, A & B>
 ```
 
-Added in v2.2.8
+Added in v2.2.7
 
 ## lazy
 
@@ -291,7 +291,7 @@ Added in v2.2.8
 export declare const lazy: <I, A>(id: string, f: () => TaskDecoder<I, A>) => TaskDecoder<I, A>
 ```
 
-Added in v2.2.8
+Added in v2.2.7
 
 ## mapLeftWithInput
 
@@ -303,7 +303,7 @@ export declare const mapLeftWithInput: <I>(
 ) => <A>(decoder: TaskDecoder<I, A>) => TaskDecoder<I, A>
 ```
 
-Added in v2.2.8
+Added in v2.2.7
 
 ## nullable
 
@@ -313,7 +313,7 @@ Added in v2.2.8
 export declare const nullable: <I, A>(or: TaskDecoder<I, A>) => TaskDecoder<I, A>
 ```
 
-Added in v2.2.8
+Added in v2.2.7
 
 ## parse
 
@@ -325,7 +325,7 @@ export declare const parse: <A, B>(
 ) => <I>(from: TaskDecoder<I, A>) => TaskDecoder<I, B>
 ```
 
-Added in v2.2.8
+Added in v2.2.7
 
 ## partial
 
@@ -337,7 +337,7 @@ export declare const partial: <A>(
 ) => TaskDecoder<unknown, Partial<{ [K in keyof A]: A[K] }>>
 ```
 
-Added in v2.2.8
+Added in v2.2.7
 
 ## record
 
@@ -347,7 +347,7 @@ Added in v2.2.8
 export declare const record: <A>(codomain: TaskDecoder<unknown, A>) => TaskDecoder<unknown, Record<string, A>>
 ```
 
-Added in v2.2.8
+Added in v2.2.7
 
 ## refine
 
@@ -360,7 +360,7 @@ export declare const refine: <A, B extends A>(
 ) => <I>(from: TaskDecoder<I, A>) => TaskDecoder<I, B>
 ```
 
-Added in v2.2.8
+Added in v2.2.7
 
 ## sum
 
@@ -372,7 +372,7 @@ export declare const sum: <T extends string>(
 ) => <A>(members: { [K in keyof A]: TaskDecoder<unknown, A[K]> }) => TaskDecoder<unknown, A[keyof A]>
 ```
 
-Added in v2.2.8
+Added in v2.2.7
 
 ## tuple
 
@@ -384,7 +384,7 @@ export declare const tuple: <A extends readonly unknown[]>(
 ) => TaskDecoder<unknown, A>
 ```
 
-Added in v2.2.8
+Added in v2.2.7
 
 ## type
 
@@ -396,7 +396,7 @@ export declare const type: <A>(
 ) => TaskDecoder<unknown, { [K in keyof A]: A[K] }>
 ```
 
-Added in v2.2.8
+Added in v2.2.7
 
 ## union
 
@@ -408,7 +408,7 @@ export declare const union: <A extends readonly [unknown, ...unknown[]]>(
 ) => TaskDecoder<unknown, A[number]>
 ```
 
-Added in v2.2.8
+Added in v2.2.7
 
 # constructors
 
@@ -420,7 +420,7 @@ Added in v2.2.8
 export declare const fromDecoder: <I, A>(decoder: D.Decoder<I, A>) => TaskDecoder<I, A>
 ```
 
-Added in v2.2.8
+Added in v2.2.7
 
 ## fromGuard
 
@@ -430,7 +430,7 @@ Added in v2.2.8
 export declare const fromGuard: <I, A extends I>(guard: G.Guard<I, A>, expected: string) => TaskDecoder<I, A>
 ```
 
-Added in v2.2.8
+Added in v2.2.7
 
 ## fromRefinement
 
@@ -455,7 +455,7 @@ export declare const literal: <A extends readonly [S.Literal, ...S.Literal[]]>(
 ) => TaskDecoder<unknown, A[number]>
 ```
 
-Added in v2.2.8
+Added in v2.2.7
 
 # instances
 
@@ -510,7 +510,7 @@ Added in v2.2.8
 export declare const URI: 'io-ts/TaskDecoder'
 ```
 
-Added in v2.2.8
+Added in v2.2.7
 
 ## URI (type alias)
 
@@ -520,7 +520,7 @@ Added in v2.2.8
 export type URI = typeof URI
 ```
 
-Added in v2.2.8
+Added in v2.2.7
 
 # model
 
@@ -544,7 +544,7 @@ Added in v2.2.8
 export declare const UnknownArray: TaskDecoder<unknown, unknown[]>
 ```
 
-Added in v2.2.8
+Added in v2.2.7
 
 ## UnknownRecord
 
@@ -554,7 +554,7 @@ Added in v2.2.8
 export declare const UnknownRecord: TaskDecoder<unknown, Record<string, unknown>>
 ```
 
-Added in v2.2.8
+Added in v2.2.7
 
 ## boolean
 
@@ -564,7 +564,7 @@ Added in v2.2.8
 export declare const boolean: TaskDecoder<unknown, boolean>
 ```
 
-Added in v2.2.8
+Added in v2.2.7
 
 ## number
 
@@ -574,7 +574,7 @@ Added in v2.2.8
 export declare const number: TaskDecoder<unknown, number>
 ```
 
-Added in v2.2.8
+Added in v2.2.7
 
 ## string
 
@@ -584,7 +584,7 @@ Added in v2.2.8
 export declare const string: TaskDecoder<unknown, string>
 ```
 
-Added in v2.2.8
+Added in v2.2.7
 
 # utils
 
@@ -606,7 +606,7 @@ Added in v2.2.8
 export type TypeOf<KTD> = K.TypeOf<TE.URI, KTD>
 ```
 
-Added in v2.2.8
+Added in v2.2.7
 
 ## draw
 
@@ -616,4 +616,4 @@ Added in v2.2.8
 export declare const draw: (e: FS.FreeSemigroup<DE.DecodeError<string>>) => string
 ```
 
-Added in v2.2.8
+Added in v2.2.7
