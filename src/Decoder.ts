@@ -221,11 +221,10 @@ export const nullable: <I, A>(or: Decoder<I, A>) => Decoder<null | I, null | A> 
  * @category combinators
  * @since 2.2.8
  */
-export const composeType: <I, A>(
-  properties: { [K in keyof A]: Decoder<I, A[K]> }
-) => <H>(decoder: Decoder<H, Record<string, I>>) => Decoder<H, { [K in keyof A]: A[K] }> =
-  /*#__PURE__*/
-  K.composeType(M)((k, e) => FS.of(DE.key(k, DE.required, e)))
+export const ktype = <P extends Record<string, Decoder<any, any>>>(
+  properties: P
+): Decoder<{ [K in keyof P]: InputOf<P[K]> }, { [K in keyof P]: TypeOf<P[K]> }> =>
+  K.type(M)((k, e) => FS.of(DE.key(k, DE.required, e)))(properties)
 
 /**
  * @category combinators
@@ -233,17 +232,16 @@ export const composeType: <I, A>(
  */
 export const type = <A>(
   properties: { [K in keyof A]: Decoder<unknown, A[K]> }
-): Decoder<unknown, { [K in keyof A]: A[K] }> => pipe(UnknownRecord, composeType(properties))
+): Decoder<unknown, { [K in keyof A]: A[K] }> => pipe(UnknownRecord as any, compose(ktype(properties)))
 
 /**
  * @category combinators
  * @since 2.2.8
  */
-export const composePartial: <I, A>(
-  properties: { [K in keyof A]: Decoder<I, A[K]> }
-) => <H>(decoder: Decoder<H, Record<string, I>>) => Decoder<H, Partial<{ [K in keyof A]: A[K] }>> =
-  /*#__PURE__*/
-  K.composePartial(M)((k, e) => FS.of(DE.key(k, DE.optional, e)))
+export const kpartial = <P extends Record<string, Decoder<any, any>>>(
+  properties: P
+): Decoder<{ [K in keyof P]: InputOf<P[K]> }, Partial<{ [K in keyof P]: TypeOf<P[K]> }>> =>
+  K.partial(M)((k, e) => FS.of(DE.key(k, DE.optional, e)))(properties)
 
 /**
  * @category combinators
@@ -251,49 +249,44 @@ export const composePartial: <I, A>(
  */
 export const partial = <A>(
   properties: { [K in keyof A]: Decoder<unknown, A[K]> }
-): Decoder<unknown, Partial<{ [K in keyof A]: A[K] }>> => pipe(UnknownRecord, composePartial(properties))
+): Decoder<unknown, Partial<{ [K in keyof A]: A[K] }>> => pipe(UnknownRecord as any, compose(kpartial(properties)))
 
 /**
  * @category combinators
  * @since 2.2.8
  */
-export const composeArray: <I, A>(item: Decoder<I, A>) => <H>(decoder: Decoder<H, Array<I>>) => Decoder<H, Array<A>> =
-  /*#__PURE__*/
-  K.composeArray(M)((i, e) => FS.of(DE.index(i, DE.optional, e)))
+export const karray = <I, A>(item: Decoder<I, A>): Decoder<Array<I>, Array<A>> =>
+  K.array(M)((i, e) => FS.of(DE.index(i, DE.optional, e)))(item)
 
 /**
  * @category combinators
  * @since 2.2.7
  */
 export const array = <A>(item: Decoder<unknown, A>): Decoder<unknown, Array<A>> =>
-  pipe(UnknownArray, composeArray(item))
+  pipe(UnknownArray, compose(karray(item)))
 
 /**
  * @category combinators
  * @since 2.2.8
  */
-export const composeRecord: <I, A>(
-  codomain: Decoder<I, A>
-) => <H>(decoder: Decoder<H, Record<string, I>>) => Decoder<H, Record<string, A>> =
-  /*#__PURE__*/
-  K.composeRecord(M)((k, e) => FS.of(DE.key(k, DE.optional, e)))
+export const krecord = <I, A>(codomain: Decoder<I, A>): Decoder<Record<string, I>, Record<string, A>> =>
+  K.record(M)((k, e) => FS.of(DE.key(k, DE.optional, e)))(codomain)
 
 /**
  * @category combinators
  * @since 2.2.7
  */
 export const record = <A>(codomain: Decoder<unknown, A>): Decoder<unknown, Record<string, A>> =>
-  pipe(UnknownRecord, composeRecord(codomain))
+  pipe(UnknownRecord, compose(krecord(codomain)))
 
 /**
  * @category combinators
  * @since 2.2.8
  */
-export const composeTuple: <I, A extends ReadonlyArray<unknown>>(
-  ...components: { [K in keyof A]: Decoder<I, A[K]> }
-) => <H>(decoder: Decoder<H, Array<I>>) => Decoder<H, A> =
-  /*#__PURE__*/
-  K.composeTuple(M)((i, e) => FS.of(DE.index(i, DE.required, e))) as any
+export const ktuple = <C extends ReadonlyArray<Decoder<any, any>>>(
+  ...components: C
+): Decoder<{ [K in keyof C]: InputOf<C[K]> }, { [K in keyof C]: TypeOf<C[K]> }> =>
+  K.tuple(M)((i, e) => FS.of(DE.index(i, DE.required, e)))(...components)
 
 /**
  * @category combinators
@@ -301,25 +294,17 @@ export const composeTuple: <I, A extends ReadonlyArray<unknown>>(
  */
 export const tuple = <A extends ReadonlyArray<unknown>>(
   ...components: { [K in keyof A]: Decoder<unknown, A[K]> }
-): Decoder<unknown, A> => pipe(UnknownArray, composeTuple(...(components as any)))
+): Decoder<unknown, A> => pipe(UnknownArray as any, compose(ktuple(...components))) as any
 
 /**
  * @category combinators
  * @since 2.2.7
  */
-export const composeUnion: <I, A extends readonly [unknown, ...Array<unknown>]>(
-  ...members: { [K in keyof A]: Decoder<I, A[K]> }
-) => <H>(decoder: Decoder<H, I>) => Decoder<H, A[number]> =
+export const union: <MS extends readonly [Decoder<any, any>, ...Array<Decoder<any, any>>]>(
+  ...members: MS
+) => Decoder<InputOf<MS[keyof MS]>, TypeOf<MS[keyof MS]>> =
   /*#__PURE__*/
-  K.composeUnion(M)((i, e) => FS.of(DE.member(i, e))) as any
-
-/**
- * @category combinators
- * @since 2.2.8
- */
-export const union = <A extends readonly [unknown, ...Array<unknown>]>(
-  ...members: { [K in keyof A]: Decoder<unknown, A[K]> }
-): Decoder<unknown, A[number]> => pipe(id(), composeUnion(...(members as any)))
+  K.union(M)((i, e) => FS.of(DE.member(i, e)))
 
 /**
  * @category combinators
@@ -333,15 +318,18 @@ export const intersect: <IB, B>(right: Decoder<IB, B>) => <IA, A>(left: Decoder<
  * @category combinators
  * @since 2.2.8
  */
-export const composeSum: <T extends string>(
-  tag: T
-) => <I, A>(
-  members: { [K in keyof A]: Decoder<I, A[K]> }
-) => <H>(decoder: Decoder<H, Record<string, I>>) => Decoder<H, A[keyof A]> = K.composeSum(M)((tag, value, keys) =>
-  FS.of(
-    DE.key(tag, DE.required, error(value, keys.length === 0 ? 'never' : keys.map((k) => JSON.stringify(k)).join(' | ')))
-  )
-)
+export const ksum = <T extends string>(tag: T) => <MS extends Record<string, Decoder<any, any>>>(
+  members: MS
+): Decoder<InputOf<MS[keyof MS]>, TypeOf<MS[keyof MS]>> =>
+  K.sum(M)((tag, value, keys) =>
+    FS.of(
+      DE.key(
+        tag,
+        DE.required,
+        error(value, keys.length === 0 ? 'never' : keys.map((k) => JSON.stringify(k)).join(' | '))
+      )
+    )
+  )(tag)(members)
 
 /**
  * @category combinators
@@ -349,7 +337,7 @@ export const composeSum: <T extends string>(
  */
 export const sum = <T extends string>(tag: T) => <A>(
   members: { [K in keyof A]: Decoder<unknown, A[K]> }
-): Decoder<unknown, A[keyof A]> => pipe(UnknownRecord, composeSum(tag)(members))
+): Decoder<unknown, A[keyof A]> => pipe(UnknownRecord as any, compose(ksum(tag)(members)))
 
 /**
  * @category combinators

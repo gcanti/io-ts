@@ -34,14 +34,13 @@ Added in v2.2.7
   - [compose](#compose)
 - [combinators](#combinators)
   - [array](#array)
-  - [composeArray](#composearray)
-  - [composePartial](#composepartial)
-  - [composeRecord](#composerecord)
-  - [composeSum](#composesum)
-  - [composeTuple](#composetuple)
-  - [composeType](#composetype)
-  - [composeUnion](#composeunion)
   - [intersect](#intersect)
+  - [karray](#karray)
+  - [kpartial](#kpartial)
+  - [krecord](#krecord)
+  - [ksum](#ksum)
+  - [ktuple](#ktuple)
+  - [ktype](#ktype)
   - [lazy](#lazy)
   - [mapLeftWithInput](#mapleftwithinput)
   - [nullable](#nullable)
@@ -185,92 +184,6 @@ export declare const array: <A>(item: TaskDecoder<unknown, A>) => TaskDecoder<un
 
 Added in v2.2.7
 
-## composeArray
-
-**Signature**
-
-```ts
-export declare const composeArray: <I, A>(
-  item: TaskDecoder<I, A>
-) => <H>(decoder: TaskDecoder<H, I[]>) => TaskDecoder<H, A[]>
-```
-
-Added in v2.2.8
-
-## composePartial
-
-**Signature**
-
-```ts
-export declare const composePartial: <I, A>(
-  properties: { [K in keyof A]: TaskDecoder<I, A[K]> }
-) => <H>(decoder: TaskDecoder<H, Record<string, I>>) => TaskDecoder<H, Partial<{ [K in keyof A]: A[K] }>>
-```
-
-Added in v2.2.8
-
-## composeRecord
-
-**Signature**
-
-```ts
-export declare const composeRecord: <I, A>(
-  codomain: TaskDecoder<I, A>
-) => <H>(decoder: TaskDecoder<H, Record<string, I>>) => TaskDecoder<H, Record<string, A>>
-```
-
-Added in v2.2.8
-
-## composeSum
-
-**Signature**
-
-```ts
-export declare const composeSum: <T extends string>(
-  tag: T
-) => <I, A>(
-  members: { [K in keyof A]: TaskDecoder<I, A[K]> }
-) => <H>(decoder: TaskDecoder<H, Record<string, I>>) => TaskDecoder<H, A[keyof A]>
-```
-
-Added in v2.2.8
-
-## composeTuple
-
-**Signature**
-
-```ts
-export declare const composeTuple: <I, A extends readonly unknown[]>(
-  ...components: { [K in keyof A]: TaskDecoder<I, A[K]> }
-) => <H>(decoder: TaskDecoder<H, I[]>) => TaskDecoder<H, A>
-```
-
-Added in v2.2.8
-
-## composeType
-
-**Signature**
-
-```ts
-export declare const composeType: <I, A>(
-  properties: { [K in keyof A]: TaskDecoder<I, A[K]> }
-) => <H>(decoder: TaskDecoder<H, Record<string, I>>) => TaskDecoder<H, { [K in keyof A]: A[K] }>
-```
-
-Added in v2.2.8
-
-## composeUnion
-
-**Signature**
-
-```ts
-export declare const composeUnion: <I, A extends readonly [unknown, ...unknown[]]>(
-  ...members: { [K in keyof A]: TaskDecoder<I, A[K]> }
-) => <H>(decoder: TaskDecoder<H, I>) => TaskDecoder<H, A[number]>
-```
-
-Added in v2.2.8
-
 ## intersect
 
 **Signature**
@@ -282,6 +195,79 @@ export declare const intersect: <IB, B>(
 ```
 
 Added in v2.2.7
+
+## karray
+
+**Signature**
+
+```ts
+export declare const karray: <I, A>(item: TaskDecoder<I, A>) => TaskDecoder<I[], A[]>
+```
+
+Added in v2.2.8
+
+## kpartial
+
+**Signature**
+
+```ts
+export declare const kpartial: <P extends Record<string, TaskDecoder<any, any>>>(
+  properties: P
+) => TaskDecoder<
+  { [K in keyof P]: K.InputOf<'TaskEither', P[K]> },
+  Partial<{ [K in keyof P]: K.TypeOf<'TaskEither', P[K]> }>
+>
+```
+
+Added in v2.2.8
+
+## krecord
+
+**Signature**
+
+```ts
+export declare const krecord: <I, A>(codomain: TaskDecoder<I, A>) => TaskDecoder<Record<string, I>, Record<string, A>>
+```
+
+Added in v2.2.8
+
+## ksum
+
+**Signature**
+
+```ts
+export declare const ksum: <T extends string>(
+  tag: T
+) => <MS extends Record<string, TaskDecoder<any, any>>>(
+  members: MS
+) => TaskDecoder<K.InputOf<'TaskEither', MS[keyof MS]>, K.TypeOf<'TaskEither', MS[keyof MS]>>
+```
+
+Added in v2.2.8
+
+## ktuple
+
+**Signature**
+
+```ts
+export declare const ktuple: <C extends readonly TaskDecoder<any, any>[]>(
+  ...components: C
+) => TaskDecoder<{ [K in keyof C]: K.InputOf<'TaskEither', C[K]> }, { [K in keyof C]: K.TypeOf<'TaskEither', C[K]> }>
+```
+
+Added in v2.2.8
+
+## ktype
+
+**Signature**
+
+```ts
+export declare const ktype: <P extends Record<string, TaskDecoder<any, any>>>(
+  properties: P
+) => TaskDecoder<{ [K in keyof P]: K.InputOf<'TaskEither', P[K]> }, { [K in keyof P]: K.TypeOf<'TaskEither', P[K]> }>
+```
+
+Added in v2.2.8
 
 ## lazy
 
@@ -403,9 +389,9 @@ Added in v2.2.7
 **Signature**
 
 ```ts
-export declare const union: <A extends readonly [unknown, ...unknown[]]>(
-  ...members: { [K in keyof A]: TaskDecoder<unknown, A[K]> }
-) => TaskDecoder<unknown, A[number]>
+export declare const union: <MS extends readonly [TaskDecoder<any, any>, ...TaskDecoder<any, any>[]]>(
+  ...members: MS
+) => TaskDecoder<K.InputOf<'TaskEither', MS[keyof MS]>, K.TypeOf<'TaskEither', MS[keyof MS]>>
 ```
 
 Added in v2.2.7

@@ -34,14 +34,13 @@ Added in v2.2.7
   - [compose](#compose)
 - [combinators](#combinators)
   - [array](#array)
-  - [composeArray](#composearray)
-  - [composePartial](#composepartial)
-  - [composeRecord](#composerecord)
-  - [composeSum](#composesum)
-  - [composeTuple](#composetuple)
-  - [composeType](#composetype)
-  - [composeUnion](#composeunion)
   - [intersect](#intersect)
+  - [karray](#karray)
+  - [kpartial](#kpartial)
+  - [krecord](#krecord)
+  - [ksum](#ksum)
+  - [ktuple](#ktuple)
+  - [ktype](#ktype)
   - [lazy](#lazy)
   - [mapLeftWithInput](#mapleftwithinput)
   - [nullable](#nullable)
@@ -184,90 +183,6 @@ export declare const array: <A>(item: Decoder<unknown, A>) => Decoder<unknown, A
 
 Added in v2.2.7
 
-## composeArray
-
-**Signature**
-
-```ts
-export declare const composeArray: <I, A>(item: Decoder<I, A>) => <H>(decoder: Decoder<H, I[]>) => Decoder<H, A[]>
-```
-
-Added in v2.2.8
-
-## composePartial
-
-**Signature**
-
-```ts
-export declare const composePartial: <I, A>(
-  properties: { [K in keyof A]: Decoder<I, A[K]> }
-) => <H>(decoder: Decoder<H, Record<string, I>>) => Decoder<H, Partial<{ [K in keyof A]: A[K] }>>
-```
-
-Added in v2.2.8
-
-## composeRecord
-
-**Signature**
-
-```ts
-export declare const composeRecord: <I, A>(
-  codomain: Decoder<I, A>
-) => <H>(decoder: Decoder<H, Record<string, I>>) => Decoder<H, Record<string, A>>
-```
-
-Added in v2.2.8
-
-## composeSum
-
-**Signature**
-
-```ts
-export declare const composeSum: <T extends string>(
-  tag: T
-) => <I, A>(
-  members: { [K in keyof A]: Decoder<I, A[K]> }
-) => <H>(decoder: Decoder<H, Record<string, I>>) => Decoder<H, A[keyof A]>
-```
-
-Added in v2.2.8
-
-## composeTuple
-
-**Signature**
-
-```ts
-export declare const composeTuple: <I, A extends readonly unknown[]>(
-  ...components: { [K in keyof A]: Decoder<I, A[K]> }
-) => <H>(decoder: Decoder<H, I[]>) => Decoder<H, A>
-```
-
-Added in v2.2.8
-
-## composeType
-
-**Signature**
-
-```ts
-export declare const composeType: <I, A>(
-  properties: { [K in keyof A]: Decoder<I, A[K]> }
-) => <H>(decoder: Decoder<H, Record<string, I>>) => Decoder<H, { [K in keyof A]: A[K] }>
-```
-
-Added in v2.2.8
-
-## composeUnion
-
-**Signature**
-
-```ts
-export declare const composeUnion: <I, A extends readonly [unknown, ...unknown[]]>(
-  ...members: { [K in keyof A]: Decoder<I, A[K]> }
-) => <H>(decoder: Decoder<H, I>) => Decoder<H, A[number]>
-```
-
-Added in v2.2.7
-
 ## intersect
 
 **Signature**
@@ -279,6 +194,76 @@ export declare const intersect: <IB, B>(
 ```
 
 Added in v2.2.7
+
+## karray
+
+**Signature**
+
+```ts
+export declare const karray: <I, A>(item: Decoder<I, A>) => Decoder<I[], A[]>
+```
+
+Added in v2.2.8
+
+## kpartial
+
+**Signature**
+
+```ts
+export declare const kpartial: <P extends Record<string, Decoder<any, any>>>(
+  properties: P
+) => Decoder<{ [K in keyof P]: K.InputOf<'Either', P[K]> }, Partial<{ [K in keyof P]: K.TypeOf<'Either', P[K]> }>>
+```
+
+Added in v2.2.8
+
+## krecord
+
+**Signature**
+
+```ts
+export declare const krecord: <I, A>(codomain: Decoder<I, A>) => Decoder<Record<string, I>, Record<string, A>>
+```
+
+Added in v2.2.8
+
+## ksum
+
+**Signature**
+
+```ts
+export declare const ksum: <T extends string>(
+  tag: T
+) => <MS extends Record<string, Decoder<any, any>>>(
+  members: MS
+) => Decoder<K.InputOf<'Either', MS[keyof MS]>, K.TypeOf<'Either', MS[keyof MS]>>
+```
+
+Added in v2.2.8
+
+## ktuple
+
+**Signature**
+
+```ts
+export declare const ktuple: <C extends readonly Decoder<any, any>[]>(
+  ...components: C
+) => Decoder<{ [K in keyof C]: K.InputOf<'Either', C[K]> }, { [K in keyof C]: K.TypeOf<'Either', C[K]> }>
+```
+
+Added in v2.2.8
+
+## ktype
+
+**Signature**
+
+```ts
+export declare const ktype: <P extends Record<string, Decoder<any, any>>>(
+  properties: P
+) => Decoder<{ [K in keyof P]: K.InputOf<'Either', P[K]> }, { [K in keyof P]: K.TypeOf<'Either', P[K]> }>
+```
+
+Added in v2.2.8
 
 ## lazy
 
@@ -400,12 +385,12 @@ Added in v2.2.7
 **Signature**
 
 ```ts
-export declare const union: <A extends readonly [unknown, ...unknown[]]>(
-  ...members: { [K in keyof A]: Decoder<unknown, A[K]> }
-) => Decoder<unknown, A[number]>
+export declare const union: <MS extends readonly [Decoder<any, any>, ...Decoder<any, any>[]]>(
+  ...members: MS
+) => Decoder<K.InputOf<'Either', MS[keyof MS]>, K.TypeOf<'Either', MS[keyof MS]>>
 ```
 
-Added in v2.2.8
+Added in v2.2.7
 
 # constructors
 

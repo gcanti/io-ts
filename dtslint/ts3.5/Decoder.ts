@@ -22,21 +22,6 @@ export type TypeOfNumberFromString = _.TypeOf<typeof NumberFromString>
 export type InputOfNumberFromString = _.InputOf<typeof NumberFromString>
 
 //
-// composeType
-//
-
-// $ExpectType Decoder<unknown, { a: string; b: { c: number; }; }>
-pipe(
-  _.UnknownRecord,
-  _.composeType({
-    a: _.string,
-    b: _.type({
-      c: _.number
-    })
-  })
-)
-
-//
 // type
 //
 
@@ -47,21 +32,6 @@ _.type({
     c: _.number
   })
 })
-
-//
-// composePartial
-//
-
-// $ExpectType Decoder<unknown, Partial<{ a: string; b: Partial<{ c: number; }>; }>>
-pipe(
-  _.UnknownRecord,
-  _.composePartial({
-    a: _.string,
-    b: _.partial({
-      c: _.number
-    })
-  })
-)
 
 //
 // partial
@@ -76,34 +46,11 @@ _.partial({
 })
 
 //
-// composeArray
-//
-
-// $ExpectType Decoder<unknown, string[]>
-pipe(_.UnknownArray, _.composeArray(_.string))
-
-// $ExpectType Decoder<string, number[]>
-pipe(ArrayFromString, _.composeArray(NumberFromString))
-
-//
 // array
 //
 
 // $ExpectType Decoder<unknown, string[]>
 _.array(_.string)
-
-//
-// composeSum
-//
-
-// $ExpectType Decoder<unknown, { _tag: "A"; a: string; } | { _tag: "B"; b: number; }>
-pipe(
-  _.UnknownRecord,
-  _.composeSum('_tag')({
-    A: _.type({ _tag: _.literal('A'), a: _.string }),
-    B: _.type({ _tag: _.literal('B'), b: _.number })
-  })
-)
 
 //
 // sum
@@ -114,13 +61,6 @@ _.sum('_tag')({
   A: _.type({ _tag: _.literal('A'), a: _.string }),
   B: _.type({ _tag: _.literal('B'), b: _.number })
 })
-
-//
-// composeUnion
-//
-
-// $ExpectType Decoder<unknown, string | number>
-pipe(_.string, _.composeUnion(NumberFromString, StringFromString))
 
 //
 // union
