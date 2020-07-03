@@ -19,6 +19,8 @@ Added in v2.2.3
 
 <h2 class="text-delta">Table of contents</h2>
 
+- [Category](#category)
+  - [id](#id)
 - [Contravariant](#contravariant)
   - [contramap](#contramap)
 - [Semigroupoid](#semigroupoid)
@@ -33,10 +35,8 @@ Added in v2.2.3
   - [sum](#sum)
   - [tuple](#tuple)
   - [type](#type)
-- [constructors](#constructors)
-  - [id](#id)
 - [instances](#instances)
-  - [Category](#category)
+  - [Category](#category-1)
   - [Contravariant](#contravariant-1)
   - [URI](#uri)
   - [URI (type alias)](#uri-type-alias)
@@ -47,6 +47,18 @@ Added in v2.2.3
   - [TypeOf (type alias)](#typeof-type-alias)
 
 ---
+
+# Category
+
+## id
+
+**Signature**
+
+```ts
+export declare function id<A>(): Encoder<A, A>
+```
+
+Added in v2.2.3
 
 # Contravariant
 
@@ -168,18 +180,6 @@ Added in v2.2.3
 export declare function type<P extends Record<string, Encoder<any, any>>>(
   properties: P
 ): Encoder<{ [K in keyof P]: OutputOf<P[K]> }, { [K in keyof P]: TypeOf<P[K]> }>
-```
-
-Added in v2.2.3
-
-# constructors
-
-## id
-
-**Signature**
-
-```ts
-export declare function id<A>(): Encoder<A, A>
 ```
 
 Added in v2.2.3

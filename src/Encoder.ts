@@ -26,20 +26,6 @@ export interface Encoder<O, A> {
 }
 
 // -------------------------------------------------------------------------------------
-// constructors
-// -------------------------------------------------------------------------------------
-
-/**
- * @category constructors
- * @since 2.2.3
- */
-export function id<A>(): Encoder<A, A> {
-  return {
-    encode: identity
-  }
-}
-
-// -------------------------------------------------------------------------------------
 // combinators
 // -------------------------------------------------------------------------------------
 
@@ -168,6 +154,18 @@ export function lazy<O, A>(f: () => Encoder<O, A>): Encoder<O, A> {
 }
 
 // -------------------------------------------------------------------------------------
+// non-pipeables
+// -------------------------------------------------------------------------------------
+
+const contramap_: <E, A, B>(fa: Encoder<E, A>, f: (b: B) => A) => Encoder<E, B> = (fa, f) => ({
+  encode: (b) => fa.encode(f(b))
+})
+
+const compose_: <E, A, B>(ab: Encoder<A, B>, la: Encoder<E, A>) => Encoder<E, B> = (ab, ea) => ({
+  encode: (b) => ea.encode(ab.encode(b))
+})
+
+// -------------------------------------------------------------------------------------
 // pipeables
 // -------------------------------------------------------------------------------------
 
@@ -178,10 +176,6 @@ export function lazy<O, A>(f: () => Encoder<O, A>): Encoder<O, A> {
 export const contramap: <A, B>(f: (b: B) => A) => <E>(fa: Encoder<E, A>) => Encoder<E, B> = (f) => (fa) =>
   contramap_(fa, f)
 
-const contramap_: <E, A, B>(fa: Encoder<E, A>, f: (b: B) => A) => Encoder<E, B> = (fa, f) => ({
-  encode: (b) => fa.encode(f(b))
-})
-
 /**
  * @category Semigroupoid
  * @since 2.2.3
@@ -189,9 +183,15 @@ const contramap_: <E, A, B>(fa: Encoder<E, A>, f: (b: B) => A) => Encoder<E, B> 
 export const compose: <E, A>(ea: Encoder<E, A>) => <B>(ab: Encoder<A, B>) => Encoder<E, B> = (ea) => (ab) =>
   compose_(ab, ea)
 
-const compose_: <E, A, B>(ab: Encoder<A, B>, la: Encoder<E, A>) => Encoder<E, B> = (ab, ea) => ({
-  encode: (b) => ea.encode(ab.encode(b))
-})
+/**
+ * @category Category
+ * @since 2.2.3
+ */
+export function id<A>(): Encoder<A, A> {
+  return {
+    encode: identity
+  }
+}
 
 // -------------------------------------------------------------------------------------
 // instances
