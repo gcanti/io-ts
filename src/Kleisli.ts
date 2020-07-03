@@ -133,151 +133,130 @@ export type InputOf<M extends URIS2, KD> = KD extends Kleisli<M, infer I, any, a
 
 /**
  * @category combinators
- * @since 2.2.8
+ * @since 2.2.7
  */
-export function composeType<M extends URIS2, E>(
-  M: Monad2C<M, E> & Bifunctor2<M>
+export function type<M extends URIS2, E>(
+  M: Applicative2C<M, E> & Bifunctor2<M>
 ): (
   onPropertyError: (key: string, e: E) => E
-) => <I, A>(
-  properties: { [K in keyof A]: Kleisli<M, I, E, A[K]> }
-) => <H>(decoder: Kleisli<M, H, E, Record<string, I>>) => Kleisli<M, H, E, { [K in keyof A]: A[K] }> {
+) => <P extends Record<string, Kleisli<M, any, E, any>>>(
+  properties: P
+) => Kleisli<M, { [K in keyof P]: InputOf<M, P[K]> }, E, { [K in keyof P]: TypeOf<M, P[K]> }> {
   const traverse = traverseRecordWithIndex(M)
-  return (onPropertyError) => (properties) => (decoder) => ({
-    decode: (h) =>
-      M.chain(
-        decoder.decode(h),
-        (ri) =>
-          traverse(properties as Record<string, Kleisli<M, unknown, E, unknown>>, (key, decoder) =>
-            M.mapLeft(decoder.decode(ri[key]), (e) => onPropertyError(key, e))
-          ) as any
-      )
+  return (onPropertyError) => (properties) => ({
+    decode: (i) =>
+      traverse(properties as Record<string, Kleisli<M, unknown, E, unknown>>, (key, decoder) =>
+        M.mapLeft(decoder.decode(i[key]), (e) => onPropertyError(key, e))
+      ) as any
   })
 }
 
 /**
  * @category combinators
- * @since 2.2.8
+ * @since 2.2.7
  */
-export function composePartial<M extends URIS2, E>(
-  M: Monad2C<M, E> & Bifunctor2<M>
+export function partial<M extends URIS2, E>(
+  M: Applicative2C<M, E> & Bifunctor2<M>
 ): (
   onPropertyError: (key: string, e: E) => E
-) => <I, A>(
-  properties: { [K in keyof A]: Kleisli<M, I, E, A[K]> }
-) => <H>(decoder: Kleisli<M, H, E, Record<string, I>>) => Kleisli<M, H, E, Partial<{ [K in keyof A]: A[K] }>> {
+) => <P extends Record<string, Kleisli<M, any, E, any>>>(
+  properties: P
+) => Kleisli<M, { [K in keyof P]: InputOf<M, P[K]> }, E, Partial<{ [K in keyof P]: TypeOf<M, P[K]> }>> {
   const traverse = traverseRecordWithIndex(M)
   const undefinedProperty = M.of<E.Either<void, unknown>>(E.right(undefined))
   const skipProperty = M.of<E.Either<void, unknown>>(E.left(undefined))
-  return (onPropertyError) => (properties) => (decoder) => ({
-    decode: (h) =>
-      M.chain(
-        decoder.decode(h),
-        (ri) =>
-          M.map(
-            traverse(properties as Record<string, Kleisli<M, unknown, E, unknown>>, (key, decoder) => {
-              const ikey = ri[key]
-              if (ikey === undefined) {
-                return key in ri
-                  ? // don't strip undefined properties
-                    undefinedProperty
-                  : // don't add missing properties
-                    skipProperty
-              }
-              return M.bimap(
-                decoder.decode(ikey),
-                (e) => onPropertyError(key, e),
-                (a) => E.right<void, unknown>(a)
-              )
-            }),
-            compactRecord
-          ) as any
-      )
+  return (onPropertyError) => (properties) => ({
+    decode: (i) =>
+      M.map(
+        traverse(properties as Record<string, Kleisli<M, unknown, E, unknown>>, (key, decoder) => {
+          const ikey = i[key]
+          if (ikey === undefined) {
+            return key in i
+              ? // don't strip undefined properties
+                undefinedProperty
+              : // don't add missing properties
+                skipProperty
+          }
+          return M.bimap(
+            decoder.decode(ikey),
+            (e) => onPropertyError(key, e),
+            (a) => E.right<void, unknown>(a)
+          )
+        }),
+        compactRecord
+      ) as any
   })
 }
 
 /**
  * @category combinators
- * @since 2.2.8
+ * @since 2.2.7
  */
-export function composeArray<M extends URIS2, E>(
-  M: Monad2C<M, E> & Bifunctor2<M>
-): (
-  onItemError: (index: number, e: E) => E
-) => <I, A>(item: Kleisli<M, I, E, A>) => <H>(decoder: Kleisli<M, H, E, Array<I>>) => Kleisli<M, H, E, Array<A>> {
+export function array<M extends URIS2, E>(
+  M: Applicative2C<M, E> & Bifunctor2<M>
+): (onItemError: (index: number, e: E) => E) => <I, A>(item: Kleisli<M, I, E, A>) => Kleisli<M, Array<I>, E, Array<A>> {
   const traverse = traverseArrayWithIndex(M)
-  return (onItemError) => (item) => (decoder) => ({
-    decode: (h) =>
-      M.chain(decoder.decode(h), (is) =>
-        traverse(is, (index, i) => M.mapLeft(item.decode(i), (e) => onItemError(index, e)))
-      )
+  return (onItemError) => (item) => ({
+    decode: (is) => traverse(is, (index, i) => M.mapLeft(item.decode(i), (e) => onItemError(index, e)))
   })
 }
 
 /**
  * @category combinators
- * @since 2.2.8
+ * @since 2.2.7
  */
-export function composeRecord<M extends URIS2, E>(
-  M: Monad2C<M, E> & Bifunctor2<M>
+export function record<M extends URIS2, E>(
+  M: Applicative2C<M, E> & Bifunctor2<M>
 ): (
   onKeyError: (key: string, e: E) => E
-) => <I, A>(
-  codomain: Kleisli<M, I, E, A>
-) => <H>(decoder: Kleisli<M, H, E, Record<string, I>>) => Kleisli<M, H, E, Record<string, A>> {
+) => <I, A>(codomain: Kleisli<M, I, E, A>) => Kleisli<M, Record<string, I>, E, Record<string, A>> {
   const traverse = traverseRecordWithIndex(M)
-  return (onKeyError) => (codomain) => (decoder) => ({
-    decode: (h) =>
-      M.chain(decoder.decode(h), (ri) =>
-        traverse(ri, (key, i) => M.mapLeft(codomain.decode(i), (e) => onKeyError(key, e)))
-      )
+  return (onKeyError) => (codomain) => ({
+    decode: (ir) => traverse(ir, (key, i) => M.mapLeft(codomain.decode(i), (e) => onKeyError(key, e)))
   })
 }
 
 /**
  * @category combinators
- * @since 2.2.8
+ * @since 2.2.7
  */
-export function composeTuple<M extends URIS2, E>(
-  M: Monad2C<M, E> & Bifunctor2<M>
+export function tuple<M extends URIS2, E>(
+  M: Applicative2C<M, E> & Bifunctor2<M>
 ): (
   onIndexError: (index: number, e: E) => E
-) => <I, A extends ReadonlyArray<unknown>>(
-  ...components: { [K in keyof A]: Kleisli<M, I, E, A[K]> }
-) => <H>(decoder: Kleisli<M, H, E, Array<I>>) => Kleisli<M, H, E, A> {
+) => <C extends ReadonlyArray<Kleisli<M, any, E, any>>>(
+  ...components: C
+) => Kleisli<M, { [K in keyof C]: InputOf<M, C[K]> }, E, { [K in keyof C]: TypeOf<M, C[K]> }> {
   const traverse = traverseArrayWithIndex(M)
-  return (onIndexError) => (...components) => (decoder) => ({
-    decode: (h) =>
-      M.chain(
-        decoder.decode(h),
-        (is) =>
-          traverse((components as unknown) as Array<Kleisli<M, unknown, E, unknown>>, (index, decoder) =>
-            M.mapLeft(decoder.decode(is[index]), (e) => onIndexError(index, e))
-          ) as any
-      )
+  return (onIndexError) => (...components) => ({
+    decode: (is) =>
+      traverse((components as unknown) as Array<Kleisli<M, unknown, E, unknown>>, (index, decoder) =>
+        M.mapLeft(decoder.decode(is[index]), (e) => onIndexError(index, e))
+      ) as any
   })
 }
 
 /**
  * @category combinators
- * @since 2.2.8
+ * @since 2.2.7
  */
-export function composeUnion<M extends URIS2, E>(
-  M: Monad2C<M, E> & Alt2C<M, E> & Bifunctor2<M>
+export function union<M extends URIS2, E>(
+  M: Alt2C<M, E> & Bifunctor2<M>
 ): (
   onMemberError: (index: number, e: E) => E
-) => <I, A extends readonly [unknown, ...Array<unknown>]>(
-  ...members: { [K in keyof A]: Kleisli<M, I, E, A[K]> }
-) => <H>(decoder: Kleisli<M, H, E, I>) => Kleisli<M, H, E, A[number]> {
-  return (onMemberError) => (...members) => (decoder) => ({
-    decode: (h) =>
-      M.chain(decoder.decode(h), (i) => {
-        let out = M.mapLeft(members[0].decode(i), (e) => onMemberError(0, e))
-        for (let index = 1; index < members.length; index++) {
-          out = M.alt(out, () => M.mapLeft(members[index].decode(i), (e) => onMemberError(index, e)))
-        }
-        return out
-      })
+) => <MS extends readonly [Kleisli<M, any, E, any>, ...Array<Kleisli<M, any, E, any>>]>(
+  ...members: MS
+) => Kleisli<M, InputOf<M, MS[keyof MS]>, E, TypeOf<M, MS[keyof MS]>> {
+  return (onMemberError) => <MS extends readonly [Kleisli<M, any, E, any>, ...Array<Kleisli<M, any, E, any>>]>(
+    ...members: MS
+  ) => ({
+    decode: (i) => {
+      let out: Kind2<M, E, TypeOf<M, MS[keyof MS]>> = M.mapLeft(members[0].decode(i), (e) => onMemberError(0, e))
+      for (let index = 1; index < members.length; index++) {
+        out = M.alt(out, () => M.mapLeft(members[index].decode(i), (e) => onMemberError(index, e)))
+      }
+      return out
+    }
   })
 }
 
@@ -301,29 +280,30 @@ export function intersect<M extends URIS2, E>(
 
 /**
  * @category combinators
- * @since 2.2.8
+ * @since 2.2.7
  */
-export function composeSum<M extends URIS2, E>(
+export function sum<M extends URIS2, E>(
   M: MonadThrow2C<M, E>
 ): (
   onTagError: (tag: string, value: unknown, tags: ReadonlyArray<string>) => E
 ) => <T extends string>(
   tag: T
-) => <I, A>(
-  members: { [K in keyof A]: Kleisli<M, I, E, A[K]> }
-) => <H>(decoder: Kleisli<M, H, E, Record<string, I>>) => Kleisli<M, H, E, A[keyof A]> {
-  return (onTagError) => (tag) => (members) => {
+) => <MS extends Record<string, Kleisli<M, any, E, any>>>(
+  members: MS
+) => Kleisli<M, InputOf<M, MS[keyof MS]>, E, TypeOf<M, MS[keyof MS]>> {
+  return (onTagError) => (tag) => <I extends Record<string, unknown>, A>(
+    members: { [K in keyof A]: Kleisli<M, I, E, A[K]> }
+  ): Kleisli<M, I, E, A[keyof A]> => {
     const keys = Object.keys(members)
-    return (decoder) => ({
-      decode: (h) =>
-        M.chain(decoder.decode(h), (ri: any) => {
-          const v = ri[tag]
-          if (v in members) {
-            return (members as any)[v].decode(ri)
-          }
-          return M.throwError(onTagError(tag, v, keys))
-        })
-    })
+    return {
+      decode: (ir) => {
+        const v = ir[tag]
+        if (v in members) {
+          return (members as any)[v].decode(ir)
+        }
+        return M.throwError(onTagError(tag, v, keys))
+      }
+    }
   }
 }
 
