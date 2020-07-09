@@ -1,6 +1,6 @@
 ---
 title: Schema.ts
-nav_order: 13
+nav_order: 12
 parent: Modules
 ---
 
@@ -80,7 +80,6 @@ export declare const interpreter: {
     S extends
       | 'Eq'
       | 'io-ts/Guard'
-      | 'io-ts/JsonEncoder'
       | 'Option'
       | 'ReadonlyRecord'
       | 'Ord'
