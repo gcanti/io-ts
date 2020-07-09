@@ -1,6 +1,6 @@
 import * as _ from '../../src/Codec'
 
-// $ExpectType Codec<{ a: string; b: { c: number; }; }, { a: string; b: { c: number; }; }>
+// $ExpectType Codec<unknown, { a: string; b: { c: number; }; }, { a: string; b: { c: number; }; }>
 _.type({
   a: _.string,
   b: _.type({
@@ -8,7 +8,7 @@ _.type({
   })
 })
 
-// $ExpectType Codec<Partial<{ a: string; b: Partial<{ c: number; }>; }>, Partial<{ a: string; b: Partial<{ c: number; }>; }>>
+// $ExpectType Codec<unknown, Partial<{ a: string; b: Partial<{ c: number; }>; }>, Partial<{ a: string; b: Partial<{ c: number; }>; }>>
 _.partial({
   a: _.string,
   b: _.partial({

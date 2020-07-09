@@ -576,7 +576,7 @@ Added in v2.2.7
 **Signature**
 
 ```ts
-export type InputOf<KD> = K.InputOf<E.URI, KD>
+export type InputOf<D> = K.InputOf<E.URI, D>
 ```
 
 Added in v2.2.8
@@ -586,7 +586,7 @@ Added in v2.2.8
 **Signature**
 
 ```ts
-export type TypeOf<KD> = K.TypeOf<E.URI, KD>
+export type TypeOf<D> = K.TypeOf<E.URI, D>
 ```
 
 Added in v2.2.7

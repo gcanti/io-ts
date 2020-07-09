@@ -96,8 +96,7 @@ export const UnknownRecord: Guard<unknown, Record<string, unknown>> = {
 }
 
 /**
- * @category primitives
- * @since 2.2.8
+ * @internal
  */
 export const object: Guard<unknown, object> = {
   is: (u: unknown): u is object => u != null && !string.is(u) && !number.is(u) && !boolean.is(u)

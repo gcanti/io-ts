@@ -23,6 +23,7 @@ Added in v2.2.3
   - [imap](#imap)
 - [combinators](#combinators)
   - [array](#array)
+  - [compose](#compose)
   - [intersect](#intersect)
   - [lazy](#lazy)
   - [mapLeftWithInput](#mapleftwithinput)
@@ -48,8 +49,10 @@ Added in v2.2.3
   - [UnknownRecord](#unknownrecord)
   - [boolean](#boolean)
   - [number](#number)
+  - [object](#object)
   - [string](#string)
 - [utils](#utils)
+  - [InputOf (type alias)](#inputof-type-alias)
   - [OutputOf (type alias)](#outputof-type-alias)
   - [TypeOf (type alias)](#typeof-type-alias)
 
@@ -62,7 +65,7 @@ Added in v2.2.3
 **Signature**
 
 ```ts
-export declare const imap: <E, A, B>(f: (a: A) => B, g: (b: B) => A) => (fa: Codec<E, A>) => Codec<E, B>
+export declare const imap: <I, O, A, B>(f: (a: A) => B, g: (b: B) => A) => (fa: Codec<I, O, A>) => Codec<I, O, B>
 ```
 
 Added in v2.2.3
@@ -74,17 +77,31 @@ Added in v2.2.3
 **Signature**
 
 ```ts
-export declare function array<O, A>(item: Codec<O, A>): Codec<Array<O>, Array<A>>
+export declare function array<O, A>(item: Codec<unknown, O, A>): Codec<unknown, Array<O>, Array<A>>
 ```
 
 Added in v2.2.3
+
+## compose
+
+**Signature**
+
+```ts
+export declare const compose: <L, A extends L, P extends A, B>(
+  to: Codec<L, P, B>
+) => <I, O>(from: Codec<I, O, A>) => Codec<I, O, B>
+```
+
+Added in v2.2.8
 
 ## intersect
 
 **Signature**
 
 ```ts
-export declare const intersect: <P, B>(right: Codec<P, B>) => <O, A>(left: Codec<O, A>) => Codec<O & P, A & B>
+export declare const intersect: <IB, OB, B>(
+  right: Codec<IB, OB, B>
+) => <IA, OA, A>(left: Codec<IA, OA, A>) => Codec<IA & IB, OA & OB, A & B>
 ```
 
 Added in v2.2.3
@@ -94,7 +111,7 @@ Added in v2.2.3
 **Signature**
 
 ```ts
-export declare function lazy<O, A>(id: string, f: () => Codec<O, A>): Codec<O, A>
+export declare function lazy<I, O, A>(id: string, f: () => Codec<I, O, A>): Codec<I, O, A>
 ```
 
 Added in v2.2.3
@@ -104,9 +121,9 @@ Added in v2.2.3
 **Signature**
 
 ```ts
-export declare const mapLeftWithInput: (
-  f: (actual: unknown, e: FreeSemigroup<DecodeError<string>>) => FreeSemigroup<DecodeError<string>>
-) => <O, A>(codec: Codec<O, A>) => Codec<O, A>
+export declare const mapLeftWithInput: <I>(
+  f: (i: I, e: FreeSemigroup<DecodeError<string>>) => FreeSemigroup<DecodeError<string>>
+) => <O, A>(codec: Codec<I, O, A>) => Codec<I, O, A>
 ```
 
 Added in v2.2.3
@@ -116,7 +133,7 @@ Added in v2.2.3
 **Signature**
 
 ```ts
-export declare function nullable<O, A>(or: Codec<O, A>): Codec<null | O, null | A>
+export declare function nullable<I, O, A>(or: Codec<I, O, A>): Codec<null | I, null | O, null | A>
 ```
 
 Added in v2.2.3
@@ -126,9 +143,9 @@ Added in v2.2.3
 **Signature**
 
 ```ts
-export declare function partial<P extends Record<string, Codec<any, any>>>(
+export declare function partial<P extends Record<string, Codec<unknown, any, any>>>(
   properties: P
-): Codec<Partial<{ [K in keyof P]: OutputOf<P[K]> }>, Partial<{ [K in keyof P]: TypeOf<P[K]> }>>
+): Codec<unknown, Partial<{ [K in keyof P]: OutputOf<P[K]> }>, Partial<{ [K in keyof P]: TypeOf<P[K]> }>>
 ```
 
 Added in v2.2.3
@@ -138,7 +155,9 @@ Added in v2.2.3
 **Signature**
 
 ```ts
-export declare function record<O, A>(codomain: Codec<O, A>): Codec<Record<string, O>, Record<string, A>>
+export declare function record<O, A>(
+  codomain: Codec<unknown, O, A>
+): Codec<unknown, Record<string, O>, Record<string, A>>
 ```
 
 Added in v2.2.3
@@ -151,7 +170,7 @@ Added in v2.2.3
 export declare const refine: <A, B extends A>(
   refinement: (a: A) => a is B,
   id: string
-) => <O>(from: Codec<O, A>) => Codec<O, B>
+) => <I, O>(from: Codec<I, O, A>) => Codec<I, O, B>
 ```
 
 Added in v2.2.3
@@ -163,7 +182,9 @@ Added in v2.2.3
 ```ts
 export declare function sum<T extends string>(
   tag: T
-): <M extends Record<string, Codec<any, any>>>(members: M) => Codec<OutputOf<M[keyof M]>, TypeOf<M[keyof M]>>
+): <M extends Record<string, Codec<unknown, any, any>>>(
+  members: M
+) => Codec<unknown, OutputOf<M[keyof M]>, TypeOf<M[keyof M]>>
 ```
 
 Added in v2.2.3
@@ -173,9 +194,9 @@ Added in v2.2.3
 **Signature**
 
 ```ts
-export declare function tuple<C extends ReadonlyArray<Codec<any, any>>>(
+export declare function tuple<C extends ReadonlyArray<Codec<unknown, any, any>>>(
   ...components: C
-): Codec<{ [K in keyof C]: OutputOf<C[K]> }, { [K in keyof C]: TypeOf<C[K]> }>
+): Codec<unknown, { [K in keyof C]: OutputOf<C[K]> }, { [K in keyof C]: TypeOf<C[K]> }>
 ```
 
 Added in v2.2.3
@@ -185,9 +206,9 @@ Added in v2.2.3
 **Signature**
 
 ```ts
-export declare function type<P extends Record<string, Codec<any, any>>>(
+export declare function type<P extends Record<string, Codec<unknown, any, any>>>(
   properties: P
-): Codec<{ [K in keyof P]: OutputOf<P[K]> }, { [K in keyof P]: TypeOf<P[K]> }>
+): Codec<unknown, { [K in keyof P]: OutputOf<P[K]> }, { [K in keyof P]: TypeOf<P[K]> }>
 ```
 
 Added in v2.2.3
@@ -199,7 +220,7 @@ Added in v2.2.3
 **Signature**
 
 ```ts
-export declare function fromDecoder<A>(decoder: D.Decoder<unknown, A>): Codec<A, A>
+export declare function fromDecoder<I, A>(decoder: D.Decoder<I, A>): Codec<I, A, A>
 ```
 
 Added in v2.2.3
@@ -211,7 +232,7 @@ Added in v2.2.3
 ```ts
 export declare function literal<A extends readonly [Literal, ...Array<Literal>]>(
   ...values: A
-): Codec<A[number], A[number]>
+): Codec<unknown, A[number], A[number]>
 ```
 
 Added in v2.2.3
@@ -221,7 +242,7 @@ Added in v2.2.3
 **Signature**
 
 ```ts
-export declare function make<O, A>(decoder: D.Decoder<unknown, A>, encoder: E.Encoder<O, A>): Codec<O, A>
+export declare function make<I, O, A>(decoder: D.Decoder<I, A>, encoder: E.Encoder<O, A>): Codec<I, O, A>
 ```
 
 Added in v2.2.3
@@ -233,7 +254,7 @@ Added in v2.2.3
 **Signature**
 
 ```ts
-export declare const Invariant: Invariant2<'io-ts/Codec'>
+export declare const Invariant: Invariant3<'io-ts/Codec'>
 ```
 
 Added in v2.2.8
@@ -270,7 +291,7 @@ Laws:
 **Signature**
 
 ```ts
-export interface Codec<O, A> extends D.Decoder<unknown, A>, E.Encoder<O, A> {}
+export interface Codec<I, O, A> extends D.Decoder<I, A>, E.Encoder<O, A> {}
 ```
 
 Added in v2.2.3
@@ -282,7 +303,7 @@ Added in v2.2.3
 **Signature**
 
 ```ts
-export declare const UnknownArray: Codec<unknown[], unknown[]>
+export declare const UnknownArray: Codec<unknown, unknown[], unknown[]>
 ```
 
 Added in v2.2.3
@@ -292,7 +313,7 @@ Added in v2.2.3
 **Signature**
 
 ```ts
-export declare const UnknownRecord: Codec<Record<string, unknown>, Record<string, unknown>>
+export declare const UnknownRecord: Codec<unknown, Record<string, unknown>, Record<string, unknown>>
 ```
 
 Added in v2.2.3
@@ -302,7 +323,7 @@ Added in v2.2.3
 **Signature**
 
 ```ts
-export declare const boolean: Codec<boolean, boolean>
+export declare const boolean: Codec<unknown, boolean, boolean>
 ```
 
 Added in v2.2.3
@@ -312,22 +333,42 @@ Added in v2.2.3
 **Signature**
 
 ```ts
-export declare const number: Codec<number, number>
+export declare const number: Codec<unknown, number, number>
 ```
 
 Added in v2.2.3
+
+## object
+
+**Signature**
+
+```ts
+export declare const object: Codec<unknown, object, object>
+```
+
+Added in v2.2.8
 
 ## string
 
 **Signature**
 
 ```ts
-export declare const string: Codec<string, string>
+export declare const string: Codec<unknown, string, string>
 ```
 
 Added in v2.2.3
 
 # utils
+
+## InputOf (type alias)
+
+**Signature**
+
+```ts
+export type InputOf<C> = D.InputOf<C>
+```
+
+Added in v2.2.8
 
 ## OutputOf (type alias)
 

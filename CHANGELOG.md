@@ -20,6 +20,9 @@
   - (\*) remove `KleisliDecoder` module (@gcanti)
   - (\*) remove `KleisliTaskDecoder` module (@gcanti)
   - (\*) remove `JsonCodec` module (@gcanti)
+  - `Codec`
+    - (\*) make `Codec` more general by adding a `I` type parameter (@gcanti)
+    - add `compose` function (@gcanti)
   - `Decoder`
     - (\*) make `Decoder` more general by adding a `I` type parameter (@gcanti)
     - add `object` primitive (@gcanti)

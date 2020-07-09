@@ -157,13 +157,11 @@ export function lazy<O, A>(f: () => Encoder<O, A>): Encoder<O, A> {
 // non-pipeables
 // -------------------------------------------------------------------------------------
 
-const contramap_: <E, A, B>(fa: Encoder<E, A>, f: (b: B) => A) => Encoder<E, B> = (fa, f) => ({
-  encode: (b) => fa.encode(f(b))
+const contramap_: <E, A, B>(ea: Encoder<E, A>, f: (b: B) => A) => Encoder<E, B> = (ea, f) => ({
+  encode: (b) => ea.encode(f(b))
 })
 
-const compose_: <E, A, B>(ab: Encoder<A, B>, la: Encoder<E, A>) => Encoder<E, B> = (ab, ea) => ({
-  encode: (b) => ea.encode(ab.encode(b))
-})
+const compose_: <E, A, B>(ab: Encoder<A, B>, ea: Encoder<E, A>) => Encoder<E, B> = (ab, ea) => contramap_(ea, ab.encode)
 
 // -------------------------------------------------------------------------------------
 // pipeables
