@@ -226,7 +226,7 @@ describe('Codec', () => {
         const codec = _.type({
           a: _.string
         })
-        assert.deepStrictEqual(codec.decode(undefined), D.failure(undefined, 'object'))
+        assert.deepStrictEqual(codec.decode(undefined), D.failure(undefined, 'Record<string, unknown>'))
         assert.deepStrictEqual(
           codec.decode({ a: 1 }),
           E.left(FS.of(DE.key('a', DE.required, FS.of(DE.leaf(1, 'string')))))
@@ -302,7 +302,7 @@ describe('Codec', () => {
 
       it('should reject an invalid input', () => {
         const codec = _.partial({ a: _.string })
-        assert.deepStrictEqual(codec.decode(undefined), D.failure(undefined, 'object'))
+        assert.deepStrictEqual(codec.decode(undefined), D.failure(undefined, 'Record<string, unknown>'))
         assert.deepStrictEqual(
           codec.decode({ a: 1 }),
           E.left(FS.of(DE.key('a', DE.optional, FS.of(DE.leaf(1, 'string')))))
@@ -532,7 +532,7 @@ describe('Codec', () => {
         const A = _.type({ _tag: _.literal('A'), a: _.string })
         const B = _.type({ _tag: _.literal('B'), b: _.number })
         const codec = sum({ A, B })
-        assert.deepStrictEqual(codec.decode(null), D.failure(null, 'object'))
+        assert.deepStrictEqual(codec.decode(null), D.failure(null, 'Record<string, unknown>'))
         assert.deepStrictEqual(
           codec.decode({}),
           E.left(FS.of(DE.key('_tag', DE.required, FS.of(DE.leaf(undefined, '"A" | "B"')))))

@@ -178,13 +178,6 @@ export const UnknownRecord: Decoder<unknown, Record<string, unknown>> =
   /*#__PURE__*/
   fromGuard(G.UnknownRecord, 'Record<string, unknown>')
 
-/**
- * @internal
- */
-export const object: Decoder<unknown, object> =
-  /*#__PURE__*/
-  fromGuard(G.object, 'object')
-
 // -------------------------------------------------------------------------------------
 // combinators
 // -------------------------------------------------------------------------------------
@@ -230,7 +223,7 @@ export const nullable: <I, A>(or: Decoder<I, A>) => Decoder<null | I, null | A> 
  */
 export const ktype = <P extends Record<string, Decoder<any, any>>>(
   properties: P
-): Decoder<Partial<{ [K in keyof P]: InputOf<P[K]> }>, { [K in keyof P]: TypeOf<P[K]> }> =>
+): Decoder<{ [K in keyof P]: InputOf<P[K]> }, { [K in keyof P]: TypeOf<P[K]> }> =>
   K.type(M)((k, e) => FS.of(DE.key(k, DE.required, e)))(properties)
 
 /**
@@ -239,7 +232,7 @@ export const ktype = <P extends Record<string, Decoder<any, any>>>(
  */
 export const type = <A>(
   properties: { [K in keyof A]: Decoder<unknown, A[K]> }
-): Decoder<unknown, { [K in keyof A]: A[K] }> => pipe(object, compose(ktype(properties)))
+): Decoder<unknown, { [K in keyof A]: A[K] }> => pipe(UnknownRecord as any, compose(ktype(properties)))
 
 /**
  * @category combinators
@@ -256,7 +249,7 @@ export const kpartial = <P extends Record<string, Decoder<any, any>>>(
  */
 export const partial = <A>(
   properties: { [K in keyof A]: Decoder<unknown, A[K]> }
-): Decoder<unknown, Partial<{ [K in keyof A]: A[K] }>> => pipe(object, compose(kpartial(properties)))
+): Decoder<unknown, Partial<{ [K in keyof A]: A[K] }>> => pipe(UnknownRecord as any, compose(kpartial(properties)))
 
 /**
  * @category combinators
@@ -327,7 +320,7 @@ export const intersect: <IB, B>(right: Decoder<IB, B>) => <IA, A>(left: Decoder<
  */
 export const ksum = <T extends string>(tag: T) => <MS extends Record<string, Decoder<any, any>>>(
   members: MS
-): Decoder<Partial<InputOf<MS[keyof MS]>>, TypeOf<MS[keyof MS]>> =>
+): Decoder<InputOf<MS[keyof MS]>, TypeOf<MS[keyof MS]>> =>
   K.sum(M)((tag, value, keys) =>
     FS.of(
       DE.key(
@@ -344,7 +337,7 @@ export const ksum = <T extends string>(tag: T) => <MS extends Record<string, Dec
  */
 export const sum = <T extends string>(tag: T) => <A>(
   members: { [K in keyof A]: Decoder<unknown, A[K]> }
-): Decoder<unknown, A[keyof A]> => pipe(object, compose(ksum(tag)(members)))
+): Decoder<unknown, A[keyof A]> => pipe(UnknownRecord as any, compose(ksum(tag)(members)))
 
 /**
  * @category combinators

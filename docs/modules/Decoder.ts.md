@@ -239,7 +239,7 @@ export declare const ksum: <T extends string>(
   tag: T
 ) => <MS extends Record<string, Decoder<any, any>>>(
   members: MS
-) => Decoder<Partial<K.InputOf<'Either', MS[keyof MS]>>, K.TypeOf<'Either', MS[keyof MS]>>
+) => Decoder<K.InputOf<'Either', MS[keyof MS]>, K.TypeOf<'Either', MS[keyof MS]>>
 ```
 
 Added in v2.2.8
@@ -263,7 +263,7 @@ Added in v2.2.8
 ```ts
 export declare const ktype: <P extends Record<string, Decoder<any, any>>>(
   properties: P
-) => Decoder<Partial<{ [K in keyof P]: K.InputOf<'Either', P[K]> }>, { [K in keyof P]: K.TypeOf<'Either', P[K]> }>
+) => Decoder<{ [K in keyof P]: K.InputOf<'Either', P[K]> }, { [K in keyof P]: K.TypeOf<'Either', P[K]> }>
 ```
 
 Added in v2.2.8
