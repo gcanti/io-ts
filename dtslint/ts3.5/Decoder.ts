@@ -20,6 +20,18 @@ export type TypeOfNumberFromString = _.TypeOf<typeof NumberFromString>
 export type InputOfNumberFromString = _.InputOf<typeof NumberFromString>
 
 //
+// ktype
+//
+
+// $ExpectType Decoder<{ a: unknown; b: { c: string; }; }, { a: string; b: { c: number; }; }>
+_.ktype({
+  a: _.string,
+  b: _.ktype({
+    c: NumberFromString
+  })
+})
+
+//
 // type
 //
 

@@ -23,6 +23,12 @@
   - (\*) remove `JsonEncoder` module (@gcanti)
   - `Codec`
     - (\*) make `Codec` more general by adding a `I` type parameter (@gcanti)
+    - add `ktype` function (@gcanti)
+    - add `kpartial` function (@gcanti)
+    - add `karray` function (@gcanti)
+    - add `krecord` function (@gcanti)
+    - add `ktuple` function (@gcanti)
+    - add `ksum` function (@gcanti)
     - add `compose` function (@gcanti)
   - `Decoder`
     - (\*) make `Decoder` more general by adding a `I` type parameter (@gcanti)
