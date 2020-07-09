@@ -3,39 +3,8 @@ import * as E from 'fp-ts/lib/Either'
 import { pipe } from 'fp-ts/lib/pipeable'
 import * as DE from '../src/DecodeError'
 import * as FS from '../src/FreeSemigroup'
-import * as G from '../src/Guard'
 import * as _ from '../src/Decoder'
-
-const undefinedGuard: G.Guard<unknown, undefined> = {
-  is: (u): u is undefined => u === undefined
-}
-const undef: _.Decoder<unknown, undefined> = _.fromGuard(undefinedGuard, 'undefined')
-
-const NumberFromString: _.Decoder<unknown, number> = pipe(
-  _.string,
-  _.parse((s) => {
-    const n = parseFloat(s)
-    return isNaN(n) ? _.failure(s, 'parsable to a number') : _.success(n)
-  })
-)
-
-interface PositiveBrand {
-  readonly Positive: unique symbol
-}
-type Positive = number & PositiveBrand
-const Positive: _.Decoder<unknown, Positive> = pipe(
-  _.number,
-  _.refine((n): n is Positive => n > 0, 'Positive')
-)
-
-interface IntBrand {
-  readonly Int: unique symbol
-}
-type Int = number & IntBrand
-const Int: _.Decoder<unknown, Int> = pipe(
-  _.number,
-  _.refine((n): n is Int => Number.isInteger(n), 'Int')
-)
+import * as H from './helpers'
 
 describe('Decoder', () => {
   // -------------------------------------------------------------------------------------
@@ -138,13 +107,13 @@ describe('Decoder', () => {
 
   describe('nullable', () => {
     it('should decode a valid input', () => {
-      const decoder = _.nullable(NumberFromString)
+      const decoder = _.nullable(H.decoderNumberFromUnknownString)
       assert.deepStrictEqual(decoder.decode(null), _.success(null))
       assert.deepStrictEqual(decoder.decode('1'), _.success(1))
     })
 
     it('should reject an invalid input', () => {
-      const decoder = _.nullable(NumberFromString)
+      const decoder = _.nullable(H.decoderNumberFromUnknownString)
       assert.deepStrictEqual(
         decoder.decode(undefined),
         E.left(
@@ -183,7 +152,7 @@ describe('Decoder', () => {
 
     it('should not strip fields corresponding to undefined values', async () => {
       const decoder = _.type({
-        a: undef
+        a: H.decoderUndefined
       })
       assert.deepStrictEqual(decoder.decode({}), _.success({ a: undefined }))
     })
@@ -437,7 +406,7 @@ describe('Decoder', () => {
     })
 
     it('should handle primitives', () => {
-      const decoder = pipe(Int, _.intersect(Positive))
+      const decoder = pipe(H.decoderInt, _.intersect(H.decoderPositive))
       assert.deepStrictEqual(decoder.decode(1), _.success(1))
     })
 
@@ -504,7 +473,7 @@ describe('Decoder', () => {
   }
 
   const lazyDecoder: _.Decoder<unknown, A> = _.lazy('A', () =>
-    pipe(_.type({ a: NumberFromString }), _.intersect(_.partial({ b: lazyDecoder })))
+    pipe(_.type({ a: H.decoderNumberFromUnknownString }), _.intersect(_.partial({ b: lazyDecoder })))
   )
 
   describe('lazy', () => {
@@ -589,7 +558,7 @@ required property "d"
   })
 
   it('fromRefinement', () => {
-    const IntFromNumber = _.fromRefinement((n: number): n is Int => Number.isInteger(n), 'IntFromNumber')
+    const IntFromNumber = _.fromRefinement((n: number): n is H.Int => Number.isInteger(n), 'IntFromNumber')
     assert.deepStrictEqual(IntFromNumber.decode(1), _.success(1))
     assert.deepStrictEqual(IntFromNumber.decode(1.2), _.failure(1.2, 'IntFromNumber'))
   })

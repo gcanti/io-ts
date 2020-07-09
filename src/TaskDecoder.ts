@@ -179,11 +179,7 @@ export const UnknownRecord: TaskDecoder<unknown, Record<string, unknown>> =
   /*#__PURE__*/
   fromDecoder(D.UnknownRecord)
 
-/**
- * @category primitives
- * @since 2.2.8
- */
-export const object: TaskDecoder<unknown, object> =
+const object: TaskDecoder<unknown, object> =
   /*#__PURE__*/
   fromDecoder(D.object)
 

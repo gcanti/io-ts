@@ -122,16 +122,6 @@ export function nullable<M extends URIS2, E>(
 }
 
 /**
- * @since 2.2.7
- */
-export type TypeOf<M extends URIS2, KD> = KD extends Kleisli<M, any, any, infer A> ? A : never
-
-/**
- * @since 2.2.7
- */
-export type InputOf<M extends URIS2, KD> = KD extends Kleisli<M, infer I, any, any> ? I : never
-
-/**
  * @category combinators
  * @since 2.2.7
  */
@@ -423,3 +413,17 @@ const compactRecord = <A>(r: Record<string, E.Either<void, A>>): Record<string, 
   }
   return out
 }
+
+// -------------------------------------------------------------------------------------
+// utils
+// -------------------------------------------------------------------------------------
+
+/**
+ * @since 2.2.7
+ */
+export type TypeOf<M extends URIS2, KD> = KD extends Kleisli<M, any, any, infer A> ? A : never
+
+/**
+ * @since 2.2.7
+ */
+export type InputOf<M extends URIS2, KD> = KD extends Kleisli<M, infer I, any, any> ? I : never

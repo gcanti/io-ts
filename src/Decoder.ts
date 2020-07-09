@@ -179,8 +179,7 @@ export const UnknownRecord: Decoder<unknown, Record<string, unknown>> =
   fromGuard(G.UnknownRecord, 'Record<string, unknown>')
 
 /**
- * @category primitives
- * @since 2.2.8
+ * @internal
  */
 export const object: Decoder<unknown, object> =
   /*#__PURE__*/
@@ -485,14 +484,14 @@ export const Schemable: S.Schemable2C<URI, unknown> &
 // -------------------------------------------------------------------------------------
 
 /**
- * @since 2.2.7
- */
-export type TypeOf<KD> = K.TypeOf<E.URI, KD>
-
-/**
  * @since 2.2.8
  */
-export type InputOf<KD> = K.InputOf<E.URI, KD>
+export type InputOf<D> = K.InputOf<E.URI, D>
+
+/**
+ * @since 2.2.7
+ */
+export type TypeOf<D> = K.TypeOf<E.URI, D>
 
 interface Tree<A> {
   readonly value: A

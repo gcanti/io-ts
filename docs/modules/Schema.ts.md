@@ -73,16 +73,7 @@ Added in v2.2.0
 
 ```ts
 export declare const interpreter: {
-  <
-    S extends
-      | 'io-ts/Codec'
-      | 'Either'
-      | 'io-ts/Decoder'
-      | 'io-ts/Encoder'
-      | 'io-ts/TaskDecoder'
-      | 'IOEither'
-      | 'TaskEither'
-  >(
+  <S extends 'Either' | 'io-ts/Decoder' | 'io-ts/Encoder' | 'IOEither' | 'TaskEither' | 'io-ts/TaskDecoder'>(
     S: Schemable2C<S, unknown>
   ): <A>(schema: Schema<A>) => Kind2<S, unknown, A>
   <
@@ -90,16 +81,15 @@ export declare const interpreter: {
       | 'Eq'
       | 'io-ts/Guard'
       | 'io-ts/JsonEncoder'
-      | 'io-ts/Type'
-      | 'Ord'
       | 'Option'
       | 'ReadonlyRecord'
-      | 'ReadonlyNonEmptyArray'
+      | 'Ord'
       | 'NonEmptyArray'
       | 'Array'
       | 'Record'
       | 'IO'
       | 'Task'
+      | 'io-ts/Type'
   >(
     S: Schemable1<S>
   ): <A>(schema: Schema<A>) => Kind<S, A>
