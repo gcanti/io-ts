@@ -3,9 +3,7 @@ import * as DE from '../../src/DecodeError'
 import * as _ from '../../src/Decoder'
 import * as FS from '../../src/FreeSemigroup'
 
-declare const StringFromString: _.Decoder<string, string>
 declare const NumberFromString: _.Decoder<string, number>
-declare const ArrayFromString: _.Decoder<string, Array<string>>
 
 //
 // TypeOf

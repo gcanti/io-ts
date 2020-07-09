@@ -226,7 +226,7 @@ export declare function sum<M extends URIS2, E>(
   tag: T
 ) => <MS extends Record<string, Kleisli<M, any, E, any>>>(
   members: MS
-) => Kleisli<M, Partial<InputOf<M, MS[keyof MS]>>, E, TypeOf<M, MS[keyof MS]>>
+) => Kleisli<M, InputOf<M, MS[keyof MS]>, E, TypeOf<M, MS[keyof MS]>>
 ```
 
 Added in v2.2.7
@@ -258,7 +258,7 @@ export declare function type<M extends URIS2, E>(
   onPropertyError: (key: string, e: E) => E
 ) => <P extends Record<string, Kleisli<M, any, E, any>>>(
   properties: P
-) => Kleisli<M, Partial<{ [K in keyof P]: InputOf<M, P[K]> }>, E, { [K in keyof P]: TypeOf<M, P[K]> }>
+) => Kleisli<M, { [K in keyof P]: InputOf<M, P[K]> }, E, { [K in keyof P]: TypeOf<M, P[K]> }>
 ```
 
 Added in v2.2.7

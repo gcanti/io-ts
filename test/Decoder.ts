@@ -161,7 +161,7 @@ describe('Decoder', () => {
       const decoder = _.type({
         a: _.string
       })
-      assert.deepStrictEqual(decoder.decode(undefined), E.left(FS.of(DE.leaf(undefined, 'object'))))
+      assert.deepStrictEqual(decoder.decode(undefined), E.left(FS.of(DE.leaf(undefined, 'Record<string, unknown>'))))
       assert.deepStrictEqual(
         decoder.decode({ a: 1 }),
         E.left(FS.of(DE.key('a', DE.required, FS.of(DE.leaf(1, 'string')))))
@@ -222,7 +222,7 @@ describe('Decoder', () => {
 
     it('should reject an invalid input', async () => {
       const decoder = _.partial({ a: _.string })
-      assert.deepStrictEqual(decoder.decode(undefined), E.left(FS.of(DE.leaf(undefined, 'object'))))
+      assert.deepStrictEqual(decoder.decode(undefined), E.left(FS.of(DE.leaf(undefined, 'Record<string, unknown>'))))
       assert.deepStrictEqual(
         decoder.decode({ a: 1 }),
         E.left(FS.of(DE.key('a', DE.optional, FS.of(DE.leaf(1, 'string')))))
@@ -447,7 +447,7 @@ describe('Decoder', () => {
       const A = _.type({ _tag: _.literal('A'), a: _.string })
       const B = _.type({ _tag: _.literal('B'), b: _.number })
       const decoder = sum({ A, B })
-      assert.deepStrictEqual(decoder.decode(null), E.left(FS.of(DE.leaf(null, 'object'))))
+      assert.deepStrictEqual(decoder.decode(null), E.left(FS.of(DE.leaf(null, 'Record<string, unknown>'))))
       assert.deepStrictEqual(
         decoder.decode({}),
         E.left(FS.of(DE.key('_tag', DE.required, FS.of(DE.leaf(undefined, '"A" | "B"')))))

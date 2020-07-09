@@ -240,7 +240,7 @@ export declare const ksum: <T extends string>(
   tag: T
 ) => <MS extends Record<string, TaskDecoder<any, any>>>(
   members: MS
-) => TaskDecoder<Partial<K.InputOf<'TaskEither', MS[keyof MS]>>, K.TypeOf<'TaskEither', MS[keyof MS]>>
+) => TaskDecoder<K.InputOf<'TaskEither', MS[keyof MS]>, K.TypeOf<'TaskEither', MS[keyof MS]>>
 ```
 
 Added in v2.2.8
@@ -264,10 +264,7 @@ Added in v2.2.8
 ```ts
 export declare const ktype: <P extends Record<string, TaskDecoder<any, any>>>(
   properties: P
-) => TaskDecoder<
-  Partial<{ [K in keyof P]: K.InputOf<'TaskEither', P[K]> }>,
-  { [K in keyof P]: K.TypeOf<'TaskEither', P[K]> }
->
+) => TaskDecoder<{ [K in keyof P]: K.InputOf<'TaskEither', P[K]> }, { [K in keyof P]: K.TypeOf<'TaskEither', P[K]> }>
 ```
 
 Added in v2.2.8
