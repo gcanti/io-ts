@@ -20,6 +20,7 @@
   - (\*) remove `KleisliDecoder` module (@gcanti)
   - (\*) remove `KleisliTaskDecoder` module (@gcanti)
   - (\*) remove `JsonCodec` module (@gcanti)
+  - (\*) remove `JsonEncoder` module (@gcanti)
   - `Codec`
     - (\*) make `Codec` more general by adding a `I` type parameter (@gcanti)
     - add `compose` function (@gcanti)

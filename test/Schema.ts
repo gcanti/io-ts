@@ -1,45 +1,19 @@
-import * as assert from 'assert'
 import * as fc from 'fast-check'
 import { isRight } from 'fp-ts/lib/Either'
 import { pipe } from 'fp-ts/lib/pipeable'
 import * as D from '../src/Decoder'
 import * as Eq from '../src/Eq'
 import * as G from '../src/Guard'
-import * as JE from '../src/JsonEncoder'
 import { interpreter, make, Schema } from '../src/Schema'
 import * as A from './Arbitrary'
-
-function isDeepStrictEqual(actual: unknown, expected: unknown): boolean {
-  try {
-    assert.deepStrictEqual(actual, expected)
-    return true
-  } catch {
-    return false
-  }
-}
 
 function check<A>(schema: Schema<A>): void {
   const arb = interpreter(A.Schemable)(schema)
   const decoder = interpreter(D.Schemable)(schema)
   const guard = interpreter(G.Schemable)(schema)
   const eq = interpreter(Eq.Schemable)(schema)
-  const encoder = interpreter(JE.Schemable)(schema)
   // decoders, guards and eqs should be aligned
   fc.assert(fc.property(arb, (a) => isRight(decoder.decode(a)) && guard.is(a) && eq.equals(a, a)))
-  // laws
-  // 1.
-  fc.assert(fc.property(arb, (a) => isRight(decoder.decode(encoder.encode(a)))))
-  // 2.
-  fc.assert(
-    fc.property(arb, (u) => {
-      const a = decoder.decode(u)
-      if (isRight(a)) {
-        const o = a.right
-        return isDeepStrictEqual(encoder.encode(o), u) && eq.equals(o, u)
-      }
-      return false
-    })
-  )
 }
 describe('Schema', () => {
   it('string', () => {

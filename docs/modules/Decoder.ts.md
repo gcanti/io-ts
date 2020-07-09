@@ -70,7 +70,6 @@ Added in v2.2.7
   - [UnknownRecord](#unknownrecord)
   - [boolean](#boolean)
   - [number](#number)
-  - [object](#object)
   - [string](#string)
 - [utils](#utils)
   - [InputOf (type alias)](#inputof-type-alias)
@@ -548,16 +547,6 @@ export declare const number: Decoder<unknown, number>
 ```
 
 Added in v2.2.7
-
-## object
-
-**Signature**
-
-```ts
-export declare const object: Decoder<unknown, object>
-```
-
-Added in v2.2.8
 
 ## string
 
