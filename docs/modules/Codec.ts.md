@@ -25,6 +25,12 @@ Added in v2.2.3
   - [array](#array)
   - [compose](#compose)
   - [intersect](#intersect)
+  - [karray](#karray)
+  - [kpartial](#kpartial)
+  - [krecord](#krecord)
+  - [ksum](#ksum)
+  - [ktuple](#ktuple)
+  - [ktype](#ktype)
   - [lazy](#lazy)
   - [mapLeftWithInput](#mapleftwithinput)
   - [nullable](#nullable)
@@ -104,6 +110,86 @@ export declare const intersect: <IB, OB, B>(
 ```
 
 Added in v2.2.3
+
+## karray
+
+**Signature**
+
+```ts
+export declare function karray<I, O, A>(item: Codec<I, O, A>): Codec<Array<I>, Array<O>, Array<A>>
+```
+
+Added in v2.2.3
+
+## kpartial
+
+**Signature**
+
+```ts
+export declare function kpartial<P extends Record<string, Codec<any, any, any>>>(
+  properties: P
+): Codec<
+  Partial<{ [K in keyof P]: InputOf<P[K]> }>,
+  Partial<{ [K in keyof P]: OutputOf<P[K]> }>,
+  Partial<{ [K in keyof P]: TypeOf<P[K]> }>
+>
+```
+
+Added in v2.2.8
+
+## krecord
+
+**Signature**
+
+```ts
+export declare function krecord<I, O, A>(
+  codomain: Codec<I, O, A>
+): Codec<Record<string, I>, Record<string, O>, Record<string, A>>
+```
+
+Added in v2.2.3
+
+## ksum
+
+**Signature**
+
+```ts
+export declare const ksum: <T extends string>(
+  tag: T
+) => <MS extends Record<string, Codec<any, any, any>>>(
+  members: MS
+) => Codec<InputOf<'Either', MS[keyof MS]>, E.OutputOf<MS[keyof MS]>, E.TypeOf<MS[keyof MS]>>
+```
+
+Added in v2.2.8
+
+## ktuple
+
+**Signature**
+
+```ts
+export declare const ktuple: <C extends readonly Codec<any, any, any>[]>(
+  ...components: C
+) => Codec<
+  { [K in keyof C]: InputOf<'Either', C[K]> },
+  { [K in keyof C]: E.OutputOf<C[K]> },
+  { [K in keyof C]: E.TypeOf<C[K]> }
+>
+```
+
+Added in v2.2.8
+
+## ktype
+
+**Signature**
+
+```ts
+export declare function ktype<P extends Record<string, Codec<any, any, any>>>(
+  properties: P
+): Codec<{ [K in keyof P]: InputOf<P[K]> }, { [K in keyof P]: OutputOf<P[K]> }, { [K in keyof P]: TypeOf<P[K]> }>
+```
+
+Added in v2.2.8
 
 ## lazy
 

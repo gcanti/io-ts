@@ -144,12 +144,36 @@ export function nullable<I, O, A>(or: Codec<I, O, A>): Codec<null | I, null | O,
 
 /**
  * @category combinators
+ * @since 2.2.8
+ */
+export function ktype<P extends Record<string, Codec<any, any, any>>>(
+  properties: P
+): Codec<{ [K in keyof P]: InputOf<P[K]> }, { [K in keyof P]: OutputOf<P[K]> }, { [K in keyof P]: TypeOf<P[K]> }> {
+  return make(D.ktype(properties) as any, E.type(properties))
+}
+
+/**
+ * @category combinators
  * @since 2.2.3
  */
 export function type<P extends Record<string, Codec<unknown, any, any>>>(
   properties: P
 ): Codec<unknown, { [K in keyof P]: OutputOf<P[K]> }, { [K in keyof P]: TypeOf<P[K]> }> {
-  return make(D.type(properties) as any, E.type(properties))
+  return pipe(UnknownRecord, compose(ktype(properties as any))) as any
+}
+
+/**
+ * @category combinators
+ * @since 2.2.8
+ */
+export function kpartial<P extends Record<string, Codec<any, any, any>>>(
+  properties: P
+): Codec<
+  Partial<{ [K in keyof P]: InputOf<P[K]> }>,
+  Partial<{ [K in keyof P]: OutputOf<P[K]> }>,
+  Partial<{ [K in keyof P]: TypeOf<P[K]> }>
+> {
+  return make(D.kpartial(properties), E.partial(properties))
 }
 
 /**
@@ -159,15 +183,15 @@ export function type<P extends Record<string, Codec<unknown, any, any>>>(
 export function partial<P extends Record<string, Codec<unknown, any, any>>>(
   properties: P
 ): Codec<unknown, Partial<{ [K in keyof P]: OutputOf<P[K]> }>, Partial<{ [K in keyof P]: TypeOf<P[K]> }>> {
-  return make(D.partial(properties) as any, E.partial(properties))
+  return pipe(UnknownRecord, compose(kpartial(properties as any))) as any
 }
 
 /**
  * @category combinators
  * @since 2.2.3
  */
-export function record<O, A>(codomain: Codec<unknown, O, A>): Codec<unknown, Record<string, O>, Record<string, A>> {
-  return make(D.record(codomain), E.record(codomain))
+export function karray<I, O, A>(item: Codec<I, O, A>): Codec<Array<I>, Array<O>, Array<A>> {
+  return make(D.karray(item), E.array(item))
 }
 
 /**
@@ -175,8 +199,35 @@ export function record<O, A>(codomain: Codec<unknown, O, A>): Codec<unknown, Rec
  * @since 2.2.3
  */
 export function array<O, A>(item: Codec<unknown, O, A>): Codec<unknown, Array<O>, Array<A>> {
-  return make(D.array(item), E.array(item))
+  return pipe(UnknownArray, compose(karray(item))) as any
 }
+
+/**
+ * @category combinators
+ * @since 2.2.3
+ */
+export function krecord<I, O, A>(
+  codomain: Codec<I, O, A>
+): Codec<Record<string, I>, Record<string, O>, Record<string, A>> {
+  return make(D.krecord(codomain), E.record(codomain))
+}
+
+/**
+ * @category combinators
+ * @since 2.2.3
+ */
+export function record<O, A>(codomain: Codec<unknown, O, A>): Codec<unknown, Record<string, O>, Record<string, A>> {
+  return pipe(UnknownRecord, compose(krecord(codomain))) as any
+}
+
+/**
+ * @category combinators
+ * @since 2.2.8
+ */
+export const ktuple = <C extends ReadonlyArray<Codec<any, any, any>>>(
+  ...components: C
+): Codec<{ [K in keyof C]: InputOf<C[K]> }, { [K in keyof C]: OutputOf<C[K]> }, { [K in keyof C]: TypeOf<C[K]> }> =>
+  make(D.ktuple(...components) as any, E.tuple(...components))
 
 /**
  * @category combinators
@@ -185,7 +236,7 @@ export function array<O, A>(item: Codec<unknown, O, A>): Codec<unknown, Array<O>
 export function tuple<C extends ReadonlyArray<Codec<unknown, any, any>>>(
   ...components: C
 ): Codec<unknown, { [K in keyof C]: OutputOf<C[K]> }, { [K in keyof C]: TypeOf<C[K]> }> {
-  return make(D.tuple(...components) as any, E.tuple(...components))
+  return pipe(UnknownArray as any, compose(ktuple(...components) as any)) as any
 }
 
 /**
@@ -202,6 +253,20 @@ export const intersect = <IB, OB, B>(
 
 /**
  * @category combinators
+ * @since 2.2.8
+ */
+export const ksum = <T extends string>(
+  tag: T
+): (<MS extends Record<string, Codec<any, any, any>>>(
+  members: MS
+) => Codec<InputOf<MS[keyof MS]>, OutputOf<MS[keyof MS]>, TypeOf<MS[keyof MS]>>) => {
+  const decoder = D.ksum(tag)
+  const encoder = E.sum(tag)
+  return (members) => make(decoder(members) as any, encoder(members))
+}
+
+/**
+ * @category combinators
  * @since 2.2.3
  */
 export function sum<T extends string>(
@@ -209,9 +274,8 @@ export function sum<T extends string>(
 ): <M extends Record<string, Codec<unknown, any, any>>>(
   members: M
 ) => Codec<unknown, OutputOf<M[keyof M]>, TypeOf<M[keyof M]>> {
-  const sumD = D.sum(tag)
-  const sumE = E.sum(tag)
-  return (members) => make(sumD(members), sumE(members))
+  const sum = ksum(tag)
+  return (members) => pipe(UnknownRecord, compose(sum(members) as any)) as any
 }
 
 /**
