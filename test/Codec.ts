@@ -613,4 +613,42 @@ describe('Codec', () => {
       })
     })
   })
+
+  it('#453', () => {
+    const Base64: _.Codec<string, string, string> = {
+      decode: (s) =>
+        E.tryCatch(
+          () => Buffer.from(s, 'base64').toString(),
+          () => D.error(s, 'Base64')
+        ),
+      encode: (s) => Buffer.from(s).toString('base64')
+    }
+
+    const Json: _.Codec<string, string, E.Json> = {
+      decode: (s) => E.parseJSON(s, () => D.error(s, 'Json')),
+      encode: (a) => JSON.stringify(a)
+    }
+
+    const DateFromString: _.Codec<string, string, Date> = _.make(
+      {
+        decode: (s) => {
+          const d = new Date(s)
+          return isNaN(d.getTime()) ? D.failure(s, 'DateFromISOString') : D.success(d)
+        }
+      },
+      { encode: String }
+    )
+
+    const User = _.type({ a: _.string, b: pipe(_.string, _.compose(DateFromString)) })
+
+    const codec = pipe(_.string, _.compose(Base64), _.compose(Json), _.compose(User))
+
+    assert.deepStrictEqual(
+      codec.decode(codec.encode({ a: 'a', b: new Date('1980') })),
+      E.right({
+        a: 'a',
+        b: new Date('1980')
+      })
+    )
+  })
 })
