@@ -32,7 +32,6 @@
     - add `compose` function (@gcanti)
   - `Decoder`
     - (\*) make `Decoder` more general by adding a `I` type parameter (@gcanti)
-    - add `object` primitive (@gcanti)
     - add `fromRefinement` function (@gcanti)
     - change `fromGuard` signature (@gcanti)
     - add `ktype` function (@gcanti)
@@ -50,7 +49,6 @@
     - add `InputOf` type (@gcanti)
   - `TaskDecoder`
     - (\*) make `TaskDecoder` more general by adding a `I` type parameter (@gcanti)
-    - add `object` primitive (@gcanti)
     - add `fromRefinement` function (@gcanti)
     - change `fromDecoder` signature (@gcanti)
     - add `ktype` function (@gcanti)
@@ -69,7 +67,6 @@
   - `Guard`
     - (\*) make `Guard` more general by adding a `I` type parameter (@gcanti)
     - (\*) rename `schemableGuard` to `Schemable` (@gcanti)
-    - add `object` primitive (@gcanti)
     - add `InputOf` type (@gcanti)
     - add `alt` function (@gcanti)
     - add `zero` function (@gcanti)
@@ -84,13 +81,6 @@
     - (\*) rename `schemableEq` to `Schemable` (@gcanti)
   - `Kleisli`
     - add `id` (@gcanti)
-    - (\*) drop `type` in favour of `composeType` (@gcanti)
-    - (\*) drop `partial` in favour of `composePartial` (@gcanti)
-    - (\*) drop `array` in favour of `composeArray` (@gcanti)
-    - (\*) drop `record` in favour of `composeRecord` (@gcanti)
-    - (\*) drop `tuple` in favour of `composeTuple` (@gcanti)
-    - (\*) drop `union` in favour of `composeUnion` (@gcanti)
-    - (\*) drop `sum` in favour of `composeSum` (@gcanti)
   - `JsonEncoder`
     - (\*) rename `contravariantJsonCodec` to `Contravariant` (@gcanti)
     - (\*) rename `schemableJsonEncoder` to `Schemable` (@gcanti)
