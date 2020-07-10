@@ -12,7 +12,7 @@ A codec can:
 
 - decode inputs of type `I` (through `decode`)
 - encode outputs of type `O` (through `encode`)
-- be used as a custom [type guard](https://basarat.gitbooks.io/typescript/content/docs/types/typeGuard.html) (through `is`)
+- be used as a custom [type guard](https://basarat.gitbook.io/typescript/type-system/typeguard) (through `is`)
 
 ```ts
 class Type<A, O, I> {
