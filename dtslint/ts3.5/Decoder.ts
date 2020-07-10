@@ -20,13 +20,13 @@ export type TypeOfNumberFromString = _.TypeOf<typeof NumberFromString>
 export type InputOfNumberFromString = _.InputOf<typeof NumberFromString>
 
 //
-// ktype
+// fromType
 //
 
 // $ExpectType Decoder<{ a: unknown; b: { c: string; }; }, { a: string; b: { c: number; }; }>
-_.ktype({
+_.fromType({
   a: _.string,
-  b: _.ktype({
+  b: _.fromType({
     c: NumberFromString
   })
 })
@@ -44,13 +44,13 @@ _.type({
 })
 
 //
-// kpartial
+// fromPartial
 //
 
 // $ExpectType Decoder<Partial<{ a: unknown; b: Partial<{ c: unknown; }>; }>, Partial<{ a: string; b: Partial<{ c: number; }>; }>>
-_.kpartial({
+_.fromPartial({
   a: _.string,
-  b: _.kpartial({
+  b: _.fromPartial({
     c: _.number
   })
 })
@@ -68,11 +68,56 @@ _.partial({
 })
 
 //
+// fromArray
+//
+
+// $ExpectType Decoder<string[], number[]>
+_.fromArray(NumberFromString)
+
+//
 // array
 //
 
 // $ExpectType Decoder<unknown, string[]>
 _.array(_.string)
+
+//
+// fromRecord
+//
+
+// $ExpectType Decoder<Record<string, string>, Record<string, number>>
+_.fromRecord(NumberFromString)
+
+//
+// record
+//
+
+// $ExpectType Decoder<unknown, Record<string, string>>
+_.record(_.string)
+
+//
+// fromTuple
+//
+
+// $ExpectType Decoder<[unknown, string, unknown], [string, number, boolean]>
+_.fromTuple(_.string, NumberFromString, _.boolean)
+
+//
+// tuple
+//
+
+// $ExpectType Decoder<unknown, [string, number, boolean]>
+_.tuple(_.string, _.number, _.boolean)
+
+//
+// fromSum
+//
+
+// $ExpectType Decoder<{ _tag: unknown; a: unknown; } | { _tag: unknown; b: string; }, { _tag: "A"; a: string; } | { _tag: "B"; b: number; }>
+_.fromSum('_tag')({
+  A: _.fromType({ _tag: _.literal('A'), a: _.string }),
+  B: _.fromType({ _tag: _.literal('B'), b: NumberFromString })
+})
 
 //
 // sum
