@@ -3,13 +3,13 @@ import * as _ from '../../src/Codec'
 declare const NumberFromString: _.Codec<string, string, number>
 
 //
-// ktype
+// fromType
 //
 
 // $ExpectType Codec<{ a: unknown; b: { c: string; }; }, { a: string; b: { c: string; }; }, { a: string; b: { c: number; }; }>
-_.ktype({
+_.fromType({
   a: _.string,
-  b: _.ktype({
+  b: _.fromType({
     c: NumberFromString
   })
 })
@@ -27,13 +27,13 @@ _.type({
 })
 
 //
-// kpartial
+// fromPartial
 //
 
 // $ExpectType Codec<Partial<{ a: unknown; b: Partial<{ c: string; }>; }>, Partial<{ a: string; b: Partial<{ c: string; }>; }>, Partial<{ a: string; b: Partial<{ c: number; }>; }>>
-_.kpartial({
+_.fromPartial({
   a: _.string,
-  b: _.kpartial({
+  b: _.fromPartial({
     c: NumberFromString
   })
 })
@@ -51,11 +51,11 @@ _.partial({
 })
 
 //
-// karray
+// fromArray
 //
 
 // $ExpectType Codec<string[], string[], number[]>
-_.karray(NumberFromString)
+_.fromArray(NumberFromString)
 
 //
 // array
@@ -65,11 +65,11 @@ _.karray(NumberFromString)
 _.array(_.string)
 
 //
-// krecord
+// fromRecord
 //
 
 // $ExpectType Codec<Record<string, string>, Record<string, string>, Record<string, number>>
-_.krecord(NumberFromString)
+_.fromRecord(NumberFromString)
 
 //
 // record
@@ -79,11 +79,11 @@ _.krecord(NumberFromString)
 _.record(_.string)
 
 //
-// ktuple
+// fromTuple
 //
 
 // $ExpectType Codec<[unknown, string, unknown], [string, string, boolean], [string, number, boolean]>
-_.ktuple(_.string, NumberFromString, _.boolean)
+_.fromTuple(_.string, NumberFromString, _.boolean)
 
 //
 // tuple
@@ -92,16 +92,14 @@ _.ktuple(_.string, NumberFromString, _.boolean)
 // $ExpectType Codec<unknown, [string, number, boolean], [string, number, boolean]>
 _.tuple(_.string, _.number, _.boolean)
 
-const f: (s: string) => void = (s) => s.length
-
 //
-// ksum
+// fromSum
 //
 
 // $ExpectType Codec<{ _tag: unknown; a: unknown; } | { _tag: unknown; b: string; }, { _tag: "A"; a: string; } | { _tag: "B"; b: string; }, { _tag: "A"; a: string; } | { _tag: "B"; b: number; }>
-_.ksum('_tag')({
-  A: _.ktype({ _tag: _.literal('A'), a: _.string }),
-  B: _.ktype({ _tag: _.literal('B'), b: NumberFromString })
+_.fromSum('_tag')({
+  A: _.fromType({ _tag: _.literal('A'), a: _.string }),
+  B: _.fromType({ _tag: _.literal('B'), b: NumberFromString })
 })
 
 //

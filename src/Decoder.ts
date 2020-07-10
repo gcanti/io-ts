@@ -221,10 +221,10 @@ export const nullable: <I, A>(or: Decoder<I, A>) => Decoder<null | I, null | A> 
  * @category combinators
  * @since 2.2.8
  */
-export const ktype = <P extends Record<string, Decoder<any, any>>>(
+export const fromType = <P extends Record<string, Decoder<any, any>>>(
   properties: P
 ): Decoder<{ [K in keyof P]: InputOf<P[K]> }, { [K in keyof P]: TypeOf<P[K]> }> =>
-  K.type(M)((k, e) => FS.of(DE.key(k, DE.required, e)))(properties)
+  K.fromType(M)((k, e) => FS.of(DE.key(k, DE.required, e)))(properties)
 
 /**
  * @category combinators
@@ -232,16 +232,16 @@ export const ktype = <P extends Record<string, Decoder<any, any>>>(
  */
 export const type = <A>(
   properties: { [K in keyof A]: Decoder<unknown, A[K]> }
-): Decoder<unknown, { [K in keyof A]: A[K] }> => pipe(UnknownRecord as any, compose(ktype(properties)))
+): Decoder<unknown, { [K in keyof A]: A[K] }> => pipe(UnknownRecord as any, compose(fromType(properties)))
 
 /**
  * @category combinators
  * @since 2.2.8
  */
-export const kpartial = <P extends Record<string, Decoder<any, any>>>(
+export const fromPartial = <P extends Record<string, Decoder<any, any>>>(
   properties: P
 ): Decoder<Partial<{ [K in keyof P]: InputOf<P[K]> }>, Partial<{ [K in keyof P]: TypeOf<P[K]> }>> =>
-  K.partial(M)((k, e) => FS.of(DE.key(k, DE.optional, e)))(properties)
+  K.fromPartial(M)((k, e) => FS.of(DE.key(k, DE.optional, e)))(properties)
 
 /**
  * @category combinators
@@ -249,44 +249,44 @@ export const kpartial = <P extends Record<string, Decoder<any, any>>>(
  */
 export const partial = <A>(
   properties: { [K in keyof A]: Decoder<unknown, A[K]> }
-): Decoder<unknown, Partial<{ [K in keyof A]: A[K] }>> => pipe(UnknownRecord as any, compose(kpartial(properties)))
+): Decoder<unknown, Partial<{ [K in keyof A]: A[K] }>> => pipe(UnknownRecord as any, compose(fromPartial(properties)))
 
 /**
  * @category combinators
  * @since 2.2.8
  */
-export const karray = <I, A>(item: Decoder<I, A>): Decoder<Array<I>, Array<A>> =>
-  K.array(M)((i, e) => FS.of(DE.index(i, DE.optional, e)))(item)
+export const fromArray = <I, A>(item: Decoder<I, A>): Decoder<Array<I>, Array<A>> =>
+  K.fromArray(M)((i, e) => FS.of(DE.index(i, DE.optional, e)))(item)
 
 /**
  * @category combinators
  * @since 2.2.7
  */
 export const array = <A>(item: Decoder<unknown, A>): Decoder<unknown, Array<A>> =>
-  pipe(UnknownArray, compose(karray(item)))
+  pipe(UnknownArray, compose(fromArray(item)))
 
 /**
  * @category combinators
  * @since 2.2.8
  */
-export const krecord = <I, A>(codomain: Decoder<I, A>): Decoder<Record<string, I>, Record<string, A>> =>
-  K.record(M)((k, e) => FS.of(DE.key(k, DE.optional, e)))(codomain)
+export const fromRecord = <I, A>(codomain: Decoder<I, A>): Decoder<Record<string, I>, Record<string, A>> =>
+  K.fromRecord(M)((k, e) => FS.of(DE.key(k, DE.optional, e)))(codomain)
 
 /**
  * @category combinators
  * @since 2.2.7
  */
 export const record = <A>(codomain: Decoder<unknown, A>): Decoder<unknown, Record<string, A>> =>
-  pipe(UnknownRecord, compose(krecord(codomain)))
+  pipe(UnknownRecord, compose(fromRecord(codomain)))
 
 /**
  * @category combinators
  * @since 2.2.8
  */
-export const ktuple = <C extends ReadonlyArray<Decoder<any, any>>>(
+export const fromTuple = <C extends ReadonlyArray<Decoder<any, any>>>(
   ...components: C
 ): Decoder<{ [K in keyof C]: InputOf<C[K]> }, { [K in keyof C]: TypeOf<C[K]> }> =>
-  K.tuple(M)((i, e) => FS.of(DE.index(i, DE.required, e)))(...components)
+  K.fromTuple(M)((i, e) => FS.of(DE.index(i, DE.required, e)))(...components)
 
 /**
  * @category combinators
@@ -294,7 +294,7 @@ export const ktuple = <C extends ReadonlyArray<Decoder<any, any>>>(
  */
 export const tuple = <A extends ReadonlyArray<unknown>>(
   ...components: { [K in keyof A]: Decoder<unknown, A[K]> }
-): Decoder<unknown, A> => pipe(UnknownArray as any, compose(ktuple(...components))) as any
+): Decoder<unknown, A> => pipe(UnknownArray as any, compose(fromTuple(...components))) as any
 
 /**
  * @category combinators
@@ -318,10 +318,10 @@ export const intersect: <IB, B>(right: Decoder<IB, B>) => <IA, A>(left: Decoder<
  * @category combinators
  * @since 2.2.8
  */
-export const ksum = <T extends string>(tag: T) => <MS extends Record<string, Decoder<any, any>>>(
+export const fromSum = <T extends string>(tag: T) => <MS extends Record<string, Decoder<any, any>>>(
   members: MS
 ): Decoder<InputOf<MS[keyof MS]>, TypeOf<MS[keyof MS]>> =>
-  K.sum(M)((tag, value, keys) =>
+  K.fromSum(M)((tag, value, keys) =>
     FS.of(
       DE.key(
         tag,
@@ -337,7 +337,7 @@ export const ksum = <T extends string>(tag: T) => <MS extends Record<string, Dec
  */
 export const sum = <T extends string>(tag: T) => <A>(
   members: { [K in keyof A]: Decoder<unknown, A[K]> }
-): Decoder<unknown, A[keyof A]> => pipe(UnknownRecord as any, compose(ksum(tag)(members)))
+): Decoder<unknown, A[keyof A]> => pipe(UnknownRecord as any, compose(fromSum(tag)(members)))
 
 /**
  * @category combinators

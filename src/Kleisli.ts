@@ -125,7 +125,7 @@ export function nullable<M extends URIS2, E>(
  * @category combinators
  * @since 2.2.7
  */
-export function type<M extends URIS2, E>(
+export function fromType<M extends URIS2, E>(
   M: Applicative2C<M, E> & Bifunctor2<M>
 ): (
   onPropertyError: (key: string, e: E) => E
@@ -145,7 +145,7 @@ export function type<M extends URIS2, E>(
  * @category combinators
  * @since 2.2.7
  */
-export function partial<M extends URIS2, E>(
+export function fromPartial<M extends URIS2, E>(
   M: Applicative2C<M, E> & Bifunctor2<M>
 ): (
   onPropertyError: (key: string, e: E) => E
@@ -182,7 +182,7 @@ export function partial<M extends URIS2, E>(
  * @category combinators
  * @since 2.2.7
  */
-export function array<M extends URIS2, E>(
+export function fromArray<M extends URIS2, E>(
   M: Applicative2C<M, E> & Bifunctor2<M>
 ): (onItemError: (index: number, e: E) => E) => <I, A>(item: Kleisli<M, I, E, A>) => Kleisli<M, Array<I>, E, Array<A>> {
   const traverse = traverseArrayWithIndex(M)
@@ -195,7 +195,7 @@ export function array<M extends URIS2, E>(
  * @category combinators
  * @since 2.2.7
  */
-export function record<M extends URIS2, E>(
+export function fromRecord<M extends URIS2, E>(
   M: Applicative2C<M, E> & Bifunctor2<M>
 ): (
   onKeyError: (key: string, e: E) => E
@@ -210,7 +210,7 @@ export function record<M extends URIS2, E>(
  * @category combinators
  * @since 2.2.7
  */
-export function tuple<M extends URIS2, E>(
+export function fromTuple<M extends URIS2, E>(
   M: Applicative2C<M, E> & Bifunctor2<M>
 ): (
   onIndexError: (index: number, e: E) => E
@@ -272,7 +272,7 @@ export function intersect<M extends URIS2, E>(
  * @category combinators
  * @since 2.2.7
  */
-export function sum<M extends URIS2, E>(
+export function fromSum<M extends URIS2, E>(
   M: MonadThrow2C<M, E>
 ): (
   onTagError: (tag: string, value: unknown, tags: ReadonlyArray<string>) => E

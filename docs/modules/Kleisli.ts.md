@@ -21,8 +21,13 @@ Added in v2.2.7
 
 - [combinators](#combinators)
   - [alt](#alt)
-  - [array](#array)
   - [compose](#compose)
+  - [fromArray](#fromarray)
+  - [fromPartial](#frompartial)
+  - [fromRecord](#fromrecord)
+  - [fromSum](#fromsum)
+  - [fromTuple](#fromtuple)
+  - [fromType](#fromtype)
   - [id](#id)
   - [intersect](#intersect)
   - [lazy](#lazy)
@@ -30,12 +35,7 @@ Added in v2.2.7
   - [mapLeftWithInput](#mapleftwithinput)
   - [nullable](#nullable)
   - [parse](#parse)
-  - [partial](#partial)
-  - [record](#record)
   - [refine](#refine)
-  - [sum](#sum)
-  - [tuple](#tuple)
-  - [type](#type)
   - [union](#union)
 - [constructors](#constructors)
   - [fromRefinement](#fromrefinement)
@@ -62,18 +62,6 @@ export declare function alt<F extends URIS2, E>(
 
 Added in v2.2.7
 
-## array
-
-**Signature**
-
-```ts
-export declare function array<M extends URIS2, E>(
-  M: Applicative2C<M, E> & Bifunctor2<M>
-): (onItemError: (index: number, e: E) => E) => <I, A>(item: Kleisli<M, I, E, A>) => Kleisli<M, Array<I>, E, Array<A>>
-```
-
-Added in v2.2.7
-
 ## compose
 
 **Signature**
@@ -82,6 +70,98 @@ Added in v2.2.7
 export declare function compose<M extends URIS2, E>(
   M: Monad2C<M, E>
 ): <A, B>(ab: Kleisli<M, A, E, B>) => <I>(ia: Kleisli<M, I, E, A>) => Kleisli<M, I, E, B>
+```
+
+Added in v2.2.7
+
+## fromArray
+
+**Signature**
+
+```ts
+export declare function fromArray<M extends URIS2, E>(
+  M: Applicative2C<M, E> & Bifunctor2<M>
+): (onItemError: (index: number, e: E) => E) => <I, A>(item: Kleisli<M, I, E, A>) => Kleisli<M, Array<I>, E, Array<A>>
+```
+
+Added in v2.2.7
+
+## fromPartial
+
+**Signature**
+
+```ts
+export declare function fromPartial<M extends URIS2, E>(
+  M: Applicative2C<M, E> & Bifunctor2<M>
+): (
+  onPropertyError: (key: string, e: E) => E
+) => <P extends Record<string, Kleisli<M, any, E, any>>>(
+  properties: P
+) => Kleisli<M, Partial<{ [K in keyof P]: InputOf<M, P[K]> }>, E, Partial<{ [K in keyof P]: TypeOf<M, P[K]> }>>
+```
+
+Added in v2.2.7
+
+## fromRecord
+
+**Signature**
+
+```ts
+export declare function fromRecord<M extends URIS2, E>(
+  M: Applicative2C<M, E> & Bifunctor2<M>
+): (
+  onKeyError: (key: string, e: E) => E
+) => <I, A>(codomain: Kleisli<M, I, E, A>) => Kleisli<M, Record<string, I>, E, Record<string, A>>
+```
+
+Added in v2.2.7
+
+## fromSum
+
+**Signature**
+
+```ts
+export declare function fromSum<M extends URIS2, E>(
+  M: MonadThrow2C<M, E>
+): (
+  onTagError: (tag: string, value: unknown, tags: ReadonlyArray<string>) => E
+) => <T extends string>(
+  tag: T
+) => <MS extends Record<string, Kleisli<M, any, E, any>>>(
+  members: MS
+) => Kleisli<M, InputOf<M, MS[keyof MS]>, E, TypeOf<M, MS[keyof MS]>>
+```
+
+Added in v2.2.7
+
+## fromTuple
+
+**Signature**
+
+```ts
+export declare function fromTuple<M extends URIS2, E>(
+  M: Applicative2C<M, E> & Bifunctor2<M>
+): (
+  onIndexError: (index: number, e: E) => E
+) => <C extends ReadonlyArray<Kleisli<M, any, E, any>>>(
+  ...components: C
+) => Kleisli<M, { [K in keyof C]: InputOf<M, C[K]> }, E, { [K in keyof C]: TypeOf<M, C[K]> }>
+```
+
+Added in v2.2.7
+
+## fromType
+
+**Signature**
+
+```ts
+export declare function fromType<M extends URIS2, E>(
+  M: Applicative2C<M, E> & Bifunctor2<M>
+): (
+  onPropertyError: (key: string, e: E) => E
+) => <P extends Record<string, Kleisli<M, any, E, any>>>(
+  properties: P
+) => Kleisli<M, { [K in keyof P]: InputOf<M, P[K]> }, E, { [K in keyof P]: TypeOf<M, P[K]> }>
 ```
 
 Added in v2.2.7
@@ -168,36 +248,6 @@ export declare function parse<M extends URIS2, E>(
 
 Added in v2.2.7
 
-## partial
-
-**Signature**
-
-```ts
-export declare function partial<M extends URIS2, E>(
-  M: Applicative2C<M, E> & Bifunctor2<M>
-): (
-  onPropertyError: (key: string, e: E) => E
-) => <P extends Record<string, Kleisli<M, any, E, any>>>(
-  properties: P
-) => Kleisli<M, Partial<{ [K in keyof P]: InputOf<M, P[K]> }>, E, Partial<{ [K in keyof P]: TypeOf<M, P[K]> }>>
-```
-
-Added in v2.2.7
-
-## record
-
-**Signature**
-
-```ts
-export declare function record<M extends URIS2, E>(
-  M: Applicative2C<M, E> & Bifunctor2<M>
-): (
-  onKeyError: (key: string, e: E) => E
-) => <I, A>(codomain: Kleisli<M, I, E, A>) => Kleisli<M, Record<string, I>, E, Record<string, A>>
-```
-
-Added in v2.2.7
-
 ## refine
 
 **Signature**
@@ -209,56 +259,6 @@ export declare function refine<M extends URIS2, E>(
   refinement: (a: A) => a is B,
   onError: (a: A) => E
 ) => <I>(from: Kleisli<M, I, E, A>) => Kleisli<M, I, E, B>
-```
-
-Added in v2.2.7
-
-## sum
-
-**Signature**
-
-```ts
-export declare function sum<M extends URIS2, E>(
-  M: MonadThrow2C<M, E>
-): (
-  onTagError: (tag: string, value: unknown, tags: ReadonlyArray<string>) => E
-) => <T extends string>(
-  tag: T
-) => <MS extends Record<string, Kleisli<M, any, E, any>>>(
-  members: MS
-) => Kleisli<M, InputOf<M, MS[keyof MS]>, E, TypeOf<M, MS[keyof MS]>>
-```
-
-Added in v2.2.7
-
-## tuple
-
-**Signature**
-
-```ts
-export declare function tuple<M extends URIS2, E>(
-  M: Applicative2C<M, E> & Bifunctor2<M>
-): (
-  onIndexError: (index: number, e: E) => E
-) => <C extends ReadonlyArray<Kleisli<M, any, E, any>>>(
-  ...components: C
-) => Kleisli<M, { [K in keyof C]: InputOf<M, C[K]> }, E, { [K in keyof C]: TypeOf<M, C[K]> }>
-```
-
-Added in v2.2.7
-
-## type
-
-**Signature**
-
-```ts
-export declare function type<M extends URIS2, E>(
-  M: Applicative2C<M, E> & Bifunctor2<M>
-): (
-  onPropertyError: (key: string, e: E) => E
-) => <P extends Record<string, Kleisli<M, any, E, any>>>(
-  properties: P
-) => Kleisli<M, { [K in keyof P]: InputOf<M, P[K]> }, E, { [K in keyof P]: TypeOf<M, P[K]> }>
 ```
 
 Added in v2.2.7

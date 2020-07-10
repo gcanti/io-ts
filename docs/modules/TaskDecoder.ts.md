@@ -34,13 +34,13 @@ Added in v2.2.7
   - [compose](#compose)
 - [combinators](#combinators)
   - [array](#array)
+  - [fromArray](#fromarray)
+  - [fromPartial](#frompartial)
+  - [fromRecord](#fromrecord)
+  - [fromSum](#fromsum)
+  - [fromTuple](#fromtuple)
+  - [fromType](#fromtype)
   - [intersect](#intersect)
-  - [karray](#karray)
-  - [kpartial](#kpartial)
-  - [krecord](#krecord)
-  - [ksum](#ksum)
-  - [ktuple](#ktuple)
-  - [ktype](#ktype)
   - [lazy](#lazy)
   - [mapLeftWithInput](#mapleftwithinput)
   - [nullable](#nullable)
@@ -184,6 +184,81 @@ export declare const array: <A>(item: TaskDecoder<unknown, A>) => TaskDecoder<un
 
 Added in v2.2.7
 
+## fromArray
+
+**Signature**
+
+```ts
+export declare const fromArray: <I, A>(item: TaskDecoder<I, A>) => TaskDecoder<I[], A[]>
+```
+
+Added in v2.2.8
+
+## fromPartial
+
+**Signature**
+
+```ts
+export declare const fromPartial: <P extends Record<string, TaskDecoder<any, any>>>(
+  properties: P
+) => TaskDecoder<
+  Partial<{ [K in keyof P]: K.InputOf<'TaskEither', P[K]> }>,
+  Partial<{ [K in keyof P]: K.TypeOf<'TaskEither', P[K]> }>
+>
+```
+
+Added in v2.2.8
+
+## fromRecord
+
+**Signature**
+
+```ts
+export declare const fromRecord: <I, A>(
+  codomain: TaskDecoder<I, A>
+) => TaskDecoder<Record<string, I>, Record<string, A>>
+```
+
+Added in v2.2.8
+
+## fromSum
+
+**Signature**
+
+```ts
+export declare const fromSum: <T extends string>(
+  tag: T
+) => <MS extends Record<string, TaskDecoder<any, any>>>(
+  members: MS
+) => TaskDecoder<K.InputOf<'TaskEither', MS[keyof MS]>, K.TypeOf<'TaskEither', MS[keyof MS]>>
+```
+
+Added in v2.2.8
+
+## fromTuple
+
+**Signature**
+
+```ts
+export declare const fromTuple: <C extends readonly TaskDecoder<any, any>[]>(
+  ...components: C
+) => TaskDecoder<{ [K in keyof C]: K.InputOf<'TaskEither', C[K]> }, { [K in keyof C]: K.TypeOf<'TaskEither', C[K]> }>
+```
+
+Added in v2.2.8
+
+## fromType
+
+**Signature**
+
+```ts
+export declare const fromType: <P extends Record<string, TaskDecoder<any, any>>>(
+  properties: P
+) => TaskDecoder<{ [K in keyof P]: K.InputOf<'TaskEither', P[K]> }, { [K in keyof P]: K.TypeOf<'TaskEither', P[K]> }>
+```
+
+Added in v2.2.8
+
 ## intersect
 
 **Signature**
@@ -195,79 +270,6 @@ export declare const intersect: <IB, B>(
 ```
 
 Added in v2.2.7
-
-## karray
-
-**Signature**
-
-```ts
-export declare const karray: <I, A>(item: TaskDecoder<I, A>) => TaskDecoder<I[], A[]>
-```
-
-Added in v2.2.8
-
-## kpartial
-
-**Signature**
-
-```ts
-export declare const kpartial: <P extends Record<string, TaskDecoder<any, any>>>(
-  properties: P
-) => TaskDecoder<
-  Partial<{ [K in keyof P]: K.InputOf<'TaskEither', P[K]> }>,
-  Partial<{ [K in keyof P]: K.TypeOf<'TaskEither', P[K]> }>
->
-```
-
-Added in v2.2.8
-
-## krecord
-
-**Signature**
-
-```ts
-export declare const krecord: <I, A>(codomain: TaskDecoder<I, A>) => TaskDecoder<Record<string, I>, Record<string, A>>
-```
-
-Added in v2.2.8
-
-## ksum
-
-**Signature**
-
-```ts
-export declare const ksum: <T extends string>(
-  tag: T
-) => <MS extends Record<string, TaskDecoder<any, any>>>(
-  members: MS
-) => TaskDecoder<K.InputOf<'TaskEither', MS[keyof MS]>, K.TypeOf<'TaskEither', MS[keyof MS]>>
-```
-
-Added in v2.2.8
-
-## ktuple
-
-**Signature**
-
-```ts
-export declare const ktuple: <C extends readonly TaskDecoder<any, any>[]>(
-  ...components: C
-) => TaskDecoder<{ [K in keyof C]: K.InputOf<'TaskEither', C[K]> }, { [K in keyof C]: K.TypeOf<'TaskEither', C[K]> }>
-```
-
-Added in v2.2.8
-
-## ktype
-
-**Signature**
-
-```ts
-export declare const ktype: <P extends Record<string, TaskDecoder<any, any>>>(
-  properties: P
-) => TaskDecoder<{ [K in keyof P]: K.InputOf<'TaskEither', P[K]> }, { [K in keyof P]: K.TypeOf<'TaskEither', P[K]> }>
-```
-
-Added in v2.2.8
 
 ## lazy
 
