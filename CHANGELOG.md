@@ -44,7 +44,7 @@
     - add `id` function (@gcanti)
     - (\*) rename `functorDecoder` instance to `Functor` (@gcanti)
     - (\*) rename `altDecoder` instance to `Alt` (@gcanti)
-    - (\*) rename `schemableDecoder` instance to `Schemable` (@gcanti)
+    - (\*) rename and split `schemableDecoder` instance to `Schemable` (@gcanti)
     - add `Category` instance (@gcanti)
     - add `InputOf` type (@gcanti)
   - `TaskDecoder`
@@ -61,7 +61,7 @@
     - add `id` function (@gcanti)
     - (\*) rename `functorTaskDecoder` instance to `Functor` (@gcanti)
     - (\*) rename `altTaskDecoder` instance to `Alt` (@gcanti)
-    - (\*) rename `schemableTaskDecoder` instance to `Schemable` (@gcanti)
+    - (\*) rename and split `schemableTaskDecoder` instance to `Schemable` (@gcanti)
     - add `Category` instance (@gcanti)
     - add `InputOf` type (@gcanti)
   - `Guard`
@@ -78,7 +78,7 @@
     - (\*) rename `contravariantEncoder` to `Contravariant` (@gcanti)
     - (\*) rename `categoryEncoder` to `Category` (@gcanti)
   - `Eq`
-    - (\*) rename `schemableEq` to `Schemable` (@gcanti)
+    - (\*) rename and split `schemableEq` to `Schemable` (@gcanti)
   - `Kleisli`
     - add `id` (@gcanti)
     - rename `type` to `fromType` (@gcanti)
@@ -93,7 +93,7 @@
   - `Schemable`
     - add `Schemable2C`, `WithUnknownContainers2C`, `WithUnion2C`, `WithRefine2C` (@gcanti)
   - `Type`
-    - (\*) rename `schemableType` to `Schemable` (@gcanti)
+    - (\*) rename and split `schemableType` to `Schemable` (@gcanti)
 
 (\*) breaking change
 

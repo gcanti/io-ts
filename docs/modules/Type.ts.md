@@ -37,6 +37,9 @@ Added in v2.2.3
   - [Schemable](#schemable)
   - [URI](#uri)
   - [URI (type alias)](#uri-type-alias)
+  - [WithRefine](#withrefine)
+  - [WithUnion](#withunion)
+  - [WithUnknownContainers](#withunknowncontainers)
 - [model](#model)
   - [Type (interface)](#type-interface)
 - [primitives](#primitives)
@@ -183,10 +186,7 @@ Added in v2.2.3
 **Signature**
 
 ```ts
-export declare const Schemable: Schemable1<'io-ts/Type'> &
-  WithUnknownContainers1<'io-ts/Type'> &
-  WithUnion1<'io-ts/Type'> &
-  WithRefine1<'io-ts/Type'>
+export declare const Schemable: Schemable1<'io-ts/Type'>
 ```
 
 Added in v2.2.8
@@ -210,6 +210,36 @@ export type URI = typeof URI
 ```
 
 Added in v2.2.3
+
+## WithRefine
+
+**Signature**
+
+```ts
+export declare const WithRefine: WithRefine1<'io-ts/Type'>
+```
+
+Added in v2.2.8
+
+## WithUnion
+
+**Signature**
+
+```ts
+export declare const WithUnion: WithUnion1<'io-ts/Type'>
+```
+
+Added in v2.2.8
+
+## WithUnknownContainers
+
+**Signature**
+
+```ts
+export declare const WithUnknownContainers: WithUnknownContainers1<'io-ts/Type'>
+```
+
+Added in v2.2.8
 
 # model
 

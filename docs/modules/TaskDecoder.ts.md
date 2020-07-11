@@ -64,6 +64,9 @@ Added in v2.2.7
   - [Schemable](#schemable)
   - [URI](#uri)
   - [URI (type alias)](#uri-type-alias)
+  - [WithRefine](#withrefine)
+  - [WithUnion](#withunion)
+  - [WithUnknownContainers](#withunknowncontainers)
 - [model](#model)
   - [TaskDecoder (interface)](#taskdecoder-interface)
 - [primitives](#primitives)
@@ -482,10 +485,7 @@ Added in v2.2.8
 **Signature**
 
 ```ts
-export declare const Schemable: S.Schemable2C<'io-ts/TaskDecoder', unknown> &
-  S.WithUnknownContainers2C<'io-ts/TaskDecoder', unknown> &
-  S.WithUnion2C<'io-ts/TaskDecoder', unknown> &
-  S.WithRefine2C<'io-ts/TaskDecoder', unknown>
+export declare const Schemable: S.Schemable2C<'io-ts/TaskDecoder', unknown>
 ```
 
 Added in v2.2.8
@@ -509,6 +509,36 @@ export type URI = typeof URI
 ```
 
 Added in v2.2.7
+
+## WithRefine
+
+**Signature**
+
+```ts
+export declare const WithRefine: S.WithRefine2C<'io-ts/TaskDecoder', unknown>
+```
+
+Added in v2.2.8
+
+## WithUnion
+
+**Signature**
+
+```ts
+export declare const WithUnion: S.WithUnion2C<'io-ts/TaskDecoder', unknown>
+```
+
+Added in v2.2.8
+
+## WithUnknownContainers
+
+**Signature**
+
+```ts
+export declare const WithUnknownContainers: S.WithUnknownContainers2C<'io-ts/TaskDecoder', unknown>
+```
+
+Added in v2.2.8
 
 # model
 

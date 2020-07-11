@@ -31,6 +31,8 @@ Added in v2.2.2
   - [type](#type)
 - [instances](#instances)
   - [Schemable](#schemable)
+  - [WithRefine](#withrefine)
+  - [WithUnknownContainers](#withunknowncontainers)
 - [primitives](#primitives)
   - [UnknownArray](#unknownarray)
   - [UnknownRecord](#unknownrecord)
@@ -142,7 +144,27 @@ Added in v2.2.2
 **Signature**
 
 ```ts
-export declare const Schemable: Schemable1<'Eq'> & WithUnknownContainers1<'Eq'> & WithRefine1<'Eq'>
+export declare const Schemable: Schemable1<'Eq'>
+```
+
+Added in v2.2.8
+
+## WithRefine
+
+**Signature**
+
+```ts
+export declare const WithRefine: WithRefine1<'Eq'>
+```
+
+Added in v2.2.8
+
+## WithUnknownContainers
+
+**Signature**
+
+```ts
+export declare const WithUnknownContainers: WithUnknownContainers1<'Eq'>
 ```
 
 Added in v2.2.8
