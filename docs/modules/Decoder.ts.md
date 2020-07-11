@@ -63,6 +63,9 @@ Added in v2.2.7
   - [Schemable](#schemable)
   - [URI](#uri)
   - [URI (type alias)](#uri-type-alias)
+  - [WithRefine](#withrefine)
+  - [WithUnion](#withunion)
+  - [WithUnknownContainers](#withunknowncontainers)
 - [model](#model)
   - [Decoder (interface)](#decoder-interface)
 - [primitives](#primitives)
@@ -466,10 +469,7 @@ Added in v2.2.8
 **Signature**
 
 ```ts
-export declare const Schemable: S.Schemable2C<'io-ts/Decoder', unknown> &
-  S.WithUnknownContainers2C<'io-ts/Decoder', unknown> &
-  S.WithUnion2C<'io-ts/Decoder', unknown> &
-  S.WithRefine2C<'io-ts/Decoder', unknown>
+export declare const Schemable: S.Schemable2C<'io-ts/Decoder', unknown>
 ```
 
 Added in v2.2.8
@@ -493,6 +493,36 @@ export type URI = typeof URI
 ```
 
 Added in v2.2.7
+
+## WithRefine
+
+**Signature**
+
+```ts
+export declare const WithRefine: S.WithRefine2C<'io-ts/Decoder', unknown>
+```
+
+Added in v2.2.8
+
+## WithUnion
+
+**Signature**
+
+```ts
+export declare const WithUnion: S.WithUnion2C<'io-ts/Decoder', unknown>
+```
+
+Added in v2.2.8
+
+## WithUnknownContainers
+
+**Signature**
+
+```ts
+export declare const WithUnknownContainers: S.WithUnknownContainers2C<'io-ts/Decoder', unknown>
+```
+
+Added in v2.2.8
 
 # model
 

@@ -88,7 +88,7 @@ describe('Eq', () => {
     type NonEmptyString = string & NonEmptyStringBrand
     const eq = pipe(
       E.string,
-      E.Schemable.refine((s): s is NonEmptyString => s.length > 0, 'NonEmptyString')
+      E.WithRefine.refine((s): s is NonEmptyString => s.length > 0, 'NonEmptyString')
     )
     const a: NonEmptyString = 'a' as any
     const b: NonEmptyString = 'b' as any

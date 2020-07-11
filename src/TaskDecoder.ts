@@ -454,10 +454,7 @@ export const Category: Category2<URI> = {
  * @category instances
  * @since 2.2.8
  */
-export const Schemable: S.Schemable2C<URI, unknown> &
-  S.WithUnknownContainers2C<URI, unknown> &
-  S.WithUnion2C<URI, unknown> &
-  S.WithRefine2C<URI, unknown> = {
+export const Schemable: S.Schemable2C<URI, unknown> = {
   URI,
   literal,
   string,
@@ -471,10 +468,31 @@ export const Schemable: S.Schemable2C<URI, unknown> &
   tuple: tuple as S.Schemable2C<URI, unknown>['tuple'],
   intersect,
   sum,
-  lazy,
+  lazy
+}
+
+/**
+ * @category instances
+ * @since 2.2.8
+ */
+export const WithUnknownContainers: S.WithUnknownContainers2C<URI, unknown> = {
   UnknownArray,
-  UnknownRecord,
-  union: union as S.WithUnion2C<URI, unknown>['union'],
+  UnknownRecord
+}
+
+/**
+ * @category instances
+ * @since 2.2.8
+ */
+export const WithUnion: S.WithUnion2C<URI, unknown> = {
+  union: union as S.WithUnion2C<URI, unknown>['union']
+}
+
+/**
+ * @category instances
+ * @since 2.2.8
+ */
+export const WithRefine: S.WithRefine2C<URI, unknown> = {
   refine: refine as S.WithRefine2C<URI, unknown>['refine']
 }
 

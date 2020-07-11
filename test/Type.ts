@@ -38,9 +38,9 @@ const interpreter: {
 
 function check<A>(schema: Schema<A>, type: t.Type<A>): void {
   const arb = interpreter(A.Schemable)(schema)
-  const decoder = interpreter(D.Schemable)(schema)
-  const guard = interpreter(G.Schemable)(schema)
-  const itype = interpreter(_.Schemable)(schema)
+  const decoder = interpreter({ ...D.Schemable, ...D.WithUnknownContainers, ...D.WithUnion })(schema)
+  const guard = interpreter({ ...G.Schemable, ...G.WithUnknownContainers, ...G.WithUnion })(schema)
+  const itype = interpreter({ ..._.Schemable, ..._.WithUnknownContainers, ..._.WithUnion })(schema)
   // decoder and type should be aligned
   fc.assert(fc.property(arb, (a) => isRight(decoder.decode(a)) === isRight(type.decode(a))))
   // interpreted type and type should be aligned
