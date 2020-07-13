@@ -44,7 +44,7 @@
     - add `id` function (@gcanti)
     - (\*) rename `functorDecoder` instance to `Functor` (@gcanti)
     - (\*) rename `altDecoder` instance to `Alt` (@gcanti)
-    - (\*) rename and split `schemableDecoder` instance to `Schemable` (@gcanti)
+    - (\*) rename and split `schemableDecoder` (@gcanti)
     - add `Category` instance (@gcanti)
     - add `InputOf` type (@gcanti)
   - `TaskDecoder`
@@ -61,12 +61,12 @@
     - add `id` function (@gcanti)
     - (\*) rename `functorTaskDecoder` instance to `Functor` (@gcanti)
     - (\*) rename `altTaskDecoder` instance to `Alt` (@gcanti)
-    - (\*) rename and split `schemableTaskDecoder` instance to `Schemable` (@gcanti)
+    - (\*) rename and split `schemableTaskDecoder` (@gcanti)
     - add `Category` instance (@gcanti)
     - add `InputOf` type (@gcanti)
   - `Guard`
     - (\*) make `Guard` more general by adding a `I` type parameter (@gcanti)
-    - (\*) rename `schemableGuard` to `Schemable` (@gcanti)
+    - (\*) rename `schemableGuard` (@gcanti)
     - add `InputOf` type (@gcanti)
     - add `alt` function (@gcanti)
     - add `zero` function (@gcanti)
@@ -78,7 +78,7 @@
     - (\*) rename `contravariantEncoder` to `Contravariant` (@gcanti)
     - (\*) rename `categoryEncoder` to `Category` (@gcanti)
   - `Eq`
-    - (\*) rename and split `schemableEq` to `Schemable` (@gcanti)
+    - (\*) rename and split `schemableEq` (@gcanti)
   - `Kleisli`
     - add `id` (@gcanti)
     - rename `type` to `fromType` (@gcanti)
@@ -87,13 +87,10 @@
     - rename `record` to `fromRecord` (@gcanti)
     - rename `tuple` to `fromTuple` (@gcanti)
     - rename `sum` to `fromSum` (@gcanti)
-  - `JsonEncoder`
-    - (\*) rename `contravariantJsonCodec` to `Contravariant` (@gcanti)
-    - (\*) rename `schemableJsonEncoder` to `Schemable` (@gcanti)
   - `Schemable`
     - add `Schemable2C`, `WithUnknownContainers2C`, `WithUnion2C`, `WithRefine2C` (@gcanti)
   - `Type`
-    - (\*) rename and split `schemableType` to `Schemable` (@gcanti)
+    - (\*) rename and split `schemableType` (@gcanti)
 
 (\*) breaking change
 
