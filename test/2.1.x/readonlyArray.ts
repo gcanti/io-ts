@@ -1,7 +1,6 @@
 import * as assert from 'assert'
 import * as t from '../../src/index'
-import { assertSuccess, assertFailure, NumberFromString } from './helpers'
-import { either } from 'fp-ts/lib/Either'
+import { assertFailure, assertSuccess, NumberFromString } from './helpers'
 
 describe('readonlyArray', () => {
   describe('name', () => {
@@ -43,19 +42,6 @@ describe('readonlyArray', () => {
     it('should fail validating an invalid value', () => {
       const T = t.readonlyArray(t.number)
       assertFailure(T, ['s'], ['Invalid value "s" supplied to : ReadonlyArray<number>/0: number'])
-    })
-
-    it('should freeze the value', () => {
-      const T = t.readonlyArray(t.number)
-      either.map(T.decode([1]), (x) => assert.ok(Object.isFrozen(x)))
-    })
-
-    it('should not freeze in production', () => {
-      const env = process.env.NODE_ENV
-      process.env.NODE_ENV = 'production'
-      const T = t.readonlyArray(t.number)
-      either.map(T.decode([1]), (x) => assert.ok(!Object.isFrozen(x)))
-      process.env.NODE_ENV = env
     })
   })
 

@@ -218,7 +218,7 @@ Added in v1.0.0
 **Signature**
 
 ```ts
-export declare const array: <C extends Mixed>(codec: C, name?: string) => ArrayC<C>
+export declare const array: <C extends Mixed>(item: C, name?: string) => ArrayC<C>
 ```
 
 Added in v1.0.0
@@ -310,7 +310,7 @@ Added in v1.0.0
 **Signature**
 
 ```ts
-export declare const readonlyArray: <C extends Mixed>(codec: C, name?: string) => ReadonlyArrayC<C>
+export declare const readonlyArray: <C extends Mixed>(item: C, name?: string) => ReadonlyArrayC<C>
 ```
 
 Added in v1.0.0

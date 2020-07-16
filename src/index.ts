@@ -793,10 +793,10 @@ export interface ArrayC<C extends Mixed> extends ArrayType<C, Array<TypeOf<C>>, 
  * @category Combinators
  * @since 1.0.0
  */
-export const array = <C extends Mixed>(codec: C, name: string = `Array<${codec.name}>`): ArrayC<C> =>
+export const array = <C extends Mixed>(item: C, name: string = `Array<${item.name}>`): ArrayC<C> =>
   new ArrayType(
     name,
-    (u): u is Array<TypeOf<C>> => UnknownArray.is(u) && u.every(codec.is),
+    (u): u is Array<TypeOf<C>> => UnknownArray.is(u) && u.every(item.is),
     (u, c) => {
       const e = UnknownArray.validate(u, c)
       if (isLeft(e)) {
@@ -808,7 +808,7 @@ export const array = <C extends Mixed>(codec: C, name: string = `Array<${codec.n
       const errors: Errors = []
       for (let i = 0; i < len; i++) {
         const ui = us[i]
-        const result = codec.validate(ui, appendContext(c, String(i), codec, ui))
+        const result = item.validate(ui, appendContext(c, String(i), item, ui))
         if (isLeft(result)) {
           pushAll(errors, result.left)
         } else {
@@ -823,8 +823,8 @@ export const array = <C extends Mixed>(codec: C, name: string = `Array<${codec.n
       }
       return errors.length > 0 ? failures(errors) : success(as)
     },
-    codec.encode === identity ? identity : (a) => a.map(codec.encode),
-    codec
+    item.encode === identity ? identity : (a) => a.map(item.encode),
+    item
   )
 
 /**
@@ -1633,23 +1633,7 @@ export interface ReadonlyC<C extends Mixed>
  * @since 1.0.0
  */
 export const readonly = <C extends Mixed>(codec: C, name: string = `Readonly<${codec.name}>`): ReadonlyC<C> => {
-  return new ReadonlyType(
-    name,
-    codec.is,
-    (u, c) => {
-      const e = codec.validate(u, c)
-      if (isLeft(e)) {
-        return e
-      }
-      const x = e.right
-      if (process.env.NODE_ENV !== 'production') {
-        return right(Object.freeze(x))
-      }
-      return right(x)
-    },
-    codec.encode === identity ? identity : codec.encode,
-    codec
-  )
+  return new ReadonlyType(name, codec.is, codec.validate, codec.encode, codec)
 }
 
 /**
@@ -1682,27 +1666,11 @@ export interface ReadonlyArrayC<C extends Mixed>
  * @since 1.0.0
  */
 export const readonlyArray = <C extends Mixed>(
-  codec: C,
-  name: string = `ReadonlyArray<${codec.name}>`
+  item: C,
+  name: string = `ReadonlyArray<${item.name}>`
 ): ReadonlyArrayC<C> => {
-  const arrayType = array(codec)
-  return new ReadonlyArrayType(
-    name,
-    arrayType.is,
-    (u, c) => {
-      const e = arrayType.validate(u, c)
-      if (isLeft(e)) {
-        return e
-      }
-      const x = e.right
-      if (process.env.NODE_ENV !== 'production') {
-        return right(Object.freeze(x))
-      }
-      return right(x)
-    },
-    arrayType.encode as any,
-    codec
-  )
+  const codec = array(item)
+  return new ReadonlyArrayType(name, codec.is, codec.validate, codec.encode, item) as any
 }
 
 /**
