@@ -194,6 +194,15 @@ export const mapLeftWithInput: <I>(
 
 /**
  * @category combinators
+ * @since 2.2.9
+ */
+export const withMessage = <I>(
+  message: (input: I, e: DecodeError) => string
+): (<A>(decoder: Decoder<I, A>) => Decoder<I, A>) =>
+  mapLeftWithInput((input, e) => FS.of(DE.wrap(message(input, e), e)))
+
+/**
+ * @category combinators
  * @since 2.2.7
  */
 export const refine = <A, B extends A>(
@@ -536,7 +545,8 @@ const toTree: (e: DE.DecodeError<string>) => Tree<string> = DE.fold({
   Key: (key, kind, errors) => make(`${kind} property ${JSON.stringify(key)}`, toForest(errors)),
   Index: (index, kind, errors) => make(`${kind} index ${index}`, toForest(errors)),
   Member: (index, errors) => make(`member ${index}`, toForest(errors)),
-  Lazy: (id, errors) => make(`lazy type ${id}`, toForest(errors))
+  Lazy: (id, errors) => make(`lazy type ${id}`, toForest(errors)),
+  Wrap: (error, errors) => make(error, toForest(errors))
 })
 
 const toForest: (e: DecodeError) => ReadonlyArray<Tree<string>> = FS.fold(

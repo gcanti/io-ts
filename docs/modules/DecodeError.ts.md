@@ -25,6 +25,7 @@ Added in v2.2.7
   - [lazy](#lazy)
   - [leaf](#leaf)
   - [member](#member)
+  - [wrap](#wrap)
 - [destructors](#destructors)
   - [fold](#fold)
 - [instances](#instances)
@@ -37,6 +38,7 @@ Added in v2.2.7
   - [Lazy (interface)](#lazy-interface)
   - [Leaf (interface)](#leaf-interface)
   - [Member (interface)](#member-interface)
+  - [Wrap (interface)](#wrap-interface)
   - [optional](#optional)
   - [required](#required)
 
@@ -94,6 +96,16 @@ export declare const member: <E>(index: number, errors: FS.FreeSemigroup<DecodeE
 
 Added in v2.2.7
 
+## wrap
+
+**Signature**
+
+```ts
+export declare const wrap: <E>(error: E, errors: FS.FreeSemigroup<DecodeError<E>>) => DecodeError<E>
+```
+
+Added in v2.2.9
+
 # destructors
 
 ## fold
@@ -107,6 +119,7 @@ export declare const fold: <E, R>(patterns: {
   Index: (index: number, kind: Kind, errors: FS.FreeSemigroup<DecodeError<E>>) => R
   Member: (index: number, errors: FS.FreeSemigroup<DecodeError<E>>) => R
   Lazy: (id: string, errors: FS.FreeSemigroup<DecodeError<E>>) => R
+  Wrap: (error: E, errors: FS.FreeSemigroup<DecodeError<E>>) => R
 }) => (e: DecodeError<E>) => R
 ```
 
@@ -131,7 +144,7 @@ Added in v2.2.7
 **Signature**
 
 ```ts
-export type DecodeError<E> = Leaf<E> | Key<E> | Index<E> | Member<E> | Lazy<E>
+export type DecodeError<E> = Leaf<E> | Key<E> | Index<E> | Member<E> | Lazy<E> | Wrap<E>
 ```
 
 Added in v2.2.7
@@ -217,6 +230,20 @@ export interface Member<E> {
 ```
 
 Added in v2.2.7
+
+## Wrap (interface)
+
+**Signature**
+
+```ts
+export interface Wrap<E> {
+  readonly _tag: 'Wrap'
+  readonly error: E
+  readonly errors: FS.FreeSemigroup<DecodeError<E>>
+}
+```
+
+Added in v2.2.9
 
 ## optional
 
