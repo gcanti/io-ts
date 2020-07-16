@@ -14,6 +14,11 @@
 **Note**: Gaps between patch versions are faulty/broken releases.
 **Note**: A feature tagged as Experimental is in a high state of flux, you're at risk of it changing without notice.
 
+# 2.2.9
+
+- **Polish**
+  - remove `Object.freeze` calls, closes #497 (@gcanti)
+
 # 2.2.8
 
 - **Experimental**
