@@ -18,6 +18,13 @@
 
 - **Polish**
   - remove `Object.freeze` calls, closes #497 (@gcanti)
+- **Experimental**
+  - `DecodeError`
+    - add `Wrap` member (@gcanti)
+  - `Decoder`
+    - add `withMessage` combinator (@gcanti)
+  - `TaskDecoder`
+    - add `withMessage` combinator (@gcanti)
 
 # 2.2.8
 

@@ -52,6 +52,7 @@ Added in v2.2.7
   - [tuple](#tuple)
   - [type](#type)
   - [union](#union)
+  - [withMessage](#withmessage)
 - [constructors](#constructors)
   - [fromGuard](#fromguard)
   - [fromRefinement](#fromrefinement)
@@ -397,6 +398,18 @@ export declare const union: <MS extends readonly [Decoder<any, any>, ...Decoder<
 ```
 
 Added in v2.2.7
+
+## withMessage
+
+**Signature**
+
+```ts
+export declare const withMessage: <I>(
+  message: (input: I, e: FS.FreeSemigroup<DE.DecodeError<string>>) => string
+) => <A>(decoder: Decoder<I, A>) => Decoder<I, A>
+```
+
+Added in v2.2.9
 
 # constructors
 

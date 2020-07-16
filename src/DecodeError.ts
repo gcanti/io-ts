@@ -83,9 +83,19 @@ export interface Lazy<E> {
 
 /**
  * @category model
+ * @since 2.2.9
+ */
+export interface Wrap<E> {
+  readonly _tag: 'Wrap'
+  readonly error: E
+  readonly errors: FS.FreeSemigroup<DecodeError<E>>
+}
+
+/**
+ * @category model
  * @since 2.2.7
  */
-export type DecodeError<E> = Leaf<E> | Key<E> | Index<E> | Member<E> | Lazy<E>
+export type DecodeError<E> = Leaf<E> | Key<E> | Index<E> | Member<E> | Lazy<E> | Wrap<E>
 
 /**
  * @category constructors
@@ -136,6 +146,16 @@ export const lazy = <E>(id: string, errors: FS.FreeSemigroup<DecodeError<E>>): D
 })
 
 /**
+ * @category constructors
+ * @since 2.2.9
+ */
+export const wrap = <E>(error: E, errors: FS.FreeSemigroup<DecodeError<E>>): DecodeError<E> => ({
+  _tag: 'Wrap',
+  error,
+  errors
+})
+
+/**
  * @category destructors
  * @since 2.2.7
  */
@@ -145,6 +165,7 @@ export const fold = <E, R>(patterns: {
   Index: (index: number, kind: Kind, errors: FS.FreeSemigroup<DecodeError<E>>) => R
   Member: (index: number, errors: FS.FreeSemigroup<DecodeError<E>>) => R
   Lazy: (id: string, errors: FS.FreeSemigroup<DecodeError<E>>) => R
+  Wrap: (error: E, errors: FS.FreeSemigroup<DecodeError<E>>) => R
 }): ((e: DecodeError<E>) => R) => {
   const f = (e: DecodeError<E>): R => {
     switch (e._tag) {
@@ -158,6 +179,8 @@ export const fold = <E, R>(patterns: {
         return patterns.Member(e.index, e.errors)
       case 'Lazy':
         return patterns.Lazy(e.id, e.errors)
+      case 'Wrap':
+        return patterns.Wrap(e.error, e.errors)
     }
   }
   return f

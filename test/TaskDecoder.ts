@@ -135,6 +135,24 @@ describe('UnknownTaskDecoder', () => {
     assert.deepStrictEqual(await decoder.decode('a')(), D.failure('a', 'not a number'))
   })
 
+  it('withMessage', async () => {
+    const decoder = pipe(
+      _.type({
+        name: _.string,
+        age: _.number
+      }),
+      _.withMessage(() => 'Person')
+    )
+    assert.deepStrictEqual(
+      await pipe(decoder.decode({}), TE.mapLeft(_.draw))(),
+      E.left(`Person
+├─ required property "name"
+│  └─ cannot decode undefined, should be string
+└─ required property "age"
+   └─ cannot decode undefined, should be number`)
+    )
+  })
+
   it('compose', async () => {
     interface IntBrand {
       readonly Int: unique symbol

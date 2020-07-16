@@ -195,6 +195,15 @@ export const mapLeftWithInput: <I>(
 
 /**
  * @category combinators
+ * @since 2.2.9
+ */
+export const withMessage = <I>(
+  message: (input: I, e: DecodeError) => string
+): (<A>(decoder: TaskDecoder<I, A>) => TaskDecoder<I, A>) =>
+  mapLeftWithInput((input, e) => FS.of(DE.wrap(message(input, e), e)))
+
+/**
+ * @category combinators
  * @since 2.2.7
  */
 export const refine = <A, B extends A>(

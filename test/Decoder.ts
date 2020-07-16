@@ -92,6 +92,24 @@ describe('Decoder', () => {
     assert.deepStrictEqual(decoder.decode('a'), E.left(FS.of(DE.leaf('a', 'not a number'))))
   })
 
+  it('withMessage', () => {
+    const decoder = pipe(
+      _.type({
+        name: _.string,
+        age: _.number
+      }),
+      _.withMessage(() => 'Person')
+    )
+    assert.deepStrictEqual(
+      pipe(decoder.decode({}), E.mapLeft(_.draw)),
+      E.left(`Person
+├─ required property "name"
+│  └─ cannot decode undefined, should be string
+└─ required property "age"
+   └─ cannot decode undefined, should be number`)
+    )
+  })
+
   it('compose', () => {
     interface IntBrand {
       readonly Int: unique symbol
