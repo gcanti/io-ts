@@ -349,6 +349,7 @@ export interface Person extends D.TypeOf<typeof Person> {}
 
 ```ts
 import { isLeft } from 'fp-ts/lib/Either'
+import { draw } from 'io-ts/lib/Tree'
 
 export const Person = D.type({
   name: D.string,
@@ -357,7 +358,7 @@ export const Person = D.type({
 
 const result = Person.decode({})
 if (isLeft(result)) {
-  console.log(D.draw(result.left))
+  console.log(draw(result.left))
 }
 /*
 required property "name"
