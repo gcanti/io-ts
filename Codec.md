@@ -8,7 +8,7 @@
 # Codec interface
 
 ```ts
-export interface Codec<A> extends Decoder<A>, Encoder<A> {}
+export interface Codec<I, O, A> extends D.Decoder<I, A>, E.Encoder<O, A> {}
 ```
 
 A codec is just a decoder and an encoder packed together.
@@ -26,16 +26,21 @@ You can build a new codec using the `make` helper
 import * as C from 'io-ts/lib/Codec'
 import * as D from 'io-ts/lib/Decoder'
 import * as E from 'io-ts/lib/Encoder'
-import { left, right } from 'fp-ts/lib/Either'
+import { pipe } from 'fp-ts/lib/function'
 
-const decoder: D.Decoder<number> = D.parse(D.string, (s) => {
-  const n = parseFloat(s)
-  return isNaN(n) ? left(`cannot decode ${JSON.stringify(s)}, should be parsable into a number`) : right(n)
-})
+const decoder: D.Decoder<unknown, number> = pipe(
+  D.string,
+  D.parse((s) => {
+    const n = parseFloat(s)
+    return isNaN(n)
+      ? D.failure(s, `cannot decode ${JSON.stringify(s)}, should be parsable into a number`)
+      : D.success(n)
+  })
+)
 
 const encoder: E.Encoder<string, unknown> = {
   encode: String
 }
 
-export const NumberFromString: C.Codec<string, number> = C.make(decoder, encoder)
+export const NumberFromString: C.Codec<unknown, string, number> = C.make(decoder, encoder)
 ```
