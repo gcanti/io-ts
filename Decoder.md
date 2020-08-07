@@ -88,8 +88,8 @@ We can combine these primitive decoders through _combinators_ to build composite
 The `literal` constructor describes one or more literals.
 
 ```ts
-export const MyLiteral: D.Decoder<'a'> = D.literal('a')
-export const MyLiterals: D.Decoder<'a' | 'b'> = D.literal('a', 'b')
+export const MyLiteral: D.Decoder<unknown, 'a'> = D.literal('a')
+export const MyLiterals: D.Decoder<unknown, 'a' | 'b'> = D.literal('a', 'b')
 ```
 
 ## The `nullable` combinator
@@ -97,7 +97,7 @@ export const MyLiterals: D.Decoder<'a' | 'b'> = D.literal('a', 'b')
 The `nullable` combinator describes a nullable value
 
 ```ts
-export const NullableString: D.Decoder<null | string> = D.nullable(D.string)
+export const NullableString: D.Decoder<unknown, null | string> = D.nullable(D.string)
 ```
 
 ## The `type` combinator
@@ -147,7 +147,7 @@ console.log(Person.decode({ name: 'name', rememberMe: true }))
 The `record` combinator describes a `Record<string, ?>`
 
 ```ts
-export const MyRecord: D.Decoder<Record<string, number>> = D.record(D.number)
+export const MyRecord: D.Decoder<unknown, Record<string, number>> = D.record(D.number)
 
 console.log(isRight(MyRecord.decode({ a: 1, b: 2 }))) // => true
 ```
@@ -157,7 +157,7 @@ console.log(isRight(MyRecord.decode({ a: 1, b: 2 }))) // => true
 The `array` combinator describes an array `Array<?>`
 
 ```ts
-export const MyArray: D.Decoder<Array<number>> = D.array(D.number)
+export const MyArray: D.Decoder<unknown, Array<number>> = D.array(D.number)
 
 console.log(isRight(MyArray.decode([1, 2, 3]))) // => true
 ```
@@ -167,7 +167,7 @@ console.log(isRight(MyArray.decode([1, 2, 3]))) // => true
 The `tuple` combinator describes a `n`-tuple
 
 ```ts
-export const MyTuple: D.Decoder<[string, number]> = D.tuple(D.string, D.number)
+export const MyTuple: D.Decoder<unknown, [string, number]> = D.tuple(D.string, D.number)
 
 console.log(isRight(MyTuple.decode(['a', 1]))) // => true
 ```
@@ -204,6 +204,7 @@ The `sum` combinator describes tagged unions (aka sum types)
 
 ```ts
 export const MySum: D.Decoder<
+  unknown,
   | {
       type: 'A'
       a: string
@@ -247,7 +248,7 @@ interface Category {
   subcategory: null | Category
 }
 
-const Category: D.Decoder<Category> = D.lazy('Category', () =>
+const Category: D.Decoder<unknown, Category> = D.lazy('Category', () =>
   D.type({
     title: D.string,
     subcategory: D.nullable(Category)
@@ -268,14 +269,14 @@ interface Bar {
   foo: null | Foo
 }
 
-const Foo: D.Decoder<Foo> = D.lazy('Foo', () =>
+const Foo: D.Decoder<unknown, Foo> = D.lazy('Foo', () =>
   D.type({
     foo: D.string,
     bar: D.nullable(Bar)
   })
 )
 
-const Bar: D.Decoder<Bar> = D.lazy('Bar', () =>
+const Bar: D.Decoder<unknown, Bar> = D.lazy('Bar', () =>
   D.type({
     bar: D.number,
     foo: D.nullable(Foo)
@@ -288,13 +289,15 @@ const Bar: D.Decoder<Bar> = D.lazy('Bar', () =>
 The `refine` combinator allows to define refinements, for example a branded type
 
 ```ts
+import { pipe } from 'fp-ts/lib/function'
+
 export interface PositiveBrand {
   readonly Positive: unique symbol
 }
 
 export type Positive = number & PositiveBrand
 
-export const Positive: D.Decoder<Positive> = pipe(
+export const Positive: D.Decoder<unknown, Positive> = pipe(
   D.number,
   D.refine((n): n is Positive => n > 0, 'Positive')
 )
@@ -308,7 +311,10 @@ console.log(isRight(Positive.decode(-1))) // => false
 The `parse` combinator is more powerful than `refine` in that you can change the output type
 
 ```ts
-export const NumberFromString: D.Decoder<number> = pipe(
+import { pipe } from 'fp-ts/lib/function'
+import { isRight } from 'fp-ts/lib/Either'
+
+export const NumberFromString: D.Decoder<unknown, number> = pipe(
   D.string,
   D.parse((s) => {
     const n = parseFloat(s)
