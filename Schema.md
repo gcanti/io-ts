@@ -19,12 +19,11 @@ export interface Schema<A> {
 **Example**
 
 ```ts
-import * as S from 'io-ts/lib/Schema'
 import * as D from 'io-ts/lib/Decoder'
-import * as JE from 'io-ts/lib/JsonEncoder'
-import * as JC from 'io-ts/lib/JsonCodec'
-import * as G from 'io-ts/lib/Guard'
 import * as Eq from 'io-ts/lib/Eq'
+import * as G from 'io-ts/lib/Guard'
+import * as S from 'io-ts/lib/Schema'
+import * as TD from 'io-ts/lib/TaskDecoder'
 
 export const Person = S.make((S) =>
   S.type({
@@ -34,10 +33,9 @@ export const Person = S.make((S) =>
 )
 
 export const decoderPerson = S.interpreter(D.Schemable)(Person)
-export const encoderPerson = S.interpreter(JE.Schemable)(Person)
-export const codecPerson = S.interpreter(JC.Schemable)(Person)
 export const guardPerson = S.interpreter(G.Schemable)(Person)
 export const eqPerson = S.interpreter(Eq.Schemable)(Person)
+export const taskDecoderPerson = S.interpreter(TD.Schemable)(Person)
 ```
 
 # How to extend the built-in `Schema`
@@ -57,14 +55,15 @@ export type Int = number & IntBrand
 Now we must define a custom `MySchemable` type class containing a new member `Int`...
 
 ```ts
-import { Kind, URIS, HKT } from 'fp-ts/lib/HKT'
+import { Kind2, URIS2, HKT } from 'fp-ts/lib/HKT'
+import * as S from 'io-ts/lib/Schemable'
 
 export interface MySchemable<S> extends S.Schemable<S> {
   readonly Int: HKT<S, Int>
 }
 
-export interface MySchemable1<S extends URIS> extends S.Schemable1<S> {
-  readonly Int: Kind<S, Int>
+export interface MySchemable2C<S extends URIS2> extends S.Schemable2C<S, unknown> {
+  readonly Int: Kind2<S, unknown, Int>
 }
 ```
 
@@ -80,17 +79,21 @@ export function make<A>(f: MySchema<A>): MySchema<A> {
 }
 ```
 
-Finally we must define an instance of `MySchemable1` for `Decoder` and an interpreter
+Finally we must define an instance of `MySchemable2C` for `Decoder` and an interpreter
 
 ```ts
 import * as D from 'io-ts/lib/Decoder'
+import { pipe } from 'fp-ts/function'
 
-export const mySchemable: MySchemable1<D.URI> = {
-  ...D.schemableDecoder,
-  Int: D.refinement(D.number, (n): n is Int => Number.isInteger(n), 'Int')
+export const mySchemable: MySchemable2C<D.URI> = {
+  ...D.Schemable,
+  Int: pipe(
+    D.number,
+    D.refine((n): n is Int => Number.isInteger(n), 'Int')
+  )
 }
 
-export function interpreter<S extends URIS>(S: MySchemable1<S>): <A>(schema: MySchema<A>) => Kind<S, A>
+export function interpreter<S extends URIS2>(S: MySchemable2C<S>): <A>(schema: MySchema<A>) => Kind2<S, unknown, A>
 export function interpreter<S>(S: MySchemable<S>): <A>(schema: MySchema<A>) => HKT<S, A> {
   return (schema) => schema(S)
 }
@@ -114,7 +117,7 @@ const Person: MySchema<{
 
 export const decoderPerson = interpreter(mySchemable)(Person)
 /*
-const decoderPerson: D.Decoder<{
+const decoderPerson: D.Decoder<unknown, {
     name: string;
     age: Int;
 }>
