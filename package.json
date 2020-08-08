@@ -38,7 +38,7 @@
   "homepage": "https://github.com/gcanti/io-ts",
   "dependencies": {},
   "peerDependencies": {
-    "fp-ts": "^2.0.0"
+    "fp-ts": "^2.8.0"
   },
   "devDependencies": {
     "@types/benchmark": "1.0.31",
@@ -50,7 +50,6 @@
     "dtslint": "github:gcanti/dtslint",
     "fast-check": "^1.24.2",
     "fp-ts": "^2.8.1",
-    "import-path-rewrite": "github:gcanti/import-path-rewrite",
     "jest": "25.2.7",
     "mocha": "7.1.1",
     "prettier": "2.0.2",
