@@ -21,7 +21,9 @@
     "dtslint": "dtslint dtslint",
     "mocha": "TS_NODE_CACHE=false mocha -r ts-node/register test/*.ts",
     "doctoc": "doctoc README.md index.md Decoder.md Encoder.md Codec.md Eq.md Schema.md",
-    "docs": "docs-ts"
+    "docs": "docs-ts",
+    "prerelease": "npm run build",
+    "release": "ts-node scripts/release"
   },
   "repository": {
     "type": "git",
