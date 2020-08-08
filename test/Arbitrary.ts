@@ -107,7 +107,7 @@ export const URI = 'Arbitrary'
 
 export type URI = typeof URI
 
-declare module 'fp-ts/lib/HKT' {
+declare module 'fp-ts/HKT' {
   interface URItoKind<A> {
     readonly Arbitrary: Arbitrary<A>
   }
