@@ -2,10 +2,6 @@
   "name": "io-ts",
   "version": "2.2.9",
   "description": "TypeScript runtime type system for IO decoding/encoding",
-  "files": [
-    "lib",
-    "es6"
-  ],
   "main": "lib/index.js",
   "module": "es6/index.js",
   "typings": "lib/index.d.ts",
@@ -16,15 +12,16 @@
     "prettier": "prettier --no-semi --single-quote --print-width 120 --parser typescript --list-different \"{src,test}/**/*.ts\"",
     "fix-prettier": "prettier --no-semi --single-quote --print-width 120 --parser typescript --write \"{src,test,examples,exercises}/**/*.ts\"",
     "test": "npm run prettier && npm run lint && npm run dtslint && npm run jest && npm run docs",
-    "clean": "rimraf lib/* es6/*",
-    "build": "npm run clean && tsc && tsc -p tsconfig.es6.json && npm run import-path-rewrite",
-    "prepublish": "npm run build",
+    "clean": "rm -rf ./dist",
+    "prebuild": "npm run clean",
+    "build": "tsc -p ./tsconfig.build.json && tsc -p ./tsconfig.build-es6.json && ts-node scripts/build",
+    "postbuild": "prettier --loglevel=silent --write \"./dist/**/*.ts\"",
+    "prepublishOnly": "ts-node scripts/pre-publish",
     "perf": "ts-node perf/index",
     "dtslint": "dtslint dtslint",
     "mocha": "TS_NODE_CACHE=false mocha -r ts-node/register test/*.ts",
     "doctoc": "doctoc README.md index.md Decoder.md Encoder.md Codec.md Eq.md Schema.md",
-    "docs": "docs-ts",
-    "import-path-rewrite": "import-path-rewrite"
+    "docs": "docs-ts"
   },
   "repository": {
     "type": "git",
