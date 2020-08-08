@@ -1,13 +1,14 @@
 {
   "compilerOptions": {
-    "outDir": "./lib",
+    "outDir": "./dist/lib",
+    "noEmit": true,
     "declaration": true,
+    "esModuleInterop": true,
     "module": "commonjs",
     "noImplicitReturns": false,
     "noUnusedLocals": true,
     "noUnusedParameters": true,
     "noFallthroughCasesInSwitch": true,
-    "noEmitOnError": false,
     "strict": true,
     "target": "es5",
     "moduleResolution": "node",
