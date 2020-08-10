@@ -8,16 +8,16 @@
  *
  * @since 2.2.7
  */
-import { Alt2, Alt2C } from 'fp-ts/Alt'
-import { Bifunctor2 } from 'fp-ts/Bifunctor'
-import { Category2 } from 'fp-ts/Category'
-import * as E from 'fp-ts/Either'
-import { Refinement } from 'fp-ts/function'
-import { Functor2 } from 'fp-ts/Functor'
-import { MonadThrow2C } from 'fp-ts/MonadThrow'
-import { pipe } from 'fp-ts/pipeable'
-import * as T from 'fp-ts/Task'
-import * as TE from 'fp-ts/TaskEither'
+import { Alt2, Alt2C } from 'fp-ts/lib/Alt'
+import { Bifunctor2 } from 'fp-ts/lib/Bifunctor'
+import { Category2 } from 'fp-ts/lib/Category'
+import * as E from 'fp-ts/lib/Either'
+import { Refinement } from 'fp-ts/lib/function'
+import { Functor2 } from 'fp-ts/lib/Functor'
+import { MonadThrow2C } from 'fp-ts/lib/MonadThrow'
+import { pipe } from 'fp-ts/lib/pipeable'
+import * as T from 'fp-ts/lib/Task'
+import * as TE from 'fp-ts/lib/TaskEither'
 import * as DE from './DecodeError'
 import * as D from './Decoder'
 import * as FS from './FreeSemigroup'
@@ -424,7 +424,7 @@ export const URI = 'io-ts/TaskDecoder'
  */
 export type URI = typeof URI
 
-declare module 'fp-ts/HKT' {
+declare module 'fp-ts/lib/HKT' {
   interface URItoKind2<E, A> {
     readonly [URI]: TaskDecoder<E, A>
   }

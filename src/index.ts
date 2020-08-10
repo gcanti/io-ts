@@ -1,8 +1,8 @@
 /**
  * @since 1.0.0
  */
-import { Either, isLeft, left, right } from 'fp-ts/Either'
-import { Predicate, Refinement } from 'fp-ts/function'
+import { Either, isLeft, left, right } from 'fp-ts/lib/Either'
+import { Predicate, Refinement } from 'fp-ts/lib/function'
 
 // -------------------------------------------------------------------------------------
 // model
