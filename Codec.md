@@ -26,7 +26,7 @@ You can build a new codec using the `make` helper
 import * as C from 'io-ts/lib/Codec'
 import * as D from 'io-ts/lib/Decoder'
 import * as E from 'io-ts/lib/Encoder'
-import { pipe } from 'fp-ts/function'
+import { pipe } from 'fp-ts/lib/function'
 
 const decoder: D.Decoder<unknown, number> = pipe(
   D.string,

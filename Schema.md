@@ -55,7 +55,7 @@ export type Int = number & IntBrand
 Now we must define a custom `MySchemable` type class containing a new member `Int`...
 
 ```ts
-import { Kind2, URIS2, HKT } from 'fp-ts/HKT'
+import { Kind2, URIS2, HKT } from 'fp-ts/lib/HKT'
 import * as S from 'io-ts/lib/Schemable'
 
 export interface MySchemable<S> extends S.Schemable<S> {
