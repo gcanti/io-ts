@@ -73,7 +73,7 @@ const string = new t.Type<string, string, unknown>(
 and we can use it as follows:
 
 ```ts
-import { isRight } from 'fp-ts/Either'
+import { isRight } from 'fp-ts/lib/Either'
 
 isRight(string.decode('a string')) // true
 isRight(string.decode(null)) // false
@@ -83,8 +83,8 @@ More generally the result of calling `decode` can be handled using [`fold`](http
 
 ```ts
 import * as t from 'io-ts'
-import { pipe } from 'fp-ts/pipeable'
-import { fold } from 'fp-ts/Either'
+import { pipe } from 'fp-ts/lib/pipeable'
+import { fold } from 'fp-ts/lib/Either'
 
 // failure handler
 const onLeft = (errors: t.Errors): string => `${errors.length} error(s) found`
