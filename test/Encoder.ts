@@ -1,6 +1,6 @@
 import * as assert from 'assert'
 import * as E from '../src/Encoder'
-import { pipe } from 'fp-ts/pipeable'
+import { pipe } from 'fp-ts/lib/pipeable'
 import * as H from './helpers'
 
 describe('Encoder', () => {

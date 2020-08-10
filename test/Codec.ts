@@ -1,10 +1,10 @@
 import * as assert from 'assert'
 import * as _ from '../src/Codec'
 import * as D from '../src/Decoder'
-import { pipe } from 'fp-ts/pipeable'
+import { pipe } from 'fp-ts/lib/pipeable'
 import * as DE from '../src/DecodeError'
 import * as FS from '../src/FreeSemigroup'
-import * as E from 'fp-ts/Either'
+import * as E from 'fp-ts/lib/Either'
 import * as H from './helpers'
 
 const codecNumberFromString: _.Codec<string, string, number> = _.make(

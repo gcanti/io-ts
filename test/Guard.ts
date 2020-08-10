@@ -1,6 +1,6 @@
 import * as assert from 'assert'
 import * as G from '../src/Guard'
-import { pipe } from 'fp-ts/pipeable'
+import { pipe } from 'fp-ts/lib/pipeable'
 
 interface NonEmptyStringBrand {
   readonly NonEmptyString: unique symbol

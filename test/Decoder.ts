@@ -1,6 +1,6 @@
 import * as assert from 'assert'
-import * as E from 'fp-ts/Either'
-import { pipe } from 'fp-ts/pipeable'
+import * as E from 'fp-ts/lib/Either'
+import { pipe } from 'fp-ts/lib/pipeable'
 import * as DE from '../src/DecodeError'
 import * as FS from '../src/FreeSemigroup'
 import * as _ from '../src/Decoder'
