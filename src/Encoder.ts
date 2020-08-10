@@ -8,10 +8,10 @@
  *
  * @since 2.2.3
  */
-import { Contravariant2 } from 'fp-ts/Contravariant'
-import { Category2 } from 'fp-ts/Category'
+import { Contravariant2 } from 'fp-ts/lib/Contravariant'
+import { Category2 } from 'fp-ts/lib/Category'
 import { memoize, intersect_ } from './Schemable'
-import { identity } from 'fp-ts/function'
+import { identity } from 'fp-ts/lib/function'
 
 // -------------------------------------------------------------------------------------
 // model
@@ -207,7 +207,7 @@ export const URI = 'io-ts/Encoder'
  */
 export type URI = typeof URI
 
-declare module 'fp-ts/HKT' {
+declare module 'fp-ts/lib/HKT' {
   interface URItoKind2<E, A> {
     readonly [URI]: Encoder<E, A>
   }

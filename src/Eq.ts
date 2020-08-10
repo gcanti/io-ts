@@ -8,9 +8,9 @@
  *
  * @since 2.2.2
  */
-import * as A from 'fp-ts/Array'
-import * as E from 'fp-ts/Eq'
-import * as R from 'fp-ts/Record'
+import * as A from 'fp-ts/lib/Array'
+import * as E from 'fp-ts/lib/Eq'
+import * as R from 'fp-ts/lib/Record'
 import { memoize, Schemable1, WithRefine1, WithUnknownContainers1 } from './Schemable'
 import Eq = E.Eq
 

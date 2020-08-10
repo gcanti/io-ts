@@ -10,8 +10,8 @@
  */
 import * as t from './index'
 import { Literal, Schemable1, WithUnion1, WithRefine1, WithUnknownContainers1 } from './Schemable'
-import * as E from 'fp-ts/Either'
-import { pipe } from 'fp-ts/pipeable'
+import * as E from 'fp-ts/lib/Either'
+import { pipe } from 'fp-ts/lib/pipeable'
 
 // -------------------------------------------------------------------------------------
 // model
@@ -171,7 +171,7 @@ export const URI = 'io-ts/Type'
  */
 export type URI = typeof URI
 
-declare module 'fp-ts/HKT' {
+declare module 'fp-ts/lib/HKT' {
   interface URItoKind<A> {
     readonly [URI]: Type<A>
   }

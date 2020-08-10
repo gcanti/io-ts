@@ -8,18 +8,18 @@
  *
  * @since 2.2.7
  */
-import { Alt2C } from 'fp-ts/Alt'
-import { Applicative2C } from 'fp-ts/Applicative'
-import { Apply2C } from 'fp-ts/Apply'
-import { Bifunctor2 } from 'fp-ts/Bifunctor'
-import * as E from 'fp-ts/Either'
-import { Functor2C } from 'fp-ts/Functor'
-import { Kind2, URIS2 } from 'fp-ts/HKT'
-import { Monad2C } from 'fp-ts/Monad'
-import { MonadThrow2C } from 'fp-ts/MonadThrow'
+import { Alt2C } from 'fp-ts/lib/Alt'
+import { Applicative2C } from 'fp-ts/lib/Applicative'
+import { Apply2C } from 'fp-ts/lib/Apply'
+import { Bifunctor2 } from 'fp-ts/lib/Bifunctor'
+import * as E from 'fp-ts/lib/Either'
+import { Functor2C } from 'fp-ts/lib/Functor'
+import { Kind2, URIS2 } from 'fp-ts/lib/HKT'
+import { Monad2C } from 'fp-ts/lib/Monad'
+import { MonadThrow2C } from 'fp-ts/lib/MonadThrow'
 import * as G from './Guard'
 import { intersect_, Literal, memoize } from './Schemable'
-import { Lazy, Refinement } from 'fp-ts/function'
+import { Lazy, Refinement } from 'fp-ts/lib/function'
 
 // -------------------------------------------------------------------------------------
 // model
