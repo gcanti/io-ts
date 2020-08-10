@@ -90,7 +90,7 @@ const string = new t.Type<string, string, unknown>(
 and we can use it as follows:
 
 ```ts
-import { isRight } from 'fp-ts/Either'
+import { isRight } from 'fp-ts/lib/Either'
 
 isRight(string.decode('a string')) // true
 isRight(string.decode(null)) // false
@@ -100,8 +100,8 @@ More generally the result of calling `decode` can be handled using [`fold`](http
 
 ```ts
 import * as t from 'io-ts'
-import { pipe } from 'fp-ts/pipeable'
-import { fold } from 'fp-ts/Either'
+import { pipe } from 'fp-ts/lib/pipeable'
+import { fold } from 'fp-ts/lib/Either'
 
 // failure handler
 const onLeft = (errors: t.Errors): string => `${errors.length} error(s) found`
@@ -224,8 +224,8 @@ interface Errors extends Array<ValidationError> {}
 Example
 
 ```ts
-import { pipe } from 'fp-ts/pipeable'
-import { fold } from 'fp-ts/Either'
+import { pipe } from 'fp-ts/lib/pipeable'
+import { fold } from 'fp-ts/lib/Either'
 
 const getPaths = <A>(v: t.Validation<A>): Array<string> => {
   return pipe(
@@ -247,7 +247,7 @@ You can set your own error message by providing a `message` argument to `failure
 Example
 
 ```ts
-import { either } from 'fp-ts/Either'
+import { either } from 'fp-ts/lib/Either'
 
 const NumberFromString = new t.Type<number, string, unknown>(
   'NumberFromString',
@@ -434,7 +434,7 @@ type PartialUser = {
 You can define your own types. Let's see an example
 
 ```ts
-import { either } from 'fp-ts/Either'
+import { either } from 'fp-ts/lib/Either'
 
 // represents a Date from an ISO string
 const DateFromString = new t.Type<Date, string, unknown>(

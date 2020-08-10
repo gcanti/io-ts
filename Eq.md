@@ -26,7 +26,7 @@ Instances must satisfy the following laws:
 **Example**
 
 ```ts
-import { Eq } from 'fp-ts/Eq'
+import { Eq } from 'fp-ts/lib/Eq'
 
 export const string: Eq<string> = {
   equals: (x, y) => x === y
