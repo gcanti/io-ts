@@ -1,7 +1,7 @@
 import * as G from '../src/Guard'
 import * as D from '../src/Decoder'
 import * as E from '../src/Encoder'
-import { pipe } from 'fp-ts/pipeable'
+import { pipe } from 'fp-ts/lib/pipeable'
 
 // -------------------------------------------------------------------------------------
 // guards

@@ -1,8 +1,8 @@
 import * as assert from 'assert'
-import { right, either, fold } from 'fp-ts/Either'
+import { right, either, fold } from 'fp-ts/lib/Either'
 import * as t from '../../src/index'
 import { PathReporter } from '../../src/PathReporter'
-import { pipe } from 'fp-ts/pipeable'
+import { pipe } from 'fp-ts/lib/pipeable'
 
 export function assertStrictEqual<T>(result: t.Validation<T>, expected: any): void {
   pipe(

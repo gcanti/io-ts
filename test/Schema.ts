@@ -1,6 +1,6 @@
 import * as fc from 'fast-check'
-import { isRight } from 'fp-ts/Either'
-import { pipe } from 'fp-ts/pipeable'
+import { isRight } from 'fp-ts/lib/Either'
+import { pipe } from 'fp-ts/lib/pipeable'
 import * as D from '../src/Decoder'
 import * as Eq from '../src/Eq'
 import * as G from '../src/Guard'

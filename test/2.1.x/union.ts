@@ -1,7 +1,7 @@
 import * as assert from 'assert'
 import * as t from '../../src/index'
 import { assertFailure, assertStrictEqual, assertSuccess, NumberFromString } from './helpers'
-import { either } from 'fp-ts/Either'
+import { either } from 'fp-ts/lib/Either'
 
 describe('union', () => {
   describe('name', () => {
