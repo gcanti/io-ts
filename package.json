@@ -14,7 +14,7 @@
     "test": "npm run prettier && npm run lint && npm run dtslint && npm run jest && npm run docs",
     "clean": "rm -rf ./dist",
     "prebuild": "npm run clean",
-    "build": "tsc -p ./tsconfig.build.json && tsc -p ./tsconfig.build-es6.json && ts-node scripts/build",
+    "build": "tsc -p ./tsconfig.build.json && tsc -p ./tsconfig.build-es6.json && npm run import-path-rewrite && ts-node scripts/build",
     "postbuild": "prettier --loglevel=silent --write \"./dist/**/*.ts\"",
     "prepublishOnly": "ts-node scripts/pre-publish",
     "perf": "ts-node perf/index",
@@ -23,7 +23,8 @@
     "doctoc": "doctoc README.md index.md Decoder.md Encoder.md Codec.md Eq.md Schema.md",
     "docs": "docs-ts",
     "prerelease": "npm run build",
-    "release": "ts-node scripts/release"
+    "release": "ts-node scripts/release",
+    "import-path-rewrite": "import-path-rewrite"
   },
   "repository": {
     "type": "git",
