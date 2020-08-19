@@ -23,10 +23,10 @@ You can build a new codec using the `make` helper
 **Example**
 
 ```ts
-import * as C from 'io-ts/lib/Codec'
-import * as D from 'io-ts/lib/Decoder'
-import * as E from 'io-ts/lib/Encoder'
-import { pipe } from 'fp-ts/lib/function'
+import * as C from 'io-ts/Codec'
+import * as D from 'io-ts/Decoder'
+import * as E from 'io-ts/Encoder'
+import { pipe } from 'fp-ts/function'
 
 const decoder: D.Decoder<unknown, number> = pipe(
   D.string,

@@ -18,7 +18,7 @@ export interface Encoder<O, A> {
 An encoder representing a nullable value
 
 ```ts
-import * as E from 'io-ts/lib/Encoder'
+import * as E from 'io-ts/Encoder'
 
 export function nullable<O, A>(or: E.Encoder<O, A>): E.Encoder<null | O, null | A> {
   return {

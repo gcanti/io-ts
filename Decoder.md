@@ -35,7 +35,7 @@ interface Decoder<I, A> {
 A decoder representing `string` can be defined as
 
 ```ts
-import * as D from 'io-ts/lib/Decoder'
+import * as D from 'io-ts/Decoder'
 
 export const string: D.Decoder<unknown, string> = {
   decode: (u) => (typeof u === 'string' ? D.success(u) : D.failure(u, 'string'))
@@ -45,7 +45,7 @@ export const string: D.Decoder<unknown, string> = {
 and we can use it as follows:
 
 ```ts
-import { isRight } from 'fp-ts/lib/Either'
+import { isRight } from 'fp-ts/Either'
 
 console.log(isRight(string.decode('a'))) // => true
 console.log(isRight(string.decode(null))) // => false
@@ -54,8 +54,8 @@ console.log(isRight(string.decode(null))) // => false
 More generally the result of calling `decode` can be handled using [`fold`](https://gcanti.github.io/fp-ts/modules/Either.ts.html#fold) along with `pipe` (which is similar to the pipeline operator)
 
 ```ts
-import { pipe } from 'fp-ts/lib/pipeable'
-import { fold } from 'fp-ts/lib/Either'
+import { pipe } from 'fp-ts/pipeable'
+import { fold } from 'fp-ts/Either'
 
 console.log(
   pipe(
@@ -289,7 +289,7 @@ const Bar: D.Decoder<unknown, Bar> = D.lazy('Bar', () =>
 The `refine` combinator allows to define refinements, for example a branded type
 
 ```ts
-import { pipe } from 'fp-ts/lib/function'
+import { pipe } from 'fp-ts/function'
 
 export interface PositiveBrand {
   readonly Positive: unique symbol
@@ -311,8 +311,8 @@ console.log(isRight(Positive.decode(-1))) // => false
 The `parse` combinator is more powerful than `refine` in that you can change the output type
 
 ```ts
-import { pipe } from 'fp-ts/lib/function'
-import { isRight } from 'fp-ts/lib/Either'
+import { pipe } from 'fp-ts/function'
+import { isRight } from 'fp-ts/Either'
 
 export const NumberFromString: D.Decoder<unknown, number> = pipe(
   D.string,
@@ -354,7 +354,7 @@ export interface Person extends D.TypeOf<typeof Person> {}
 # Built-in error reporter
 
 ```ts
-import { isLeft } from 'fp-ts/lib/Either'
+import { isLeft } from 'fp-ts/Either'
 
 export const Person = D.type({
   name: D.string,

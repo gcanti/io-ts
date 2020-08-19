@@ -19,11 +19,11 @@ export interface Schema<A> {
 **Example**
 
 ```ts
-import * as D from 'io-ts/lib/Decoder'
-import * as Eq from 'io-ts/lib/Eq'
-import * as G from 'io-ts/lib/Guard'
-import * as S from 'io-ts/lib/Schema'
-import * as TD from 'io-ts/lib/TaskDecoder'
+import * as D from 'io-ts/Decoder'
+import * as Eq from 'io-ts/Eq'
+import * as G from 'io-ts/Guard'
+import * as S from 'io-ts/Schema'
+import * as TD from 'io-ts/TaskDecoder'
 
 export const Person = S.make((S) =>
   S.type({
@@ -55,8 +55,8 @@ export type Int = number & IntBrand
 Now we must define a custom `MySchemable` type class containing a new member `Int`...
 
 ```ts
-import { Kind2, URIS2, HKT } from 'fp-ts/lib/HKT'
-import * as S from 'io-ts/lib/Schemable'
+import { Kind2, URIS2, HKT } from 'fp-ts/HKT'
+import * as S from 'io-ts/Schemable'
 
 export interface MySchemable<S> extends S.Schemable<S> {
   readonly Int: HKT<S, Int>
@@ -82,7 +82,7 @@ export function make<A>(f: MySchema<A>): MySchema<A> {
 Finally we must define an instance of `MySchemable2C` for `Decoder` and an interpreter
 
 ```ts
-import * as D from 'io-ts/lib/Decoder'
+import * as D from 'io-ts/Decoder'
 import { pipe } from 'fp-ts/function'
 
 export const mySchemable: MySchemable2C<D.URI> = {
