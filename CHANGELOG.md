@@ -14,6 +14,11 @@
 **Note**: Gaps between patch versions are faulty/broken releases.
 **Note**: A feature tagged as Experimental is in a high state of flux, you're at risk of it changing without notice.
 
+# 2.2.10
+
+- **Polish**
+  - expose `fp-ts` modules without lib/es6 prefix, #507 (@osdiab)
+
 # 2.2.9
 
 - **Polish**
