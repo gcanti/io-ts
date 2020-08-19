@@ -17,7 +17,7 @@
 # 2.2.10
 
 - **Polish**
-  - expose `fp-ts` modules without lib/es6 prefix, #507 (@osdiab)
+  - expose modules without lib/es6 prefix, #507 (@osdiab)
 
 # 2.2.9
 
