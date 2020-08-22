@@ -100,7 +100,7 @@ More generally the result of calling `decode` can be handled using [`fold`](http
 
 ```ts
 import * as t from 'io-ts'
-import { pipe } from 'fp-ts/pipeable'
+import { pipe } from 'fp-ts/function'
 import { fold } from 'fp-ts/Either'
 
 // failure handler
@@ -224,7 +224,7 @@ interface Errors extends Array<ValidationError> {}
 Example
 
 ```ts
-import { pipe } from 'fp-ts/pipeable'
+import { pipe } from 'fp-ts/function'
 import { fold } from 'fp-ts/Either'
 
 const getPaths = <A>(v: t.Validation<A>): Array<string> => {

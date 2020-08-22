@@ -54,7 +54,7 @@ console.log(isRight(string.decode(null))) // => false
 More generally the result of calling `decode` can be handled using [`fold`](https://gcanti.github.io/fp-ts/modules/Either.ts.html#fold) along with `pipe` (which is similar to the pipeline operator)
 
 ```ts
-import { pipe } from 'fp-ts/pipeable'
+import { pipe } from 'fp-ts/function'
 import { fold } from 'fp-ts/Either'
 
 console.log(
