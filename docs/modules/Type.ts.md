@@ -174,7 +174,7 @@ Added in v2.2.3
 **Signature**
 
 ```ts
-export declare const literal: <A extends readonly [Literal, ...Literal[]]>(...values: A) => Type<A[number]>
+export declare const literal: <A extends readonly [S.Literal, ...S.Literal[]]>(...values: A) => Type<A[number]>
 ```
 
 Added in v2.2.3
@@ -186,7 +186,7 @@ Added in v2.2.3
 **Signature**
 
 ```ts
-export declare const Schemable: Schemable1<'io-ts/Type'>
+export declare const Schemable: S.Schemable1<'io-ts/Type'>
 ```
 
 Added in v2.2.8
@@ -216,7 +216,7 @@ Added in v2.2.3
 **Signature**
 
 ```ts
-export declare const WithRefine: WithRefine1<'io-ts/Type'>
+export declare const WithRefine: S.WithRefine1<'io-ts/Type'>
 ```
 
 Added in v2.2.8
@@ -226,7 +226,7 @@ Added in v2.2.8
 **Signature**
 
 ```ts
-export declare const WithUnion: WithUnion1<'io-ts/Type'>
+export declare const WithUnion: S.WithUnion1<'io-ts/Type'>
 ```
 
 Added in v2.2.8
@@ -236,7 +236,7 @@ Added in v2.2.8
 **Signature**
 
 ```ts
-export declare const WithUnknownContainers: WithUnknownContainers1<'io-ts/Type'>
+export declare const WithUnknownContainers: S.WithUnknownContainers1<'io-ts/Type'>
 ```
 
 Added in v2.2.8

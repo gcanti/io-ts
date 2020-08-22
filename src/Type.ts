@@ -8,10 +8,10 @@
  *
  * @since 2.2.3
  */
-import * as t from './index'
-import { Literal, Schemable1, WithUnion1, WithRefine1, WithUnknownContainers1 } from './Schemable'
 import * as E from 'fp-ts/lib/Either'
 import { pipe } from 'fp-ts/lib/pipeable'
+import * as t from './index'
+import * as S from './Schemable'
 
 // -------------------------------------------------------------------------------------
 // model
@@ -31,7 +31,7 @@ export interface Type<A> extends t.Type<A, unknown, unknown> {}
  * @category constructors
  * @since 2.2.3
  */
-export const literal = <A extends readonly [Literal, ...Array<Literal>]>(...values: A): Type<A[number]> =>
+export const literal = <A extends readonly [S.Literal, ...Array<S.Literal>]>(...values: A): Type<A[number]> =>
   t.union(values.map((v) => t.literal(v as any)) as any)
 
 // -------------------------------------------------------------------------------------
@@ -181,7 +181,7 @@ declare module 'fp-ts/lib/HKT' {
  * @category instances
  * @since 2.2.8
  */
-export const Schemable: Schemable1<URI> = {
+export const Schemable: S.Schemable1<URI> = {
   URI,
   literal,
   string,
@@ -192,7 +192,7 @@ export const Schemable: Schemable1<URI> = {
   partial,
   record,
   array,
-  tuple: tuple as Schemable1<URI>['tuple'],
+  tuple: tuple as S.Schemable1<URI>['tuple'],
   intersect,
   sum,
   lazy
@@ -202,7 +202,7 @@ export const Schemable: Schemable1<URI> = {
  * @category instances
  * @since 2.2.8
  */
-export const WithUnknownContainers: WithUnknownContainers1<URI> = {
+export const WithUnknownContainers: S.WithUnknownContainers1<URI> = {
   UnknownArray,
   UnknownRecord
 }
@@ -211,14 +211,14 @@ export const WithUnknownContainers: WithUnknownContainers1<URI> = {
  * @category instances
  * @since 2.2.8
  */
-export const WithUnion: WithUnion1<URI> = {
-  union: union as WithUnion1<URI>['union']
+export const WithUnion: S.WithUnion1<URI> = {
+  union: union as S.WithUnion1<URI>['union']
 }
 
 /**
  * @category instances
  * @since 2.2.8
  */
-export const WithRefine: WithRefine1<URI> = {
-  refine: refine as WithRefine1<URI>['refine']
+export const WithRefine: S.WithRefine1<URI> = {
+  refine: refine as S.WithRefine1<URI>['refine']
 }
