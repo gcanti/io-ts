@@ -83,7 +83,8 @@ Finally we must define an instance of `MySchemable2C` for `Decoder` and an inter
 
 ```ts
 import * as D from 'io-ts/Decoder'
-import { pipe } from 'fp-ts/function'
+import { pipe, unsafeCoerce } from 'fp-ts/function'
+import * as SC from 'io-ts/Schema'
 
 export const mySchemable: MySchemable2C<D.URI> = {
   ...D.Schemable,
@@ -93,10 +94,10 @@ export const mySchemable: MySchemable2C<D.URI> = {
   )
 }
 
-export function interpreter<S extends URIS2>(S: MySchemable2C<S>): <A>(schema: MySchema<A>) => Kind2<S, unknown, A>
-export function interpreter<S>(S: MySchemable<S>): <A>(schema: MySchema<A>) => HKT<S, A> {
-  return (schema) => schema(S)
-}
+const interpreter: {
+  <S extends URIS2>(S: MySchemable2C<S>): <A>(schema: MySchema<A>) => Kind2<S, unknown, A>
+  <S extends URIS>(S: MySchemable1<S>): <A>(schema: MySchema<A>) => Kind<S, A>
+} = unsafeCoerce(SC.interpreter)
 ```
 
 Now we can define a schema leveraging the new `Int` capability
