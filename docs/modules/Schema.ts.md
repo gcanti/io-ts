@@ -72,27 +72,10 @@ Added in v2.2.0
 **Signature**
 
 ```ts
-export declare const interpreter: {
-  <S extends 'Either' | 'io-ts/Decoder' | 'io-ts/Encoder' | 'IOEither' | 'TaskEither' | 'io-ts/TaskDecoder'>(
-    S: Schemable2C<S, unknown>
-  ): <A>(schema: Schema<A>) => Kind2<S, unknown, A>
-  <
-    S extends
-      | 'Eq'
-      | 'io-ts/Guard'
-      | 'Option'
-      | 'ReadonlyRecord'
-      | 'Ord'
-      | 'NonEmptyArray'
-      | 'Array'
-      | 'Record'
-      | 'IO'
-      | 'Task'
-      | 'io-ts/Type'
-  >(
-    S: Schemable1<S>
-  ): <A>(schema: Schema<A>) => Kind<S, A>
-}
+export declare function interpreter<S extends URIS2>(
+  S: Schemable2C<S, unknown>
+): <A>(schema: Schema<A>) => Kind2<S, unknown, A>
+export declare function interpreter<S extends URIS>(S: Schemable1<S>): <A>(schema: Schema<A>) => Kind<S, A>
 ```
 
 Added in v2.2.3

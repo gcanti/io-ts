@@ -47,7 +47,8 @@ export type TypeOf<S> = S extends Schema<infer A> ? A : never
 /**
  * @since 2.2.3
  */
-export const interpreter: {
-  <S extends URIS2>(S: Schemable2C<S, unknown>): <A>(schema: Schema<A>) => Kind2<S, unknown, A>
-  <S extends URIS>(S: Schemable1<S>): <A>(schema: Schema<A>) => Kind<S, A>
-} = (S: any) => (schema: any) => schema(S)
+export function interpreter<S extends URIS2>(S: Schemable2C<S, unknown>): <A>(schema: Schema<A>) => Kind2<S, unknown, A>
+export function interpreter<S extends URIS>(S: Schemable1<S>): <A>(schema: Schema<A>) => Kind<S, A>
+export function interpreter<S>(S: Schemable<S>): <A>(schema: Schema<A>) => HKT<S, A> {
+  return (schema) => schema(S)
+}
