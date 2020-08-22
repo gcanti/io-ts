@@ -14,7 +14,7 @@ export interface Arbitrary<A> extends fc.Arbitrary<A> {}
 // constructors
 // -------------------------------------------------------------------------------------
 
-export function literal<A extends ReadonlyArray<S.Literal>>(...values: A): Arbitrary<A[number]> {
+export function literal<A extends readonly [S.Literal, ...Array<S.Literal>]>(...values: A): Arbitrary<A[number]> {
   return fc.oneof(...values.map((v) => fc.constant(v)))
 }
 
@@ -93,7 +93,7 @@ export function lazy<A>(f: () => Arbitrary<A>): Arbitrary<A> {
   return fc.constant(null).chain(() => get())
 }
 
-export function union<A extends ReadonlyArray<unknown>>(
+export function union<A extends [Arbitrary<unknown>, ...Array<Arbitrary<unknown>>]>(
   ...members: { [K in keyof A]: Arbitrary<A[K]> }
 ): Arbitrary<A[number]> {
   return fc.oneof(...members)
