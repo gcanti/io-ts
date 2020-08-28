@@ -77,6 +77,33 @@ describe('undefined', () => {
   })
 })
 
+describe('defined', () => {
+  it('should decode any defined value', () => {
+    assertSuccess(t.defined.decode(null))
+    assertSuccess(t.defined.decode('foo'))
+    assertSuccess(t.defined.decode(1))
+    assertSuccess(t.defined.decode(true))
+    assertSuccess(t.defined.decode({}))
+    assertSuccess(t.defined.decode([]))
+    assertSuccess(t.defined.decode(/a/))
+  })
+
+  it('should accept any defined value', () => {
+    assert.ok(t.defined.is(null))
+    assert.ok(t.defined.is('foo'))
+    assert.ok(t.defined.is(1))
+    assert.ok(t.defined.is(true))
+    assert.ok(t.defined.is({}))
+    assert.ok(t.defined.is([]))
+    assert.ok(t.defined.is(/a/))
+  })
+
+  it('should fail decoding undefined value', () => {
+    const T = t.defined
+    assertFailure(T, undefined, ['Invalid value undefined supplied to : defined'])
+  })
+})
+
 describe('unknown', () => {
   it('should decode any value', () => {
     assertSuccess(t.unknown.decode(null))

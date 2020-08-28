@@ -300,6 +300,36 @@ export interface UndefinedC extends UndefinedType {}
 const undefinedType: UndefinedC = new UndefinedType()
 
 /**
+ * @since 2.3.0
+ */
+export type Defined = {} | null
+
+/**
+ * @since 2.3.0
+ */
+export class DefinedType extends Type<Defined> {
+  /**
+   * @since 2.3.0
+   */
+  readonly _tag: 'DefinedType' = 'DefinedType'
+  constructor() {
+    super(
+      'defined',
+      (u): u is Defined => typeof u !== 'undefined',
+      (u, c) => (this.is(u) ? success(u) : failure(u, c)),
+      identity
+    )
+  }
+}
+
+/**
+ * @since 2.3.0
+ */
+export interface DefinedC extends DefinedType {}
+
+const definedType: DefinedC = new DefinedType()
+
+/**
  * @since 1.2.0
  */
 export class VoidType extends Type<void> {
@@ -1865,6 +1895,13 @@ export {
    * @since 1.0.0
    */
   undefinedType as undefined
+}
+
+export {
+  /**
+   * @since 2.3.0
+   */
+  definedType as defined
 }
 
 export {
