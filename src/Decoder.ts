@@ -550,26 +550,26 @@ const toTree: (e: DE.DecodeError<string>) => Tree<string> = DE.fold({
 })
 
 const toForest = (e: DecodeError): ReadonlyArray<Tree<string>> => {
-  const stack = [];
-  let focus = e;
-  const res = [];
+  const stack = []
+  let focus = e
+  const res = []
   while (true) {
     switch (focus._tag) {
-      case "Of":
-        res.push(toTree(focus.value));
+      case 'Of':
+        res.push(toTree(focus.value))
         if (stack.length === 0) {
-          return res;
+          return res
         } else {
-          focus = stack.pop()!;
+          focus = stack.pop()!
         }
-        break;
-      case "Concat":
-        stack.push(focus.right);
-        focus = focus.left;
-        break;
+        break
+      case 'Concat':
+        stack.push(focus.right)
+        focus = focus.left
+        break
     }
   }
-};
+}
 
 /**
  * @since 2.2.7
