@@ -534,6 +534,22 @@ describe('Decoder', () => {
   // -------------------------------------------------------------------------------------
 
   describe('draw', () => {
+    it('is stack safe', () => {
+      expect(() => {
+        E.mapLeft(_.draw)(
+          _.record(_.type({ done: _.boolean })).decode(
+            new Array(10000)
+              .fill({})
+              .map((v, k) => [k, v])
+              .reduce((acc, [k, v]) => {
+                acc[k] = v
+                return acc
+              }, {} as Record<string, unknown>)
+          )
+        )
+      }).not.toThrow()
+    })
+
     it('draw', () => {
       const decoder = _.type({
         a: _.string,
