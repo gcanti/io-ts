@@ -183,16 +183,15 @@ console.log(MyTuple.decode(['a', 1, true])) // => { _tag: 'Right', right: [ 'a',
 The `intersect` combinator is useful in order to mix required and optional props
 
 ```ts
-export const Person = pipe(
+export const Person = D.intersect(
+  D.partial({
+    age: D.number,
+  })
+)(
   D.type({
-    name: D.string
-  }),
-  D.intersect(
-    D.partial({
-      age: D.number
-    })
-  )
-)
+    name: D.string,
+  })
+);
 
 console.log(isRight(Person.decode({ name: 'name' }))) // => true
 console.log(isRight(Person.decode({}))) // => false
