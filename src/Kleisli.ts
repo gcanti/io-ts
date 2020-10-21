@@ -287,7 +287,7 @@ export function fromSum<M extends URIS2, E>(
     const keys = Object.keys(members)
     return {
       decode: (ir) => {
-        const v = ir[tag]
+        const v: any = ir[tag]
         if (v in members) {
           return (members as any)[v].decode(ir)
         }

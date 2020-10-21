@@ -273,12 +273,12 @@ describe('Guard', () => {
 
     it('should support non-`string` tag values', () => {
       const guard = G.sum('_tag')({
-        true: G.type({ _tag: G.literal(true), a: G.string }),
-        false: G.type({ _tag: G.literal(false), b: G.number })
+        [1]: G.type({ _tag: G.literal(1), a: G.string }),
+        [2]: G.type({ _tag: G.literal(2), b: G.number })
       })
-      assert.deepStrictEqual(guard.is({ _tag: true, a: 'a' }), true)
-      assert.deepStrictEqual(guard.is({ _tag: false, b: 1 }), true)
-      assert.deepStrictEqual(guard.is({ _tag: false, b: 'a' }), false)
+      assert.deepStrictEqual(guard.is({ _tag: 1, a: 'a' }), true)
+      assert.deepStrictEqual(guard.is({ _tag: 2, b: 1 }), true)
+      assert.deepStrictEqual(guard.is({ _tag: 2, b: 'a' }), false)
     })
   })
 })

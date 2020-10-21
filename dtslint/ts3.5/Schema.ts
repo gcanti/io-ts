@@ -100,6 +100,8 @@ const S2 = make((S) => S.type({ _tag: S.literal('B'), b: S.number }))
 
 // $ExpectType Schema<{ _tag: "A"; a: string; } | { _tag: "B"; b: number; }>
 make((S) => S.sum('_tag')({ A: S1(S), B: S2(S) }))
+// $ExpectError
+make((S) => S.sum('_tag')({ A: S1(S), B: S1(S) }))
 
 //
 // lazy

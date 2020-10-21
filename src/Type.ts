@@ -144,8 +144,9 @@ export const lazy = <A>(id: string, f: () => Type<A>): Type<A> => t.recursion(id
  * @category combinators
  * @since 2.2.3
  */
-export const sum = <T extends string>(_tag: T) => <A>(members: { [K in keyof A]: Type<A[K]> }): Type<A[keyof A]> =>
-  t.union(Object.values(members) as any)
+export const sum = <T extends string>(_tag: T) => <A>(
+  members: { [K in keyof A]: Type<A[K] & Record<T, K>> }
+): Type<A[keyof A]> => t.union(Object.values(members) as any)
 
 /**
  * @category combinators

@@ -227,7 +227,7 @@ export function record<O, A>(codomain: Codec<unknown, O, A>): Codec<unknown, Rec
 export const fromTuple = <C extends ReadonlyArray<Codec<any, any, any>>>(
   ...components: C
 ): Codec<{ [K in keyof C]: InputOf<C[K]> }, { [K in keyof C]: OutputOf<C[K]> }, { [K in keyof C]: TypeOf<C[K]> }> =>
-  make(D.fromTuple(...components) as any, E.tuple(...components))
+  make(D.fromTuple(...components) as any, E.tuple(...components)) as any
 
 /**
  * @category combinators

@@ -14,6 +14,13 @@
     "object-literal-shorthand": false,
     "prefer-object-spread": false,
     "whitespace": false,
-    "use-default-type-parameter": false
+    "use-default-type-parameter": false,
+    "interface-name": false,
+    "no-promise-as-boolean": false,
+    "no-eval": false,
+    "label-position": false,
+    "function-constructor": false,
+    "invalid-void": false,
+    "no-construct": false
   }
 }

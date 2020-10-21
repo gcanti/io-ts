@@ -224,6 +224,27 @@ export const MySum: D.Decoder<
 })
 ```
 
+**non-`string` tag values**
+
+In case of non-`string` tag values, the respective key must be enclosed in brackets
+
+```ts
+export const MySum: D.Decoder<
+  unknown,
+  | {
+      type: 1 // non-`string` tag value
+      a: string
+    }
+  | {
+      type: 2 // non-`string` tag value
+      b: number
+    }
+> = D.sum('type')({
+  [1]: D.type({ type: D.literal(1), a: D.string }),
+  [2]: D.type({ type: D.literal(2), b: D.number })
+})
+```
+
 ## The `union` combinator
 
 The `union` combinator describes untagged unions

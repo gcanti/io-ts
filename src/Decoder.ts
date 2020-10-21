@@ -295,7 +295,7 @@ export const record = <A>(codomain: Decoder<unknown, A>): Decoder<unknown, Recor
 export const fromTuple = <C extends ReadonlyArray<Decoder<any, any>>>(
   ...components: C
 ): Decoder<{ [K in keyof C]: InputOf<C[K]> }, { [K in keyof C]: TypeOf<C[K]> }> =>
-  K.fromTuple(M)((i, e) => FS.of(DE.index(i, DE.required, e)))(...components)
+  K.fromTuple(M)((i, e) => FS.of(DE.index(i, DE.required, e)))(...components) as any
 
 /**
  * @category combinators
@@ -345,7 +345,7 @@ export const fromSum = <T extends string>(tag: T) => <MS extends Record<string, 
  * @since 2.2.7
  */
 export const sum = <T extends string>(tag: T) => <A>(
-  members: { [K in keyof A]: Decoder<unknown, A[K]> }
+  members: { [K in keyof A]: Decoder<unknown, A[K] & Record<T, K>> }
 ): Decoder<unknown, A[keyof A]> => pipe(UnknownRecord as any, compose(fromSum(tag)(members)))
 
 /**

@@ -112,7 +112,9 @@ Added in v2.2.2
 **Signature**
 
 ```ts
-export declare function sum<T extends string>(tag: T): <A>(members: { [K in keyof A]: Eq<A[K]> }) => Eq<A[keyof A]>
+export declare function sum<T extends string>(
+  tag: T
+): <A>(members: { [K in keyof A]: Eq<A[K] & Record<T, K>> }) => Eq<A[keyof A]>
 ```
 
 Added in v2.2.2

@@ -84,7 +84,7 @@ export const intersect = <B>(right: Arbitrary<B>) => <A>(left: Arbitrary<A>): Ar
 
 export function sum<T extends string>(
   _tag: T
-): <A>(members: { [K in keyof A]: Arbitrary<A[K]> }) => Arbitrary<A[keyof A]> {
+): <A>(members: { [K in keyof A]: Arbitrary<A[K] & Record<T, K>> }) => Arbitrary<A[keyof A]> {
   return (members: Record<string, Arbitrary<any>>) => fc.oneof(...Object.keys(members).map((k) => members[k]))
 }
 
