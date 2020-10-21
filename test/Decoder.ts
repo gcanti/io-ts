@@ -262,19 +262,6 @@ describe('Decoder', () => {
         )
       )
     })
-
-    it('should support getters', async () => {
-      class A {
-        get a() {
-          return 'a'
-        }
-        get b() {
-          return 'b'
-        }
-      }
-      const decoder = _.partial({ a: _.string, b: _.string })
-      assert.deepStrictEqual(decoder.decode(new A()), _.success({ a: 'a', b: 'b' }))
-    })
   })
 
   describe('array', () => {
@@ -481,6 +468,19 @@ describe('Decoder', () => {
       assert.deepStrictEqual(
         decoder.decode({}),
         E.left(FS.of(DE.key('_tag', DE.required, FS.of(DE.leaf(undefined, 'never')))))
+      )
+    })
+
+    it('should support non-`string` tag values', () => {
+      const decoder = _.sum('_tag')({
+        [1]: _.type({ _tag: _.literal(1), a: _.string }),
+        [2]: _.type({ _tag: _.literal(2), b: _.number })
+      })
+      assert.deepStrictEqual(decoder.decode({ _tag: 1, a: 'a' }), E.right({ _tag: 1, a: 'a' }))
+      assert.deepStrictEqual(decoder.decode({ _tag: 2, b: 1 }), E.right({ _tag: 2, b: 1 }))
+      assert.deepStrictEqual(
+        decoder.decode({ _tag: 2, b: 'a' }),
+        E.left(FS.of(DE.key('b', DE.required, FS.of(DE.leaf('a', 'number')))))
       )
     })
   })

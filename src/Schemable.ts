@@ -31,7 +31,9 @@ export interface Schemable<S> {
   readonly array: <A>(item: HKT<S, A>) => HKT<S, Array<A>>
   readonly tuple: <A extends ReadonlyArray<unknown>>(...components: { [K in keyof A]: HKT<S, A[K]> }) => HKT<S, A>
   readonly intersect: <B>(right: HKT<S, B>) => <A>(left: HKT<S, A>) => HKT<S, A & B>
-  readonly sum: <T extends string>(tag: T) => <A>(members: { [K in keyof A]: HKT<S, A[K]> }) => HKT<S, A[keyof A]>
+  readonly sum: <T extends string>(
+    tag: T
+  ) => <A>(members: { [K in keyof A]: HKT<S, A[K] & Record<T, K>> }) => HKT<S, A[keyof A]>
   readonly lazy: <A>(id: string, f: () => HKT<S, A>) => HKT<S, A>
 }
 
@@ -51,7 +53,9 @@ export interface Schemable1<S extends URIS> {
   readonly array: <A>(item: Kind<S, A>) => Kind<S, Array<A>>
   readonly tuple: <A extends ReadonlyArray<unknown>>(...components: { [K in keyof A]: Kind<S, A[K]> }) => Kind<S, A>
   readonly intersect: <B>(right: Kind<S, B>) => <A>(left: Kind<S, A>) => Kind<S, A & B>
-  readonly sum: <T extends string>(tag: T) => <A>(members: { [K in keyof A]: Kind<S, A[K]> }) => Kind<S, A[keyof A]>
+  readonly sum: <T extends string>(
+    tag: T
+  ) => <A>(members: { [K in keyof A]: Kind<S, A[K] & Record<T, K>> }) => Kind<S, A[keyof A]>
   readonly lazy: <A>(id: string, f: () => Kind<S, A>) => Kind<S, A>
 }
 
@@ -77,7 +81,7 @@ export interface Schemable2C<S extends URIS2, E> {
   readonly intersect: <B>(right: Kind2<S, E, B>) => <A>(left: Kind2<S, E, A>) => Kind2<S, E, A & B>
   readonly sum: <T extends string>(
     tag: T
-  ) => <A>(members: { [K in keyof A]: Kind2<S, E, A[K]> }) => Kind2<S, E, A[keyof A]>
+  ) => <A>(members: { [K in keyof A]: Kind2<S, E, A[K] & Record<T, K>> }) => Kind2<S, E, A[keyof A]>
   readonly lazy: <A>(id: string, f: () => Kind2<S, E, A>) => Kind2<S, E, A>
 }
 

@@ -14,9 +14,35 @@
 **Note**: Gaps between patch versions are faulty/broken releases.
 **Note**: A feature tagged as Experimental is in a high state of flux, you're at risk of it changing without notice.
 
+# 2.2.12
+
+- **Experimental**
+  - (\*) make `sum` safer, closes #523 (@gcanti)
+
+(\*) breaking change
+
+In case of non-`string` tag values, the respective key must be enclosed in brackets
+
+```ts
+export const MySum: D.Decoder<
+  unknown,
+  | {
+      type: 1 // non-`string` tag value
+      a: string
+    }
+  | {
+      type: 2 // non-`string` tag value
+      b: number
+    }
+> = D.sum('type')({
+  [1]: D.type({ type: D.literal(1), a: D.string }),
+  [2]: D.type({ type: D.literal(2), b: D.number })
+})
+```
+
 # 2.2.11
 
-- **Polish**
+- **Experimental**
   - `Decoder`
     - make `toForest` stack-safe, #520 (@safareli)
 

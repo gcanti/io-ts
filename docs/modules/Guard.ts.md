@@ -171,7 +171,7 @@ Added in v2.2.0
 ```ts
 export declare const sum: <T extends string>(
   tag: T
-) => <A>(members: { [K in keyof A]: Guard<unknown, A[K]> }) => Guard<unknown, A[keyof A]>
+) => <A>(members: { [K in keyof A]: Guard<unknown, A[K] & Record<T, K>> }) => Guard<unknown, A[keyof A]>
 ```
 
 Added in v2.2.0

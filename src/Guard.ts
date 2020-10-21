@@ -218,7 +218,7 @@ export const union = <A extends readonly [unknown, ...Array<unknown>]>(
  * @since 2.2.0
  */
 export const sum = <T extends string>(tag: T) => <A>(
-  members: { [K in keyof A]: Guard<unknown, A[K]> }
+  members: { [K in keyof A]: Guard<unknown, A[K] & Record<T, K>> }
 ): Guard<unknown, A[keyof A]> =>
   pipe(
     UnknownRecord,
