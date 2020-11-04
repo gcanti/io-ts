@@ -349,7 +349,7 @@ console.log(isRight(NumberFromString.decode('a'))) // => false
 
 # Extracting static types from decoders
 
-Static types can be extracted from decoders using the `TypeOf` operator
+Static types can be extracted from decoders using the `TypeOf` and `InputOf` operators
 
 ```ts
 export const Person = D.type({
@@ -363,6 +363,11 @@ type Person = {
     name: string;
     age: number;
 }
+*/
+
+type PersonInputType = D.InputOf<typeof Person>
+/*
+type PersonInputType = unknown
 */
 ```
 
