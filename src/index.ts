@@ -1416,9 +1416,13 @@ export interface IntersectionC<CS extends [Mixed, Mixed, ...Array<Mixed>]>
     unknown
   > {}
 
-const mergeAll = (base: any, us: Array<any>): any => {
+/**
+ * @internal
+ */
+export const mergeAll = (base: any, us: Array<any>): any => {
   let equal = true
   let primitive = true
+  const baseIsNotADictionary = !UnknownRecord.is(base)
   for (const u of us) {
     if (u !== base) {
       equal = false
@@ -1435,7 +1439,7 @@ const mergeAll = (base: any, us: Array<any>): any => {
   let r: any = {}
   for (const u of us) {
     for (const k in u) {
-      if (u[k] !== base[k] || !r.hasOwnProperty(k)) {
+      if (!r.hasOwnProperty(k) || baseIsNotADictionary || u[k] !== base[k]) {
         r[k] = u[k]
       }
     }

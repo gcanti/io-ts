@@ -3,6 +3,13 @@ import * as t from '../../src/index'
 import { assertFailure, assertStrictEqual, assertSuccess, NumberFromString } from './helpers'
 
 describe('intersection', () => {
+  it('mergeAll', () => {
+    assert.deepStrictEqual(t.mergeAll(undefined, [{ prop1: 'b', prop2: 2 }, { prop1: 'a' }, { prop2: 1 }]), {
+      prop1: 'a',
+      prop2: 1
+    })
+  })
+
   describe('name', () => {
     it('should assign a default name', () => {
       const T = t.intersection([t.type({ a: t.string }), t.type({ b: t.number })])

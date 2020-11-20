@@ -14,6 +14,11 @@
 **Note**: Gaps between patch versions are faulty/broken releases.
 **Note**: A feature tagged as Experimental is in a high state of flux, you're at risk of it changing without notice.
 
+# 2.2.13
+
+- **Bug Fix**
+  - improve internal `mergeAll` function, closes #532 (@gcanti)
+
 # 2.2.12
 
 - **Experimental**
