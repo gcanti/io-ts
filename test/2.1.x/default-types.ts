@@ -250,7 +250,7 @@ describe('never', () => {
     assertFailure(T, 'foo', ['Invalid value "foo" supplied to : never'])
     assertFailure(T, 1, ['Invalid value 1 supplied to : never'])
     assertFailure(T, true, ['Invalid value true supplied to : never'])
-    assertFailure(T, t.identity, ['Invalid value <function1> supplied to : never'])
+    assertFailure(T, t.identity, ['Invalid value identity supplied to : never'])
     assertFailure(T, {}, ['Invalid value {} supplied to : never'])
     assertFailure(T, [], ['Invalid value [] supplied to : never'])
     assertFailure(T, /a/, ['Invalid value {} supplied to : never'])
