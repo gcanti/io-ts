@@ -16,6 +16,8 @@ import { Refinement } from 'fp-ts/lib/function'
 import { Functor2 } from 'fp-ts/lib/Functor'
 import { MonadThrow2C } from 'fp-ts/lib/MonadThrow'
 import { pipe } from 'fp-ts/lib/pipeable'
+import * as T from 'fp-ts/lib/Tree'
+import * as A from 'fp-ts/lib/Array'
 import * as DE from './DecodeError'
 import * as FS from './FreeSemigroup'
 import * as G from './Guard'
@@ -513,24 +515,12 @@ export type InputOf<D> = K.InputOf<E.URI, D>
  */
 export type TypeOf<D> = K.TypeOf<E.URI, D>
 
-interface Tree<A> {
-  readonly value: A
-  readonly forest: ReadonlyArray<Tree<A>>
-}
+const drawTree = (tree: T.Tree<string>): string => tree.value + drawForest('\n', tree.forest)
 
-const empty: Array<never> = []
-
-const make = <A>(value: A, forest: ReadonlyArray<Tree<A>> = empty): Tree<A> => ({
-  value,
-  forest
-})
-
-const drawTree = (tree: Tree<string>): string => tree.value + drawForest('\n', tree.forest)
-
-const drawForest = (indentation: string, forest: ReadonlyArray<Tree<string>>): string => {
+const drawForest = (indentation: string, forest: ReadonlyArray<T.Tree<string>>): string => {
   let r: string = ''
   const len = forest.length
-  let tree: Tree<string>
+  let tree: T.Tree<string>
   for (let i = 0; i < len; i++) {
     tree = forest[i]
     const isLast = i === len - 1
@@ -540,23 +530,37 @@ const drawForest = (indentation: string, forest: ReadonlyArray<Tree<string>>): s
   return r
 }
 
-const toTree: (e: DE.DecodeError<string>) => Tree<string> = DE.fold({
-  Leaf: (input, error) => make(`cannot decode ${JSON.stringify(input)}, should be ${error}`),
-  Key: (key, kind, errors) => make(`${kind} property ${JSON.stringify(key)}`, toForest(errors)),
-  Index: (index, kind, errors) => make(`${kind} index ${index}`, toForest(errors)),
-  Member: (index, errors) => make(`member ${index}`, toForest(errors)),
-  Lazy: (id, errors) => make(`lazy type ${id}`, toForest(errors)),
-  Wrap: (error, errors) => make(error, toForest(errors))
+const toTreeS: (e: DE.DecodeError<string>) => T.Tree<string> = DE.fold({
+  Leaf: (input, error) => T.make(`cannot decode ${JSON.stringify(input)}, should be ${error}`),
+  Key: (key, kind, errors) => T.make(`${kind} property ${JSON.stringify(key)}`, toForestS(errors)),
+  Index: (index, kind, errors) => T.make(`${kind} index ${index}`, toForestS(errors)),
+  Member: (index, errors) => T.make(`member ${index}`, toForestS(errors)),
+  Lazy: (id, errors) => T.make(`lazy type ${id}`, toForestS(errors)),
+  Wrap: (error, errors) => T.make(error, toForestS(errors))
 })
 
-const toForest = (e: DecodeError): ReadonlyArray<Tree<string>> => {
+const toForestS = (e: DecodeError): Array<T.Tree<string>> => {
+  const forestE = toForestE(e)
+  return pipe(forestE, A.map(T.map((de) => toTreeS(de).value)))
+}
+
+const toTreeE = (e: DE.DecodeError<string>): T.Tree<DE.DecodeError<string>> => {
+  switch (e._tag) {
+    case 'Leaf':
+      return T.make(e)
+    default:
+      return T.make(e, toForestE(e.errors))
+  }
+}
+
+const toForestE = (e: DecodeError): Array<T.Tree<DE.DecodeError<string>>> => {
   const stack = []
   let focus = e
   const res = []
   while (true) {
     switch (focus._tag) {
       case 'Of':
-        res.push(toTree(focus.value))
+        res.push(toTreeE(focus.value))
         if (stack.length === 0) {
           return res
         } else {
@@ -572,9 +576,26 @@ const toForest = (e: DecodeError): ReadonlyArray<Tree<string>> => {
 }
 
 /**
+ * @category model
+ * @since 2.2.14
+ */
+export const getErrorForest = (e: DecodeError): Array<T.Tree<DE.DecodeErrorLeaf<string>>> => {
+  const fe = toForestE(e)
+  const omit = (a: any, omitK: string) => {
+    return Object.keys(a).reduce((acc: any, k) => {
+      if (k !== omitK) {
+        acc[k] = a[k]
+      }
+      return acc
+    }, {})
+  }
+  return pipe(fe, A.map(T.map((val) => omit(val, 'errors')))) as Array<T.Tree<DE.DecodeErrorLeaf<string>>>
+}
+
+/**
  * @since 2.2.7
  */
-export const draw = (e: DecodeError): string => toForest(e).map(drawTree).join('\n')
+export const draw = (e: DecodeError): string => toForestS(e).map(drawTree).join('\n')
 
 /**
  * @internal
