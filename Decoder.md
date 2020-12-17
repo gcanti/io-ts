@@ -377,6 +377,38 @@ Note that you can define an `interface` instead of a type alias
 export interface Person extends D.TypeOf<typeof Person> {}
 ```
 
+# Customize errors tree
+
+Errors tree can be got by `getErrorForest` to customize error report
+
+```ts
+ const decoder = _.type({
+    a: _.string
+  })
+ const tree = getErrorForest(decoder.decode({ c: [1] })
+/*
+E.left([
+  {
+    value: {
+      _tag: 'Key',
+      key: 'a',
+      kind: 'required'
+    },
+    forest: [
+      {
+        value: {
+          _tag: 'Leaf',
+          error: 'string',
+           actual: undefined
+        },
+        forest: []
+      }
+    ]
+  }
+])
+*/
+```
+
 # Built-in error reporter
 
 ```ts

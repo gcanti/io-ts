@@ -4,3 +4,4 @@ node_modules
 dev
 coverage
 declaration/out/src
+/.idea

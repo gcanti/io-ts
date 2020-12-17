@@ -98,6 +98,18 @@ export interface Wrap<E> {
 export type DecodeError<E> = Leaf<E> | Key<E> | Index<E> | Member<E> | Lazy<E> | Wrap<E>
 
 /**
+ * @category model
+ * @since 2.2.14
+ */
+export type DecodeErrorLeaf<E> =
+  | Leaf<E>
+  | Omit<Key<E>, 'errors'>
+  | Omit<Index<E>, 'errors'>
+  | Omit<Member<E>, 'errors'>
+  | Omit<Lazy<E>, 'errors'>
+  | Omit<Wrap<E>, 'errors'>
+
+/**
  * @category constructors
  * @since 2.2.7
  */

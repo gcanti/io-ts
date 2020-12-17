@@ -533,6 +533,36 @@ describe('Decoder', () => {
   // utils
   // -------------------------------------------------------------------------------------
 
+  describe('getErrorForest', () => {
+    it('getErrorForest', function () {
+      const decoder = _.type({
+        a: _.string
+      })
+      assert.deepStrictEqual(
+        pipe(decoder.decode({ c: [1] }), E.mapLeft(_.getErrorForest)),
+        E.left([
+          {
+            value: {
+              _tag: 'Key',
+              key: 'a',
+              kind: 'required'
+            },
+            forest: [
+              {
+                value: {
+                  _tag: 'Leaf',
+                  error: 'string',
+                  actual: undefined
+                },
+                forest: []
+              }
+            ]
+          }
+        ])
+      )
+    })
+  })
+
   describe('draw', () => {
     it('is stack safe', () => {
       expect(() => {
