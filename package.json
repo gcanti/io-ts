@@ -38,7 +38,7 @@
   "homepage": "https://github.com/gcanti/io-ts",
   "dependencies": {},
   "peerDependencies": {
-    "fp-ts": "^2.0.0"
+    "fp-ts": "^3.0.0"
   },
   "devDependencies": {
     "@types/benchmark": "1.0.31",
