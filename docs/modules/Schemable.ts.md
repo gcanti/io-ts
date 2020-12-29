@@ -1,19 +1,12 @@
 ---
 title: Schemable.ts
-nav_order: 13
+nav_order: 11
 parent: Modules
 ---
 
 ## Schemable overview
 
-**This module is experimental**
-
-Experimental features are published in order to get early feedback from the community, see these tracking
-[issues](https://github.com/gcanti/io-ts/issues?q=label%3Av2.2+) for further discussions and enhancements.
-
-A feature tagged as _Experimental_ is in a high state of flux, you're at risk of it changing without notice.
-
-Added in v2.2.0
+Added in v3.0.0
 
 ---
 
@@ -47,7 +40,7 @@ Added in v2.2.0
 export type Literal = string | number | boolean | null
 ```
 
-Added in v2.2.0
+Added in v3.0.0
 
 ## Schemable (interface)
 
@@ -74,7 +67,7 @@ export interface Schemable<S> {
 }
 ```
 
-Added in v2.2.3
+Added in v3.0.0
 
 ## Schemable1 (interface)
 
@@ -101,7 +94,7 @@ export interface Schemable1<S extends URIS> {
 }
 ```
 
-Added in v2.2.3
+Added in v3.0.0
 
 ## Schemable2C (interface)
 
@@ -132,7 +125,7 @@ export interface Schemable2C<S extends URIS2, E> {
 }
 ```
 
-Added in v2.2.8
+Added in v3.0.0
 
 ## WithRefine (interface)
 
@@ -144,7 +137,7 @@ export interface WithRefine<S> {
 }
 ```
 
-Added in v2.2.3
+Added in v3.0.0
 
 ## WithRefine1 (interface)
 
@@ -156,7 +149,7 @@ export interface WithRefine1<S extends URIS> {
 }
 ```
 
-Added in v2.2.3
+Added in v3.0.0
 
 ## WithRefine2C (interface)
 
@@ -171,7 +164,7 @@ export interface WithRefine2C<S extends URIS2, E> {
 }
 ```
 
-Added in v2.2.8
+Added in v3.0.0
 
 ## WithUnion (interface)
 
@@ -185,7 +178,7 @@ export interface WithUnion<S> {
 }
 ```
 
-Added in v2.2.3
+Added in v3.0.0
 
 ## WithUnion1 (interface)
 
@@ -199,7 +192,7 @@ export interface WithUnion1<S extends URIS> {
 }
 ```
 
-Added in v2.2.3
+Added in v3.0.0
 
 ## WithUnion2C (interface)
 
@@ -213,7 +206,7 @@ export interface WithUnion2C<S extends URIS2, E> {
 }
 ```
 
-Added in v2.2.8
+Added in v3.0.0
 
 ## WithUnknownContainers (interface)
 
@@ -226,7 +219,7 @@ export interface WithUnknownContainers<S> {
 }
 ```
 
-Added in v2.2.3
+Added in v3.0.0
 
 ## WithUnknownContainers1 (interface)
 
@@ -239,7 +232,7 @@ export interface WithUnknownContainers1<S extends URIS> {
 }
 ```
 
-Added in v2.2.3
+Added in v3.0.0
 
 ## WithUnknownContainers2C (interface)
 
@@ -252,7 +245,7 @@ export interface WithUnknownContainers2C<S extends URIS2, E> {
 }
 ```
 
-Added in v2.2.8
+Added in v3.0.0
 
 ## memoize
 
@@ -262,4 +255,4 @@ Added in v2.2.8
 export declare function memoize<A, B>(f: (a: A) => B): (a: A) => B
 ```
 
-Added in v2.2.0
+Added in v3.0.0

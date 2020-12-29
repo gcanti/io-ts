@@ -6,14 +6,7 @@ parent: Modules
 
 ## Codec overview
 
-**This module is experimental**
-
-Experimental features are published in order to get early feedback from the community, see these tracking
-[issues](https://github.com/gcanti/io-ts/issues?q=label%3Av2.2+) for further discussions and enhancements.
-
-A feature tagged as _Experimental_ is in a high state of flux, you're at risk of it changing without notice.
-
-Added in v2.2.3
+Added in v3.0.0
 
 ---
 
@@ -70,10 +63,10 @@ Added in v2.2.3
 **Signature**
 
 ```ts
-export declare const imap: <I, O, A, B>(f: (a: A) => B, g: (b: B) => A) => (fa: Codec<I, O, A>) => Codec<I, O, B>
+export declare const imap: <A, B>(f: (a: A) => B, g: (b: B) => A) => <R, E>(fa: Codec<R, E, A>) => Codec<R, E, B>
 ```
 
-Added in v2.2.3
+Added in v3.0.0
 
 # combinators
 
@@ -85,7 +78,7 @@ Added in v2.2.3
 export declare function array<O, A>(item: Codec<unknown, O, A>): Codec<unknown, Array<O>, Array<A>>
 ```
 
-Added in v2.2.3
+Added in v3.0.0
 
 ## compose
 
@@ -97,7 +90,7 @@ export declare const compose: <L, A extends L, P extends A, B>(
 ) => <I, O>(from: Codec<I, O, A>) => Codec<I, O, B>
 ```
 
-Added in v2.2.8
+Added in v3.0.0
 
 ## fromArray
 
@@ -107,7 +100,7 @@ Added in v2.2.8
 export declare function fromArray<I, O, A>(item: Codec<I, O, A>): Codec<Array<I>, Array<O>, Array<A>>
 ```
 
-Added in v2.2.3
+Added in v3.0.0
 
 ## fromPartial
 
@@ -123,7 +116,7 @@ export declare function fromPartial<P extends Record<string, Codec<any, any, any
 >
 ```
 
-Added in v2.2.8
+Added in v3.0.0
 
 ## fromRecord
 
@@ -135,7 +128,7 @@ export declare function fromRecord<I, O, A>(
 ): Codec<Record<string, I>, Record<string, O>, Record<string, A>>
 ```
 
-Added in v2.2.3
+Added in v3.0.0
 
 ## fromSum
 
@@ -149,7 +142,7 @@ export declare const fromSum: <T extends string>(
 ) => Codec<InputOf<'Either', MS[keyof MS]>, E.OutputOf<MS[keyof MS]>, E.TypeOf<MS[keyof MS]>>
 ```
 
-Added in v2.2.8
+Added in v3.0.0
 
 ## fromTuple
 
@@ -165,7 +158,7 @@ export declare const fromTuple: <C extends readonly Codec<any, any, any>[]>(
 >
 ```
 
-Added in v2.2.8
+Added in v3.0.0
 
 ## fromType
 
@@ -177,7 +170,7 @@ export declare function fromType<P extends Record<string, Codec<any, any, any>>>
 ): Codec<{ [K in keyof P]: InputOf<P[K]> }, { [K in keyof P]: OutputOf<P[K]> }, { [K in keyof P]: TypeOf<P[K]> }>
 ```
 
-Added in v2.2.8
+Added in v3.0.0
 
 ## intersect
 
@@ -189,7 +182,7 @@ export declare const intersect: <IB, OB, B>(
 ) => <IA, OA, A>(left: Codec<IA, OA, A>) => Codec<IA & IB, OA & OB, A & B>
 ```
 
-Added in v2.2.3
+Added in v3.0.0
 
 ## lazy
 
@@ -199,7 +192,7 @@ Added in v2.2.3
 export declare function lazy<I, O, A>(id: string, f: () => Codec<I, O, A>): Codec<I, O, A>
 ```
 
-Added in v2.2.3
+Added in v3.0.0
 
 ## mapLeftWithInput
 
@@ -211,7 +204,7 @@ export declare const mapLeftWithInput: <I>(
 ) => <O, A>(codec: Codec<I, O, A>) => Codec<I, O, A>
 ```
 
-Added in v2.2.3
+Added in v3.0.0
 
 ## nullable
 
@@ -221,7 +214,7 @@ Added in v2.2.3
 export declare function nullable<I, O, A>(or: Codec<I, O, A>): Codec<null | I, null | O, null | A>
 ```
 
-Added in v2.2.3
+Added in v3.0.0
 
 ## partial
 
@@ -233,7 +226,7 @@ export declare function partial<P extends Record<string, Codec<unknown, any, any
 ): Codec<unknown, Partial<{ [K in keyof P]: OutputOf<P[K]> }>, Partial<{ [K in keyof P]: TypeOf<P[K]> }>>
 ```
 
-Added in v2.2.3
+Added in v3.0.0
 
 ## record
 
@@ -245,7 +238,7 @@ export declare function record<O, A>(
 ): Codec<unknown, Record<string, O>, Record<string, A>>
 ```
 
-Added in v2.2.3
+Added in v3.0.0
 
 ## refine
 
@@ -258,7 +251,7 @@ export declare const refine: <A, B extends A>(
 ) => <I, O>(from: Codec<I, O, A>) => Codec<I, O, B>
 ```
 
-Added in v2.2.3
+Added in v3.0.0
 
 ## sum
 
@@ -272,7 +265,7 @@ export declare function sum<T extends string>(
 ) => Codec<unknown, OutputOf<M[keyof M]>, TypeOf<M[keyof M]>>
 ```
 
-Added in v2.2.3
+Added in v3.0.0
 
 ## tuple
 
@@ -284,7 +277,7 @@ export declare function tuple<C extends ReadonlyArray<Codec<unknown, any, any>>>
 ): Codec<unknown, { [K in keyof C]: OutputOf<C[K]> }, { [K in keyof C]: TypeOf<C[K]> }>
 ```
 
-Added in v2.2.3
+Added in v3.0.0
 
 ## type
 
@@ -296,7 +289,7 @@ export declare function type<P extends Record<string, Codec<unknown, any, any>>>
 ): Codec<unknown, { [K in keyof P]: OutputOf<P[K]> }, { [K in keyof P]: TypeOf<P[K]> }>
 ```
 
-Added in v2.2.3
+Added in v3.0.0
 
 # constructors
 
@@ -308,7 +301,7 @@ Added in v2.2.3
 export declare function fromDecoder<I, A>(decoder: D.Decoder<I, A>): Codec<I, A, A>
 ```
 
-Added in v2.2.3
+Added in v3.0.0
 
 ## literal
 
@@ -320,7 +313,7 @@ export declare function literal<A extends readonly [Literal, ...Array<Literal>]>
 ): Codec<unknown, A[number], A[number]>
 ```
 
-Added in v2.2.3
+Added in v3.0.0
 
 ## make
 
@@ -330,7 +323,7 @@ Added in v2.2.3
 export declare function make<I, O, A>(decoder: D.Decoder<I, A>, encoder: E.Encoder<O, A>): Codec<I, O, A>
 ```
 
-Added in v2.2.3
+Added in v3.0.0
 
 # instances
 
@@ -342,7 +335,7 @@ Added in v2.2.3
 export declare const Invariant: Invariant3<'io-ts/Codec'>
 ```
 
-Added in v2.2.8
+Added in v3.0.0
 
 ## URI
 
@@ -352,7 +345,7 @@ Added in v2.2.8
 export declare const URI: 'io-ts/Codec'
 ```
 
-Added in v2.2.3
+Added in v3.0.0
 
 ## URI (type alias)
 
@@ -362,7 +355,7 @@ Added in v2.2.3
 export type URI = typeof URI
 ```
 
-Added in v2.2.3
+Added in v3.0.0
 
 # model
 
@@ -379,7 +372,7 @@ Laws:
 export interface Codec<I, O, A> extends D.Decoder<I, A>, E.Encoder<O, A> {}
 ```
 
-Added in v2.2.3
+Added in v3.0.0
 
 # primitives
 
@@ -391,7 +384,7 @@ Added in v2.2.3
 export declare const UnknownArray: Codec<unknown, unknown[], unknown[]>
 ```
 
-Added in v2.2.3
+Added in v3.0.0
 
 ## UnknownRecord
 
@@ -401,7 +394,7 @@ Added in v2.2.3
 export declare const UnknownRecord: Codec<unknown, Record<string, unknown>, Record<string, unknown>>
 ```
 
-Added in v2.2.3
+Added in v3.0.0
 
 ## boolean
 
@@ -411,7 +404,7 @@ Added in v2.2.3
 export declare const boolean: Codec<unknown, boolean, boolean>
 ```
 
-Added in v2.2.3
+Added in v3.0.0
 
 ## number
 
@@ -421,7 +414,7 @@ Added in v2.2.3
 export declare const number: Codec<unknown, number, number>
 ```
 
-Added in v2.2.3
+Added in v3.0.0
 
 ## string
 
@@ -431,7 +424,7 @@ Added in v2.2.3
 export declare const string: Codec<unknown, string, string>
 ```
 
-Added in v2.2.3
+Added in v3.0.0
 
 # utils
 
@@ -443,7 +436,7 @@ Added in v2.2.3
 export type InputOf<C> = D.InputOf<C>
 ```
 
-Added in v2.2.8
+Added in v3.0.0
 
 ## OutputOf (type alias)
 
@@ -453,7 +446,7 @@ Added in v2.2.8
 export type OutputOf<C> = E.OutputOf<C>
 ```
 
-Added in v2.2.3
+Added in v3.0.0
 
 ## TypeOf (type alias)
 
@@ -463,4 +456,4 @@ Added in v2.2.3
 export type TypeOf<C> = E.TypeOf<C>
 ```
 
-Added in v2.2.3
+Added in v3.0.0

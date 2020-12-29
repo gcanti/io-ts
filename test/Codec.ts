@@ -1,10 +1,10 @@
 import * as assert from 'assert'
 import * as _ from '../src/Codec'
 import * as D from '../src/Decoder'
-import { pipe } from 'fp-ts/lib/pipeable'
+import { pipe } from 'fp-ts/function'
 import * as DE from '../src/DecodeError'
 import * as FS from '../src/FreeSemigroup'
-import * as E from 'fp-ts/lib/Either'
+import * as E from 'fp-ts/Either'
 import * as H from './helpers'
 
 const codecNumberFromString: _.Codec<string, string, number> = _.make(
@@ -23,10 +23,12 @@ const codecUndefined: _.Codec<unknown, undefined, undefined> = _.fromDecoder(H.d
 describe('Codec', () => {
   describe('Invariant', () => {
     it('imap', () => {
-      const codec = _.Invariant.imap(
+      const codec = pipe(
         _.string,
-        (s) => ({ value: s }),
-        ({ value }) => value
+        _.imap(
+          (s) => ({ value: s }),
+          ({ value }) => value
+        )
       )
       assert.deepStrictEqual(codec.decode('a'), D.success({ value: 'a' }))
       assert.deepStrictEqual(codec.encode({ value: 'a' }), 'a')
@@ -617,15 +619,19 @@ describe('Codec', () => {
   it('#453', () => {
     const Base64: _.Codec<string, string, string> = {
       decode: (s) =>
-        E.tryCatch(
-          () => Buffer.from(s, 'base64').toString(),
-          () => D.error(s, 'Base64')
+        pipe(
+          E.tryCatch(() => Buffer.from(s, 'base64').toString()),
+          E.mapLeft(() => D.error(s, 'Base64'))
         ),
       encode: (s) => Buffer.from(s).toString('base64')
     }
 
     const Json: _.Codec<string, string, E.Json> = {
-      decode: (s) => E.parseJSON(s, () => D.error(s, 'Json')),
+      decode: (s) =>
+        pipe(
+          E.parseJSON(s),
+          E.mapLeft(() => D.error(s, 'Json'))
+        ),
       encode: (a) => JSON.stringify(a)
     }
 

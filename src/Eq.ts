@@ -1,16 +1,9 @@
 /**
- * **This module is experimental**
- *
- * Experimental features are published in order to get early feedback from the community, see these tracking
- * [issues](https://github.com/gcanti/io-ts/issues?q=label%3Av2.2+) for further discussions and enhancements.
- *
- * A feature tagged as _Experimental_ is in a high state of flux, you're at risk of it changing without notice.
- *
- * @since 2.2.2
+ * @since 3.0.0
  */
-import * as A from 'fp-ts/lib/Array'
-import * as E from 'fp-ts/lib/Eq'
-import * as R from 'fp-ts/lib/Record'
+import * as A from 'fp-ts/ReadonlyArray'
+import * as E from 'fp-ts/Eq'
+import * as R from 'fp-ts/ReadonlyRecord'
 import { memoize, Schemable1, WithRefine1, WithUnknownContainers1 } from './Schemable'
 import Eq = E.Eq
 
@@ -19,12 +12,12 @@ import Eq = E.Eq
 // -------------------------------------------------------------------------------------
 
 /**
- * @since 2.2.3
+ * @since 3.0.0
  */
 export type URI = E.URI
 
 /**
- * @since 2.2.2
+ * @since 3.0.0
  */
 export type TypeOf<E> = E extends Eq<infer A> ? A : never
 
@@ -34,40 +27,40 @@ export type TypeOf<E> = E extends Eq<infer A> ? A : never
 
 /**
  * @category primitives
- * @since 2.2.2
+ * @since 3.0.0
  */
 export const string: Eq<string> = E.eqString
 
 /**
  * @category primitives
- * @since 2.2.2
+ * @since 3.0.0
  */
 export const number: Eq<number> = E.eqNumber
 
 /**
  * @category primitives
- * @since 2.2.2
+ * @since 3.0.0
  */
 export const boolean: Eq<boolean> = E.eqBoolean
 
 /**
  * @category primitives
- * @since 2.2.2
+ * @since 3.0.0
  */
-export const UnknownArray: Eq<Array<unknown>> = E.fromEquals((x, y) => x.length === y.length)
+export const UnknownArray: Eq<Array<unknown>> = E.fromEquals((second) => (first) => first.length === second.length)
 
 /**
  * @category primitives
- * @since 2.2.2
+ * @since 3.0.0
  */
-export const UnknownRecord: Eq<Record<string, unknown>> = E.fromEquals((x, y) => {
-  for (const k in x) {
-    if (!(k in y)) {
+export const UnknownRecord: Eq<Record<string, unknown>> = E.fromEquals((second) => (first) => {
+  for (const k in first) {
+    if (!(k in second)) {
       return false
     }
   }
-  for (const k in y) {
-    if (!(k in x)) {
+  for (const k in second) {
+    if (!(k in first)) {
       return false
     }
   }
@@ -80,31 +73,31 @@ export const UnknownRecord: Eq<Record<string, unknown>> = E.fromEquals((x, y) =>
 
 /**
  * @category combinators
- * @since 2.2.2
+ * @since 3.0.0
  */
 export function nullable<A>(or: Eq<A>): Eq<null | A> {
   return {
-    equals: (x, y) => (x === null || y === null ? x === y : or.equals(x, y))
+    equals: (second) => (first) => (first === null || second === null ? first === second : or.equals(second)(first))
   }
 }
 
 /**
  * @category combinators
- * @since 2.2.2
+ * @since 3.0.0
  */
 export const type: <A>(eqs: { [K in keyof A]: Eq<A[K]> }) => Eq<{ [K in keyof A]: A[K] }> = E.getStructEq
 
 /**
  * @category combinators
- * @since 2.2.2
+ * @since 3.0.0
  */
 export function partial<A>(properties: { [K in keyof A]: Eq<A[K]> }): Eq<Partial<{ [K in keyof A]: A[K] }>> {
   return {
-    equals: (x, y) => {
+    equals: (second) => (first) => {
       for (const k in properties) {
-        const xk = x[k]
-        const yk = y[k]
-        if (!(xk === undefined || yk === undefined ? xk === yk : properties[k].equals(xk!, yk!))) {
+        const xk = first[k]
+        const yk = second[k]
+        if (!(xk === undefined || yk === undefined ? xk === yk : properties[k].equals(yk!)(xk!))) {
           return false
         }
       }
@@ -115,19 +108,19 @@ export function partial<A>(properties: { [K in keyof A]: Eq<A[K]> }): Eq<Partial
 
 /**
  * @category combinators
- * @since 2.2.2
+ * @since 3.0.0
  */
 export const record: <A>(codomain: Eq<A>) => Eq<Record<string, A>> = R.getEq
 
 /**
  * @category combinators
- * @since 2.2.2
+ * @since 3.0.0
  */
 export const array: <A>(eq: Eq<A>) => Eq<Array<A>> = A.getEq
 
 /**
  * @category combinators
- * @since 2.2.2
+ * @since 3.0.0
  */
 export const tuple: <A extends ReadonlyArray<unknown>>(
   ...components: { [K in keyof A]: Eq<A[K]> }
@@ -135,28 +128,28 @@ export const tuple: <A extends ReadonlyArray<unknown>>(
 
 /**
  * @category combinators
- * @since 2.2.2
+ * @since 3.0.0
  */
 export const intersect = <B>(right: Eq<B>) => <A>(left: Eq<A>): Eq<A & B> => ({
-  equals: (x, y) => left.equals(x, y) && right.equals(x, y)
+  equals: (second) => (first) => left.equals(second)(first) && right.equals(second)(first)
 })
 
 /**
  * @category combinators
- * @since 2.2.2
+ * @since 3.0.0
  */
 export function sum<T extends string>(
   tag: T
 ): <A>(members: { [K in keyof A]: Eq<A[K] & Record<T, K>> }) => Eq<A[keyof A]> {
   return (members: Record<string, Eq<any>>) => {
     return {
-      equals: (x: Record<string, any>, y: Record<string, any>) => {
-        const vx = x[tag]
-        const vy = y[tag]
+      equals: (second: Record<string, any>) => (first: Record<string, any>) => {
+        const vx = first[tag]
+        const vy = second[tag]
         if (vx !== vy) {
           return false
         }
-        return members[vx].equals(x, y)
+        return members[vx].equals(second)(first)
       }
     }
   }
@@ -164,12 +157,12 @@ export function sum<T extends string>(
 
 /**
  * @category combinators
- * @since 2.2.2
+ * @since 3.0.0
  */
 export function lazy<A>(f: () => Eq<A>): Eq<A> {
   const get = memoize<void, Eq<A>>(f)
   return {
-    equals: (x, y) => get().equals(x, y)
+    equals: (second) => (first) => get().equals(second)(first)
   }
 }
 
@@ -179,7 +172,7 @@ export function lazy<A>(f: () => Eq<A>): Eq<A> {
 
 /**
  * @category instances
- * @since 2.2.8
+ * @since 3.0.0
  */
 export const Schemable: Schemable1<E.URI> = {
   URI: E.URI,
@@ -200,7 +193,7 @@ export const Schemable: Schemable1<E.URI> = {
 
 /**
  * @category instances
- * @since 2.2.8
+ * @since 3.0.0
  */
 export const WithUnknownContainers: WithUnknownContainers1<E.URI> = {
   UnknownArray,
@@ -209,7 +202,7 @@ export const WithUnknownContainers: WithUnknownContainers1<E.URI> = {
 
 /**
  * @category instances
- * @since 2.2.8
+ * @since 3.0.0
  */
 export const WithRefine: WithRefine1<E.URI> = {
   refine: () => (from) => from

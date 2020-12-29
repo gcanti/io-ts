@@ -6,14 +6,7 @@ parent: Modules
 
 ## Eq overview
 
-**This module is experimental**
-
-Experimental features are published in order to get early feedback from the community, see these tracking
-[issues](https://github.com/gcanti/io-ts/issues?q=label%3Av2.2+) for further discussions and enhancements.
-
-A feature tagged as _Experimental_ is in a high state of flux, you're at risk of it changing without notice.
-
-Added in v2.2.2
+Added in v3.0.0
 
 ---
 
@@ -55,7 +48,7 @@ Added in v2.2.2
 export declare const array: <A>(eq: E.Eq<A>) => E.Eq<A[]>
 ```
 
-Added in v2.2.2
+Added in v3.0.0
 
 ## intersect
 
@@ -65,7 +58,7 @@ Added in v2.2.2
 export declare const intersect: <B>(right: E.Eq<B>) => <A>(left: E.Eq<A>) => E.Eq<A & B>
 ```
 
-Added in v2.2.2
+Added in v3.0.0
 
 ## lazy
 
@@ -75,7 +68,7 @@ Added in v2.2.2
 export declare function lazy<A>(f: () => Eq<A>): Eq<A>
 ```
 
-Added in v2.2.2
+Added in v3.0.0
 
 ## nullable
 
@@ -85,7 +78,7 @@ Added in v2.2.2
 export declare function nullable<A>(or: Eq<A>): Eq<null | A>
 ```
 
-Added in v2.2.2
+Added in v3.0.0
 
 ## partial
 
@@ -95,7 +88,7 @@ Added in v2.2.2
 export declare function partial<A>(properties: { [K in keyof A]: Eq<A[K]> }): Eq<Partial<{ [K in keyof A]: A[K] }>>
 ```
 
-Added in v2.2.2
+Added in v3.0.0
 
 ## record
 
@@ -105,7 +98,7 @@ Added in v2.2.2
 export declare const record: <A>(codomain: E.Eq<A>) => E.Eq<Record<string, A>>
 ```
 
-Added in v2.2.2
+Added in v3.0.0
 
 ## sum
 
@@ -117,7 +110,7 @@ export declare function sum<T extends string>(
 ): <A>(members: { [K in keyof A]: Eq<A[K] & Record<T, K>> }) => Eq<A[keyof A]>
 ```
 
-Added in v2.2.2
+Added in v3.0.0
 
 ## tuple
 
@@ -127,7 +120,7 @@ Added in v2.2.2
 export declare const tuple: <A extends readonly unknown[]>(...components: { [K in keyof A]: E.Eq<A[K]> }) => E.Eq<A>
 ```
 
-Added in v2.2.2
+Added in v3.0.0
 
 ## type
 
@@ -137,7 +130,7 @@ Added in v2.2.2
 export declare const type: <A>(eqs: { [K in keyof A]: E.Eq<A[K]> }) => E.Eq<{ [K in keyof A]: A[K] }>
 ```
 
-Added in v2.2.2
+Added in v3.0.0
 
 # instances
 
@@ -149,7 +142,7 @@ Added in v2.2.2
 export declare const Schemable: Schemable1<'Eq'>
 ```
 
-Added in v2.2.8
+Added in v3.0.0
 
 ## WithRefine
 
@@ -159,7 +152,7 @@ Added in v2.2.8
 export declare const WithRefine: WithRefine1<'Eq'>
 ```
 
-Added in v2.2.8
+Added in v3.0.0
 
 ## WithUnknownContainers
 
@@ -169,7 +162,7 @@ Added in v2.2.8
 export declare const WithUnknownContainers: WithUnknownContainers1<'Eq'>
 ```
 
-Added in v2.2.8
+Added in v3.0.0
 
 # primitives
 
@@ -181,7 +174,7 @@ Added in v2.2.8
 export declare const UnknownArray: E.Eq<unknown[]>
 ```
 
-Added in v2.2.2
+Added in v3.0.0
 
 ## UnknownRecord
 
@@ -191,7 +184,7 @@ Added in v2.2.2
 export declare const UnknownRecord: E.Eq<Record<string, unknown>>
 ```
 
-Added in v2.2.2
+Added in v3.0.0
 
 ## boolean
 
@@ -201,7 +194,7 @@ Added in v2.2.2
 export declare const boolean: E.Eq<boolean>
 ```
 
-Added in v2.2.2
+Added in v3.0.0
 
 ## number
 
@@ -211,7 +204,7 @@ Added in v2.2.2
 export declare const number: E.Eq<number>
 ```
 
-Added in v2.2.2
+Added in v3.0.0
 
 ## string
 
@@ -221,7 +214,7 @@ Added in v2.2.2
 export declare const string: E.Eq<string>
 ```
 
-Added in v2.2.2
+Added in v3.0.0
 
 # utils
 
@@ -233,7 +226,7 @@ Added in v2.2.2
 export type TypeOf<E> = E extends Eq<infer A> ? A : never
 ```
 
-Added in v2.2.2
+Added in v3.0.0
 
 ## URI (type alias)
 
@@ -243,4 +236,4 @@ Added in v2.2.2
 export type URI = E.URI
 ```
 
-Added in v2.2.3
+Added in v3.0.0

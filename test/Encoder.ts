@@ -1,18 +1,39 @@
 import * as assert from 'assert'
 import * as E from '../src/Encoder'
-import { pipe } from 'fp-ts/lib/pipeable'
+import { pipe } from 'fp-ts/function'
 import * as H from './helpers'
 
 describe('Encoder', () => {
+  // -------------------------------------------------------------------------------------
+  // type class members
+  // -------------------------------------------------------------------------------------
+
   it('contramap', () => {
     const encoder = E.contramap((s: string) => s.length)(H.encoderNumberToString)
     assert.deepStrictEqual(encoder.encode('aaa'), '3')
   })
 
+  // -------------------------------------------------------------------------------------
+  // utils
+  // -------------------------------------------------------------------------------------
+
   it('compose', () => {
     const encoder = pipe(H.encoderBooleanToNumber, E.compose(H.encoderNumberToString))
     assert.deepStrictEqual(encoder.encode(true), '1')
   })
+
+  // -------------------------------------------------------------------------------------
+  // instances
+  // -------------------------------------------------------------------------------------
+
+  it('Category', () => {
+    const encoder = pipe(H.encoderNumberToString, E.Category.compose(H.encoderBooleanToNumber))
+    assert.deepStrictEqual(encoder.encode(true), '1')
+  })
+
+  // -------------------------------------------------------------------------------------
+  // combinators
+  // -------------------------------------------------------------------------------------
 
   it('nullable', () => {
     const encoder = E.nullable(H.encoderNumberToString)

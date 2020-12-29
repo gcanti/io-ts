@@ -1,7 +1,7 @@
 import * as assert from 'assert'
-import * as E from 'fp-ts/lib/Either'
-import { pipe } from 'fp-ts/lib/pipeable'
-import * as TE from 'fp-ts/lib/TaskEither'
+import * as E from 'fp-ts/Either'
+import { pipe } from 'fp-ts/function'
+import * as TE from 'fp-ts/TaskEither'
 import * as DE from '../src/DecodeError'
 import * as FS from '../src/FreeSemigroup'
 import * as G from '../src/Guard'
@@ -41,22 +41,28 @@ const Int: _.TaskDecoder<unknown, Int> = pipe(
 
 describe('UnknownTaskDecoder', () => {
   // -------------------------------------------------------------------------------------
-  // instances
+  // type class members
   // -------------------------------------------------------------------------------------
 
-  it('Functor', async () => {
-    const decoder = _.Functor.map(_.string, (s) => s + '!')
+  it('map', async () => {
+    const decoder = pipe(
+      _.string,
+      _.map((s) => s + '!')
+    )
     assert.deepStrictEqual(await decoder.decode('a')(), D.success('a!'))
   })
 
-  it('Alt', async () => {
-    const decoder = _.Alt.alt<unknown, string | number>(_.string, () => _.number)
+  it('alt', async () => {
+    const decoder = pipe(
+      _.string,
+      _.alt<unknown, string | number>(() => _.number)
+    )
     assert.deepStrictEqual(await decoder.decode('a')(), D.success('a'))
     assert.deepStrictEqual(await decoder.decode(1)(), D.success(1))
   })
 
-  it('Category', async () => {
-    const decoder = _.Category.compose(_.id<unknown>(), _.string)
+  it('compose', async () => {
+    const decoder = pipe(_.id<unknown>(), _.compose(_.string))
     assert.deepStrictEqual(await decoder.decode('a')(), D.success('a'))
     assert.deepStrictEqual(await decoder.decode(1)(), D.failure(1, 'string'))
   })
@@ -146,10 +152,10 @@ describe('UnknownTaskDecoder', () => {
     assert.deepStrictEqual(
       await pipe(decoder.decode({}), TE.mapLeft(_.draw))(),
       E.left(`Person
-├─ required property "name"
-│  └─ cannot decode undefined, should be string
-└─ required property "age"
-   └─ cannot decode undefined, should be number`)
+├─ required property "age"
+│  └─ cannot decode undefined, should be number
+└─ required property "name"
+   └─ cannot decode undefined, should be string`)
     )
   })
 

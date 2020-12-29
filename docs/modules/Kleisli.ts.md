@@ -6,14 +6,7 @@ parent: Modules
 
 ## Kleisli overview
 
-**This module is experimental**
-
-Experimental features are published in order to get early feedback from the community, see these tracking
-[issues](https://github.com/gcanti/io-ts/issues?q=label%3Av2.2+) for further discussions and enhancements.
-
-A feature tagged as _Experimental_ is in a high state of flux, you're at risk of it changing without notice.
-
-Added in v2.2.7
+Added in v3.0.0
 
 ---
 
@@ -60,7 +53,7 @@ export declare function alt<F extends URIS2, E>(
 ): <I, A>(that: Lazy<Kleisli<F, I, E, A>>) => (me: Kleisli<F, I, E, A>) => Kleisli<F, I, E, A>
 ```
 
-Added in v2.2.7
+Added in v3.0.0
 
 ## compose
 
@@ -72,7 +65,7 @@ export declare function compose<M extends URIS2, E>(
 ): <A, B>(ab: Kleisli<M, A, E, B>) => <I>(ia: Kleisli<M, I, E, A>) => Kleisli<M, I, E, B>
 ```
 
-Added in v2.2.7
+Added in v3.0.0
 
 ## fromArray
 
@@ -84,7 +77,7 @@ export declare function fromArray<M extends URIS2, E>(
 ): (onItemError: (index: number, e: E) => E) => <I, A>(item: Kleisli<M, I, E, A>) => Kleisli<M, Array<I>, E, Array<A>>
 ```
 
-Added in v2.2.7
+Added in v3.0.0
 
 ## fromPartial
 
@@ -100,7 +93,7 @@ export declare function fromPartial<M extends URIS2, E>(
 ) => Kleisli<M, Partial<{ [K in keyof P]: InputOf<M, P[K]> }>, E, Partial<{ [K in keyof P]: TypeOf<M, P[K]> }>>
 ```
 
-Added in v2.2.7
+Added in v3.0.0
 
 ## fromRecord
 
@@ -114,7 +107,7 @@ export declare function fromRecord<M extends URIS2, E>(
 ) => <I, A>(codomain: Kleisli<M, I, E, A>) => Kleisli<M, Record<string, I>, E, Record<string, A>>
 ```
 
-Added in v2.2.7
+Added in v3.0.0
 
 ## fromSum
 
@@ -122,7 +115,7 @@ Added in v2.2.7
 
 ```ts
 export declare function fromSum<M extends URIS2, E>(
-  M: MonadThrow2C<M, E>
+  M: FromEither2C<M, E>
 ): (
   onTagError: (tag: string, value: unknown, tags: ReadonlyArray<string>) => E
 ) => <T extends string>(
@@ -132,7 +125,7 @@ export declare function fromSum<M extends URIS2, E>(
 ) => Kleisli<M, InputOf<M, MS[keyof MS]>, E, TypeOf<M, MS[keyof MS]>>
 ```
 
-Added in v2.2.7
+Added in v3.0.0
 
 ## fromTuple
 
@@ -148,7 +141,7 @@ export declare function fromTuple<M extends URIS2, E>(
 ) => Kleisli<M, { [K in keyof C]: InputOf<M, C[K]> }, E, { [K in keyof C]: TypeOf<M, C[K]> }>
 ```
 
-Added in v2.2.7
+Added in v3.0.0
 
 ## fromType
 
@@ -164,7 +157,7 @@ export declare function fromType<M extends URIS2, E>(
 ) => Kleisli<M, { [K in keyof P]: InputOf<M, P[K]> }, E, { [K in keyof P]: TypeOf<M, P[K]> }>
 ```
 
-Added in v2.2.7
+Added in v3.0.0
 
 ## id
 
@@ -174,7 +167,7 @@ Added in v2.2.7
 export declare function id<M extends URIS2, E>(M: Applicative2C<M, E>): <A>() => Kleisli<M, A, E, A>
 ```
 
-Added in v2.2.8
+Added in v3.0.0
 
 ## intersect
 
@@ -186,7 +179,7 @@ export declare function intersect<M extends URIS2, E>(
 ): <IB, B>(right: Kleisli<M, IB, E, B>) => <IA, A>(left: Kleisli<M, IA, E, A>) => Kleisli<M, IA & IB, E, A & B>
 ```
 
-Added in v2.2.7
+Added in v3.0.0
 
 ## lazy
 
@@ -198,7 +191,7 @@ export declare function lazy<M extends URIS2>(
 ): <E>(onError: (id: string, e: E) => E) => <I, A>(id: string, f: () => Kleisli<M, I, E, A>) => Kleisli<M, I, E, A>
 ```
 
-Added in v2.2.7
+Added in v3.0.0
 
 ## map
 
@@ -210,7 +203,7 @@ export declare function map<F extends URIS2, E>(
 ): <A, B>(f: (a: A) => B) => <I>(ia: Kleisli<F, I, E, A>) => Kleisli<F, I, E, B>
 ```
 
-Added in v2.2.7
+Added in v3.0.0
 
 ## mapLeftWithInput
 
@@ -222,7 +215,7 @@ export declare function mapLeftWithInput<M extends URIS2>(
 ): <I, E>(f: (i: I, e: E) => E) => <A>(decoder: Kleisli<M, I, E, A>) => Kleisli<M, I, E, A>
 ```
 
-Added in v2.2.7
+Added in v3.0.0
 
 ## nullable
 
@@ -234,7 +227,7 @@ export declare function nullable<M extends URIS2, E>(
 ): <I>(onError: (i: I, e: E) => E) => <A>(or: Kleisli<M, I, E, A>) => Kleisli<M, null | I, E, null | A>
 ```
 
-Added in v2.2.7
+Added in v3.0.0
 
 ## parse
 
@@ -246,7 +239,7 @@ export declare function parse<M extends URIS2, E>(
 ): <A, B>(decode: (a: A) => Kind2<M, E, B>) => <I>(from: Kleisli<M, I, E, A>) => Kleisli<M, I, E, B>
 ```
 
-Added in v2.2.7
+Added in v3.0.0
 
 ## refine
 
@@ -254,14 +247,14 @@ Added in v2.2.7
 
 ```ts
 export declare function refine<M extends URIS2, E>(
-  M: MonadThrow2C<M, E> & Bifunctor2<M>
+  M: Monad2C<M, E> & FromEither2C<M, E> & Bifunctor2<M>
 ): <A, B extends A>(
   refinement: (a: A) => a is B,
   onError: (a: A) => E
 ) => <I>(from: Kleisli<M, I, E, A>) => Kleisli<M, I, E, B>
 ```
 
-Added in v2.2.7
+Added in v3.0.0
 
 ## union
 
@@ -277,7 +270,7 @@ export declare function union<M extends URIS2, E>(
 ) => Kleisli<M, InputOf<M, MS[keyof MS]>, E, TypeOf<M, MS[keyof MS]>>
 ```
 
-Added in v2.2.7
+Added in v3.0.0
 
 # constructors
 
@@ -287,11 +280,11 @@ Added in v2.2.7
 
 ```ts
 export declare function fromRefinement<M extends URIS2, E>(
-  M: MonadThrow2C<M, E>
+  M: FromEither2C<M, E>
 ): <I, A extends I>(refinement: Refinement<I, A>, onError: (i: I) => E) => Kleisli<M, I, E, A>
 ```
 
-Added in v2.2.7
+Added in v3.0.0
 
 ## literal
 
@@ -299,13 +292,13 @@ Added in v2.2.7
 
 ```ts
 export declare function literal<M extends URIS2, E>(
-  M: MonadThrow2C<M, E>
+  M: FromEither2C<M, E>
 ): <I>(
   onError: (i: I, values: readonly [Literal, ...Array<Literal>]) => E
 ) => <A extends readonly [Literal, ...Array<Literal>]>(...values: A) => Kleisli<M, I, E, A[number]>
 ```
 
-Added in v2.2.7
+Added in v3.0.0
 
 # model
 
@@ -319,7 +312,7 @@ export interface Kleisli<M extends URIS2, I, E, A> {
 }
 ```
 
-Added in v2.2.7
+Added in v3.0.0
 
 # utils
 
@@ -331,7 +324,7 @@ Added in v2.2.7
 export type InputOf<M extends URIS2, KD> = KD extends Kleisli<M, infer I, any, any> ? I : never
 ```
 
-Added in v2.2.7
+Added in v3.0.0
 
 ## TypeOf (type alias)
 
@@ -341,4 +334,4 @@ Added in v2.2.7
 export type TypeOf<M extends URIS2, KD> = KD extends Kleisli<M, any, any, infer A> ? A : never
 ```
 
-Added in v2.2.7
+Added in v3.0.0

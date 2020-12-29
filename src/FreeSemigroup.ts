@@ -1,18 +1,11 @@
 /**
- * **This module is experimental**
- *
- * Experimental features are published in order to get early feedback from the community, see these tracking
- * [issues](https://github.com/gcanti/io-ts/issues?q=label%3Av2.2+) for further discussions and enhancements.
- *
- * A feature tagged as _Experimental_ is in a high state of flux, you're at risk of it changing without notice.
- *
- * @since 2.2.7
+ * @since 3.0.0
  */
-import { Semigroup } from 'fp-ts/lib/Semigroup'
+import { Semigroup } from 'fp-ts/Semigroup'
 
 /**
  * @category model
- * @since 2.2.7
+ * @since 3.0.0
  */
 export interface Of<A> {
   readonly _tag: 'Of'
@@ -21,7 +14,7 @@ export interface Of<A> {
 
 /**
  * @category model
- * @since 2.2.7
+ * @since 3.0.0
  */
 export interface Concat<A> {
   readonly _tag: 'Concat'
@@ -31,19 +24,19 @@ export interface Concat<A> {
 
 /**
  * @category model
- * @since 2.2.7
+ * @since 3.0.0
  */
 export type FreeSemigroup<A> = Of<A> | Concat<A>
 
 /**
  * @category constructors
- * @since 2.2.7
+ * @since 3.0.0
  */
 export const of = <A>(a: A): FreeSemigroup<A> => ({ _tag: 'Of', value: a })
 
 /**
  * @category constructors
- * @since 2.2.7
+ * @since 3.0.0
  */
 export const concat = <A>(left: FreeSemigroup<A>, right: FreeSemigroup<A>): FreeSemigroup<A> => ({
   _tag: 'Concat',
@@ -53,7 +46,7 @@ export const concat = <A>(left: FreeSemigroup<A>, right: FreeSemigroup<A>): Free
 
 /**
  * @category destructors
- * @since 2.2.7
+ * @since 3.0.0
  */
 export const fold = <A, R>(onOf: (value: A) => R, onConcat: (left: FreeSemigroup<A>, right: FreeSemigroup<A>) => R) => (
   f: FreeSemigroup<A>
@@ -68,8 +61,10 @@ export const fold = <A, R>(onOf: (value: A) => R, onConcat: (left: FreeSemigroup
 
 /**
  * @category instances
- * @since 2.2.7
+ * @since 3.0.0
  */
 export function getSemigroup<A = never>(): Semigroup<FreeSemigroup<A>> {
-  return { concat }
+  return {
+    concat: (second) => (first) => concat(first, second)
+  }
 }

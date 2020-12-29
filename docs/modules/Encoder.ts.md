@@ -6,14 +6,7 @@ parent: Modules
 
 ## Encoder overview
 
-**This module is experimental**
-
-Experimental features are published in order to get early feedback from the community, see these tracking
-[issues](https://github.com/gcanti/io-ts/issues?q=label%3Av2.2+) for further discussions and enhancements.
-
-A feature tagged as _Experimental_ is in a high state of flux, you're at risk of it changing without notice.
-
-Added in v2.2.3
+Added in v3.0.0
 
 ---
 
@@ -23,8 +16,6 @@ Added in v2.2.3
   - [id](#id)
 - [Contravariant](#contravariant)
   - [contramap](#contramap)
-- [Semigroupoid](#semigroupoid)
-  - [compose](#compose)
 - [combinators](#combinators)
   - [array](#array)
   - [intersect](#intersect)
@@ -45,6 +36,7 @@ Added in v2.2.3
 - [utils](#utils)
   - [OutputOf (type alias)](#outputof-type-alias)
   - [TypeOf (type alias)](#typeof-type-alias)
+  - [compose](#compose)
 
 ---
 
@@ -58,7 +50,7 @@ Added in v2.2.3
 export declare function id<A>(): Encoder<A, A>
 ```
 
-Added in v2.2.3
+Added in v3.0.0
 
 # Contravariant
 
@@ -70,19 +62,7 @@ Added in v2.2.3
 export declare const contramap: <A, B>(f: (b: B) => A) => <E>(fa: Encoder<E, A>) => Encoder<E, B>
 ```
 
-Added in v2.2.3
-
-# Semigroupoid
-
-## compose
-
-**Signature**
-
-```ts
-export declare const compose: <E, A>(ea: Encoder<E, A>) => <B>(ab: Encoder<A, B>) => Encoder<E, B>
-```
-
-Added in v2.2.3
+Added in v3.0.0
 
 # combinators
 
@@ -94,7 +74,7 @@ Added in v2.2.3
 export declare function array<O, A>(item: Encoder<O, A>): Encoder<Array<O>, Array<A>>
 ```
 
-Added in v2.2.3
+Added in v3.0.0
 
 ## intersect
 
@@ -104,7 +84,7 @@ Added in v2.2.3
 export declare const intersect: <P, B>(right: Encoder<P, B>) => <O, A>(left: Encoder<O, A>) => Encoder<O & P, A & B>
 ```
 
-Added in v2.2.3
+Added in v3.0.0
 
 ## lazy
 
@@ -114,7 +94,7 @@ Added in v2.2.3
 export declare function lazy<O, A>(f: () => Encoder<O, A>): Encoder<O, A>
 ```
 
-Added in v2.2.3
+Added in v3.0.0
 
 ## nullable
 
@@ -124,7 +104,7 @@ Added in v2.2.3
 export declare function nullable<O, A>(or: Encoder<O, A>): Encoder<null | O, null | A>
 ```
 
-Added in v2.2.3
+Added in v3.0.0
 
 ## partial
 
@@ -136,7 +116,7 @@ export declare function partial<P extends Record<string, Encoder<any, any>>>(
 ): Encoder<Partial<{ [K in keyof P]: OutputOf<P[K]> }>, Partial<{ [K in keyof P]: TypeOf<P[K]> }>>
 ```
 
-Added in v2.2.3
+Added in v3.0.0
 
 ## record
 
@@ -146,7 +126,7 @@ Added in v2.2.3
 export declare function record<O, A>(codomain: Encoder<O, A>): Encoder<Record<string, O>, Record<string, A>>
 ```
 
-Added in v2.2.3
+Added in v3.0.0
 
 ## sum
 
@@ -158,7 +138,7 @@ export declare function sum<T extends string>(
 ): <MS extends Record<string, Encoder<any, any>>>(members: MS) => Encoder<OutputOf<MS[keyof MS]>, TypeOf<MS[keyof MS]>>
 ```
 
-Added in v2.2.3
+Added in v3.0.0
 
 ## tuple
 
@@ -170,7 +150,7 @@ export declare function tuple<C extends ReadonlyArray<Encoder<any, any>>>(
 ): Encoder<{ [K in keyof C]: OutputOf<C[K]> }, { [K in keyof C]: TypeOf<C[K]> }>
 ```
 
-Added in v2.2.3
+Added in v3.0.0
 
 ## type
 
@@ -182,7 +162,7 @@ export declare function type<P extends Record<string, Encoder<any, any>>>(
 ): Encoder<{ [K in keyof P]: OutputOf<P[K]> }, { [K in keyof P]: TypeOf<P[K]> }>
 ```
 
-Added in v2.2.3
+Added in v3.0.0
 
 # instances
 
@@ -194,7 +174,7 @@ Added in v2.2.3
 export declare const Category: Category2<'io-ts/Encoder'>
 ```
 
-Added in v2.2.8
+Added in v3.0.0
 
 ## Contravariant
 
@@ -204,7 +184,7 @@ Added in v2.2.8
 export declare const Contravariant: Contravariant2<'io-ts/Encoder'>
 ```
 
-Added in v2.2.8
+Added in v3.0.0
 
 ## URI
 
@@ -214,7 +194,7 @@ Added in v2.2.8
 export declare const URI: 'io-ts/Encoder'
 ```
 
-Added in v2.2.3
+Added in v3.0.0
 
 ## URI (type alias)
 
@@ -224,7 +204,7 @@ Added in v2.2.3
 export type URI = typeof URI
 ```
 
-Added in v2.2.3
+Added in v3.0.0
 
 # model
 
@@ -238,7 +218,7 @@ export interface Encoder<O, A> {
 }
 ```
 
-Added in v2.2.3
+Added in v3.0.0
 
 # utils
 
@@ -250,7 +230,7 @@ Added in v2.2.3
 export type OutputOf<E> = E extends Encoder<infer O, any> ? O : never
 ```
 
-Added in v2.2.3
+Added in v3.0.0
 
 ## TypeOf (type alias)
 
@@ -260,4 +240,14 @@ Added in v2.2.3
 export type TypeOf<E> = E extends Encoder<any, infer A> ? A : never
 ```
 
-Added in v2.2.3
+Added in v3.0.0
+
+## compose
+
+**Signature**
+
+```ts
+export declare const compose: <E, A>(ea: Encoder<E, A>) => <B>(ab: Encoder<A, B>) => Encoder<E, B>
+```
+
+Added in v3.0.0

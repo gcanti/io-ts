@@ -6,14 +6,7 @@ parent: Modules
 
 ## Guard overview
 
-**This module is experimental**
-
-Experimental features are published in order to get early feedback from the community, see these tracking
-[issues](https://github.com/gcanti/io-ts/issues?q=label%3Av2.2+) for further discussions and enhancements.
-
-A feature tagged as _Experimental_ is in a high state of flux, you're at risk of it changing without notice.
-
-Added in v2.2.0
+Added in v3.0.0
 
 ---
 
@@ -68,7 +61,7 @@ Added in v2.2.0
 export declare const alt: <I, A extends I>(that: () => Guard<I, A>) => (me: Guard<I, A>) => Guard<I, A>
 ```
 
-Added in v2.2.8
+Added in v3.0.0
 
 ## array
 
@@ -78,7 +71,7 @@ Added in v2.2.8
 export declare const array: <A>(item: Guard<unknown, A>) => Guard<unknown, A[]>
 ```
 
-Added in v2.2.0
+Added in v3.0.0
 
 ## compose
 
@@ -88,7 +81,7 @@ Added in v2.2.0
 export declare const compose: <I, A extends I, B extends A>(to: Guard<A, B>) => (from: Guard<I, A>) => Guard<I, B>
 ```
 
-Added in v2.2.8
+Added in v3.0.0
 
 ## id
 
@@ -98,7 +91,7 @@ Added in v2.2.8
 export declare const id: <A>() => Guard<A, A>
 ```
 
-Added in v2.2.8
+Added in v3.0.0
 
 ## intersect
 
@@ -108,7 +101,7 @@ Added in v2.2.8
 export declare const intersect: <B>(right: Guard<unknown, B>) => <A>(left: Guard<unknown, A>) => Guard<unknown, A & B>
 ```
 
-Added in v2.2.0
+Added in v3.0.0
 
 ## lazy
 
@@ -118,7 +111,7 @@ Added in v2.2.0
 export declare const lazy: <A>(f: () => Guard<unknown, A>) => Guard<unknown, A>
 ```
 
-Added in v2.2.0
+Added in v3.0.0
 
 ## nullable
 
@@ -128,7 +121,7 @@ Added in v2.2.0
 export declare const nullable: <I, A extends I>(or: Guard<I, A>) => Guard<I, A>
 ```
 
-Added in v2.2.0
+Added in v3.0.0
 
 ## partial
 
@@ -140,7 +133,7 @@ export declare const partial: <A>(
 ) => Guard<unknown, Partial<{ [K in keyof A]: A[K] }>>
 ```
 
-Added in v2.2.0
+Added in v3.0.0
 
 ## record
 
@@ -150,7 +143,7 @@ Added in v2.2.0
 export declare const record: <A>(codomain: Guard<unknown, A>) => Guard<unknown, Record<string, A>>
 ```
 
-Added in v2.2.0
+Added in v3.0.0
 
 ## refine
 
@@ -162,7 +155,7 @@ export declare const refine: <I, A extends I, B extends A>(
 ) => (from: Guard<I, A>) => Guard<I, B>
 ```
 
-Added in v2.2.0
+Added in v3.0.0
 
 ## sum
 
@@ -174,7 +167,7 @@ export declare const sum: <T extends string>(
 ) => <A>(members: { [K in keyof A]: Guard<unknown, A[K] & Record<T, K>> }) => Guard<unknown, A[keyof A]>
 ```
 
-Added in v2.2.0
+Added in v3.0.0
 
 ## tuple
 
@@ -186,7 +179,7 @@ export declare const tuple: <A extends readonly unknown[]>(
 ) => Guard<unknown, A>
 ```
 
-Added in v2.2.0
+Added in v3.0.0
 
 ## type
 
@@ -198,7 +191,7 @@ export declare const type: <A>(
 ) => Guard<unknown, { [K in keyof A]: A[K] }>
 ```
 
-Added in v2.2.0
+Added in v3.0.0
 
 ## union
 
@@ -210,7 +203,7 @@ export declare const union: <A extends readonly [unknown, ...unknown[]]>(
 ) => Guard<unknown, A[number]>
 ```
 
-Added in v2.2.0
+Added in v3.0.0
 
 ## zero
 
@@ -220,7 +213,7 @@ Added in v2.2.0
 export declare const zero: <I, A extends I>() => Guard<I, A>
 ```
 
-Added in v2.2.8
+Added in v3.0.0
 
 # constructors
 
@@ -232,7 +225,7 @@ Added in v2.2.8
 export declare const literal: <A extends readonly [Literal, ...Literal[]]>(...values: A) => Guard<unknown, A[number]>
 ```
 
-Added in v2.2.0
+Added in v3.0.0
 
 # instances
 
@@ -244,7 +237,7 @@ Added in v2.2.0
 export declare const Schemable: Schemable1<'io-ts/Guard'>
 ```
 
-Added in v2.2.8
+Added in v3.0.0
 
 ## URI
 
@@ -254,7 +247,7 @@ Added in v2.2.8
 export declare const URI: 'io-ts/Guard'
 ```
 
-Added in v2.2.0
+Added in v3.0.0
 
 ## URI (type alias)
 
@@ -264,7 +257,7 @@ Added in v2.2.0
 export type URI = typeof URI
 ```
 
-Added in v2.2.0
+Added in v3.0.0
 
 ## WithRefine
 
@@ -274,7 +267,7 @@ Added in v2.2.0
 export declare const WithRefine: WithRefine1<'io-ts/Guard'>
 ```
 
-Added in v2.2.8
+Added in v3.0.0
 
 ## WithUnion
 
@@ -284,7 +277,7 @@ Added in v2.2.8
 export declare const WithUnion: WithUnion1<'io-ts/Guard'>
 ```
 
-Added in v2.2.8
+Added in v3.0.0
 
 ## WithUnknownContainers
 
@@ -294,7 +287,7 @@ Added in v2.2.8
 export declare const WithUnknownContainers: WithUnknownContainers1<'io-ts/Guard'>
 ```
 
-Added in v2.2.8
+Added in v3.0.0
 
 # model
 
@@ -308,7 +301,7 @@ export interface Guard<I, A extends I> {
 }
 ```
 
-Added in v2.2.8
+Added in v3.0.0
 
 # primitives
 
@@ -320,7 +313,7 @@ Added in v2.2.8
 export declare const UnknownArray: Guard<unknown, unknown[]>
 ```
 
-Added in v2.2.0
+Added in v3.0.0
 
 ## UnknownRecord
 
@@ -330,7 +323,7 @@ Added in v2.2.0
 export declare const UnknownRecord: Guard<unknown, Record<string, unknown>>
 ```
 
-Added in v2.2.0
+Added in v3.0.0
 
 ## boolean
 
@@ -340,7 +333,7 @@ Added in v2.2.0
 export declare const boolean: Guard<unknown, boolean>
 ```
 
-Added in v2.2.0
+Added in v3.0.0
 
 ## number
 
@@ -352,7 +345,7 @@ Note: `NaN` is excluded.
 export declare const number: Guard<unknown, number>
 ```
 
-Added in v2.2.0
+Added in v3.0.0
 
 ## string
 
@@ -362,7 +355,7 @@ Added in v2.2.0
 export declare const string: Guard<unknown, string>
 ```
 
-Added in v2.2.0
+Added in v3.0.0
 
 # utils
 
@@ -374,7 +367,7 @@ Added in v2.2.0
 export type InputOf<G> = G extends Guard<infer I, any> ? I : never
 ```
 
-Added in v2.2.8
+Added in v3.0.0
 
 ## TypeOf (type alias)
 
@@ -384,4 +377,4 @@ Added in v2.2.8
 export type TypeOf<G> = G extends Guard<any, infer A> ? A : never
 ```
 
-Added in v2.2.2
+Added in v3.0.0

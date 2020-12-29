@@ -1,4 +1,4 @@
-import { pipe } from 'fp-ts/lib/pipeable'
+import { pipe } from 'fp-ts/function'
 import * as DE from '../../src/DecodeError'
 import * as _ from '../../src/Decoder'
 import * as FS from '../../src/FreeSemigroup'
@@ -147,3 +147,13 @@ pipe(
   _.number,
   _.mapLeftWithInput((u) => FS.of(DE.leaf(u, 'not a number')))
 )
+
+//
+// compose
+//
+
+declare const ab: _.Decoder<string, number>
+declare const bc: _.Decoder<number, boolean>
+
+// $ExpectType Decoder<string, boolean>
+pipe(ab, _.compose(bc))

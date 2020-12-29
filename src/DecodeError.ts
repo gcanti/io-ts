@@ -1,19 +1,12 @@
 /**
- * **This module is experimental**
- *
- * Experimental features are published in order to get early feedback from the community, see these tracking
- * [issues](https://github.com/gcanti/io-ts/issues?q=label%3Av2.2+) for further discussions and enhancements.
- *
- * A feature tagged as _Experimental_ is in a high state of flux, you're at risk of it changing without notice.
- *
- * @since 2.2.7
+ * @since 3.0.0
  */
-import { Semigroup } from 'fp-ts/lib/Semigroup'
+import { Semigroup } from 'fp-ts/Semigroup'
 import * as FS from './FreeSemigroup'
 
 /**
  * @category model
- * @since 2.2.7
+ * @since 3.0.0
  */
 export interface Leaf<E> {
   readonly _tag: 'Leaf'
@@ -23,25 +16,25 @@ export interface Leaf<E> {
 
 /**
  * @category model
- * @since 2.2.7
+ * @since 3.0.0
  */
 export const required: 'required' = 'required'
 
 /**
  * @category model
- * @since 2.2.7
+ * @since 3.0.0
  */
 export const optional: 'optional' = 'optional'
 
 /**
  * @category model
- * @since 2.2.7
+ * @since 3.0.0
  */
 export type Kind = 'required' | 'optional'
 
 /**
  * @category model
- * @since 2.2.7
+ * @since 3.0.0
  */
 export interface Key<E> {
   readonly _tag: 'Key'
@@ -52,7 +45,7 @@ export interface Key<E> {
 
 /**
  * @category model
- * @since 2.2.7
+ * @since 3.0.0
  */
 export interface Index<E> {
   readonly _tag: 'Index'
@@ -63,7 +56,7 @@ export interface Index<E> {
 
 /**
  * @category model
- * @since 2.2.7
+ * @since 3.0.0
  */
 export interface Member<E> {
   readonly _tag: 'Member'
@@ -73,7 +66,7 @@ export interface Member<E> {
 
 /**
  * @category model
- * @since 2.2.7
+ * @since 3.0.0
  */
 export interface Lazy<E> {
   readonly _tag: 'Lazy'
@@ -83,7 +76,7 @@ export interface Lazy<E> {
 
 /**
  * @category model
- * @since 2.2.9
+ * @since 3.0.0
  */
 export interface Wrap<E> {
   readonly _tag: 'Wrap'
@@ -93,19 +86,19 @@ export interface Wrap<E> {
 
 /**
  * @category model
- * @since 2.2.7
+ * @since 3.0.0
  */
 export type DecodeError<E> = Leaf<E> | Key<E> | Index<E> | Member<E> | Lazy<E> | Wrap<E>
 
 /**
  * @category constructors
- * @since 2.2.7
+ * @since 3.0.0
  */
 export const leaf = <E>(actual: unknown, error: E): DecodeError<E> => ({ _tag: 'Leaf', actual, error })
 
 /**
  * @category constructors
- * @since 2.2.7
+ * @since 3.0.0
  */
 export const key = <E>(key: string, kind: Kind, errors: FS.FreeSemigroup<DecodeError<E>>): DecodeError<E> => ({
   _tag: 'Key',
@@ -116,7 +109,7 @@ export const key = <E>(key: string, kind: Kind, errors: FS.FreeSemigroup<DecodeE
 
 /**
  * @category constructors
- * @since 2.2.7
+ * @since 3.0.0
  */
 export const index = <E>(index: number, kind: Kind, errors: FS.FreeSemigroup<DecodeError<E>>): DecodeError<E> => ({
   _tag: 'Index',
@@ -127,7 +120,7 @@ export const index = <E>(index: number, kind: Kind, errors: FS.FreeSemigroup<Dec
 
 /**
  * @category constructors
- * @since 2.2.7
+ * @since 3.0.0
  */
 export const member = <E>(index: number, errors: FS.FreeSemigroup<DecodeError<E>>): DecodeError<E> => ({
   _tag: 'Member',
@@ -137,7 +130,7 @@ export const member = <E>(index: number, errors: FS.FreeSemigroup<DecodeError<E>
 
 /**
  * @category constructors
- * @since 2.2.7
+ * @since 3.0.0
  */
 export const lazy = <E>(id: string, errors: FS.FreeSemigroup<DecodeError<E>>): DecodeError<E> => ({
   _tag: 'Lazy',
@@ -147,7 +140,7 @@ export const lazy = <E>(id: string, errors: FS.FreeSemigroup<DecodeError<E>>): D
 
 /**
  * @category constructors
- * @since 2.2.9
+ * @since 3.0.0
  */
 export const wrap = <E>(error: E, errors: FS.FreeSemigroup<DecodeError<E>>): DecodeError<E> => ({
   _tag: 'Wrap',
@@ -157,7 +150,7 @@ export const wrap = <E>(error: E, errors: FS.FreeSemigroup<DecodeError<E>>): Dec
 
 /**
  * @category destructors
- * @since 2.2.7
+ * @since 3.0.0
  */
 export const fold = <E, R>(patterns: {
   Leaf: (input: unknown, error: E) => R
@@ -188,7 +181,7 @@ export const fold = <E, R>(patterns: {
 
 /**
  * @category instances
- * @since 2.2.7
+ * @since 3.0.0
  */
 export function getSemigroup<E = never>(): Semigroup<FS.FreeSemigroup<DecodeError<E>>> {
   return FS.getSemigroup()

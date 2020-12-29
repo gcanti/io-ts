@@ -1,6 +1,6 @@
 {
   "name": "io-ts",
-  "version": "2.2.13",
+  "version": "3.0.0-alpha.1",
   "description": "TypeScript runtime type system for IO decoding/encoding",
   "main": "lib/index.js",
   "module": "es6/index.js",
@@ -49,7 +49,7 @@
     "doctoc": "1.4.0",
     "dtslint": "github:gcanti/dtslint",
     "fast-check": "^1.24.2",
-    "fp-ts": "^2.8.1",
+    "fp-ts": "^3.0.0-alpha.2",
     "import-path-rewrite": "github:gcanti/import-path-rewrite",
     "jest": "25.2.7",
     "mocha": "7.1.1",

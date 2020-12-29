@@ -1,6 +1,6 @@
 import * as fc from 'fast-check'
-import { isRight } from 'fp-ts/lib/Either'
-import { pipe } from 'fp-ts/lib/pipeable'
+import { isRight } from 'fp-ts/Either'
+import { pipe } from 'fp-ts/function'
 import * as D from '../src/Decoder'
 import * as Eq from '../src/Eq'
 import * as G from '../src/Guard'
@@ -13,7 +13,7 @@ function check<A>(schema: Schema<A>): void {
   const guard = interpreter(G.Schemable)(schema)
   const eq = interpreter(Eq.Schemable)(schema)
   // decoders, guards and eqs should be aligned
-  fc.assert(fc.property(arb, (a) => isRight(decoder.decode(a)) && guard.is(a) && eq.equals(a, a)))
+  fc.assert(fc.property(arb, (a) => isRight(decoder.decode(a)) && guard.is(a) && eq.equals(a)(a)))
 }
 describe('Schema', () => {
   it('string', () => {

@@ -1,6 +1,6 @@
 import { Schemable, WithUnknownContainers, memoize, WithRefine, WithUnion } from '../../src/Schemable'
-import { HKT } from 'fp-ts/lib/HKT'
-import { pipe } from 'fp-ts/lib/pipeable'
+import { HKT } from 'fp-ts/HKT'
+import { pipe } from 'fp-ts/function'
 
 interface Schema<A> {
   <S>(S: Schemable<S> & WithUnknownContainers<S> & WithRefine<S> & WithUnion<S>): HKT<S, A>

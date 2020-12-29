@@ -1,22 +1,15 @@
 /**
- * **This module is experimental**
- *
- * Experimental features are published in order to get early feedback from the community, see these tracking
- * [issues](https://github.com/gcanti/io-ts/issues?q=label%3Av2.2+) for further discussions and enhancements.
- *
- * A feature tagged as _Experimental_ is in a high state of flux, you're at risk of it changing without notice.
- *
- * @since 2.2.0
+ * @since 3.0.0
  */
-import { HKT, Kind, Kind2, URIS, URIS2 } from 'fp-ts/lib/HKT'
+import { HKT, Kind, Kind2, URIS, URIS2 } from 'fp-ts/HKT'
 
 /**
- * @since 2.2.0
+ * @since 3.0.0
  */
 export type Literal = string | number | boolean | null
 
 /**
- * @since 2.2.3
+ * @since 3.0.0
  */
 export interface Schemable<S> {
   readonly URI: S
@@ -38,7 +31,7 @@ export interface Schemable<S> {
 }
 
 /**
- * @since 2.2.3
+ * @since 3.0.0
  */
 export interface Schemable1<S extends URIS> {
   readonly URI: S
@@ -60,7 +53,7 @@ export interface Schemable1<S extends URIS> {
 }
 
 /**
- * @since 2.2.8
+ * @since 3.0.0
  */
 export interface Schemable2C<S extends URIS2, E> {
   readonly URI: S
@@ -86,7 +79,7 @@ export interface Schemable2C<S extends URIS2, E> {
 }
 
 /**
- * @since 2.2.3
+ * @since 3.0.0
  */
 export interface WithUnknownContainers<S> {
   readonly UnknownArray: HKT<S, Array<unknown>>
@@ -94,7 +87,7 @@ export interface WithUnknownContainers<S> {
 }
 
 /**
- * @since 2.2.3
+ * @since 3.0.0
  */
 export interface WithUnknownContainers1<S extends URIS> {
   readonly UnknownArray: Kind<S, Array<unknown>>
@@ -102,7 +95,7 @@ export interface WithUnknownContainers1<S extends URIS> {
 }
 
 /**
- * @since 2.2.8
+ * @since 3.0.0
  */
 export interface WithUnknownContainers2C<S extends URIS2, E> {
   readonly UnknownArray: Kind2<S, E, Array<unknown>>
@@ -110,7 +103,7 @@ export interface WithUnknownContainers2C<S extends URIS2, E> {
 }
 
 /**
- * @since 2.2.3
+ * @since 3.0.0
  */
 export interface WithUnion<S> {
   readonly union: <A extends readonly [unknown, ...Array<unknown>]>(
@@ -119,7 +112,7 @@ export interface WithUnion<S> {
 }
 
 /**
- * @since 2.2.3
+ * @since 3.0.0
  */
 export interface WithUnion1<S extends URIS> {
   readonly union: <A extends readonly [unknown, ...Array<unknown>]>(
@@ -128,7 +121,7 @@ export interface WithUnion1<S extends URIS> {
 }
 
 /**
- * @since 2.2.8
+ * @since 3.0.0
  */
 export interface WithUnion2C<S extends URIS2, E> {
   readonly union: <A extends readonly [unknown, ...Array<unknown>]>(
@@ -137,21 +130,21 @@ export interface WithUnion2C<S extends URIS2, E> {
 }
 
 /**
- * @since 2.2.3
+ * @since 3.0.0
  */
 export interface WithRefine<S> {
   readonly refine: <A, B extends A>(refinement: (a: A) => a is B, id: string) => (from: HKT<S, A>) => HKT<S, B>
 }
 
 /**
- * @since 2.2.3
+ * @since 3.0.0
  */
 export interface WithRefine1<S extends URIS> {
   readonly refine: <A, B extends A>(refinement: (a: A) => a is B, id: string) => (from: Kind<S, A>) => Kind<S, B>
 }
 
 /**
- * @since 2.2.8
+ * @since 3.0.0
  */
 export interface WithRefine2C<S extends URIS2, E> {
   readonly refine: <A, B extends A>(
@@ -161,7 +154,7 @@ export interface WithRefine2C<S extends URIS2, E> {
 }
 
 /**
- * @since 2.2.0
+ * @since 3.0.0
  */
 export function memoize<A, B>(f: (a: A) => B): (a: A) => B {
   let cache = new Map()

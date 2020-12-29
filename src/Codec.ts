@@ -1,16 +1,8 @@
 /**
- * **This module is experimental**
- *
- * Experimental features are published in order to get early feedback from the community, see these tracking
- * [issues](https://github.com/gcanti/io-ts/issues?q=label%3Av2.2+) for further discussions and enhancements.
- *
- * A feature tagged as _Experimental_ is in a high state of flux, you're at risk of it changing without notice.
- *
- * @since 2.2.3
+ * @since 3.0.0
  */
-import { identity } from 'fp-ts/lib/function'
-import { Invariant3 } from 'fp-ts/lib/Invariant'
-import { pipe } from 'fp-ts/lib/pipeable'
+import { identity, pipe } from 'fp-ts/function'
+import { Invariant3 } from 'fp-ts/Invariant'
 import * as D from './Decoder'
 import * as E from './Encoder'
 import { Literal } from './Schemable'
@@ -26,7 +18,7 @@ import { Literal } from './Schemable'
  * 2. `codec.decode(codec.encode(a)) = E.right(a)` for all `a` in `A`
  *
  * @category model
- * @since 2.2.3
+ * @since 3.0.0
  */
 export interface Codec<I, O, A> extends D.Decoder<I, A>, E.Encoder<O, A> {}
 
@@ -36,7 +28,7 @@ export interface Codec<I, O, A> extends D.Decoder<I, A>, E.Encoder<O, A> {}
 
 /**
  * @category constructors
- * @since 2.2.3
+ * @since 3.0.0
  */
 export function make<I, O, A>(decoder: D.Decoder<I, A>, encoder: E.Encoder<O, A>): Codec<I, O, A> {
   return {
@@ -47,7 +39,7 @@ export function make<I, O, A>(decoder: D.Decoder<I, A>, encoder: E.Encoder<O, A>
 
 /**
  * @category constructors
- * @since 2.2.3
+ * @since 3.0.0
  */
 export function fromDecoder<I, A>(decoder: D.Decoder<I, A>): Codec<I, A, A> {
   return {
@@ -58,7 +50,7 @@ export function fromDecoder<I, A>(decoder: D.Decoder<I, A>): Codec<I, A, A> {
 
 /**
  * @category constructors
- * @since 2.2.3
+ * @since 3.0.0
  */
 export function literal<A extends readonly [Literal, ...Array<Literal>]>(
   ...values: A
@@ -72,7 +64,7 @@ export function literal<A extends readonly [Literal, ...Array<Literal>]>(
 
 /**
  * @category primitives
- * @since 2.2.3
+ * @since 3.0.0
  */
 export const string: Codec<unknown, string, string> =
   /*#__PURE__*/
@@ -80,7 +72,7 @@ export const string: Codec<unknown, string, string> =
 
 /**
  * @category primitives
- * @since 2.2.3
+ * @since 3.0.0
  */
 export const number: Codec<unknown, number, number> =
   /*#__PURE__*/
@@ -88,7 +80,7 @@ export const number: Codec<unknown, number, number> =
 
 /**
  * @category primitives
- * @since 2.2.3
+ * @since 3.0.0
  */
 export const boolean: Codec<unknown, boolean, boolean> =
   /*#__PURE__*/
@@ -96,7 +88,7 @@ export const boolean: Codec<unknown, boolean, boolean> =
 
 /**
  * @category primitives
- * @since 2.2.3
+ * @since 3.0.0
  */
 export const UnknownArray: Codec<unknown, Array<unknown>, Array<unknown>> =
   /*#__PURE__*/
@@ -104,7 +96,7 @@ export const UnknownArray: Codec<unknown, Array<unknown>, Array<unknown>> =
 
 /**
  * @category primitives
- * @since 2.2.3
+ * @since 3.0.0
  */
 export const UnknownRecord: Codec<unknown, Record<string, unknown>, Record<string, unknown>> =
   /*#__PURE__*/
@@ -116,7 +108,7 @@ export const UnknownRecord: Codec<unknown, Record<string, unknown>, Record<strin
 
 /**
  * @category combinators
- * @since 2.2.3
+ * @since 3.0.0
  */
 export const mapLeftWithInput = <I>(f: (i: I, e: D.DecodeError) => D.DecodeError) => <O, A>(
   codec: Codec<I, O, A>
@@ -124,7 +116,7 @@ export const mapLeftWithInput = <I>(f: (i: I, e: D.DecodeError) => D.DecodeError
 
 /**
  * @category combinators
- * @since 2.2.3
+ * @since 3.0.0
  */
 export const refine = <A, B extends A>(
   refinement: (a: A) => a is B,
@@ -136,7 +128,7 @@ export const refine = <A, B extends A>(
 
 /**
  * @category combinators
- * @since 2.2.3
+ * @since 3.0.0
  */
 export function nullable<I, O, A>(or: Codec<I, O, A>): Codec<null | I, null | O, null | A> {
   return make(D.nullable(or), E.nullable(or))
@@ -144,7 +136,7 @@ export function nullable<I, O, A>(or: Codec<I, O, A>): Codec<null | I, null | O,
 
 /**
  * @category combinators
- * @since 2.2.8
+ * @since 3.0.0
  */
 export function fromType<P extends Record<string, Codec<any, any, any>>>(
   properties: P
@@ -154,7 +146,7 @@ export function fromType<P extends Record<string, Codec<any, any, any>>>(
 
 /**
  * @category combinators
- * @since 2.2.3
+ * @since 3.0.0
  */
 export function type<P extends Record<string, Codec<unknown, any, any>>>(
   properties: P
@@ -164,7 +156,7 @@ export function type<P extends Record<string, Codec<unknown, any, any>>>(
 
 /**
  * @category combinators
- * @since 2.2.8
+ * @since 3.0.0
  */
 export function fromPartial<P extends Record<string, Codec<any, any, any>>>(
   properties: P
@@ -178,7 +170,7 @@ export function fromPartial<P extends Record<string, Codec<any, any, any>>>(
 
 /**
  * @category combinators
- * @since 2.2.3
+ * @since 3.0.0
  */
 export function partial<P extends Record<string, Codec<unknown, any, any>>>(
   properties: P
@@ -188,7 +180,7 @@ export function partial<P extends Record<string, Codec<unknown, any, any>>>(
 
 /**
  * @category combinators
- * @since 2.2.3
+ * @since 3.0.0
  */
 export function fromArray<I, O, A>(item: Codec<I, O, A>): Codec<Array<I>, Array<O>, Array<A>> {
   return make(D.fromArray(item), E.array(item))
@@ -196,7 +188,7 @@ export function fromArray<I, O, A>(item: Codec<I, O, A>): Codec<Array<I>, Array<
 
 /**
  * @category combinators
- * @since 2.2.3
+ * @since 3.0.0
  */
 export function array<O, A>(item: Codec<unknown, O, A>): Codec<unknown, Array<O>, Array<A>> {
   return pipe(UnknownArray, compose(fromArray(item))) as any
@@ -204,7 +196,7 @@ export function array<O, A>(item: Codec<unknown, O, A>): Codec<unknown, Array<O>
 
 /**
  * @category combinators
- * @since 2.2.3
+ * @since 3.0.0
  */
 export function fromRecord<I, O, A>(
   codomain: Codec<I, O, A>
@@ -214,7 +206,7 @@ export function fromRecord<I, O, A>(
 
 /**
  * @category combinators
- * @since 2.2.3
+ * @since 3.0.0
  */
 export function record<O, A>(codomain: Codec<unknown, O, A>): Codec<unknown, Record<string, O>, Record<string, A>> {
   return pipe(UnknownRecord, compose(fromRecord(codomain))) as any
@@ -222,7 +214,7 @@ export function record<O, A>(codomain: Codec<unknown, O, A>): Codec<unknown, Rec
 
 /**
  * @category combinators
- * @since 2.2.8
+ * @since 3.0.0
  */
 export const fromTuple = <C extends ReadonlyArray<Codec<any, any, any>>>(
   ...components: C
@@ -231,7 +223,7 @@ export const fromTuple = <C extends ReadonlyArray<Codec<any, any, any>>>(
 
 /**
  * @category combinators
- * @since 2.2.3
+ * @since 3.0.0
  */
 export function tuple<C extends ReadonlyArray<Codec<unknown, any, any>>>(
   ...components: C
@@ -241,7 +233,7 @@ export function tuple<C extends ReadonlyArray<Codec<unknown, any, any>>>(
 
 /**
  * @category combinators
- * @since 2.2.3
+ * @since 3.0.0
  */
 export const intersect = <IB, OB, B>(
   right: Codec<IB, OB, B>
@@ -253,7 +245,7 @@ export const intersect = <IB, OB, B>(
 
 /**
  * @category combinators
- * @since 2.2.8
+ * @since 3.0.0
  */
 export const fromSum = <T extends string>(
   tag: T
@@ -267,7 +259,7 @@ export const fromSum = <T extends string>(
 
 /**
  * @category combinators
- * @since 2.2.3
+ * @since 3.0.0
  */
 export function sum<T extends string>(
   tag: T
@@ -280,7 +272,7 @@ export function sum<T extends string>(
 
 /**
  * @category combinators
- * @since 2.2.3
+ * @since 3.0.0
  */
 export function lazy<I, O, A>(id: string, f: () => Codec<I, O, A>): Codec<I, O, A> {
   return make(D.lazy(id, f), E.lazy(f))
@@ -288,29 +280,21 @@ export function lazy<I, O, A>(id: string, f: () => Codec<I, O, A>): Codec<I, O, 
 
 /**
  * @category combinators
- * @since 2.2.8
+ * @since 3.0.0
  */
 export const compose = <L, A extends L, P extends A, B>(to: Codec<L, P, B>) => <I, O>(
   from: Codec<I, O, A>
 ): Codec<I, O, B> => make(D.compose(to)(from), E.compose(from)(to))
 
 // -------------------------------------------------------------------------------------
-// non-pipeables
-// -------------------------------------------------------------------------------------
-
-const imap_: Invariant3<URI>['imap'] = (fa, f, g) => make(D.Functor.map(fa, f), E.Contravariant.contramap(fa, g))
-
-// -------------------------------------------------------------------------------------
-// pipeables
+// type class members
 // -------------------------------------------------------------------------------------
 
 /**
  * @category Invariant
- * @since 2.2.3
+ * @since 3.0.0
  */
-export const imap: <I, O, A, B>(f: (a: A) => B, g: (b: B) => A) => (fa: Codec<I, O, A>) => Codec<I, O, B> = (f, g) => (
-  fa
-) => imap_(fa, f, g)
+export const imap: Invariant3<URI>['imap'] = (f, g) => (fa) => make(D.map(f)(fa), E.contramap(g)(fa))
 
 // -------------------------------------------------------------------------------------
 // instances
@@ -318,17 +302,17 @@ export const imap: <I, O, A, B>(f: (a: A) => B, g: (b: B) => A) => (fa: Codec<I,
 
 /**
  * @category instances
- * @since 2.2.3
+ * @since 3.0.0
  */
 export const URI = 'io-ts/Codec'
 
 /**
  * @category instances
- * @since 2.2.3
+ * @since 3.0.0
  */
 export type URI = typeof URI
 
-declare module 'fp-ts/lib/HKT' {
+declare module 'fp-ts/HKT' {
   interface URItoKind3<R, E, A> {
     readonly [URI]: Codec<R, E, A>
   }
@@ -336,11 +320,11 @@ declare module 'fp-ts/lib/HKT' {
 
 /**
  * @category instances
- * @since 2.2.8
+ * @since 3.0.0
  */
 export const Invariant: Invariant3<URI> = {
   URI,
-  imap: imap_
+  imap
 }
 
 // -------------------------------------------------------------------------------------
@@ -348,16 +332,16 @@ export const Invariant: Invariant3<URI> = {
 // -------------------------------------------------------------------------------------
 
 /**
- * @since 2.2.8
+ * @since 3.0.0
  */
 export type InputOf<C> = D.InputOf<C>
 
 /**
- * @since 2.2.3
+ * @since 3.0.0
  */
 export type OutputOf<C> = E.OutputOf<C>
 
 /**
- * @since 2.2.3
+ * @since 3.0.0
  */
 export type TypeOf<C> = E.TypeOf<C>

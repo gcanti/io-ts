@@ -6,14 +6,7 @@ parent: Modules
 
 ## FreeSemigroup overview
 
-**This module is experimental**
-
-Experimental features are published in order to get early feedback from the community, see these tracking
-[issues](https://github.com/gcanti/io-ts/issues?q=label%3Av2.2+) for further discussions and enhancements.
-
-A feature tagged as _Experimental_ is in a high state of flux, you're at risk of it changing without notice.
-
-Added in v2.2.7
+Added in v3.0.0
 
 ---
 
@@ -43,7 +36,7 @@ Added in v2.2.7
 export declare const concat: <A>(left: FreeSemigroup<A>, right: FreeSemigroup<A>) => FreeSemigroup<A>
 ```
 
-Added in v2.2.7
+Added in v3.0.0
 
 ## of
 
@@ -53,7 +46,7 @@ Added in v2.2.7
 export declare const of: <A>(a: A) => FreeSemigroup<A>
 ```
 
-Added in v2.2.7
+Added in v3.0.0
 
 # destructors
 
@@ -68,7 +61,7 @@ export declare const fold: <A, R>(
 ) => (f: FreeSemigroup<A>) => R
 ```
 
-Added in v2.2.7
+Added in v3.0.0
 
 # instances
 
@@ -80,7 +73,7 @@ Added in v2.2.7
 export declare function getSemigroup<A = never>(): Semigroup<FreeSemigroup<A>>
 ```
 
-Added in v2.2.7
+Added in v3.0.0
 
 # model
 
@@ -96,7 +89,7 @@ export interface Concat<A> {
 }
 ```
 
-Added in v2.2.7
+Added in v3.0.0
 
 ## FreeSemigroup (type alias)
 
@@ -106,7 +99,7 @@ Added in v2.2.7
 export type FreeSemigroup<A> = Of<A> | Concat<A>
 ```
 
-Added in v2.2.7
+Added in v3.0.0
 
 ## Of (interface)
 
@@ -119,4 +112,4 @@ export interface Of<A> {
 }
 ```
 
-Added in v2.2.7
+Added in v3.0.0

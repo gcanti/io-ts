@@ -6,14 +6,7 @@ parent: Modules
 
 ## DecodeError overview
 
-**This module is experimental**
-
-Experimental features are published in order to get early feedback from the community, see these tracking
-[issues](https://github.com/gcanti/io-ts/issues?q=label%3Av2.2+) for further discussions and enhancements.
-
-A feature tagged as _Experimental_ is in a high state of flux, you're at risk of it changing without notice.
-
-Added in v2.2.7
+Added in v3.0.0
 
 ---
 
@@ -54,7 +47,7 @@ Added in v2.2.7
 export declare const index: <E>(index: number, kind: Kind, errors: FS.FreeSemigroup<DecodeError<E>>) => DecodeError<E>
 ```
 
-Added in v2.2.7
+Added in v3.0.0
 
 ## key
 
@@ -64,7 +57,7 @@ Added in v2.2.7
 export declare const key: <E>(key: string, kind: Kind, errors: FS.FreeSemigroup<DecodeError<E>>) => DecodeError<E>
 ```
 
-Added in v2.2.7
+Added in v3.0.0
 
 ## lazy
 
@@ -74,7 +67,7 @@ Added in v2.2.7
 export declare const lazy: <E>(id: string, errors: FS.FreeSemigroup<DecodeError<E>>) => DecodeError<E>
 ```
 
-Added in v2.2.7
+Added in v3.0.0
 
 ## leaf
 
@@ -84,7 +77,7 @@ Added in v2.2.7
 export declare const leaf: <E>(actual: unknown, error: E) => DecodeError<E>
 ```
 
-Added in v2.2.7
+Added in v3.0.0
 
 ## member
 
@@ -94,7 +87,7 @@ Added in v2.2.7
 export declare const member: <E>(index: number, errors: FS.FreeSemigroup<DecodeError<E>>) => DecodeError<E>
 ```
 
-Added in v2.2.7
+Added in v3.0.0
 
 ## wrap
 
@@ -104,7 +97,7 @@ Added in v2.2.7
 export declare const wrap: <E>(error: E, errors: FS.FreeSemigroup<DecodeError<E>>) => DecodeError<E>
 ```
 
-Added in v2.2.9
+Added in v3.0.0
 
 # destructors
 
@@ -123,7 +116,7 @@ export declare const fold: <E, R>(patterns: {
 }) => (e: DecodeError<E>) => R
 ```
 
-Added in v2.2.7
+Added in v3.0.0
 
 # instances
 
@@ -135,7 +128,7 @@ Added in v2.2.7
 export declare function getSemigroup<E = never>(): Semigroup<FS.FreeSemigroup<DecodeError<E>>>
 ```
 
-Added in v2.2.7
+Added in v3.0.0
 
 # model
 
@@ -147,7 +140,7 @@ Added in v2.2.7
 export type DecodeError<E> = Leaf<E> | Key<E> | Index<E> | Member<E> | Lazy<E> | Wrap<E>
 ```
 
-Added in v2.2.7
+Added in v3.0.0
 
 ## Index (interface)
 
@@ -162,7 +155,7 @@ export interface Index<E> {
 }
 ```
 
-Added in v2.2.7
+Added in v3.0.0
 
 ## Key (interface)
 
@@ -177,7 +170,7 @@ export interface Key<E> {
 }
 ```
 
-Added in v2.2.7
+Added in v3.0.0
 
 ## Kind (type alias)
 
@@ -187,7 +180,7 @@ Added in v2.2.7
 export type Kind = 'required' | 'optional'
 ```
 
-Added in v2.2.7
+Added in v3.0.0
 
 ## Lazy (interface)
 
@@ -201,7 +194,7 @@ export interface Lazy<E> {
 }
 ```
 
-Added in v2.2.7
+Added in v3.0.0
 
 ## Leaf (interface)
 
@@ -215,7 +208,7 @@ export interface Leaf<E> {
 }
 ```
 
-Added in v2.2.7
+Added in v3.0.0
 
 ## Member (interface)
 
@@ -229,7 +222,7 @@ export interface Member<E> {
 }
 ```
 
-Added in v2.2.7
+Added in v3.0.0
 
 ## Wrap (interface)
 
@@ -243,7 +236,7 @@ export interface Wrap<E> {
 }
 ```
 
-Added in v2.2.9
+Added in v3.0.0
 
 ## optional
 
@@ -253,7 +246,7 @@ Added in v2.2.9
 export declare const optional: 'optional'
 ```
 
-Added in v2.2.7
+Added in v3.0.0
 
 ## required
 
@@ -263,4 +256,4 @@ Added in v2.2.7
 export declare const required: 'required'
 ```
 
-Added in v2.2.7
+Added in v3.0.0

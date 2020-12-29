@@ -1,6 +1,6 @@
 import * as assert from 'assert'
-import * as E from 'fp-ts/lib/Either'
-import { pipe } from 'fp-ts/lib/pipeable'
+import * as E from 'fp-ts/Either'
+import { pipe } from 'fp-ts/function'
 import * as DE from '../src/DecodeError'
 import * as FS from '../src/FreeSemigroup'
 import * as _ from '../src/Decoder'
@@ -8,22 +8,28 @@ import * as H from './helpers'
 
 describe('Decoder', () => {
   // -------------------------------------------------------------------------------------
-  // instances
+  // type class members
   // -------------------------------------------------------------------------------------
 
-  it('Functor', () => {
-    const decoder = _.Functor.map(_.string, (s) => s + '!')
+  it('map', () => {
+    const decoder = pipe(
+      _.string,
+      _.map((s) => s + '!')
+    )
     assert.deepStrictEqual(decoder.decode('a'), _.success('a!'))
   })
 
-  it('Alt', () => {
-    const decoder = _.Alt.alt<unknown, string | number>(_.string, () => _.number)
+  it('alt', () => {
+    const decoder = pipe(
+      _.string,
+      _.alt<unknown, string | number>(() => _.number)
+    )
     assert.deepStrictEqual(decoder.decode('a'), _.success('a'))
     assert.deepStrictEqual(decoder.decode(1), _.success(1))
   })
 
-  it('Category', () => {
-    const decoder = _.Category.compose(_.id<unknown>(), _.string)
+  it('compose', () => {
+    const decoder = pipe(_.id<unknown>(), _.compose(_.string))
     assert.deepStrictEqual(decoder.decode('a'), _.success('a'))
     assert.deepStrictEqual(decoder.decode(1), _.failure(1, 'string'))
   })
@@ -103,10 +109,10 @@ describe('Decoder', () => {
     assert.deepStrictEqual(
       pipe(decoder.decode({}), E.mapLeft(_.draw)),
       E.left(`Person
-├─ required property "name"
-│  └─ cannot decode undefined, should be string
-└─ required property "age"
-   └─ cannot decode undefined, should be number`)
+├─ required property "age"
+│  └─ cannot decode undefined, should be number
+└─ required property "name"
+   └─ cannot decode undefined, should be string`)
     )
   })
 

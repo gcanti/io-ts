@@ -1,23 +1,16 @@
 /**
- * **This module is experimental**
- *
- * Experimental features are published in order to get early feedback from the community, see these tracking
- * [issues](https://github.com/gcanti/io-ts/issues?q=label%3Av2.2+) for further discussions and enhancements.
- *
- * A feature tagged as _Experimental_ is in a high state of flux, you're at risk of it changing without notice.
- *
- * @since 2.2.7
+ * @since 3.0.0
  */
-import { Alt2, Alt2C } from 'fp-ts/lib/Alt'
-import { Bifunctor2 } from 'fp-ts/lib/Bifunctor'
-import { Category2 } from 'fp-ts/lib/Category'
-import * as E from 'fp-ts/lib/Either'
-import { Refinement } from 'fp-ts/lib/function'
-import { Functor2 } from 'fp-ts/lib/Functor'
-import { MonadThrow2C } from 'fp-ts/lib/MonadThrow'
-import { pipe } from 'fp-ts/lib/pipeable'
-import * as T from 'fp-ts/lib/Task'
-import * as TE from 'fp-ts/lib/TaskEither'
+import { Alt2, Alt2C } from 'fp-ts/Alt'
+import { Applicative2C } from 'fp-ts/Applicative'
+import { Bifunctor2 } from 'fp-ts/Bifunctor'
+import { Category2 } from 'fp-ts/Category'
+import { FromEither2C } from 'fp-ts/FromEither'
+import { pipe, Refinement } from 'fp-ts/function'
+import { Functor2 } from 'fp-ts/Functor'
+import { Monad2 } from 'fp-ts/Monad'
+import * as T from 'fp-ts/Task'
+import * as TE from 'fp-ts/TaskEither'
 import * as DE from './DecodeError'
 import * as D from './Decoder'
 import * as FS from './FreeSemigroup'
@@ -29,35 +22,20 @@ import * as S from './Schemable'
 // Kleisli config
 // -------------------------------------------------------------------------------------
 
-const M: MonadThrow2C<TE.URI, DecodeError> & Bifunctor2<TE.URI> & Alt2C<TE.URI, DecodeError> = {
+const M: Applicative2C<TE.URI, DecodeError> &
+  Monad2<TE.URI> &
+  FromEither2C<TE.URI, DecodeError> &
+  Bifunctor2<TE.URI> &
+  Alt2C<TE.URI, DecodeError> = {
   URI: TE.URI,
-  _E: undefined as any,
-  map: (fa, f) => pipe(fa, TE.map(f)),
-  ap: <A, B>(fab: TE.TaskEither<DecodeError, (a: A) => B>, fa: TE.TaskEither<DecodeError, A>) =>
-    pipe(
-      pipe(
-        fab,
-        T.map((h) => (ga: E.Either<DecodeError, A>) => D.ap(h, ga))
-      ),
-      T.ap(fa)
-    ),
-  of: TE.right,
-  chain: (ma, f) => pipe(ma, TE.chain(f)),
-  throwError: TE.left,
-  bimap: (fa, f, g) => pipe(fa, TE.bimap(f, g)),
-  mapLeft: (fa, f) => pipe(fa, TE.mapLeft(f)),
-  alt: (me, that) =>
-    pipe(
-      me,
-      T.chain((e1) =>
-        E.isRight(e1)
-          ? T.of(e1)
-          : pipe(
-              that(),
-              T.map((e2) => (E.isLeft(e2) ? E.left(D.SE.concat(e1.left, e2.left)) : e2))
-            )
-      )
-    )
+  map: TE.map,
+  ap: TE.getApplicativeTaskValidation(T.ApplyPar, D.SE).ap,
+  of: TE.of,
+  chain: TE.chain,
+  fromEither: TE.fromEither,
+  bimap: TE.bimap,
+  mapLeft: TE.mapLeft,
+  alt: TE.getAltTaskValidation(D.SE).alt
 }
 
 // -------------------------------------------------------------------------------------
@@ -66,7 +44,7 @@ const M: MonadThrow2C<TE.URI, DecodeError> & Bifunctor2<TE.URI> & Alt2C<TE.URI, 
 
 /**
  * @category model
- * @since 2.2.8
+ * @since 3.0.0
  */
 export interface TaskDecoder<I, A> extends K.Kleisli<TE.URI, I, DecodeError, A> {}
 
@@ -76,25 +54,25 @@ export interface TaskDecoder<I, A> extends K.Kleisli<TE.URI, I, DecodeError, A> 
 
 /**
  * @category DecodeError
- * @since 2.2.7
+ * @since 3.0.0
  */
 export type DecodeError = D.DecodeError
 
 /**
  * @category DecodeError
- * @since 2.2.7
+ * @since 3.0.0
  */
 export const error: (actual: unknown, message: string) => DecodeError = D.error
 
 /**
  * @category DecodeError
- * @since 2.2.7
+ * @since 3.0.0
  */
 export const success: <A>(a: A) => TE.TaskEither<DecodeError, A> = TE.right
 
 /**
  * @category DecodeError
- * @since 2.2.7
+ * @since 3.0.0
  */
 export const failure = <A = never>(actual: unknown, message: string): TE.TaskEither<DecodeError, A> =>
   TE.left(D.error(actual, message))
@@ -105,7 +83,7 @@ export const failure = <A = never>(actual: unknown, message: string): TE.TaskEit
 
 /**
  * @category constructors
- * @since 2.2.7
+ * @since 3.0.0
  */
 export const fromDecoder = <I, A>(decoder: D.Decoder<I, A>): TaskDecoder<I, A> => ({
   decode: TE.fromEitherK(decoder.decode)
@@ -113,21 +91,21 @@ export const fromDecoder = <I, A>(decoder: D.Decoder<I, A>): TaskDecoder<I, A> =
 
 /**
  * @category constructors
- * @since 2.2.8
+ * @since 3.0.0
  */
 export const fromRefinement = <I, A extends I>(refinement: Refinement<I, A>, expected: string): TaskDecoder<I, A> =>
   fromDecoder(D.fromRefinement(refinement, expected))
 
 /**
  * @category constructors
- * @since 2.2.7
+ * @since 3.0.0
  */
 export const fromGuard = <I, A extends I>(guard: G.Guard<I, A>, expected: string): TaskDecoder<I, A> =>
   fromRefinement(guard.is, expected)
 
 /**
  * @category constructors
- * @since 2.2.7
+ * @since 3.0.0
  */
 export const literal: <A extends readonly [S.Literal, ...Array<S.Literal>]>(
   ...values: A
@@ -141,7 +119,7 @@ export const literal: <A extends readonly [S.Literal, ...Array<S.Literal>]>(
 
 /**
  * @category primitives
- * @since 2.2.7
+ * @since 3.0.0
  */
 export const string: TaskDecoder<unknown, string> =
   /*#__PURE__*/
@@ -149,7 +127,7 @@ export const string: TaskDecoder<unknown, string> =
 
 /**
  * @category primitives
- * @since 2.2.7
+ * @since 3.0.0
  */
 export const number: TaskDecoder<unknown, number> =
   /*#__PURE__*/
@@ -157,7 +135,7 @@ export const number: TaskDecoder<unknown, number> =
 
 /**
  * @category primitives
- * @since 2.2.7
+ * @since 3.0.0
  */
 export const boolean: TaskDecoder<unknown, boolean> =
   /*#__PURE__*/
@@ -165,7 +143,7 @@ export const boolean: TaskDecoder<unknown, boolean> =
 
 /**
  * @category primitives
- * @since 2.2.7
+ * @since 3.0.0
  */
 export const UnknownArray: TaskDecoder<unknown, Array<unknown>> =
   /*#__PURE__*/
@@ -173,7 +151,7 @@ export const UnknownArray: TaskDecoder<unknown, Array<unknown>> =
 
 /**
  * @category primitives
- * @since 2.2.7
+ * @since 3.0.0
  */
 export const UnknownRecord: TaskDecoder<unknown, Record<string, unknown>> =
   /*#__PURE__*/
@@ -185,7 +163,7 @@ export const UnknownRecord: TaskDecoder<unknown, Record<string, unknown>> =
 
 /**
  * @category combinators
- * @since 2.2.7
+ * @since 3.0.0
  */
 export const mapLeftWithInput: <I>(
   f: (input: I, e: DecodeError) => DecodeError
@@ -195,7 +173,7 @@ export const mapLeftWithInput: <I>(
 
 /**
  * @category combinators
- * @since 2.2.9
+ * @since 3.0.0
  */
 export const withMessage = <I>(
   message: (input: I, e: DecodeError) => string
@@ -204,7 +182,7 @@ export const withMessage = <I>(
 
 /**
  * @category combinators
- * @since 2.2.7
+ * @since 3.0.0
  */
 export const refine = <A, B extends A>(
   refinement: (a: A) => a is B,
@@ -213,7 +191,7 @@ export const refine = <A, B extends A>(
 
 /**
  * @category combinators
- * @since 2.2.7
+ * @since 3.0.0
  */
 export const parse: <A, B>(
   parser: (a: A) => TE.TaskEither<DecodeError, B>
@@ -223,7 +201,7 @@ export const parse: <A, B>(
 
 /**
  * @category combinators
- * @since 2.2.7
+ * @since 3.0.0
  */
 export const nullable: <I, A>(or: TaskDecoder<I, A>) => TaskDecoder<null | I, null | A> =
   /*#__PURE__*/
@@ -231,7 +209,7 @@ export const nullable: <I, A>(or: TaskDecoder<I, A>) => TaskDecoder<null | I, nu
 
 /**
  * @category combinators
- * @since 2.2.8
+ * @since 3.0.0
  */
 export const fromType = <P extends Record<string, TaskDecoder<any, any>>>(
   properties: P
@@ -240,7 +218,7 @@ export const fromType = <P extends Record<string, TaskDecoder<any, any>>>(
 
 /**
  * @category combinators
- * @since 2.2.7
+ * @since 3.0.0
  */
 export const type = <A>(
   properties: { [K in keyof A]: TaskDecoder<unknown, A[K]> }
@@ -248,7 +226,7 @@ export const type = <A>(
 
 /**
  * @category combinators
- * @since 2.2.8
+ * @since 3.0.0
  */
 export const fromPartial = <P extends Record<string, TaskDecoder<any, any>>>(
   properties: P
@@ -257,7 +235,7 @@ export const fromPartial = <P extends Record<string, TaskDecoder<any, any>>>(
 
 /**
  * @category combinators
- * @since 2.2.7
+ * @since 3.0.0
  */
 export const partial = <A>(
   properties: { [K in keyof A]: TaskDecoder<unknown, A[K]> }
@@ -266,35 +244,35 @@ export const partial = <A>(
 
 /**
  * @category combinators
- * @since 2.2.8
+ * @since 3.0.0
  */
 export const fromArray = <I, A>(item: TaskDecoder<I, A>): TaskDecoder<Array<I>, Array<A>> =>
   K.fromArray(M)((i, e) => FS.of(DE.index(i, DE.optional, e)))(item)
 
 /**
  * @category combinators
- * @since 2.2.7
+ * @since 3.0.0
  */
 export const array = <A>(item: TaskDecoder<unknown, A>): TaskDecoder<unknown, Array<A>> =>
   pipe(UnknownArray, compose(fromArray(item)))
 
 /**
  * @category combinators
- * @since 2.2.8
+ * @since 3.0.0
  */
 export const fromRecord = <I, A>(codomain: TaskDecoder<I, A>): TaskDecoder<Record<string, I>, Record<string, A>> =>
   K.fromRecord(M)((k, e) => FS.of(DE.key(k, DE.optional, e)))(codomain)
 
 /**
  * @category combinators
- * @since 2.2.7
+ * @since 3.0.0
  */
 export const record = <A>(codomain: TaskDecoder<unknown, A>): TaskDecoder<unknown, Record<string, A>> =>
   pipe(UnknownRecord, compose(fromRecord(codomain)))
 
 /**
  * @category combinators
- * @since 2.2.8
+ * @since 3.0.0
  */
 export const fromTuple = <C extends ReadonlyArray<TaskDecoder<any, any>>>(
   ...components: C
@@ -303,7 +281,7 @@ export const fromTuple = <C extends ReadonlyArray<TaskDecoder<any, any>>>(
 
 /**
  * @category combinators
- * @since 2.2.7
+ * @since 3.0.0
  */
 export const tuple = <A extends ReadonlyArray<unknown>>(
   ...components: { [K in keyof A]: TaskDecoder<unknown, A[K]> }
@@ -311,7 +289,7 @@ export const tuple = <A extends ReadonlyArray<unknown>>(
 
 /**
  * @category combinators
- * @since 2.2.7
+ * @since 3.0.0
  */
 export const union: <MS extends readonly [TaskDecoder<any, any>, ...Array<TaskDecoder<any, any>>]>(
   ...members: MS
@@ -321,7 +299,7 @@ export const union: <MS extends readonly [TaskDecoder<any, any>, ...Array<TaskDe
 
 /**
  * @category combinators
- * @since 2.2.7
+ * @since 3.0.0
  */
 export const intersect: <IB, B>(
   right: TaskDecoder<IB, B>
@@ -331,7 +309,7 @@ export const intersect: <IB, B>(
 
 /**
  * @category combinators
- * @since 2.2.8
+ * @since 3.0.0
  */
 export const fromSum = <T extends string>(tag: T) => <MS extends Record<string, TaskDecoder<any, any>>>(
   members: MS
@@ -348,7 +326,7 @@ export const fromSum = <T extends string>(tag: T) => <MS extends Record<string, 
 
 /**
  * @category combinators
- * @since 2.2.7
+ * @since 3.0.0
  */
 export const sum = <T extends string>(tag: T) => <A>(
   members: { [K in keyof A]: TaskDecoder<unknown, A[K] & Record<T, K>> }
@@ -356,29 +334,19 @@ export const sum = <T extends string>(tag: T) => <A>(
 
 /**
  * @category combinators
- * @since 2.2.7
+ * @since 3.0.0
  */
 export const lazy: <I, A>(id: string, f: () => TaskDecoder<I, A>) => TaskDecoder<I, A> =
   /*#__PURE__*/
   K.lazy(M)((id, e) => FS.of(DE.lazy(id, e)))
 
 // -------------------------------------------------------------------------------------
-// non-pipeables
-// -------------------------------------------------------------------------------------
-
-const map_: Functor2<URI>['map'] = (fa, f) => pipe(fa, map(f))
-
-const alt_: Alt2<URI>['alt'] = (me, that) => pipe(me, alt(that))
-
-const compose_: Category2<URI>['compose'] = (ab, la) => pipe(la, compose(ab))
-
-// -------------------------------------------------------------------------------------
-// pipeables
+// type class members
 // -------------------------------------------------------------------------------------
 
 /**
  * @category Functor
- * @since 2.2.7
+ * @since 3.0.0
  */
 export const map: <A, B>(f: (a: A) => B) => <I>(fa: TaskDecoder<I, A>) => TaskDecoder<I, B> =
   /*#__PURE__*/
@@ -386,7 +354,7 @@ export const map: <A, B>(f: (a: A) => B) => <I>(fa: TaskDecoder<I, A>) => TaskDe
 
 /**
  * @category Alt
- * @since 2.2.7
+ * @since 3.0.0
  */
 export const alt: <I, A>(that: () => TaskDecoder<I, A>) => (me: TaskDecoder<I, A>) => TaskDecoder<I, A> =
   /*#__PURE__*/
@@ -394,7 +362,7 @@ export const alt: <I, A>(that: () => TaskDecoder<I, A>) => (me: TaskDecoder<I, A
 
 /**
  * @category Semigroupoid
- * @since 2.2.8
+ * @since 3.0.0
  */
 export const compose: <A, B>(to: TaskDecoder<A, B>) => <I>(from: TaskDecoder<I, A>) => TaskDecoder<I, B> =
   /*#__PURE__*/
@@ -402,7 +370,7 @@ export const compose: <A, B>(to: TaskDecoder<A, B>) => <I>(from: TaskDecoder<I, 
 
 /**
  * @category Category
- * @since 2.2.8
+ * @since 3.0.0
  */
 export const id: <A>() => TaskDecoder<A, A> =
   /*#__PURE__*/
@@ -414,17 +382,17 @@ export const id: <A>() => TaskDecoder<A, A> =
 
 /**
  * @category instances
- * @since 2.2.7
+ * @since 3.0.0
  */
 export const URI = 'io-ts/TaskDecoder'
 
 /**
  * @category instances
- * @since 2.2.7
+ * @since 3.0.0
  */
 export type URI = typeof URI
 
-declare module 'fp-ts/lib/HKT' {
+declare module 'fp-ts/HKT' {
   interface URItoKind2<E, A> {
     readonly [URI]: TaskDecoder<E, A>
   }
@@ -432,36 +400,36 @@ declare module 'fp-ts/lib/HKT' {
 
 /**
  * @category instances
- * @since 2.2.8
+ * @since 3.0.0
  */
 export const Functor: Functor2<URI> = {
   URI,
-  map: map_
+  map
 }
 
 /**
  * @category instances
- * @since 2.2.8
+ * @since 3.0.0
  */
 export const Alt: Alt2<URI> = {
   URI,
-  map: map_,
-  alt: alt_
+  map,
+  alt
 }
 
 /**
  * @category instances
- * @since 2.2.8
+ * @since 3.0.0
  */
 export const Category: Category2<URI> = {
   URI,
-  compose: compose_,
+  compose,
   id
 }
 
 /**
  * @category instances
- * @since 2.2.8
+ * @since 3.0.0
  */
 export const Schemable: S.Schemable2C<URI, unknown> = {
   URI,
@@ -482,7 +450,7 @@ export const Schemable: S.Schemable2C<URI, unknown> = {
 
 /**
  * @category instances
- * @since 2.2.8
+ * @since 3.0.0
  */
 export const WithUnknownContainers: S.WithUnknownContainers2C<URI, unknown> = {
   UnknownArray,
@@ -491,7 +459,7 @@ export const WithUnknownContainers: S.WithUnknownContainers2C<URI, unknown> = {
 
 /**
  * @category instances
- * @since 2.2.8
+ * @since 3.0.0
  */
 export const WithUnion: S.WithUnion2C<URI, unknown> = {
   union: union as S.WithUnion2C<URI, unknown>['union']
@@ -499,7 +467,7 @@ export const WithUnion: S.WithUnion2C<URI, unknown> = {
 
 /**
  * @category instances
- * @since 2.2.8
+ * @since 3.0.0
  */
 export const WithRefine: S.WithRefine2C<URI, unknown> = {
   refine: refine as S.WithRefine2C<URI, unknown>['refine']
@@ -510,17 +478,17 @@ export const WithRefine: S.WithRefine2C<URI, unknown> = {
 // -------------------------------------------------------------------------------------
 
 /**
- * @since 2.2.7
+ * @since 3.0.0
  */
 export type TypeOf<KTD> = K.TypeOf<TE.URI, KTD>
 
 /**
- * @since 2.2.8
+ * @since 3.0.0
  */
 export type InputOf<KTD> = K.InputOf<TE.URI, KTD>
 
 /**
- * @since 2.2.7
+ * @since 3.0.0
  */
 export const draw: (e: DecodeError) => string = D.draw
 

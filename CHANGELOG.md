@@ -14,6 +14,15 @@
 **Note**: Gaps between patch versions are faulty/broken releases.
 **Note**: A feature tagged as Experimental is in a high state of flux, you're at risk of it changing without notice.
 
+# 3.0.0-alpha.1
+
+- **Breaking Change**
+  - remove 2.x stable APIs in `index.ts` (@gcanti)
+  - remove `Type` module (@gcanti)
+  - remove `ThrowReporter` module (@gcanti)
+  - remove `PathReporter` module (@gcanti)
+  - remove `Reporter` module (@gcanti)
+
 # 2.2.13
 
 - **Bug Fix**

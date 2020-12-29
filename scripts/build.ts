@@ -12,10 +12,15 @@ interface Build<A> extends RTE.ReaderTaskEither<FileSystem, Error, A> {}
 const OUTPUT_FOLDER = 'dist'
 const PKG = 'package.json'
 
+export function toError(e: unknown): Error {
+  return e instanceof Error ? e : new Error(String(e))
+}
+
 export const copyPackageJson: Build<void> = (C) =>
   pipe(
     C.readFile(PKG),
-    TE.chain((s) => TE.fromEither(E.parseJSON(s, E.toError))),
+    TE.chain((s) => TE.fromEither(E.parseJSON(s))),
+    TE.mapLeft(toError),
     TE.map((v) => {
       const clone = Object.assign({}, v as any)
 
@@ -33,10 +38,10 @@ export const FILES: ReadonlyArray<string> = ['CHANGELOG.md', 'LICENSE', 'README.
 export const copyFiles: Build<ReadonlyArray<void>> = (C) =>
   pipe(
     FILES,
-    A.traverse(TE.taskEither)((from) => C.copyFile(from, path.resolve(OUTPUT_FOLDER, from)))
+    A.traverse(TE.ApplicativePar)((from) => C.copyFile(from, path.resolve(OUTPUT_FOLDER, from)))
   )
 
-const traverse = A.traverse(TE.taskEither)
+const traverse = A.traverse(TE.ApplicativePar)
 
 export const makeModules: Build<void> = (C) =>
   pipe(
