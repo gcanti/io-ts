@@ -13,7 +13,7 @@ import { Literal, memoize, Schemable1, WithRefine1, WithUnion1, WithUnknownConta
  * @since 3.0.0
  */
 export interface Guard<I, A extends I> {
-  is: (i: I) => i is A
+  readonly is: (i: I) => i is A
 }
 
 // -------------------------------------------------------------------------------------
@@ -38,7 +38,9 @@ export type InputOf<G> = G extends Guard<infer I, any> ? I : never
  * @category constructors
  * @since 3.0.0
  */
-export const literal = <A extends readonly [Literal, ...Array<Literal>]>(...values: A): Guard<unknown, A[number]> => ({
+export const literal = <A extends readonly [Literal, ...ReadonlyArray<Literal>]>(
+  ...values: A
+): Guard<unknown, A[number]> => ({
   is: (u: unknown): u is A[number] => values.findIndex((a) => a === u) !== -1
 })
 
@@ -76,6 +78,7 @@ export const boolean: Guard<unknown, boolean> = {
  * @category primitives
  * @since 3.0.0
  */
+// tslint:disable-next-line: readonly-array
 export const UnknownArray: Guard<unknown, Array<unknown>> = {
   is: Array.isArray
 }
@@ -142,9 +145,12 @@ export const partial = <A>(
     UnknownRecord,
     refine((r): r is Partial<A> => {
       for (const k in properties) {
-        const v = r[k]
-        if (v !== undefined && !properties[k].is(v)) {
-          return false
+        /* istanbul ignore next */
+        if (properties.hasOwnProperty(k)) {
+          const v = r[k]
+          if (v !== undefined && !properties[k].is(v)) {
+            return false
+          }
         }
       }
       return true
@@ -155,9 +161,11 @@ export const partial = <A>(
  * @category combinators
  * @since 3.0.0
  */
+// tslint:disable-next-line: readonly-array
 export const array = <A>(item: Guard<unknown, A>): Guard<unknown, Array<A>> =>
   pipe(
     UnknownArray,
+    // tslint:disable-next-line: readonly-array
     refine((us): us is Array<A> => us.every(item.is))
   )
 
@@ -200,7 +208,7 @@ export const intersect = <B>(right: Guard<unknown, B>) => <A>(left: Guard<unknow
  * @category combinators
  * @since 3.0.0
  */
-export const union = <A extends readonly [unknown, ...Array<unknown>]>(
+export const union = <A extends readonly [unknown, ...ReadonlyArray<unknown>]>(
   ...members: { [K in keyof A]: Guard<unknown, A[K]> }
 ): Guard<unknown, A[number]> => ({
   is: (u: unknown): u is A | A[number] => members.some((m) => m.is(u))

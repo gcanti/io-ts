@@ -14,7 +14,9 @@ export interface Arbitrary<A> extends fc.Arbitrary<A> {}
 // constructors
 // -------------------------------------------------------------------------------------
 
-export function literal<A extends readonly [S.Literal, ...Array<S.Literal>]>(...values: A): Arbitrary<A[number]> {
+export function literal<A extends readonly [S.Literal, ...ReadonlyArray<S.Literal>]>(
+  ...values: A
+): Arbitrary<A[number]> {
   return fc.oneof(...values.map((v) => fc.constant(v)))
 }
 
@@ -34,6 +36,7 @@ export const number: Arbitrary<number> = fc.oneof(fc.float(), fc.double(), fc.in
 
 export const boolean: Arbitrary<boolean> = fc.boolean()
 
+// tslint:disable-next-line: readonly-array
 export const UnknownArray: Arbitrary<Array<unknown>> = fc.array(fc.anything())
 
 export const UnknownRecord: Arbitrary<Record<string, unknown>> = fc.dictionary(string, fc.anything())
@@ -66,6 +69,7 @@ export function record<A>(codomain: Arbitrary<A>): Arbitrary<Record<string, A>> 
   return fc.dictionary(string, codomain)
 }
 
+// tslint:disable-next-line: readonly-array
 export function array<A>(item: Arbitrary<A>): Arbitrary<Array<A>> {
   return fc.array(item)
 }
@@ -93,7 +97,7 @@ export function lazy<A>(f: () => Arbitrary<A>): Arbitrary<A> {
   return fc.constant(null).chain(() => get())
 }
 
-export function union<A extends [Arbitrary<unknown>, ...Array<Arbitrary<unknown>>]>(
+export function union<A extends readonly [Arbitrary<unknown>, ...ReadonlyArray<Arbitrary<unknown>>]>(
   ...members: { [K in keyof A]: Arbitrary<A[K]> }
 ): Arbitrary<A[number]> {
   return fc.oneof(...members)

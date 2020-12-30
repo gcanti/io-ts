@@ -47,6 +47,7 @@ export const boolean: Eq<boolean> = E.eqBoolean
  * @category primitives
  * @since 3.0.0
  */
+// tslint:disable-next-line: readonly-array
 export const UnknownArray: Eq<Array<unknown>> = E.fromEquals((second) => (first) => first.length === second.length)
 
 /**
@@ -95,10 +96,14 @@ export function partial<A>(properties: { [K in keyof A]: Eq<A[K]> }): Eq<Partial
   return {
     equals: (second) => (first) => {
       for (const k in properties) {
-        const xk = first[k]
-        const yk = second[k]
-        if (!(xk === undefined || yk === undefined ? xk === yk : properties[k].equals(yk!)(xk!))) {
-          return false
+        /* istanbul ignore next */
+        if (properties.hasOwnProperty(k)) {
+          const xk = first[k]
+          const yk = second[k]
+          // tslint:disable-next-line: strict-type-predicates
+          if (!(xk === undefined || yk === undefined ? xk === yk : properties[k].equals(yk!)(xk!))) {
+            return false
+          }
         }
       }
       return true
@@ -116,6 +121,7 @@ export const record: <A>(codomain: Eq<A>) => Eq<Record<string, A>> = R.getEq
  * @category combinators
  * @since 3.0.0
  */
+// tslint:disable-next-line: readonly-array
 export const array: <A>(eq: Eq<A>) => Eq<Array<A>> = A.getEq
 
 /**

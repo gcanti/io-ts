@@ -107,7 +107,7 @@ export const fromGuard = <I, A extends I>(guard: G.Guard<I, A>, expected: string
  * @category constructors
  * @since 3.0.0
  */
-export const literal: <A extends readonly [S.Literal, ...Array<S.Literal>]>(
+export const literal: <A extends readonly [S.Literal, ...ReadonlyArray<S.Literal>]>(
   ...values: A
 ) => TaskDecoder<unknown, A[number]> =
   /*#__PURE__*/
@@ -145,6 +145,7 @@ export const boolean: TaskDecoder<unknown, boolean> =
  * @category primitives
  * @since 3.0.0
  */
+// tslint:disable-next-line: readonly-array
 export const UnknownArray: TaskDecoder<unknown, Array<unknown>> =
   /*#__PURE__*/
   fromDecoder(D.UnknownArray)
@@ -246,6 +247,7 @@ export const partial = <A>(
  * @category combinators
  * @since 3.0.0
  */
+// tslint:disable-next-line: readonly-array
 export const fromArray = <I, A>(item: TaskDecoder<I, A>): TaskDecoder<Array<I>, Array<A>> =>
   K.fromArray(M)((i, e) => FS.of(DE.index(i, DE.optional, e)))(item)
 
@@ -253,6 +255,7 @@ export const fromArray = <I, A>(item: TaskDecoder<I, A>): TaskDecoder<Array<I>, 
  * @category combinators
  * @since 3.0.0
  */
+// tslint:disable-next-line: readonly-array
 export const array = <A>(item: TaskDecoder<unknown, A>): TaskDecoder<unknown, Array<A>> =>
   pipe(UnknownArray, compose(fromArray(item)))
 
@@ -291,7 +294,7 @@ export const tuple = <A extends ReadonlyArray<unknown>>(
  * @category combinators
  * @since 3.0.0
  */
-export const union: <MS extends readonly [TaskDecoder<any, any>, ...Array<TaskDecoder<any, any>>]>(
+export const union: <MS extends readonly [TaskDecoder<any, any>, ...ReadonlyArray<TaskDecoder<any, any>>]>(
   ...members: MS
 ) => TaskDecoder<InputOf<MS[keyof MS]>, TypeOf<MS[keyof MS]>> =
   /*#__PURE__*/

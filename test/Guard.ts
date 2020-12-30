@@ -228,8 +228,9 @@ describe('Guard', () => {
 
   describe('lazy', () => {
     interface A {
-      a: number
-      b: Array<A>
+      readonly a: number
+      // tslint:disable-next-line: readonly-array
+      readonly b: Array<A>
     }
 
     const guard: G.Guard<unknown, A> = G.Schemable.lazy('A', () =>

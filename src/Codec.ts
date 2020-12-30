@@ -52,7 +52,7 @@ export function fromDecoder<I, A>(decoder: D.Decoder<I, A>): Codec<I, A, A> {
  * @category constructors
  * @since 3.0.0
  */
-export function literal<A extends readonly [Literal, ...Array<Literal>]>(
+export function literal<A extends readonly [Literal, ...ReadonlyArray<Literal>]>(
   ...values: A
 ): Codec<unknown, A[number], A[number]> {
   return fromDecoder(D.literal(...values))
@@ -90,6 +90,7 @@ export const boolean: Codec<unknown, boolean, boolean> =
  * @category primitives
  * @since 3.0.0
  */
+// tslint:disable-next-line: readonly-array
 export const UnknownArray: Codec<unknown, Array<unknown>, Array<unknown>> =
   /*#__PURE__*/
   fromDecoder(D.UnknownArray)
@@ -182,6 +183,7 @@ export function partial<P extends Record<string, Codec<unknown, any, any>>>(
  * @category combinators
  * @since 3.0.0
  */
+// tslint:disable-next-line: readonly-array
 export function fromArray<I, O, A>(item: Codec<I, O, A>): Codec<Array<I>, Array<O>, Array<A>> {
   return make(D.fromArray(item), E.array(item))
 }
@@ -190,6 +192,7 @@ export function fromArray<I, O, A>(item: Codec<I, O, A>): Codec<Array<I>, Array<
  * @category combinators
  * @since 3.0.0
  */
+// tslint:disable-next-line: readonly-array
 export function array<O, A>(item: Codec<unknown, O, A>): Codec<unknown, Array<O>, Array<A>> {
   return pipe(UnknownArray, compose(fromArray(item))) as any
 }

@@ -538,8 +538,8 @@ describe('UnknownTaskDecoder', () => {
   })
 
   interface A {
-    a: number
-    b?: A
+    readonly a: number
+    readonly b?: A
   }
 
   const lazyDecoder: _.TaskDecoder<unknown, A> = _.lazy('A', () =>

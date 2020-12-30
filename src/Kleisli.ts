@@ -52,9 +52,9 @@ export function fromRefinement<M extends URIS2, E>(
 export function literal<M extends URIS2, E>(
   M: FromEither2C<M, E>
 ): <I>(
-  onError: (i: I, values: readonly [Literal, ...Array<Literal>]) => E
-) => <A extends readonly [Literal, ...Array<Literal>]>(...values: A) => Kleisli<M, I, E, A[number]> {
-  return (onError) => <A extends readonly [Literal, ...Array<Literal>]>(...values: A) => ({
+  onError: (i: I, values: readonly [Literal, ...ReadonlyArray<Literal>]) => E
+) => <A extends readonly [Literal, ...ReadonlyArray<Literal>]>(...values: A) => Kleisli<M, I, E, A[number]> {
+  return (onError) => <A extends readonly [Literal, ...ReadonlyArray<Literal>]>(...values: A) => ({
     decode: (i) => M.fromEither(G.literal(...values).is(i) ? E.right(i) : E.left(onError(i, values)))
   })
 }
@@ -195,6 +195,7 @@ export function fromPartial<M extends URIS2, E>(
  */
 export function fromArray<M extends URIS2, E>(
   M: Applicative2C<M, E> & Bifunctor2<M>
+  // tslint:disable-next-line: readonly-array
 ): (onItemError: (index: number, e: E) => E) => <I, A>(item: Kleisli<M, I, E, A>) => Kleisli<M, Array<I>, E, Array<A>> {
   const traverse = A.traverseWithIndex(M)
   return (onItemError) => (item) => ({
@@ -250,6 +251,7 @@ export function fromTuple<M extends URIS2, E>(
   return (onIndexError) => (...components) => ({
     decode: (is) =>
       pipe(
+        // tslint:disable-next-line: readonly-array
         (components as unknown) as Array<Kleisli<M, unknown, E, unknown>>,
         traverse((index, decoder) =>
           pipe(
@@ -269,10 +271,10 @@ export function union<M extends URIS2, E>(
   M: Alt2C<M, E> & Bifunctor2<M>
 ): (
   onMemberError: (index: number, e: E) => E
-) => <MS extends readonly [Kleisli<M, any, E, any>, ...Array<Kleisli<M, any, E, any>>]>(
+) => <MS extends readonly [Kleisli<M, any, E, any>, ...ReadonlyArray<Kleisli<M, any, E, any>>]>(
   ...members: MS
 ) => Kleisli<M, InputOf<M, MS[keyof MS]>, E, TypeOf<M, MS[keyof MS]>> {
-  return (onMemberError) => <MS extends readonly [Kleisli<M, any, E, any>, ...Array<Kleisli<M, any, E, any>>]>(
+  return (onMemberError) => <MS extends readonly [Kleisli<M, any, E, any>, ...ReadonlyArray<Kleisli<M, any, E, any>>]>(
     ...members: MS
   ) => ({
     decode: (i) => {

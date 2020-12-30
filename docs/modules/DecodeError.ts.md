@@ -107,12 +107,12 @@ Added in v3.0.0
 
 ```ts
 export declare const fold: <E, R>(patterns: {
-  Leaf: (input: unknown, error: E) => R
-  Key: (key: string, kind: Kind, errors: FS.FreeSemigroup<DecodeError<E>>) => R
-  Index: (index: number, kind: Kind, errors: FS.FreeSemigroup<DecodeError<E>>) => R
-  Member: (index: number, errors: FS.FreeSemigroup<DecodeError<E>>) => R
-  Lazy: (id: string, errors: FS.FreeSemigroup<DecodeError<E>>) => R
-  Wrap: (error: E, errors: FS.FreeSemigroup<DecodeError<E>>) => R
+  readonly Leaf: (input: unknown, error: E) => R
+  readonly Key: (key: string, kind: Kind, errors: FS.FreeSemigroup<DecodeError<E>>) => R
+  readonly Index: (index: number, kind: Kind, errors: FS.FreeSemigroup<DecodeError<E>>) => R
+  readonly Member: (index: number, errors: FS.FreeSemigroup<DecodeError<E>>) => R
+  readonly Lazy: (id: string, errors: FS.FreeSemigroup<DecodeError<E>>) => R
+  readonly Wrap: (error: E, errors: FS.FreeSemigroup<DecodeError<E>>) => R
 }) => (e: DecodeError<E>) => R
 ```
 

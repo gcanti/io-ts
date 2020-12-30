@@ -561,12 +561,12 @@ describe('Codec', () => {
 
   describe('lazy', () => {
     interface A {
-      a: number
-      b?: A
+      readonly a: number
+      readonly b?: A
     }
     interface AOut {
-      a: string
-      b?: AOut
+      readonly a: string
+      readonly b?: AOut
     }
 
     const lazyCodec: _.Codec<unknown, AOut, A> = _.lazy('A', () =>

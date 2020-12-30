@@ -86,20 +86,24 @@ describe('Encoder', () => {
 
   it('lazy', () => {
     interface A {
-      a: number
-      bs: Array<B>
+      readonly a: number
+      // tslint:disable-next-line: readonly-array
+      readonly bs: Array<B>
     }
     interface AOut {
-      a: string
-      bs: Array<BOut>
+      readonly a: string
+      // tslint:disable-next-line: readonly-array
+      readonly bs: Array<BOut>
     }
     interface B {
-      b: boolean
-      as: Array<A>
+      readonly b: boolean
+      // tslint:disable-next-line: readonly-array
+      readonly as: Array<A>
     }
     interface BOut {
-      b: number
-      as: Array<AOut>
+      readonly b: number
+      // tslint:disable-next-line: readonly-array
+      readonly as: Array<AOut>
     }
     const A: E.Encoder<AOut, A> = E.lazy(() =>
       E.type({

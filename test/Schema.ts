@@ -86,9 +86,9 @@ describe('Schema', () => {
 
   it('lazy', () => {
     interface A {
-      a: string
-      b?: A
-      c?: number
+      readonly a: string
+      readonly b?: A
+      readonly c?: number
     }
 
     const schema: Schema<A> = make((S) =>

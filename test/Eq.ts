@@ -52,8 +52,9 @@ describe('Eq', () => {
 
   it('lazy', () => {
     interface A {
-      a: number
-      b: Array<A>
+      readonly a: number
+      // tslint:disable-next-line: readonly-array
+      readonly b: Array<A>
     }
 
     const eq: Eq<A> = E.Schemable.lazy('A', () =>

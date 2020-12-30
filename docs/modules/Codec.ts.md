@@ -308,7 +308,7 @@ Added in v3.0.0
 **Signature**
 
 ```ts
-export declare function literal<A extends readonly [Literal, ...Array<Literal>]>(
+export declare function literal<A extends readonly [Literal, ...ReadonlyArray<Literal>]>(
   ...values: A
 ): Codec<unknown, A[number], A[number]>
 ```

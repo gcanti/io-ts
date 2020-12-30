@@ -49,7 +49,7 @@ Added in v3.0.0
 ```ts
 export interface Schemable<S> {
   readonly URI: S
-  readonly literal: <A extends readonly [Literal, ...Array<Literal>]>(...values: A) => HKT<S, A[number]>
+  readonly literal: <A extends readonly [Literal, ...ReadonlyArray<Literal>]>(...values: A) => HKT<S, A[number]>
   readonly string: HKT<S, string>
   readonly number: HKT<S, number>
   readonly boolean: HKT<S, boolean>
@@ -57,6 +57,7 @@ export interface Schemable<S> {
   readonly type: <A>(properties: { [K in keyof A]: HKT<S, A[K]> }) => HKT<S, { [K in keyof A]: A[K] }>
   readonly partial: <A>(properties: { [K in keyof A]: HKT<S, A[K]> }) => HKT<S, Partial<{ [K in keyof A]: A[K] }>>
   readonly record: <A>(codomain: HKT<S, A>) => HKT<S, Record<string, A>>
+  // tslint:disable-next-line: readonly-array
   readonly array: <A>(item: HKT<S, A>) => HKT<S, Array<A>>
   readonly tuple: <A extends ReadonlyArray<unknown>>(...components: { [K in keyof A]: HKT<S, A[K]> }) => HKT<S, A>
   readonly intersect: <B>(right: HKT<S, B>) => <A>(left: HKT<S, A>) => HKT<S, A & B>
@@ -76,7 +77,7 @@ Added in v3.0.0
 ```ts
 export interface Schemable1<S extends URIS> {
   readonly URI: S
-  readonly literal: <A extends readonly [Literal, ...Array<Literal>]>(...values: A) => Kind<S, A[number]>
+  readonly literal: <A extends readonly [Literal, ...ReadonlyArray<Literal>]>(...values: A) => Kind<S, A[number]>
   readonly string: Kind<S, string>
   readonly number: Kind<S, number>
   readonly boolean: Kind<S, boolean>
@@ -84,6 +85,7 @@ export interface Schemable1<S extends URIS> {
   readonly type: <A>(properties: { [K in keyof A]: Kind<S, A[K]> }) => Kind<S, { [K in keyof A]: A[K] }>
   readonly partial: <A>(properties: { [K in keyof A]: Kind<S, A[K]> }) => Kind<S, Partial<{ [K in keyof A]: A[K] }>>
   readonly record: <A>(codomain: Kind<S, A>) => Kind<S, Record<string, A>>
+  // tslint:disable-next-line: readonly-array
   readonly array: <A>(item: Kind<S, A>) => Kind<S, Array<A>>
   readonly tuple: <A extends ReadonlyArray<unknown>>(...components: { [K in keyof A]: Kind<S, A[K]> }) => Kind<S, A>
   readonly intersect: <B>(right: Kind<S, B>) => <A>(left: Kind<S, A>) => Kind<S, A & B>
@@ -103,7 +105,7 @@ Added in v3.0.0
 ```ts
 export interface Schemable2C<S extends URIS2, E> {
   readonly URI: S
-  readonly literal: <A extends readonly [Literal, ...Array<Literal>]>(...values: A) => Kind2<S, E, A[number]>
+  readonly literal: <A extends readonly [Literal, ...ReadonlyArray<Literal>]>(...values: A) => Kind2<S, E, A[number]>
   readonly string: Kind2<S, E, string>
   readonly number: Kind2<S, E, number>
   readonly boolean: Kind2<S, E, boolean>
@@ -113,6 +115,7 @@ export interface Schemable2C<S extends URIS2, E> {
     properties: { [K in keyof A]: Kind2<S, E, A[K]> }
   ) => Kind2<S, E, Partial<{ [K in keyof A]: A[K] }>>
   readonly record: <A>(codomain: Kind2<S, E, A>) => Kind2<S, E, Record<string, A>>
+  // tslint:disable-next-line: readonly-array
   readonly array: <A>(item: Kind2<S, E, A>) => Kind2<S, E, Array<A>>
   readonly tuple: <A extends ReadonlyArray<unknown>>(
     ...components: { [K in keyof A]: Kind2<S, E, A[K]> }
@@ -172,7 +175,7 @@ Added in v3.0.0
 
 ```ts
 export interface WithUnion<S> {
-  readonly union: <A extends readonly [unknown, ...Array<unknown>]>(
+  readonly union: <A extends readonly [unknown, ...ReadonlyArray<unknown>]>(
     ...members: { [K in keyof A]: HKT<S, A[K]> }
   ) => HKT<S, A[number]>
 }
@@ -186,7 +189,7 @@ Added in v3.0.0
 
 ```ts
 export interface WithUnion1<S extends URIS> {
-  readonly union: <A extends readonly [unknown, ...Array<unknown>]>(
+  readonly union: <A extends readonly [unknown, ...ReadonlyArray<unknown>]>(
     ...members: { [K in keyof A]: Kind<S, A[K]> }
   ) => Kind<S, A[number]>
 }
@@ -200,7 +203,7 @@ Added in v3.0.0
 
 ```ts
 export interface WithUnion2C<S extends URIS2, E> {
-  readonly union: <A extends readonly [unknown, ...Array<unknown>]>(
+  readonly union: <A extends readonly [unknown, ...ReadonlyArray<unknown>]>(
     ...members: { [K in keyof A]: Kind2<S, E, A[K]> }
   ) => Kind2<S, E, A[number]>
 }
@@ -214,6 +217,7 @@ Added in v3.0.0
 
 ```ts
 export interface WithUnknownContainers<S> {
+  // tslint:disable-next-line: readonly-array
   readonly UnknownArray: HKT<S, Array<unknown>>
   readonly UnknownRecord: HKT<S, Record<string, unknown>>
 }
@@ -227,6 +231,7 @@ Added in v3.0.0
 
 ```ts
 export interface WithUnknownContainers1<S extends URIS> {
+  // tslint:disable-next-line: readonly-array
   readonly UnknownArray: Kind<S, Array<unknown>>
   readonly UnknownRecord: Kind<S, Record<string, unknown>>
 }
@@ -240,6 +245,7 @@ Added in v3.0.0
 
 ```ts
 export interface WithUnknownContainers2C<S extends URIS2, E> {
+  // tslint:disable-next-line: readonly-array
   readonly UnknownArray: Kind2<S, E, Array<unknown>>
   readonly UnknownRecord: Kind2<S, E, Record<string, unknown>>
 }

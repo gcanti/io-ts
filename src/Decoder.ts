@@ -104,7 +104,7 @@ export const fromGuard = <I, A extends I>(guard: G.Guard<I, A>, expected: string
  * @category constructors
  * @since 3.0.0
  */
-export const literal: <A extends readonly [S.Literal, ...Array<S.Literal>]>(
+export const literal: <A extends readonly [S.Literal, ...ReadonlyArray<S.Literal>]>(
   ...values: A
 ) => Decoder<unknown, A[number]> =
   /*#__PURE__*/
@@ -142,6 +142,7 @@ export const boolean: Decoder<unknown, boolean> =
  * @category primitives
  * @since 3.0.0
  */
+// tslint:disable-next-line: readonly-array
 export const UnknownArray: Decoder<unknown, Array<unknown>> =
   /*#__PURE__*/
   fromGuard(G.UnknownArray, 'Array<unknown>')
@@ -240,6 +241,7 @@ export const partial = <A>(
  * @category combinators
  * @since 3.0.0
  */
+// tslint:disable-next-line: readonly-array
 export const fromArray = <I, A>(item: Decoder<I, A>): Decoder<Array<I>, Array<A>> =>
   K.fromArray(M)((i, e) => FS.of(DE.index(i, DE.optional, e)))(item)
 
@@ -247,6 +249,7 @@ export const fromArray = <I, A>(item: Decoder<I, A>): Decoder<Array<I>, Array<A>
  * @category combinators
  * @since 3.0.0
  */
+// tslint:disable-next-line: readonly-array
 export const array = <A>(item: Decoder<unknown, A>): Decoder<unknown, Array<A>> =>
   pipe(UnknownArray, compose(fromArray(item)))
 
@@ -285,7 +288,7 @@ export const tuple = <A extends ReadonlyArray<unknown>>(
  * @category combinators
  * @since 3.0.0
  */
-export const union: <MS extends readonly [Decoder<any, any>, ...Array<Decoder<any, any>>]>(
+export const union: <MS extends readonly [Decoder<any, any>, ...ReadonlyArray<Decoder<any, any>>]>(
   ...members: MS
 ) => Decoder<InputOf<MS[keyof MS]>, TypeOf<MS[keyof MS]>> =
   /*#__PURE__*/
@@ -484,7 +487,7 @@ interface Tree<A> {
   readonly forest: ReadonlyArray<Tree<A>>
 }
 
-const empty: Array<never> = []
+const empty: ReadonlyArray<never> = []
 
 const make = <A>(value: A, forest: ReadonlyArray<Tree<A>> = empty): Tree<A> => ({
   value,
@@ -516,9 +519,11 @@ const toTree: (e: DE.DecodeError<string>) => Tree<string> = DE.fold({
 })
 
 const toForest = (e: DecodeError): ReadonlyArray<Tree<string>> => {
-  const stack = []
-  let focus = e
-  const res = []
+  // tslint:disable-next-line: readonly-array
+  const stack: Array<DecodeError> = []
+  let focus: DecodeError = e
+  // tslint:disable-next-line: readonly-array
+  const res: Array<Tree<string>> = []
   while (true) {
     switch (focus._tag) {
       case 'Of':

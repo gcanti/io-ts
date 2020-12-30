@@ -74,6 +74,7 @@ Added in v3.0.0
 ```ts
 export declare function fromArray<M extends URIS2, E>(
   M: Applicative2C<M, E> & Bifunctor2<M>
+  // tslint:disable-next-line: readonly-array
 ): (onItemError: (index: number, e: E) => E) => <I, A>(item: Kleisli<M, I, E, A>) => Kleisli<M, Array<I>, E, Array<A>>
 ```
 
@@ -265,7 +266,7 @@ export declare function union<M extends URIS2, E>(
   M: Alt2C<M, E> & Bifunctor2<M>
 ): (
   onMemberError: (index: number, e: E) => E
-) => <MS extends readonly [Kleisli<M, any, E, any>, ...Array<Kleisli<M, any, E, any>>]>(
+) => <MS extends readonly [Kleisli<M, any, E, any>, ...ReadonlyArray<Kleisli<M, any, E, any>>]>(
   ...members: MS
 ) => Kleisli<M, InputOf<M, MS[keyof MS]>, E, TypeOf<M, MS[keyof MS]>>
 ```
@@ -294,8 +295,8 @@ Added in v3.0.0
 export declare function literal<M extends URIS2, E>(
   M: FromEither2C<M, E>
 ): <I>(
-  onError: (i: I, values: readonly [Literal, ...Array<Literal>]) => E
-) => <A extends readonly [Literal, ...Array<Literal>]>(...values: A) => Kleisli<M, I, E, A[number]>
+  onError: (i: I, values: readonly [Literal, ...ReadonlyArray<Literal>]) => E
+) => <A extends readonly [Literal, ...ReadonlyArray<Literal>]>(...values: A) => Kleisli<M, I, E, A[number]>
 ```
 
 Added in v3.0.0

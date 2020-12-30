@@ -297,7 +297,7 @@ Added in v3.0.0
 
 ```ts
 export interface Guard<I, A extends I> {
-  is: (i: I) => i is A
+  readonly is: (i: I) => i is A
 }
 ```
 

@@ -43,7 +43,10 @@ export function type<P extends Record<string, Encoder<any, any>>>(
     encode: (a) => {
       const o: Record<keyof P, any> = {} as any
       for (const k in properties) {
-        o[k] = properties[k].encode(a[k])
+        /* istanbul ignore next */
+        if (properties.hasOwnProperty(k)) {
+          o[k] = properties[k].encode(a[k])
+        }
       }
       return o
     }
@@ -61,11 +64,15 @@ export function partial<P extends Record<string, Encoder<any, any>>>(
     encode: (a) => {
       const o: Record<keyof P, any> = {} as any
       for (const k in properties) {
-        const v = a[k]
-        // don't add missing properties
-        if (k in a) {
-          // don't strip undefined properties
-          o[k] = v === undefined ? undefined : properties[k].encode(v)
+        /* istanbul ignore next */
+        if (properties.hasOwnProperty(k)) {
+          const v = a[k]
+          // don't add missing properties
+          if (k in a) {
+            // don't strip undefined properties
+            // tslint:disable-next-line: strict-type-predicates
+            o[k] = v === undefined ? undefined : properties[k].encode(v)
+          }
         }
       }
       return o
@@ -82,7 +89,10 @@ export function record<O, A>(codomain: Encoder<O, A>): Encoder<Record<string, O>
     encode: (r) => {
       const o: Record<string, O> = {}
       for (const k in r) {
-        o[k] = codomain.encode(r[k])
+        /* istanbul ignore next */
+        if (r.hasOwnProperty(k)) {
+          o[k] = codomain.encode(r[k])
+        }
       }
       return o
     }
@@ -93,6 +103,7 @@ export function record<O, A>(codomain: Encoder<O, A>): Encoder<Record<string, O>
  * @category combinators
  * @since 3.0.0
  */
+// tslint:disable-next-line: readonly-array
 export function array<O, A>(item: Encoder<O, A>): Encoder<Array<O>, Array<A>> {
   return {
     encode: (as) => as.map(item.encode)
