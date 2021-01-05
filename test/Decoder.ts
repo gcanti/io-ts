@@ -584,9 +584,9 @@ required property "d"
       assert.deepStrictEqual(
         pipe(lazyDecoder.decode({ a: '1', b: {} }), E.mapLeft(_.draw)),
         E.left(`lazy type A
-└─ optional property \"b\"
+└─ optional property "b"
    └─ lazy type A
-      └─ required property \"a\"
+      └─ required property "a"
          └─ cannot decode undefined, should be string`)
       )
     })

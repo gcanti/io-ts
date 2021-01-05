@@ -18,13 +18,13 @@ export interface Leaf<E> {
  * @category model
  * @since 3.0.0
  */
-export const required: 'required' = 'required'
+export const required = 'required' as const
 
 /**
  * @category model
  * @since 3.0.0
  */
-export const optional: 'optional' = 'optional'
+export const optional = 'optional' as const
 
 /**
  * @category model
