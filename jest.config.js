@@ -16,5 +16,5 @@ module.exports = {
       statements: 100
     }
   },
-  modulePathIgnorePatterns: ['2.1.x/helpers.ts', 'Arbitrary.ts', 'helpers.ts', 'JsonSchema.ts']
+  modulePathIgnorePatterns: ['2.1.x/helpers.ts', 'Arbitrary.ts', 'helpers.ts', 'JsonSchema.ts', 'DSL.ts']
 }

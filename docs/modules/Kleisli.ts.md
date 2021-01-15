@@ -118,7 +118,7 @@ Added in v3.0.0
 export declare function fromSum<M extends URIS2, E>(
   M: FromEither2C<M, E>
 ): (
-  onTagError: (tag: string, value: unknown, tags: ReadonlyArray<string>) => E
+  onTagError: (tag: string, actual: unknown, tags: ReadonlyArray<string>) => E
 ) => <T extends string>(
   tag: T
 ) => <MS extends Record<string, Kleisli<M, any, E, any>>>(

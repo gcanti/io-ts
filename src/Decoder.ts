@@ -310,12 +310,12 @@ export const intersect: <IB, B>(right: Decoder<IB, B>) => <IA, A>(left: Decoder<
 export const fromSum = <T extends string>(tag: T) => <MS extends Record<string, Decoder<any, any>>>(
   members: MS
 ): Decoder<InputOf<MS[keyof MS]>, TypeOf<MS[keyof MS]>> =>
-  K.fromSum(M)((tag, value, keys) =>
+  K.fromSum(M)((tag, actual, keys) =>
     FS.of(
       DE.key(
         tag,
         DE.required,
-        error(value, keys.length === 0 ? 'never' : keys.map((k) => JSON.stringify(k)).join(' | '))
+        error(actual, keys.length === 0 ? 'never' : keys.map((k) => JSON.stringify(k)).join(' | '))
       )
     )
   )(tag)(members)

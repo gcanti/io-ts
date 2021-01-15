@@ -324,7 +324,7 @@ export function intersect<M extends URIS2, E>(
 export function fromSum<M extends URIS2, E>(
   M: FromEither2C<M, E>
 ): (
-  onTagError: (tag: string, value: unknown, tags: ReadonlyArray<string>) => E
+  onTagError: (tag: string, actual: unknown, tags: ReadonlyArray<string>) => E
 ) => <T extends string>(
   tag: T
 ) => <MS extends Record<string, Kleisli<M, any, E, any>>>(
@@ -336,11 +336,11 @@ export function fromSum<M extends URIS2, E>(
     const keys = Object.keys(members)
     return {
       decode: (ir) => {
-        const v: any = ir[tag]
-        if (v in members) {
-          return (members as any)[v].decode(ir)
+        const actual: any = ir[tag]
+        if (actual in members) {
+          return (members as any)[actual].decode(ir)
         }
-        return M.fromEither(E.left(onTagError(tag, v, keys)))
+        return M.fromEither(E.left(onTagError(tag, actual, keys)))
       }
     }
   }
