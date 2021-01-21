@@ -557,10 +557,11 @@ const toForest = (e: DecodeError): ReadonlyArray<Tree<string>> => {
     switch (focus._tag) {
       case 'Of':
         res.push(toTree(focus.value))
-        if (stack.length === 0) {
-          return res
+        const tmp = stack.pop();
+        if (tmp === undefined) {
+          return res;
         } else {
-          focus = stack.pop()!
+          focus = tmp;
         }
         break
       case 'Concat':
