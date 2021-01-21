@@ -48,7 +48,7 @@ Added in v3.0.0
 
 ```ts
 export interface Schemable<S> {
-  readonly URI: S
+  readonly URI?: S
   readonly literal: <A extends readonly [Literal, ...ReadonlyArray<Literal>]>(...values: A) => HKT<S, A[number]>
   readonly string: HKT<S, string>
   readonly number: HKT<S, number>
@@ -76,7 +76,7 @@ Added in v3.0.0
 
 ```ts
 export interface Schemable1<S extends URIS> {
-  readonly URI: S
+  readonly URI?: S
   readonly literal: <A extends readonly [Literal, ...ReadonlyArray<Literal>]>(...values: A) => Kind<S, A[number]>
   readonly string: Kind<S, string>
   readonly number: Kind<S, number>
@@ -104,7 +104,7 @@ Added in v3.0.0
 
 ```ts
 export interface Schemable2C<S extends URIS2, E> {
-  readonly URI: S
+  readonly URI?: S
   readonly literal: <A extends readonly [Literal, ...ReadonlyArray<Literal>]>(...values: A) => Kind2<S, E, A[number]>
   readonly string: Kind2<S, E, string>
   readonly number: Kind2<S, E, number>

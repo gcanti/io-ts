@@ -187,17 +187,11 @@ export function id<A>(): Encoder<A, A> {
  * @category instances
  * @since 3.0.0
  */
-export const URI = 'io-ts/Encoder'
-
-/**
- * @category instances
- * @since 3.0.0
- */
-export type URI = typeof URI
+export type URI = 'io-ts/Encoder'
 
 declare module 'fp-ts/HKT' {
   interface URItoKind2<E, A> {
-    readonly [URI]: Encoder<E, A>
+    readonly 'io-ts/Encoder': Encoder<E, A>
   }
 }
 
@@ -206,7 +200,6 @@ declare module 'fp-ts/HKT' {
  * @since 3.0.0
  */
 export const Contravariant: Contravariant2<URI> = {
-  URI,
   contramap
 }
 
@@ -215,7 +208,6 @@ export const Contravariant: Contravariant2<URI> = {
  * @since 3.0.0
  */
 export const Category: Category2<URI> = {
-  URI,
   compose: (bc) => (ac) => compose(ac)(bc),
   id
 }

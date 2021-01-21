@@ -55,7 +55,6 @@ Added in v3.0.0
   - [Category](#category-1)
   - [Functor](#functor-1)
   - [Schemable](#schemable)
-  - [URI](#uri)
   - [URI (type alias)](#uri-type-alias)
   - [WithRefine](#withrefine)
   - [WithUnion](#withunion)
@@ -480,22 +479,12 @@ export declare const Schemable: S.Schemable2C<'io-ts/Decoder', unknown>
 
 Added in v3.0.0
 
-## URI
-
-**Signature**
-
-```ts
-export declare const URI: 'io-ts/Decoder'
-```
-
-Added in v3.0.0
-
 ## URI (type alias)
 
 **Signature**
 
 ```ts
-export type URI = typeof URI
+export type URI = 'io-ts/Decoder'
 ```
 
 Added in v3.0.0

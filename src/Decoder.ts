@@ -33,7 +33,6 @@ const M: Applicative2C<E.URI, DecodeError> &
   FromEither2C<E.URI, DecodeError> &
   Bifunctor2<E.URI> &
   Alt2C<E.URI, DecodeError> = {
-  URI: E.URI,
   map: E.map,
   ap: E.getApplicativeValidation(SE).ap,
   of: E.of,
@@ -380,17 +379,11 @@ export const id: <A>() => Decoder<A, A> =
  * @category instances
  * @since 3.0.0
  */
-export const URI = 'io-ts/Decoder'
-
-/**
- * @category instances
- * @since 3.0.0
- */
-export type URI = typeof URI
+export type URI = 'io-ts/Decoder'
 
 declare module 'fp-ts/HKT' {
   interface URItoKind2<E, A> {
-    readonly [URI]: Decoder<E, A>
+    readonly 'io-ts/Decoder': Decoder<E, A>
   }
 }
 
@@ -399,7 +392,6 @@ declare module 'fp-ts/HKT' {
  * @since 3.0.0
  */
 export const Functor: Functor2<URI> = {
-  URI,
   map
 }
 
@@ -408,7 +400,6 @@ export const Functor: Functor2<URI> = {
  * @since 3.0.0
  */
 export const Alt: Alt2<URI> = {
-  URI,
   map,
   alt
 }
@@ -418,7 +409,6 @@ export const Alt: Alt2<URI> = {
  * @since 3.0.0
  */
 export const Category: Category2<URI> = {
-  URI,
   compose,
   id
 }
@@ -428,7 +418,6 @@ export const Category: Category2<URI> = {
  * @since 3.0.0
  */
 export const Schemable: S.Schemable2C<URI, unknown> = {
-  URI,
   literal,
   string,
   number,
@@ -502,10 +491,11 @@ const toForest = (e: DecodeError): ReadonlyArray<T.Tree<string>> => {
     switch (focus._tag) {
       case 'Of':
         res.push(toTree(focus.value))
-        if (stack.length === 0) {
+        const tmp = stack.pop()
+        if (tmp === undefined) {
           return res
         } else {
-          focus = stack.pop()!
+          focus = tmp
         }
         break
       case 'Concat':

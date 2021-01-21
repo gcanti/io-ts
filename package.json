@@ -56,7 +56,7 @@
     "eslint": "^7.17.0",
     "eslint-plugin-fp-ts": "^0.1.8",
     "fast-check": "^1.24.2",
-    "fp-ts": "^3.0.0-alpha.4",
+    "fp-ts": "^3.0.0-alpha.8",
     "import-path-rewrite": "github:gcanti/import-path-rewrite",
     "jest": "25.2.7",
     "json-schema": "^0.3.0",

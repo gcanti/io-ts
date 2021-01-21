@@ -283,17 +283,11 @@ export const id = <A>(): Guard<A, A> => ({
  * @category instances
  * @since 3.0.0
  */
-export const URI = 'io-ts/Guard'
-
-/**
- * @category instances
- * @since 3.0.0
- */
-export type URI = typeof URI
+export type URI = 'io-ts/Guard'
 
 declare module 'fp-ts/HKT' {
   interface URItoKind<A> {
-    readonly [URI]: Guard<unknown, A>
+    readonly 'io-ts/Guard': Guard<unknown, A>
   }
 }
 
@@ -302,7 +296,6 @@ declare module 'fp-ts/HKT' {
  * @since 3.0.0
  */
 export const Schemable: Schemable1<URI> = {
-  URI,
   literal,
   string,
   number,

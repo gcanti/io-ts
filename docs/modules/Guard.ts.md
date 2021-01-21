@@ -32,7 +32,6 @@ Added in v3.0.0
   - [literal](#literal)
 - [instances](#instances)
   - [Schemable](#schemable)
-  - [URI](#uri)
   - [URI (type alias)](#uri-type-alias)
   - [WithRefine](#withrefine)
   - [WithUnion](#withunion)
@@ -239,22 +238,12 @@ export declare const Schemable: Schemable1<'io-ts/Guard'>
 
 Added in v3.0.0
 
-## URI
-
-**Signature**
-
-```ts
-export declare const URI: 'io-ts/Guard'
-```
-
-Added in v3.0.0
-
 ## URI (type alias)
 
 **Signature**
 
 ```ts
-export type URI = typeof URI
+export type URI = 'io-ts/Guard'
 ```
 
 Added in v3.0.0

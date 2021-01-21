@@ -27,7 +27,6 @@ const M: Applicative2C<TE.URI, DecodeError> &
   FromEither2C<TE.URI, DecodeError> &
   Bifunctor2<TE.URI> &
   Alt2C<TE.URI, DecodeError> = {
-  URI: TE.URI,
   map: TE.map,
   ap: TE.getApplicativeTaskValidation(T.ApplyPar, D.SE).ap,
   of: TE.of,
@@ -387,17 +386,11 @@ export const id: <A>() => TaskDecoder<A, A> =
  * @category instances
  * @since 3.0.0
  */
-export const URI = 'io-ts/TaskDecoder'
-
-/**
- * @category instances
- * @since 3.0.0
- */
-export type URI = typeof URI
+export type URI = 'io-ts/TaskDecoder'
 
 declare module 'fp-ts/HKT' {
   interface URItoKind2<E, A> {
-    readonly [URI]: TaskDecoder<E, A>
+    readonly 'io-ts/TaskDecoder': TaskDecoder<E, A>
   }
 }
 
@@ -406,7 +399,6 @@ declare module 'fp-ts/HKT' {
  * @since 3.0.0
  */
 export const Functor: Functor2<URI> = {
-  URI,
   map
 }
 
@@ -415,7 +407,6 @@ export const Functor: Functor2<URI> = {
  * @since 3.0.0
  */
 export const Alt: Alt2<URI> = {
-  URI,
   map,
   alt
 }
@@ -425,7 +416,6 @@ export const Alt: Alt2<URI> = {
  * @since 3.0.0
  */
 export const Category: Category2<URI> = {
-  URI,
   compose,
   id
 }
@@ -435,7 +425,6 @@ export const Category: Category2<URI> = {
  * @since 3.0.0
  */
 export const Schemable: S.Schemable2C<URI, unknown> = {
-  URI,
   literal,
   string,
   number,

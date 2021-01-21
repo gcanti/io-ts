@@ -29,7 +29,6 @@ Added in v3.0.0
 - [instances](#instances)
   - [Category](#category-1)
   - [Contravariant](#contravariant-1)
-  - [URI](#uri)
   - [URI (type alias)](#uri-type-alias)
 - [model](#model)
   - [Encoder (interface)](#encoder-interface)
@@ -186,22 +185,12 @@ export declare const Contravariant: Contravariant2<'io-ts/Encoder'>
 
 Added in v3.0.0
 
-## URI
-
-**Signature**
-
-```ts
-export declare const URI: 'io-ts/Encoder'
-```
-
-Added in v3.0.0
-
 ## URI (type alias)
 
 **Signature**
 
 ```ts
-export type URI = typeof URI
+export type URI = 'io-ts/Encoder'
 ```
 
 Added in v3.0.0

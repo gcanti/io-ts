@@ -12,7 +12,7 @@ export type Literal = string | number | boolean | null
  * @since 3.0.0
  */
 export interface Schemable<S> {
-  readonly URI: S
+  readonly URI?: S
   readonly literal: <A extends readonly [Literal, ...ReadonlyArray<Literal>]>(...values: A) => HKT<S, A[number]>
   readonly string: HKT<S, string>
   readonly number: HKT<S, number>
@@ -35,7 +35,7 @@ export interface Schemable<S> {
  * @since 3.0.0
  */
 export interface Schemable1<S extends URIS> {
-  readonly URI: S
+  readonly URI?: S
   readonly literal: <A extends readonly [Literal, ...ReadonlyArray<Literal>]>(...values: A) => Kind<S, A[number]>
   readonly string: Kind<S, string>
   readonly number: Kind<S, number>
@@ -58,7 +58,7 @@ export interface Schemable1<S extends URIS> {
  * @since 3.0.0
  */
 export interface Schemable2C<S extends URIS2, E> {
-  readonly URI: S
+  readonly URI?: S
   readonly literal: <A extends readonly [Literal, ...ReadonlyArray<Literal>]>(...values: A) => Kind2<S, E, A[number]>
   readonly string: Kind2<S, E, string>
   readonly number: Kind2<S, E, number>

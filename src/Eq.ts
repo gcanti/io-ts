@@ -181,7 +181,6 @@ export function lazy<A>(f: () => Eq<A>): Eq<A> {
  * @since 3.0.0
  */
 export const Schemable: Schemable1<E.URI> = {
-  URI: E.URI,
   literal: () => E.eqStrict,
   string,
   number,

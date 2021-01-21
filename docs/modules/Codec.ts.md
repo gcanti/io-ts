@@ -39,7 +39,6 @@ Added in v3.0.0
   - [make](#make)
 - [instances](#instances)
   - [Invariant](#invariant-1)
-  - [URI](#uri)
   - [URI (type alias)](#uri-type-alias)
 - [model](#model)
   - [Codec (interface)](#codec-interface)
@@ -337,22 +336,12 @@ export declare const Invariant: Invariant3<'io-ts/Codec'>
 
 Added in v3.0.0
 
-## URI
-
-**Signature**
-
-```ts
-export declare const URI: 'io-ts/Codec'
-```
-
-Added in v3.0.0
-
 ## URI (type alias)
 
 **Signature**
 
 ```ts
-export type URI = typeof URI
+export type URI = 'io-ts/Codec'
 ```
 
 Added in v3.0.0

@@ -307,17 +307,11 @@ export const imap: Invariant3<URI>['imap'] = (f, g) => (fa) => make(D.map(f)(fa)
  * @category instances
  * @since 3.0.0
  */
-export const URI = 'io-ts/Codec'
-
-/**
- * @category instances
- * @since 3.0.0
- */
-export type URI = typeof URI
+export type URI = 'io-ts/Codec'
 
 declare module 'fp-ts/HKT' {
   interface URItoKind3<R, E, A> {
-    readonly [URI]: Codec<R, E, A>
+    readonly 'io-ts/Codec': Codec<R, E, A>
   }
 }
 
@@ -326,7 +320,6 @@ declare module 'fp-ts/HKT' {
  * @since 3.0.0
  */
 export const Invariant: Invariant3<URI> = {
-  URI,
   imap
 }
 
