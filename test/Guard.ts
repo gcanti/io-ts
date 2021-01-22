@@ -1,6 +1,7 @@
 import * as assert from 'assert'
-import * as G from '../src/Guard'
 import { pipe } from 'fp-ts/function'
+import * as G from '../src/Guard'
+import { deepStrictEqual } from './util'
 
 interface NonEmptyStringBrand {
   readonly NonEmptyString: unique symbol
@@ -42,7 +43,7 @@ describe('Guard', () => {
 
   describe('number', () => {
     it('should exclude NaN', () => {
-      assert.deepStrictEqual(G.number.is(NaN), false)
+      deepStrictEqual(G.number.is(NaN), false)
     })
   })
 
@@ -113,7 +114,7 @@ describe('Guard', () => {
         }
       }
       const guard = G.type({ a: G.string, b: G.string })
-      assert.deepStrictEqual(guard.is(new A()), true)
+      deepStrictEqual(guard.is(new A()), true)
     })
   })
 
@@ -147,7 +148,7 @@ describe('Guard', () => {
         }
       }
       const guard = G.partial({ a: G.string, b: G.string })
-      assert.deepStrictEqual(guard.is(new A()), true)
+      deepStrictEqual(guard.is(new A()), true)
     })
   })
 
@@ -259,8 +260,8 @@ describe('Guard', () => {
         A: G.type({ _tag: G.literal('A'), a: G.string }),
         B: G.type({ _tag: G.literal('B'), b: G.number })
       })
-      assert.deepStrictEqual(guard.is({ _tag: 'A', a: 'a' }), true)
-      assert.deepStrictEqual(guard.is({ _tag: 'B', b: 1 }), true)
+      deepStrictEqual(guard.is({ _tag: 'A', a: 'a' }), true)
+      deepStrictEqual(guard.is({ _tag: 'B', b: 1 }), true)
     })
 
     it('should rejects invalid inputs', () => {
@@ -277,9 +278,9 @@ describe('Guard', () => {
         [1]: G.type({ _tag: G.literal(1), a: G.string }),
         [2]: G.type({ _tag: G.literal(2), b: G.number })
       })
-      assert.deepStrictEqual(guard.is({ _tag: 1, a: 'a' }), true)
-      assert.deepStrictEqual(guard.is({ _tag: 2, b: 1 }), true)
-      assert.deepStrictEqual(guard.is({ _tag: 2, b: 'a' }), false)
+      deepStrictEqual(guard.is({ _tag: 1, a: 'a' }), true)
+      deepStrictEqual(guard.is({ _tag: 2, b: 1 }), true)
+      deepStrictEqual(guard.is({ _tag: 2, b: 'a' }), false)
     })
   })
 })

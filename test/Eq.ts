@@ -2,52 +2,53 @@ import * as assert from 'assert'
 import * as E from '../src/Eq'
 import { Eq } from 'fp-ts/Eq'
 import { pipe } from 'fp-ts/function'
+import { deepStrictEqual } from './util'
 
 describe('Eq', () => {
   it('literal', () => {
     const eq = E.Schemable.literal('a', null)
-    assert.deepStrictEqual(eq.equals('a')('a'), true)
-    assert.deepStrictEqual(eq.equals(null)(null), true)
-    assert.deepStrictEqual(eq.equals('a')(null), false)
+    deepStrictEqual(eq.equals('a')('a'), true)
+    deepStrictEqual(eq.equals(null)(null), true)
+    deepStrictEqual(eq.equals('a')(null), false)
   })
 
   it('UnknownArray', () => {
     const eq = E.UnknownArray
-    assert.deepStrictEqual(eq.equals(['a'])(['a']), true)
-    assert.deepStrictEqual(eq.equals(['a'])(['b']), true)
-    assert.deepStrictEqual(eq.equals(['a'])(['a', 'b']), false)
+    deepStrictEqual(eq.equals(['a'])(['a']), true)
+    deepStrictEqual(eq.equals(['a'])(['b']), true)
+    deepStrictEqual(eq.equals(['a'])(['a', 'b']), false)
   })
 
   it('UnknownRecord', () => {
     const eq = E.UnknownRecord
-    assert.deepStrictEqual(eq.equals({})({}), true)
-    assert.deepStrictEqual(eq.equals({ a: 1 })({ a: 1 }), true)
-    assert.deepStrictEqual(eq.equals({ a: 1 })({ a: 2 }), true)
-    assert.deepStrictEqual(eq.equals({ a: 1 })({ a: 1, b: true }), false)
-    assert.deepStrictEqual(eq.equals({ a: 1, b: true })({ a: 1 }), false)
+    deepStrictEqual(eq.equals({})({}), true)
+    deepStrictEqual(eq.equals({ a: 1 })({ a: 1 }), true)
+    deepStrictEqual(eq.equals({ a: 1 })({ a: 2 }), true)
+    deepStrictEqual(eq.equals({ a: 1 })({ a: 1, b: true }), false)
+    deepStrictEqual(eq.equals({ a: 1, b: true })({ a: 1 }), false)
   })
 
   it('partial', () => {
     const eq = E.partial({ a: E.number })
-    assert.deepStrictEqual(eq.equals({ a: 1 })({ a: 1 }), true)
-    assert.deepStrictEqual(eq.equals({ a: undefined })({ a: undefined }), true)
-    assert.deepStrictEqual(eq.equals({})({ a: undefined }), true)
-    assert.deepStrictEqual(eq.equals({})({}), true)
-    assert.deepStrictEqual(eq.equals({ a: 1 })({}), false)
+    deepStrictEqual(eq.equals({ a: 1 })({ a: 1 }), true)
+    deepStrictEqual(eq.equals({ a: undefined })({ a: undefined }), true)
+    deepStrictEqual(eq.equals({})({ a: undefined }), true)
+    deepStrictEqual(eq.equals({})({}), true)
+    deepStrictEqual(eq.equals({ a: 1 })({}), false)
   })
 
   it('tuple', () => {
     const eq = E.tuple(E.string, E.number)
-    assert.deepStrictEqual(eq.equals(['a', 1])(['a', 1]), true)
-    assert.deepStrictEqual(eq.equals(['a', 1])(['b', 1]), false)
-    assert.deepStrictEqual(eq.equals(['a', 1])(['a', 2]), false)
+    deepStrictEqual(eq.equals(['a', 1])(['a', 1]), true)
+    deepStrictEqual(eq.equals(['a', 1])(['b', 1]), false)
+    deepStrictEqual(eq.equals(['a', 1])(['a', 2]), false)
   })
 
   it('intersect', () => {
     const eq = pipe(E.type({ a: E.string }), E.intersect(E.type({ b: E.number })))
-    assert.deepStrictEqual(eq.equals({ a: 'a', b: 1 })({ a: 'a', b: 1 }), true)
-    assert.deepStrictEqual(eq.equals({ a: 'a', b: 1 })({ a: 'c', b: 1 }), false)
-    assert.deepStrictEqual(eq.equals({ a: 'a', b: 1 })({ a: 'a', b: 2 }), false)
+    deepStrictEqual(eq.equals({ a: 'a', b: 1 })({ a: 'a', b: 1 }), true)
+    deepStrictEqual(eq.equals({ a: 'a', b: 1 })({ a: 'c', b: 1 }), false)
+    deepStrictEqual(eq.equals({ a: 'a', b: 1 })({ a: 'a', b: 2 }), false)
   })
 
   it('lazy', () => {
@@ -93,7 +94,7 @@ describe('Eq', () => {
     )
     const a: NonEmptyString = 'a' as any
     const b: NonEmptyString = 'b' as any
-    assert.deepStrictEqual(eq.equals(a)(a), true)
-    assert.deepStrictEqual(eq.equals(a)(b), false)
+    deepStrictEqual(eq.equals(a)(a), true)
+    deepStrictEqual(eq.equals(a)(b), false)
   })
 })
