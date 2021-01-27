@@ -124,9 +124,11 @@ Added in v1.0.0
   - [Branded (type alias)](#branded-type-alias)
   - [DictionaryType (class)](#dictionarytype-class)
     - [\_tag (property)](#_tag-property-10)
+  - [EnumType (class)](#enumtype-class)
+    - [\_tag (property)](#_tag-property-11)
   - [ExactC (interface)](#exactc-interface)
   - [ExactType (class)](#exacttype-class)
-    - [\_tag (property)](#_tag-property-11)
+    - [\_tag (property)](#_tag-property-12)
   - [HasProps (type alias)](#hasprops-type-alias)
   - [HasPropsIntersection (interface)](#haspropsintersection-interface)
   - [HasPropsReadonly (interface)](#haspropsreadonly-interface)
@@ -135,49 +137,49 @@ Added in v1.0.0
   - [Int (type alias)](#int-type-alias)
   - [IntBrand (interface)](#intbrand-interface)
   - [InterfaceType (class)](#interfacetype-class)
-    - [\_tag (property)](#_tag-property-12)
+    - [\_tag (property)](#_tag-property-13)
   - [IntersectionC (interface)](#intersectionc-interface)
   - [IntersectionType (class)](#intersectiontype-class)
-    - [\_tag (property)](#_tag-property-13)
+    - [\_tag (property)](#_tag-property-14)
   - [KeyofC (interface)](#keyofc-interface)
   - [KeyofType (class)](#keyoftype-class)
-    - [\_tag (property)](#_tag-property-14)
+    - [\_tag (property)](#_tag-property-15)
   - [LiteralC (interface)](#literalc-interface)
   - [LiteralType (class)](#literaltype-class)
-    - [\_tag (property)](#_tag-property-15)
+    - [\_tag (property)](#_tag-property-16)
   - [Mixed (interface)](#mixed-interface)
   - [NullC (interface)](#nullc-interface)
   - [NullType (class)](#nulltype-class)
-    - [\_tag (property)](#_tag-property-16)
+    - [\_tag (property)](#_tag-property-17)
   - [NumberC (interface)](#numberc-interface)
   - [NumberType (class)](#numbertype-class)
-    - [\_tag (property)](#_tag-property-17)
+    - [\_tag (property)](#_tag-property-18)
   - [OutputOf (type alias)](#outputof-type-alias)
   - [OutputOfDictionary (type alias)](#outputofdictionary-type-alias)
   - [OutputOfPartialProps (type alias)](#outputofpartialprops-type-alias)
   - [OutputOfProps (type alias)](#outputofprops-type-alias)
   - [PartialC (interface)](#partialc-interface)
   - [PartialType (class)](#partialtype-class)
-    - [\_tag (property)](#_tag-property-18)
+    - [\_tag (property)](#_tag-property-19)
   - [Props (interface)](#props-interface)
   - [ReadonlyArrayC (interface)](#readonlyarrayc-interface)
   - [ReadonlyArrayType (class)](#readonlyarraytype-class)
-    - [\_tag (property)](#_tag-property-19)
+    - [\_tag (property)](#_tag-property-20)
   - [ReadonlyC (interface)](#readonlyc-interface)
   - [ReadonlyType (class)](#readonlytype-class)
-    - [\_tag (property)](#_tag-property-20)
+    - [\_tag (property)](#_tag-property-21)
   - [RecordC (interface)](#recordc-interface)
   - [RecursiveType (class)](#recursivetype-class)
-    - [\_tag (property)](#_tag-property-21)
+    - [\_tag (property)](#_tag-property-22)
     - [type (property)](#type-property)
   - [RefinementType (class)](#refinementtype-class)
-    - [\_tag (property)](#_tag-property-22)
+    - [\_tag (property)](#_tag-property-23)
   - [StringC (interface)](#stringc-interface)
   - [StringType (class)](#stringtype-class)
-    - [\_tag (property)](#_tag-property-23)
+    - [\_tag (property)](#_tag-property-24)
   - [TupleC (interface)](#tuplec-interface)
   - [TupleType (class)](#tupletype-class)
-    - [\_tag (property)](#_tag-property-24)
+    - [\_tag (property)](#_tag-property-25)
   - [TypeC (interface)](#typec-interface)
   - [TypeOf (type alias)](#typeof-type-alias)
   - [TypeOfDictionary (type alias)](#typeofdictionary-type-alias)
@@ -185,19 +187,20 @@ Added in v1.0.0
   - [TypeOfProps (type alias)](#typeofprops-type-alias)
   - [UndefinedC (interface)](#undefinedc-interface)
   - [UndefinedType (class)](#undefinedtype-class)
-    - [\_tag (property)](#_tag-property-25)
+    - [\_tag (property)](#_tag-property-26)
   - [UnionC (interface)](#unionc-interface)
   - [UnionType (class)](#uniontype-class)
-    - [\_tag (property)](#_tag-property-26)
+    - [\_tag (property)](#_tag-property-27)
   - [UnknownArrayC (interface)](#unknownarrayc-interface)
   - [UnknownC (interface)](#unknownc-interface)
   - [UnknownRecordC (interface)](#unknownrecordc-interface)
   - [UnknownType (class)](#unknowntype-class)
-    - [\_tag (property)](#_tag-property-27)
+    - [\_tag (property)](#_tag-property-28)
   - [VoidC (interface)](#voidc-interface)
   - [VoidType (class)](#voidtype-class)
-    - [\_tag (property)](#_tag-property-28)
+    - [\_tag (property)](#_tag-property-29)
   - [appendContext](#appendcontext)
+  - [enum](#enum)
   - [exact](#exact)
   - [failure](#failure)
   - [failures](#failures)
@@ -1546,6 +1549,28 @@ readonly _tag: "DictionaryType"
 
 Added in v1.0.0
 
+## EnumType (class)
+
+**Signature**
+
+```ts
+export declare class EnumType<E> {
+  constructor(e: E, name?: string)
+}
+```
+
+Added in v2.3.0
+
+### \_tag (property)
+
+**Signature**
+
+```ts
+readonly _tag: "EnumType"
+```
+
+Added in v2.3.0
+
 ## ExactC (interface)
 
 **Signature**
@@ -2459,6 +2484,16 @@ export declare const appendContext: (c: Context, key: string, decoder: Decoder<a
 ```
 
 Added in v1.0.0
+
+## enum
+
+**Signature**
+
+```ts
+export declare const enum: <E extends typeof Enum>(e: E, name?: string) => EnumType<E>
+```
+
+Added in v2.3.0
 
 ## exact
 
