@@ -355,7 +355,7 @@ interface PositiveBrand {
 
 const Positive = t.brand(
   t.number, // a codec representing the type to be refined
-  (n): n is t.Branded<number, PositiveBrand> => n >= 0, // a custom type guard using the build-in helper `Branded`
+  (n): n is t.Branded<number, PositiveBrand> => 0 < n, // a custom type guard using the build-in helper `Branded`
   'Positive' // the name must match the readonly field in the brand
 )
 
