@@ -1,7 +1,7 @@
 /**
  * @since 3.0.0
  */
-import { pipe } from 'fp-ts/function'
+import { pipe, Refinement } from 'fp-ts/function'
 import { Literal, memoize, Schemable1, WithRefine1, WithUnion1, WithUnknownContainers1 } from './Schemable'
 
 // -------------------------------------------------------------------------------------
@@ -99,7 +99,7 @@ export const UnknownRecord: Guard<unknown, Record<string, unknown>> = {
  * @category combinators
  * @since 3.0.0
  */
-export const refine = <I, A extends I, B extends A>(refinement: (a: A) => a is B) => (
+export const refine = <I, A extends I, B extends A>(refinement: Refinement<A, B>) => (
   from: Guard<I, A>
 ): Guard<I, B> => ({
   is: (i: I): i is B => from.is(i) && refinement(i)

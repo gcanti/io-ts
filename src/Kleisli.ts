@@ -86,7 +86,7 @@ export function mapLeftWithInput<M extends URIS2>(
 export function refine<M extends URIS2, E>(
   M: Monad2C<M, E> & FromEither2C<M, E> & Bifunctor2<M>
 ): <A, B extends A>(
-  refinement: (a: A) => a is B,
+  refinement: Refinement<A, B>,
   onError: (a: A) => E
 ) => <I>(from: Kleisli<M, I, E, A>) => Kleisli<M, I, E, B> {
   return (refinement, onError) => (from) => compose(M)(fromRefinement(M)(refinement, onError))(from)

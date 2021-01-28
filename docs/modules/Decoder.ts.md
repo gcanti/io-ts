@@ -336,7 +336,7 @@ Added in v3.0.0
 
 ```ts
 export declare const refine: <A, B extends A>(
-  refinement: (a: A) => a is B,
+  refinement: Refinement<A, B>,
   id: string
 ) => <I>(from: Decoder<I, A>) => Decoder<I, B>
 ```

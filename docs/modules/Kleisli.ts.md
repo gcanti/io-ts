@@ -250,7 +250,7 @@ Added in v3.0.0
 export declare function refine<M extends URIS2, E>(
   M: Monad2C<M, E> & FromEither2C<M, E> & Bifunctor2<M>
 ): <A, B extends A>(
-  refinement: (a: A) => a is B,
+  refinement: Refinement<A, B>,
   onError: (a: A) => E
 ) => <I>(from: Kleisli<M, I, E, A>) => Kleisli<M, I, E, B>
 ```

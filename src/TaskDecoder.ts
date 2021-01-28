@@ -185,7 +185,7 @@ export const withMessage = <I>(
  * @since 3.0.0
  */
 export const refine = <A, B extends A>(
-  refinement: (a: A) => a is B,
+  refinement: Refinement<A, B>,
   id: string
 ): (<I>(from: TaskDecoder<I, A>) => TaskDecoder<I, B>) => K.refine(M)(refinement, (a) => error(a, id))
 

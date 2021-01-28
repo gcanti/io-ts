@@ -1,7 +1,7 @@
 /**
  * @since 3.0.0
  */
-import { identity, pipe } from 'fp-ts/function'
+import { identity, pipe, Refinement } from 'fp-ts/function'
 import { Invariant3 } from 'fp-ts/Invariant'
 import * as D from './Decoder'
 import * as E from './Encoder'
@@ -120,7 +120,7 @@ export const mapLeftWithInput = <I>(f: (i: I, e: D.DecodeError) => D.DecodeError
  * @since 3.0.0
  */
 export const refine = <A, B extends A>(
-  refinement: (a: A) => a is B,
+  refinement: Refinement<A, B>,
   id: string
 ): (<I, O>(from: Codec<I, O, A>) => Codec<I, O, B>) => {
   const refine = D.refine(refinement, id)
