@@ -140,7 +140,7 @@ Added in v2.2.8
 
 ```ts
 export interface WithRefine<S> {
-  readonly refine: <A, B extends A>(refinement: (a: A) => a is B, id: string) => (from: HKT<S, A>) => HKT<S, B>
+  readonly refine: <A, B extends A>(refinement: Refinement<A, B>, id: string) => (from: HKT<S, A>) => HKT<S, B>
 }
 ```
 
@@ -152,7 +152,7 @@ Added in v2.2.3
 
 ```ts
 export interface WithRefine1<S extends URIS> {
-  readonly refine: <A, B extends A>(refinement: (a: A) => a is B, id: string) => (from: Kind<S, A>) => Kind<S, B>
+  readonly refine: <A, B extends A>(refinement: Refinement<A, B>, id: string) => (from: Kind<S, A>) => Kind<S, B>
 }
 ```
 
@@ -165,7 +165,7 @@ Added in v2.2.3
 ```ts
 export interface WithRefine2C<S extends URIS2, E> {
   readonly refine: <A, B extends A>(
-    refinement: (a: A) => a is B,
+    refinement: Refinement<A, B>,
     id: string
   ) => (from: Kind2<S, E, A>) => Kind2<S, E, B>
 }

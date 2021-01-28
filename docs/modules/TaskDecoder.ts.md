@@ -347,7 +347,7 @@ Added in v2.2.7
 
 ```ts
 export declare const refine: <A, B extends A>(
-  refinement: (a: A) => a is B,
+  refinement: Refinement<A, B>,
   id: string
 ) => <I>(from: TaskDecoder<I, A>) => TaskDecoder<I, B>
 ```

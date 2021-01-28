@@ -8,6 +8,7 @@
  *
  * @since 2.2.0
  */
+import { Refinement } from 'fp-ts/lib/function'
 import { HKT, Kind, Kind2, URIS, URIS2 } from 'fp-ts/lib/HKT'
 
 /**
@@ -140,14 +141,14 @@ export interface WithUnion2C<S extends URIS2, E> {
  * @since 2.2.3
  */
 export interface WithRefine<S> {
-  readonly refine: <A, B extends A>(refinement: (a: A) => a is B, id: string) => (from: HKT<S, A>) => HKT<S, B>
+  readonly refine: <A, B extends A>(refinement: Refinement<A, B>, id: string) => (from: HKT<S, A>) => HKT<S, B>
 }
 
 /**
  * @since 2.2.3
  */
 export interface WithRefine1<S extends URIS> {
-  readonly refine: <A, B extends A>(refinement: (a: A) => a is B, id: string) => (from: Kind<S, A>) => Kind<S, B>
+  readonly refine: <A, B extends A>(refinement: Refinement<A, B>, id: string) => (from: Kind<S, A>) => Kind<S, B>
 }
 
 /**
@@ -155,7 +156,7 @@ export interface WithRefine1<S extends URIS> {
  */
 export interface WithRefine2C<S extends URIS2, E> {
   readonly refine: <A, B extends A>(
-    refinement: (a: A) => a is B,
+    refinement: Refinement<A, B>,
     id: string
   ) => (from: Kind2<S, E, A>) => Kind2<S, E, B>
 }

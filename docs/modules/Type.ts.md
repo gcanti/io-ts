@@ -118,7 +118,7 @@ Added in v2.2.3
 **Signature**
 
 ```ts
-export declare const refine: <A, B extends A>(refinement: (a: A) => a is B, id: string) => (from: Type<A>) => Type<B>
+export declare const refine: <A, B extends A>(refinement: Refinement<A, B>, id: string) => (from: Type<A>) => Type<B>
 ```
 
 Added in v2.2.3

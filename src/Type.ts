@@ -9,6 +9,7 @@
  * @since 2.2.3
  */
 import * as E from 'fp-ts/lib/Either'
+import { Refinement } from 'fp-ts/lib/function'
 import { pipe } from 'fp-ts/lib/pipeable'
 import * as t from './index'
 import * as S from './Schemable'
@@ -85,7 +86,7 @@ export const UnknownRecord: Type<Record<string, unknown>> = t.UnknownRecord
  * @category combinators
  * @since 2.2.3
  */
-export const refine = <A, B extends A>(refinement: (a: A) => a is B, id: string) => (from: Type<A>): Type<B> =>
+export const refine = <A, B extends A>(refinement: Refinement<A, B>, id: string) => (from: Type<A>): Type<B> =>
   // tslint:disable-next-line: deprecation
   t.refinement(from, refinement, id) as any
 

@@ -8,7 +8,7 @@
  *
  * @since 2.2.3
  */
-import { identity } from 'fp-ts/lib/function'
+import { identity, Refinement } from 'fp-ts/lib/function'
 import { Invariant3 } from 'fp-ts/lib/Invariant'
 import { pipe } from 'fp-ts/lib/pipeable'
 import * as D from './Decoder'
@@ -127,7 +127,7 @@ export const mapLeftWithInput = <I>(f: (i: I, e: D.DecodeError) => D.DecodeError
  * @since 2.2.3
  */
 export const refine = <A, B extends A>(
-  refinement: (a: A) => a is B,
+  refinement: Refinement<A, B>,
   id: string
 ): (<I, O>(from: Codec<I, O, A>) => Codec<I, O, B>) => {
   const refine = D.refine(refinement, id)

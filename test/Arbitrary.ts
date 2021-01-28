@@ -2,6 +2,7 @@
  * An instance of `Schemable` for `fast-check` arbitraries that emit valid values
  */
 import * as fc from 'fast-check'
+import { Refinement } from 'fp-ts/lib/function'
 import * as S from '../src/Schemable'
 
 // -------------------------------------------------------------------------------------
@@ -42,7 +43,7 @@ export const UnknownRecord: Arbitrary<Record<string, unknown>> = fc.dictionary(s
 // combinators
 // -------------------------------------------------------------------------------------
 
-export const refine = <A, B extends A>(refinement: (a: A) => a is B) => (from: Arbitrary<A>): Arbitrary<B> =>
+export const refine = <A, B extends A>(refinement: Refinement<A, B>) => (from: Arbitrary<A>): Arbitrary<B> =>
   from.filter(refinement)
 
 export function nullable<A>(or: Arbitrary<A>): Arbitrary<null | A> {

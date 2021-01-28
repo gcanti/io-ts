@@ -206,7 +206,7 @@ export const withMessage = <I>(
  * @since 2.2.7
  */
 export const refine = <A, B extends A>(
-  refinement: (a: A) => a is B,
+  refinement: Refinement<A, B>,
   id: string
 ): (<I>(from: Decoder<I, A>) => Decoder<I, B>) => K.refine(M)(refinement, (a) => error(a, id))
 

@@ -253,7 +253,7 @@ Added in v2.2.3
 
 ```ts
 export declare const refine: <A, B extends A>(
-  refinement: (a: A) => a is B,
+  refinement: Refinement<A, B>,
   id: string
 ) => <I, O>(from: Codec<I, O, A>) => Codec<I, O, B>
 ```

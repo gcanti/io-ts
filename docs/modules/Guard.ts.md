@@ -158,7 +158,7 @@ Added in v2.2.0
 
 ```ts
 export declare const refine: <I, A extends I, B extends A>(
-  refinement: (a: A) => a is B
+  refinement: Refinement<A, B>
 ) => (from: Guard<I, A>) => Guard<I, B>
 ```
 
