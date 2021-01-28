@@ -16,5 +16,5 @@
     "stripInternal": true,
     "lib": ["es2015", "ESNext.BigInt"]
   },
-  "include": ["./src/**/*"]
+  "include": ["./src", "./test", "./scripts"]
 }

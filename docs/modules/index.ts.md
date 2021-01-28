@@ -12,12 +12,78 @@ Added in v1.0.0
 
 <h2 class="text-delta">Table of contents</h2>
 
-- [Combinators](#combinators)
+- [Codec](#codec)
+  - [Any (interface)](#any-interface)
+  - [Decode (type alias)](#decode-type-alias)
+  - [Decoder (interface)](#decoder-interface)
+  - [Encode (type alias)](#encode-type-alias)
+  - [Encoder (interface)](#encoder-interface)
+  - [InputOf (type alias)](#inputof-type-alias)
+  - [Is (type alias)](#is-type-alias)
+  - [Mixed (interface)](#mixed-interface)
+  - [OutputOf (type alias)](#outputof-type-alias)
+  - [Type (class)](#type-class)
+    - [pipe (method)](#pipe-method)
+    - [asDecoder (method)](#asdecoder-method)
+    - [asEncoder (method)](#asencoder-method)
+    - [decode (method)](#decode-method)
+    - [\_A (property)](#_a-property)
+    - [\_O (property)](#_o-property)
+    - [\_I (property)](#_i-property)
+  - [TypeOf (type alias)](#typeof-type-alias)
+  - [Validate (type alias)](#validate-type-alias)
+- [Decode error](#decode-error)
+  - [Context (interface)](#context-interface)
+  - [ContextEntry (interface)](#contextentry-interface)
+  - [Errors (interface)](#errors-interface)
+  - [Validation (type alias)](#validation-type-alias)
+  - [ValidationError (interface)](#validationerror-interface)
+  - [failure](#failure)
+  - [failures](#failures)
+  - [success](#success)
+- [combinators](#combinators)
+  - [ArrayC (interface)](#arrayc-interface)
+  - [ArrayType (class)](#arraytype-class)
+    - [\_tag (property)](#_tag-property)
+  - [Brand (interface)](#brand-interface)
+  - [BrandC (interface)](#brandc-interface)
+  - [Branded (type alias)](#branded-type-alias)
+  - [DictionaryType (class)](#dictionarytype-class)
+    - [\_tag (property)](#_tag-property-1)
+  - [ExactC (interface)](#exactc-interface)
+  - [ExactType (class)](#exacttype-class)
+    - [\_tag (property)](#_tag-property-2)
+  - [InterfaceType (class)](#interfacetype-class)
+    - [\_tag (property)](#_tag-property-3)
+  - [IntersectionC (interface)](#intersectionc-interface)
+  - [IntersectionType (class)](#intersectiontype-class)
+    - [\_tag (property)](#_tag-property-4)
+  - [PartialC (interface)](#partialc-interface)
+  - [PartialType (class)](#partialtype-class)
+    - [\_tag (property)](#_tag-property-5)
+  - [ReadonlyArrayC (interface)](#readonlyarrayc-interface)
+  - [ReadonlyArrayType (class)](#readonlyarraytype-class)
+    - [\_tag (property)](#_tag-property-6)
+  - [ReadonlyC (interface)](#readonlyc-interface)
+  - [ReadonlyType (class)](#readonlytype-class)
+    - [\_tag (property)](#_tag-property-7)
+  - [RecordC (interface)](#recordc-interface)
+  - [RecursiveType (class)](#recursivetype-class)
+    - [\_tag (property)](#_tag-property-8)
+    - [type (property)](#type-property)
+  - [RefinementType (class)](#refinementtype-class)
+    - [\_tag (property)](#_tag-property-9)
+  - [TupleC (interface)](#tuplec-interface)
+  - [TupleType (class)](#tupletype-class)
+    - [\_tag (property)](#_tag-property-10)
+  - [TypeC (interface)](#typec-interface)
+  - [UnionC (interface)](#unionc-interface)
+  - [UnionType (class)](#uniontype-class)
+    - [\_tag (property)](#_tag-property-11)
   - [array](#array)
   - [brand](#brand)
+  - [exact](#exact)
   - [intersection](#intersection)
-  - [keyof](#keyof)
-  - [literal](#literal)
   - [partial](#partial)
   - [readonly](#readonly)
   - [readonlyArray](#readonlyarray)
@@ -27,61 +93,39 @@ Added in v1.0.0
   - [tuple](#tuple)
   - [type](#type)
   - [union](#union)
-- [Model](#model)
-  - [Context (interface)](#context-interface)
-  - [ContextEntry (interface)](#contextentry-interface)
-  - [Decode (type alias)](#decode-type-alias)
-  - [Decoder (interface)](#decoder-interface)
-  - [Encode (type alias)](#encode-type-alias)
-  - [Encoder (interface)](#encoder-interface)
-  - [Errors (interface)](#errors-interface)
-  - [Is (type alias)](#is-type-alias)
-  - [Type (class)](#type-class)
-    - [pipe (method)](#pipe-method)
-    - [asDecoder (method)](#asdecoder-method)
-    - [asEncoder (method)](#asencoder-method)
-    - [decode (method)](#decode-method)
-    - [\_A (property)](#_a-property)
-    - [\_O (property)](#_o-property)
-    - [\_I (property)](#_i-property)
-  - [Validate (type alias)](#validate-type-alias)
-  - [Validation (type alias)](#validation-type-alias)
-  - [ValidationError (interface)](#validationerror-interface)
-- [Primitives](#primitives)
-  - [Int](#int)
-  - [UnknownArray](#unknownarray)
-  - [UnknownRecord](#unknownrecord)
-  - [bigint](#bigint)
-  - [boolean](#boolean)
-  - [nullType](#nulltype)
-  - [number](#number)
-  - [string](#string)
-  - [unknown](#unknown)
-  - [voidType](#voidtype)
+- [constructors](#constructors)
+  - [KeyofC (interface)](#keyofc-interface)
+  - [KeyofType (class)](#keyoftype-class)
+    - [\_tag (property)](#_tag-property-12)
+  - [LiteralC (interface)](#literalc-interface)
+  - [LiteralType (class)](#literaltype-class)
+    - [\_tag (property)](#_tag-property-13)
+  - [keyof](#keyof)
+  - [literal](#literal)
 - [deprecated](#deprecated)
   - [~~AnyC~~ (interface)](#anyc-interface)
   - [~~AnyType~~ (class)](#anytype-class)
-    - [\_tag (property)](#_tag-property)
+    - [\_tag (property)](#_tag-property-14)
   - [~~Array~~](#array)
   - [~~Compact~~ (type alias)](#compact-type-alias)
   - [~~Dictionary~~](#dictionary)
   - [~~Exact~~ (type alias)](#exact-type-alias)
   - [~~FunctionC~~ (interface)](#functionc-interface)
   - [~~FunctionType~~ (class)](#functiontype-class)
-    - [\_tag (property)](#_tag-property-1)
+    - [\_tag (property)](#_tag-property-15)
   - [~~Function~~](#function)
   - [~~Integer~~](#integer)
   - [~~NeverC~~ (interface)](#neverc-interface)
   - [~~NeverType~~ (class)](#nevertype-class)
-    - [\_tag (property)](#_tag-property-2)
+    - [\_tag (property)](#_tag-property-16)
   - [~~ObjectC~~ (interface)](#objectc-interface)
   - [~~ObjectType~~ (class)](#objecttype-class)
-    - [\_tag (property)](#_tag-property-3)
+    - [\_tag (property)](#_tag-property-17)
   - [~~PropsOf~~ (type alias)](#propsof-type-alias)
   - [~~RefinementC~~ (interface)](#refinementc-interface)
   - [~~StrictC~~ (interface)](#strictc-interface)
   - [~~StrictType~~ (class)](#stricttype-class)
-    - [\_tag (property)](#_tag-property-4)
+    - [\_tag (property)](#_tag-property-18)
   - [~~TaggedExact~~ (interface)](#taggedexact-interface)
   - [~~TaggedIntersectionArgument~~ (type alias)](#taggedintersectionargument-type-alias)
   - [~~TaggedIntersection~~ (interface)](#taggedintersection-interface)
@@ -103,319 +147,80 @@ Added in v1.0.0
   - [~~object~~](#object)
   - [~~refinement~~](#refinement)
   - [~~taggedUnion~~](#taggedunion)
-- [utils](#utils)
-  - [Any (interface)](#any-interface)
+- [primitives](#primitives)
   - [AnyArrayType (class)](#anyarraytype-class)
-    - [\_tag (property)](#_tag-property-5)
+    - [\_tag (property)](#_tag-property-19)
   - [AnyDictionaryType (class)](#anydictionarytype-class)
-    - [\_tag (property)](#_tag-property-6)
-  - [AnyProps (interface)](#anyprops-interface)
-  - [ArrayC (interface)](#arrayc-interface)
-  - [ArrayType (class)](#arraytype-class)
-    - [\_tag (property)](#_tag-property-7)
+    - [\_tag (property)](#_tag-property-20)
   - [BigIntC (interface)](#bigintc-interface)
   - [BigIntType (class)](#biginttype-class)
-    - [\_tag (property)](#_tag-property-8)
+    - [\_tag (property)](#_tag-property-21)
   - [BooleanC (interface)](#booleanc-interface)
   - [BooleanType (class)](#booleantype-class)
-    - [\_tag (property)](#_tag-property-9)
-  - [Brand (interface)](#brand-interface)
-  - [BrandC (interface)](#brandc-interface)
-  - [Branded (type alias)](#branded-type-alias)
-  - [DictionaryType (class)](#dictionarytype-class)
-    - [\_tag (property)](#_tag-property-10)
-  - [ExactC (interface)](#exactc-interface)
-  - [ExactType (class)](#exacttype-class)
-    - [\_tag (property)](#_tag-property-11)
-  - [HasProps (type alias)](#hasprops-type-alias)
-  - [HasPropsIntersection (interface)](#haspropsintersection-interface)
-  - [HasPropsReadonly (interface)](#haspropsreadonly-interface)
-  - [HasPropsRefinement (interface)](#haspropsrefinement-interface)
-  - [InputOf (type alias)](#inputof-type-alias)
+    - [\_tag (property)](#_tag-property-22)
+  - [Int](#int)
   - [Int (type alias)](#int-type-alias)
   - [IntBrand (interface)](#intbrand-interface)
-  - [InterfaceType (class)](#interfacetype-class)
-    - [\_tag (property)](#_tag-property-12)
-  - [IntersectionC (interface)](#intersectionc-interface)
-  - [IntersectionType (class)](#intersectiontype-class)
-    - [\_tag (property)](#_tag-property-13)
-  - [KeyofC (interface)](#keyofc-interface)
-  - [KeyofType (class)](#keyoftype-class)
-    - [\_tag (property)](#_tag-property-14)
-  - [LiteralC (interface)](#literalc-interface)
-  - [LiteralType (class)](#literaltype-class)
-    - [\_tag (property)](#_tag-property-15)
-  - [Mixed (interface)](#mixed-interface)
   - [NullC (interface)](#nullc-interface)
   - [NullType (class)](#nulltype-class)
-    - [\_tag (property)](#_tag-property-16)
+    - [\_tag (property)](#_tag-property-23)
   - [NumberC (interface)](#numberc-interface)
   - [NumberType (class)](#numbertype-class)
-    - [\_tag (property)](#_tag-property-17)
-  - [OutputOf (type alias)](#outputof-type-alias)
-  - [OutputOfDictionary (type alias)](#outputofdictionary-type-alias)
-  - [OutputOfPartialProps (type alias)](#outputofpartialprops-type-alias)
-  - [OutputOfProps (type alias)](#outputofprops-type-alias)
-  - [PartialC (interface)](#partialc-interface)
-  - [PartialType (class)](#partialtype-class)
-    - [\_tag (property)](#_tag-property-18)
-  - [Props (interface)](#props-interface)
-  - [ReadonlyArrayC (interface)](#readonlyarrayc-interface)
-  - [ReadonlyArrayType (class)](#readonlyarraytype-class)
-    - [\_tag (property)](#_tag-property-19)
-  - [ReadonlyC (interface)](#readonlyc-interface)
-  - [ReadonlyType (class)](#readonlytype-class)
-    - [\_tag (property)](#_tag-property-20)
-  - [RecordC (interface)](#recordc-interface)
-  - [RecursiveType (class)](#recursivetype-class)
-    - [\_tag (property)](#_tag-property-21)
-    - [type (property)](#type-property)
-  - [RefinementType (class)](#refinementtype-class)
-    - [\_tag (property)](#_tag-property-22)
+    - [\_tag (property)](#_tag-property-24)
   - [StringC (interface)](#stringc-interface)
   - [StringType (class)](#stringtype-class)
-    - [\_tag (property)](#_tag-property-23)
-  - [TupleC (interface)](#tuplec-interface)
-  - [TupleType (class)](#tupletype-class)
-    - [\_tag (property)](#_tag-property-24)
-  - [TypeC (interface)](#typec-interface)
-  - [TypeOf (type alias)](#typeof-type-alias)
-  - [TypeOfDictionary (type alias)](#typeofdictionary-type-alias)
-  - [TypeOfPartialProps (type alias)](#typeofpartialprops-type-alias)
-  - [TypeOfProps (type alias)](#typeofprops-type-alias)
+    - [\_tag (property)](#_tag-property-25)
   - [UndefinedC (interface)](#undefinedc-interface)
   - [UndefinedType (class)](#undefinedtype-class)
-    - [\_tag (property)](#_tag-property-25)
-  - [UnionC (interface)](#unionc-interface)
-  - [UnionType (class)](#uniontype-class)
     - [\_tag (property)](#_tag-property-26)
+  - [UnknownArray](#unknownarray)
   - [UnknownArrayC (interface)](#unknownarrayc-interface)
   - [UnknownC (interface)](#unknownc-interface)
+  - [UnknownRecord](#unknownrecord)
   - [UnknownRecordC (interface)](#unknownrecordc-interface)
   - [UnknownType (class)](#unknowntype-class)
     - [\_tag (property)](#_tag-property-27)
   - [VoidC (interface)](#voidc-interface)
   - [VoidType (class)](#voidtype-class)
     - [\_tag (property)](#_tag-property-28)
+  - [bigint](#bigint)
+  - [boolean](#boolean)
+  - [null](#null)
+  - [nullType](#nulltype)
+  - [number](#number)
+  - [string](#string)
+  - [undefined](#undefined)
+  - [unknown](#unknown)
+  - [void](#void)
+  - [voidType](#voidtype)
+- [utils](#utils)
+  - [AnyProps (interface)](#anyprops-interface)
+  - [HasProps (type alias)](#hasprops-type-alias)
+  - [HasPropsIntersection (interface)](#haspropsintersection-interface)
+  - [HasPropsReadonly (interface)](#haspropsreadonly-interface)
+  - [HasPropsRefinement (interface)](#haspropsrefinement-interface)
+  - [OutputOfDictionary (type alias)](#outputofdictionary-type-alias)
+  - [OutputOfPartialProps (type alias)](#outputofpartialprops-type-alias)
+  - [OutputOfProps (type alias)](#outputofprops-type-alias)
+  - [Props (interface)](#props-interface)
+  - [TypeOfDictionary (type alias)](#typeofdictionary-type-alias)
+  - [TypeOfPartialProps (type alias)](#typeofpartialprops-type-alias)
+  - [TypeOfProps (type alias)](#typeofprops-type-alias)
   - [appendContext](#appendcontext)
-  - [exact](#exact)
-  - [failure](#failure)
-  - [failures](#failures)
   - [getContextEntry](#getcontextentry)
   - [getFunctionName](#getfunctionname)
   - [identity](#identity)
-  - [null](#null)
-  - [success](#success)
-  - [undefined](#undefined)
-  - [void](#void)
 
 ---
 
-# Combinators
+# Codec
 
-## array
-
-**Signature**
-
-```ts
-export declare const array: <C extends Mixed>(item: C, name?: string) => ArrayC<C>
-```
-
-Added in v1.0.0
-
-## brand
+## Any (interface)
 
 **Signature**
 
 ```ts
-export declare const brand: <C extends Any, N extends string, B extends { readonly [K in N]: symbol }>(
-  codec: C,
-  predicate: Refinement<C['_A'], Branded<C['_A'], B>>,
-  name: N
-) => BrandC<C, B>
-```
-
-Added in v1.8.1
-
-## intersection
-
-**Signature**
-
-```ts
-export declare function intersection<
-  A extends Mixed,
-  B extends Mixed,
-  C extends Mixed,
-  D extends Mixed,
-  E extends Mixed
->(codecs: [A, B, C, D, E], name?: string): IntersectionC<[A, B, C, D, E]>
-export declare function intersection<A extends Mixed, B extends Mixed, C extends Mixed, D extends Mixed>(
-  codecs: [A, B, C, D],
-  name?: string
-): IntersectionC<[A, B, C, D]>
-export declare function intersection<A extends Mixed, B extends Mixed, C extends Mixed>(
-  codecs: [A, B, C],
-  name?: string
-): IntersectionC<[A, B, C]>
-export declare function intersection<A extends Mixed, B extends Mixed>(
-  codecs: [A, B],
-  name?: string
-): IntersectionC<[A, B]>
-```
-
-Added in v1.0.0
-
-## keyof
-
-**Signature**
-
-```ts
-export declare const keyof: <D extends { [key: string]: unknown }>(keys: D, name?: string) => KeyofC<D>
-```
-
-Added in v1.0.0
-
-## literal
-
-**Signature**
-
-```ts
-export declare const literal: <V extends Literal>(value: V, name?: string) => LiteralC<V>
-```
-
-Added in v1.0.0
-
-## partial
-
-**Signature**
-
-```ts
-export declare const partial: <P extends Props>(props: P, name?: string) => PartialC<P>
-```
-
-Added in v1.0.0
-
-## readonly
-
-**Signature**
-
-```ts
-export declare const readonly: <C extends Mixed>(codec: C, name?: string) => ReadonlyC<C>
-```
-
-Added in v1.0.0
-
-## readonlyArray
-
-**Signature**
-
-```ts
-export declare const readonlyArray: <C extends Mixed>(item: C, name?: string) => ReadonlyArrayC<C>
-```
-
-Added in v1.0.0
-
-## record
-
-**Signature**
-
-```ts
-export declare function record<D extends Mixed, C extends Mixed>(domain: D, codomain: C, name?: string): RecordC<D, C>
-```
-
-Added in v1.7.1
-
-## recursion
-
-**Signature**
-
-```ts
-export declare const recursion: <A, O = A, I = unknown, C extends Type<A, O, I> = Type<A, O, I>>(
-  name: string,
-  definition: (self: C) => C
-) => RecursiveType<C, A, O, I>
-```
-
-Added in v1.0.0
-
-## strict
-
-Strips additional properties
-
-**Signature**
-
-```ts
-export declare const strict: <P extends Props>(props: P, name?: string) => ExactC<TypeC<P>>
-```
-
-Added in v1.0.0
-
-## tuple
-
-**Signature**
-
-```ts
-export declare function tuple<A extends Mixed, B extends Mixed, C extends Mixed, D extends Mixed, E extends Mixed>(
-  codecs: [A, B, C, D, E],
-  name?: string
-): TupleC<[A, B, C, D, E]>
-export declare function tuple<A extends Mixed, B extends Mixed, C extends Mixed, D extends Mixed>(
-  codecs: [A, B, C, D],
-  name?: string
-): TupleC<[A, B, C, D]>
-export declare function tuple<A extends Mixed, B extends Mixed, C extends Mixed>(
-  codecs: [A, B, C],
-  name?: string
-): TupleC<[A, B, C]>
-export declare function tuple<A extends Mixed, B extends Mixed>(codecs: [A, B], name?: string): TupleC<[A, B]>
-export declare function tuple<A extends Mixed>(codecs: [A], name?: string): TupleC<[A]>
-```
-
-Added in v1.0.0
-
-## type
-
-**Signature**
-
-```ts
-export declare const type: <P extends Props>(props: P, name?: string) => TypeC<P>
-```
-
-Added in v1.0.0
-
-## union
-
-**Signature**
-
-```ts
-export declare const union: <CS extends [Mixed, Mixed, ...Mixed[]]>(codecs: CS, name?: string) => UnionC<CS>
-```
-
-Added in v1.0.0
-
-# Model
-
-## Context (interface)
-
-**Signature**
-
-```ts
-export interface Context extends ReadonlyArray<ContextEntry> {}
-```
-
-Added in v1.0.0
-
-## ContextEntry (interface)
-
-**Signature**
-
-```ts
-export interface ContextEntry {
-  readonly key: string
-  readonly type: Decoder<any, any>
-  /** the input data */
-  readonly actual?: unknown
-}
+export interface Any extends Type<any, any, any> {}
 ```
 
 Added in v1.0.0
@@ -466,12 +271,12 @@ export interface Encoder<A, O> {
 
 Added in v1.0.0
 
-## Errors (interface)
+## InputOf (type alias)
 
 **Signature**
 
 ```ts
-export interface Errors extends Array<ValidationError> {}
+export type InputOf<C extends Any> = C['_I']
 ```
 
 Added in v1.0.0
@@ -482,6 +287,26 @@ Added in v1.0.0
 
 ```ts
 export type Is<A> = (u: unknown) => u is A
+```
+
+Added in v1.0.0
+
+## Mixed (interface)
+
+**Signature**
+
+```ts
+export interface Mixed extends Type<any, any, unknown> {}
+```
+
+Added in v1.0.0
+
+## OutputOf (type alias)
+
+**Signature**
+
+```ts
+export type OutputOf<C extends Any> = C['_O']
 ```
 
 Added in v1.0.0
@@ -583,12 +408,59 @@ readonly _I: I
 
 Added in v1.0.0
 
+## TypeOf (type alias)
+
+**Signature**
+
+```ts
+export type TypeOf<C extends Any> = C['_A']
+```
+
+Added in v1.0.0
+
 ## Validate (type alias)
 
 **Signature**
 
 ```ts
 export type Validate<I, A> = (i: I, context: Context) => Validation<A>
+```
+
+Added in v1.0.0
+
+# Decode error
+
+## Context (interface)
+
+**Signature**
+
+```ts
+export interface Context extends ReadonlyArray<ContextEntry> {}
+```
+
+Added in v1.0.0
+
+## ContextEntry (interface)
+
+**Signature**
+
+```ts
+export interface ContextEntry {
+  readonly key: string
+  readonly type: Decoder<any, any>
+  /** the input data */
+  readonly actual?: unknown
+}
+```
+
+Added in v1.0.0
+
+## Errors (interface)
+
+**Signature**
+
+```ts
+export interface Errors extends Array<ValidationError> {}
 ```
 
 Added in v1.0.0
@@ -620,109 +492,855 @@ export interface ValidationError {
 
 Added in v1.0.0
 
-# Primitives
-
-## Int
-
-A branded codec representing an integer
+## failure
 
 **Signature**
 
 ```ts
-export declare const Int: BrandC<NumberC, IntBrand>
+export declare const failure: <T>(value: unknown, context: Context, message?: string) => Either<Errors, T>
+```
+
+Added in v1.0.0
+
+## failures
+
+**Signature**
+
+```ts
+export declare const failures: <T>(errors: Errors) => Either<Errors, T>
+```
+
+Added in v1.0.0
+
+## success
+
+**Signature**
+
+```ts
+export declare const success: <T>(value: T) => Either<Errors, T>
+```
+
+Added in v1.0.0
+
+# combinators
+
+## ArrayC (interface)
+
+**Signature**
+
+```ts
+export interface ArrayC<C extends Mixed> extends ArrayType<C, Array<TypeOf<C>>, Array<OutputOf<C>>, unknown> {}
+```
+
+Added in v1.5.3
+
+## ArrayType (class)
+
+**Signature**
+
+```ts
+export declare class ArrayType<C, A, O, I> {
+  constructor(
+    name: string,
+    is: ArrayType<C, A, O, I>['is'],
+    validate: ArrayType<C, A, O, I>['validate'],
+    encode: ArrayType<C, A, O, I>['encode'],
+    readonly type: C
+  )
+}
+```
+
+Added in v1.0.0
+
+### \_tag (property)
+
+**Signature**
+
+```ts
+readonly _tag: "ArrayType"
+```
+
+Added in v1.0.0
+
+## Brand (interface)
+
+**Signature**
+
+```ts
+export interface Brand<B> {
+  readonly [_brand]: B
+}
 ```
 
 Added in v1.8.1
 
-## UnknownArray
+## BrandC (interface)
 
 **Signature**
 
 ```ts
-export declare const UnknownArray: UnknownArrayC
+export interface BrandC<C extends Any, B> extends RefinementType<C, Branded<TypeOf<C>, B>, OutputOf<C>, InputOf<C>> {}
+```
+
+Added in v1.8.1
+
+## Branded (type alias)
+
+**Signature**
+
+```ts
+export type Branded<A, B> = A & Brand<B>
+```
+
+Added in v1.8.1
+
+## DictionaryType (class)
+
+**Signature**
+
+```ts
+export declare class DictionaryType<D, C, A, O, I> {
+  constructor(
+    name: string,
+    is: DictionaryType<D, C, A, O, I>['is'],
+    validate: DictionaryType<D, C, A, O, I>['validate'],
+    encode: DictionaryType<D, C, A, O, I>['encode'],
+    readonly domain: D,
+    readonly codomain: C
+  )
+}
+```
+
+Added in v1.0.0
+
+### \_tag (property)
+
+**Signature**
+
+```ts
+readonly _tag: "DictionaryType"
+```
+
+Added in v1.0.0
+
+## ExactC (interface)
+
+**Signature**
+
+```ts
+export interface ExactC<C extends HasProps> extends ExactType<C, TypeOf<C>, OutputOf<C>, InputOf<C>> {}
+```
+
+Added in v1.5.3
+
+## ExactType (class)
+
+**Signature**
+
+```ts
+export declare class ExactType<C, A, O, I> {
+  constructor(
+    name: string,
+    is: ExactType<C, A, O, I>['is'],
+    validate: ExactType<C, A, O, I>['validate'],
+    encode: ExactType<C, A, O, I>['encode'],
+    readonly type: C
+  )
+}
+```
+
+Added in v1.1.0
+
+### \_tag (property)
+
+**Signature**
+
+```ts
+readonly _tag: "ExactType"
+```
+
+Added in v1.0.0
+
+## InterfaceType (class)
+
+**Signature**
+
+```ts
+export declare class InterfaceType<P, A, O, I> {
+  constructor(
+    name: string,
+    is: InterfaceType<P, A, O, I>['is'],
+    validate: InterfaceType<P, A, O, I>['validate'],
+    encode: InterfaceType<P, A, O, I>['encode'],
+    readonly props: P
+  )
+}
+```
+
+Added in v1.0.0
+
+### \_tag (property)
+
+**Signature**
+
+```ts
+readonly _tag: "InterfaceType"
+```
+
+Added in v1.0.0
+
+## IntersectionC (interface)
+
+**Signature**
+
+```ts
+export interface IntersectionC<CS extends [Mixed, Mixed, ...Array<Mixed>]>
+  extends IntersectionType<
+    CS,
+    CS extends { length: 2 }
+      ? TypeOf<CS[0]> & TypeOf<CS[1]>
+      : CS extends { length: 3 }
+      ? TypeOf<CS[0]> & TypeOf<CS[1]> & TypeOf<CS[2]>
+      : CS extends { length: 4 }
+      ? TypeOf<CS[0]> & TypeOf<CS[1]> & TypeOf<CS[2]> & TypeOf<CS[3]>
+      : CS extends { length: 5 }
+      ? TypeOf<CS[0]> & TypeOf<CS[1]> & TypeOf<CS[2]> & TypeOf<CS[3]> & TypeOf<CS[4]>
+      : unknown,
+    CS extends { length: 2 }
+      ? OutputOf<CS[0]> & OutputOf<CS[1]>
+      : CS extends { length: 3 }
+      ? OutputOf<CS[0]> & OutputOf<CS[1]> & OutputOf<CS[2]>
+      : CS extends { length: 4 }
+      ? OutputOf<CS[0]> & OutputOf<CS[1]> & OutputOf<CS[2]> & OutputOf<CS[3]>
+      : CS extends { length: 5 }
+      ? OutputOf<CS[0]> & OutputOf<CS[1]> & OutputOf<CS[2]> & OutputOf<CS[3]> & OutputOf<CS[4]>
+      : unknown,
+    unknown
+  > {}
+```
+
+Added in v1.5.3
+
+## IntersectionType (class)
+
+**Signature**
+
+```ts
+export declare class IntersectionType<CS, A, O, I> {
+  constructor(
+    name: string,
+    is: IntersectionType<CS, A, O, I>['is'],
+    validate: IntersectionType<CS, A, O, I>['validate'],
+    encode: IntersectionType<CS, A, O, I>['encode'],
+    readonly types: CS
+  )
+}
+```
+
+Added in v1.0.0
+
+### \_tag (property)
+
+**Signature**
+
+```ts
+readonly _tag: "IntersectionType"
+```
+
+Added in v1.0.0
+
+## PartialC (interface)
+
+**Signature**
+
+```ts
+export interface PartialC<P extends Props>
+  extends PartialType<P, { [K in keyof P]?: TypeOf<P[K]> }, { [K in keyof P]?: OutputOf<P[K]> }, unknown> {}
+```
+
+Added in v1.5.3
+
+## PartialType (class)
+
+**Signature**
+
+```ts
+export declare class PartialType<P, A, O, I> {
+  constructor(
+    name: string,
+    is: PartialType<P, A, O, I>['is'],
+    validate: PartialType<P, A, O, I>['validate'],
+    encode: PartialType<P, A, O, I>['encode'],
+    readonly props: P
+  )
+}
+```
+
+Added in v1.0.0
+
+### \_tag (property)
+
+**Signature**
+
+```ts
+readonly _tag: "PartialType"
+```
+
+Added in v1.0.0
+
+## ReadonlyArrayC (interface)
+
+**Signature**
+
+```ts
+export interface ReadonlyArrayC<C extends Mixed>
+  extends ReadonlyArrayType<C, ReadonlyArray<TypeOf<C>>, ReadonlyArray<OutputOf<C>>, unknown> {}
+```
+
+Added in v1.5.3
+
+## ReadonlyArrayType (class)
+
+**Signature**
+
+```ts
+export declare class ReadonlyArrayType<C, A, O, I> {
+  constructor(
+    name: string,
+    is: ReadonlyArrayType<C, A, O, I>['is'],
+    validate: ReadonlyArrayType<C, A, O, I>['validate'],
+    encode: ReadonlyArrayType<C, A, O, I>['encode'],
+    readonly type: C
+  )
+}
+```
+
+Added in v1.0.0
+
+### \_tag (property)
+
+**Signature**
+
+```ts
+readonly _tag: "ReadonlyArrayType"
+```
+
+Added in v1.0.0
+
+## ReadonlyC (interface)
+
+**Signature**
+
+```ts
+export interface ReadonlyC<C extends Mixed>
+  extends ReadonlyType<C, Readonly<TypeOf<C>>, Readonly<OutputOf<C>>, unknown> {}
+```
+
+Added in v1.5.3
+
+## ReadonlyType (class)
+
+**Signature**
+
+```ts
+export declare class ReadonlyType<C, A, O, I> {
+  constructor(
+    name: string,
+    is: ReadonlyType<C, A, O, I>['is'],
+    validate: ReadonlyType<C, A, O, I>['validate'],
+    encode: ReadonlyType<C, A, O, I>['encode'],
+    readonly type: C
+  )
+}
+```
+
+Added in v1.0.0
+
+### \_tag (property)
+
+**Signature**
+
+```ts
+readonly _tag: "ReadonlyType"
+```
+
+Added in v1.0.0
+
+## RecordC (interface)
+
+**Signature**
+
+```ts
+export interface RecordC<D extends Mixed, C extends Mixed>
+  extends DictionaryType<D, C, { [K in TypeOf<D>]: TypeOf<C> }, { [K in OutputOf<D>]: OutputOf<C> }, unknown> {}
+```
+
+Added in v1.5.3
+
+## RecursiveType (class)
+
+**Signature**
+
+```ts
+export declare class RecursiveType<C, A, O, I> {
+  constructor(
+    name: string,
+    is: RecursiveType<C, A, O, I>['is'],
+    validate: RecursiveType<C, A, O, I>['validate'],
+    encode: RecursiveType<C, A, O, I>['encode'],
+    public runDefinition: () => C
+  )
+}
+```
+
+Added in v1.0.0
+
+### \_tag (property)
+
+**Signature**
+
+```ts
+readonly _tag: "RecursiveType"
+```
+
+Added in v1.0.0
+
+### type (property)
+
+**Signature**
+
+```ts
+readonly type: C
+```
+
+Added in v1.0.0
+
+## RefinementType (class)
+
+**Signature**
+
+```ts
+export declare class RefinementType<C, A, O, I> {
+  constructor(
+    name: string,
+    is: RefinementType<C, A, O, I>['is'],
+    validate: RefinementType<C, A, O, I>['validate'],
+    encode: RefinementType<C, A, O, I>['encode'],
+    readonly type: C,
+    readonly predicate: Predicate<A>
+  )
+}
+```
+
+Added in v1.0.0
+
+### \_tag (property)
+
+**Signature**
+
+```ts
+readonly _tag: "RefinementType"
+```
+
+Added in v1.0.0
+
+## TupleC (interface)
+
+**Signature**
+
+```ts
+export interface TupleC<CS extends [Mixed, ...Array<Mixed>]>
+  extends TupleType<
+    CS,
+    CS extends { length: 1 }
+      ? [TypeOf<CS[0]>]
+      : CS extends { length: 2 }
+      ? [TypeOf<CS[0]>, TypeOf<CS[1]>]
+      : CS extends { length: 3 }
+      ? [TypeOf<CS[0]>, TypeOf<CS[1]>, TypeOf<CS[2]>]
+      : CS extends { length: 4 }
+      ? [TypeOf<CS[0]>, TypeOf<CS[1]>, TypeOf<CS[2]>, TypeOf<CS[3]>]
+      : CS extends { length: 5 }
+      ? [TypeOf<CS[0]>, TypeOf<CS[1]>, TypeOf<CS[2]>, TypeOf<CS[3]>, TypeOf<CS[4]>]
+      : unknown,
+    CS extends { length: 1 }
+      ? [OutputOf<CS[0]>]
+      : CS extends { length: 2 }
+      ? [OutputOf<CS[0]>, OutputOf<CS[1]>]
+      : CS extends { length: 3 }
+      ? [OutputOf<CS[0]>, OutputOf<CS[1]>, OutputOf<CS[2]>]
+      : CS extends { length: 4 }
+      ? [OutputOf<CS[0]>, OutputOf<CS[1]>, OutputOf<CS[2]>, OutputOf<CS[3]>]
+      : CS extends { length: 5 }
+      ? [OutputOf<CS[0]>, OutputOf<CS[1]>, OutputOf<CS[2]>, OutputOf<CS[3]>, OutputOf<CS[4]>]
+      : unknown,
+    unknown
+  > {}
+```
+
+Added in v1.5.3
+
+## TupleType (class)
+
+**Signature**
+
+```ts
+export declare class TupleType<CS, A, O, I> {
+  constructor(
+    name: string,
+    is: TupleType<CS, A, O, I>['is'],
+    validate: TupleType<CS, A, O, I>['validate'],
+    encode: TupleType<CS, A, O, I>['encode'],
+    readonly types: CS
+  )
+}
+```
+
+Added in v1.0.0
+
+### \_tag (property)
+
+**Signature**
+
+```ts
+readonly _tag: "TupleType"
+```
+
+Added in v1.0.0
+
+## TypeC (interface)
+
+**Signature**
+
+```ts
+export interface TypeC<P extends Props>
+  extends InterfaceType<P, { [K in keyof P]: TypeOf<P[K]> }, { [K in keyof P]: OutputOf<P[K]> }, unknown> {}
+```
+
+Added in v1.5.3
+
+## UnionC (interface)
+
+**Signature**
+
+```ts
+export interface UnionC<CS extends [Mixed, Mixed, ...Array<Mixed>]>
+  extends UnionType<CS, TypeOf<CS[number]>, OutputOf<CS[number]>, unknown> {}
+```
+
+Added in v1.5.3
+
+## UnionType (class)
+
+**Signature**
+
+```ts
+export declare class UnionType<CS, A, O, I> {
+  constructor(
+    name: string,
+    is: UnionType<CS, A, O, I>['is'],
+    validate: UnionType<CS, A, O, I>['validate'],
+    encode: UnionType<CS, A, O, I>['encode'],
+    readonly types: CS
+  )
+}
+```
+
+Added in v1.0.0
+
+### \_tag (property)
+
+**Signature**
+
+```ts
+readonly _tag: "UnionType"
+```
+
+Added in v1.0.0
+
+## array
+
+**Signature**
+
+```ts
+export declare function array<C extends Mixed>(item: C, name: string = `Array<${item.name}>`): ArrayC<C>
+```
+
+Added in v1.0.0
+
+## brand
+
+**Signature**
+
+```ts
+export declare function brand<C extends Any, N extends string, B extends { readonly [K in N]: symbol }>(
+  codec: C,
+  predicate: Refinement<TypeOf<C>, Branded<TypeOf<C>, B>>,
+  name: N
+): BrandC<C, B>
+```
+
+Added in v1.8.1
+
+## exact
+
+Strips additional properties
+
+**Signature**
+
+```ts
+export declare function exact<C extends HasProps>(codec: C, name: string = getExactTypeName(codec)): ExactC<C>
+```
+
+Added in v1.1.0
+
+## intersection
+
+**Signature**
+
+```ts
+export declare function intersection<
+  A extends Mixed,
+  B extends Mixed,
+  C extends Mixed,
+  D extends Mixed,
+  E extends Mixed
+>(codecs: [A, B, C, D, E], name?: string): IntersectionC<[A, B, C, D, E]>
+export declare function intersection<A extends Mixed, B extends Mixed, C extends Mixed, D extends Mixed>(
+  codecs: [A, B, C, D],
+  name?: string
+): IntersectionC<[A, B, C, D]>
+export declare function intersection<A extends Mixed, B extends Mixed, C extends Mixed>(
+  codecs: [A, B, C],
+  name?: string
+): IntersectionC<[A, B, C]>
+export declare function intersection<A extends Mixed, B extends Mixed>(
+  codecs: [A, B],
+  name?: string
+): IntersectionC<[A, B]>
+```
+
+Added in v1.0.0
+
+## partial
+
+**Signature**
+
+```ts
+export declare function partial<P extends Props>(
+  props: P,
+  name: string = getPartialTypeName(getInterfaceTypeName(props))
+): PartialC<P>
+```
+
+Added in v1.0.0
+
+## readonly
+
+**Signature**
+
+```ts
+export declare function readonly<C extends Mixed>(codec: C, name: string = `Readonly<${codec.name}>`): ReadonlyC<C>
+```
+
+Added in v1.0.0
+
+## readonlyArray
+
+**Signature**
+
+```ts
+export declare function readonlyArray<C extends Mixed>(
+  item: C,
+  name: string = `ReadonlyArray<${item.name}>`
+): ReadonlyArrayC<C>
+```
+
+Added in v1.0.0
+
+## record
+
+**Signature**
+
+```ts
+export declare function record<D extends Mixed, C extends Mixed>(domain: D, codomain: C, name?: string): RecordC<D, C>
 ```
 
 Added in v1.7.1
 
-## UnknownRecord
+## recursion
 
 **Signature**
 
 ```ts
-export declare const UnknownRecord: UnknownRecordC
-```
-
-Added in v1.7.1
-
-## bigint
-
-**Signature**
-
-```ts
-export declare const bigint: BigIntC
-```
-
-Added in v2.1.0
-
-## boolean
-
-**Signature**
-
-```ts
-export declare const boolean: BooleanC
+export declare function recursion<A, O = A, I = unknown, C extends Type<A, O, I> = Type<A, O, I>>(
+  name: string,
+  definition: (self: C) => C
+): RecursiveType<C, A, O, I>
 ```
 
 Added in v1.0.0
 
-## nullType
+## strict
+
+Strips additional properties
 
 **Signature**
 
 ```ts
-export declare const nullType: NullC
+export declare const strict: <P extends Props>(props: P, name?: string) => ExactC<TypeC<P>>
 ```
 
 Added in v1.0.0
 
-## number
+## tuple
 
 **Signature**
 
 ```ts
-export declare const number: NumberC
+export declare function tuple<A extends Mixed, B extends Mixed, C extends Mixed, D extends Mixed, E extends Mixed>(
+  codecs: [A, B, C, D, E],
+  name?: string
+): TupleC<[A, B, C, D, E]>
+export declare function tuple<A extends Mixed, B extends Mixed, C extends Mixed, D extends Mixed>(
+  codecs: [A, B, C, D],
+  name?: string
+): TupleC<[A, B, C, D]>
+export declare function tuple<A extends Mixed, B extends Mixed, C extends Mixed>(
+  codecs: [A, B, C],
+  name?: string
+): TupleC<[A, B, C]>
+export declare function tuple<A extends Mixed, B extends Mixed>(codecs: [A, B], name?: string): TupleC<[A, B]>
+export declare function tuple<A extends Mixed>(codecs: [A], name?: string): TupleC<[A]>
 ```
 
 Added in v1.0.0
 
-## string
+## type
 
 **Signature**
 
 ```ts
-export declare const string: StringC
+export declare function type<P extends Props>(props: P, name: string = getInterfaceTypeName(props)): TypeC<P>
 ```
 
 Added in v1.0.0
 
-## unknown
+## union
 
 **Signature**
 
 ```ts
-export declare const unknown: UnknownC
+export declare function union<CS extends [Mixed, Mixed, ...Array<Mixed>]>(
+  codecs: CS,
+  name: string = getUnionName(codecs)
+): UnionC<CS>
 ```
 
-Added in v1.5.0
+Added in v1.0.0
 
-## voidType
+# constructors
+
+## KeyofC (interface)
 
 **Signature**
 
 ```ts
-export declare const voidType: VoidC
+export interface KeyofC<D extends { [key: string]: unknown }> extends KeyofType<D> {}
 ```
 
-Added in v1.2.0
+Added in v1.5.3
+
+## KeyofType (class)
+
+**Signature**
+
+```ts
+export declare class KeyofType<D> {
+  constructor(
+    name: string,
+    is: KeyofType<D>['is'],
+    validate: KeyofType<D>['validate'],
+    encode: KeyofType<D>['encode'],
+    readonly keys: D
+  )
+}
+```
+
+Added in v1.0.0
+
+### \_tag (property)
+
+**Signature**
+
+```ts
+readonly _tag: "KeyofType"
+```
+
+Added in v1.0.0
+
+## LiteralC (interface)
+
+**Signature**
+
+```ts
+export interface LiteralC<V extends LiteralValue> extends LiteralType<V> {}
+```
+
+Added in v1.5.3
+
+## LiteralType (class)
+
+**Signature**
+
+```ts
+export declare class LiteralType<V> {
+  constructor(
+    name: string,
+    is: LiteralType<V>['is'],
+    validate: LiteralType<V>['validate'],
+    encode: LiteralType<V>['encode'],
+    readonly value: V
+  )
+}
+```
+
+Added in v1.0.0
+
+### \_tag (property)
+
+**Signature**
+
+```ts
+readonly _tag: "LiteralType"
+```
+
+Added in v1.0.0
+
+## keyof
+
+**Signature**
+
+```ts
+export declare function keyof<D extends { [key: string]: unknown }>(
+  keys: D,
+  name: string = Object.keys(keys)
+    .map((k) => JSON.stringify(k))
+    .join(' | ')
+): KeyofC<D>
+```
+
+Added in v1.0.0
+
+## literal
+
+**Signature**
+
+```ts
+export declare function literal<V extends LiteralValue>(value: V, name: string = JSON.stringify(value)): LiteralC<V>
+```
+
+Added in v1.0.0
 
 # deprecated
 
@@ -1243,7 +1861,7 @@ Use `type` instead
 **Signature**
 
 ```ts
-export declare const interface: <P extends Props>(props: P, name?: string) => TypeC<P>
+export declare const interface: typeof type
 ```
 
 Added in v1.0.0
@@ -1315,17 +1933,7 @@ export declare const taggedUnion: <Tag extends string, CS extends [Mixed, Mixed,
 
 Added in v1.3.0
 
-# utils
-
-## Any (interface)
-
-**Signature**
-
-```ts
-export interface Any extends Type<any, any, any> {}
-```
-
-Added in v1.0.0
+# primitives
 
 ## AnyArrayType (class)
 
@@ -1367,56 +1975,6 @@ Added in v1.0.0
 
 ```ts
 readonly _tag: "AnyDictionaryType"
-```
-
-Added in v1.0.0
-
-## AnyProps (interface)
-
-**Signature**
-
-```ts
-export interface AnyProps {
-  [key: string]: Any
-}
-```
-
-Added in v1.0.0
-
-## ArrayC (interface)
-
-**Signature**
-
-```ts
-export interface ArrayC<C extends Mixed> extends ArrayType<C, Array<TypeOf<C>>, Array<OutputOf<C>>, unknown> {}
-```
-
-Added in v1.5.3
-
-## ArrayType (class)
-
-**Signature**
-
-```ts
-export declare class ArrayType<C, A, O, I> {
-  constructor(
-    name: string,
-    is: ArrayType<C, A, O, I>['is'],
-    validate: ArrayType<C, A, O, I>['validate'],
-    encode: ArrayType<C, A, O, I>['encode'],
-    readonly type: C
-  )
-}
-```
-
-Added in v1.0.0
-
-### \_tag (property)
-
-**Signature**
-
-```ts
-readonly _tag: "ArrayType"
 ```
 
 Added in v1.0.0
@@ -1485,161 +2043,17 @@ readonly _tag: "BooleanType"
 
 Added in v1.0.0
 
-## Brand (interface)
+## Int
+
+A branded codec representing an integer
 
 **Signature**
 
 ```ts
-export interface Brand<B> {
-  readonly [_brand]: B
-}
+export declare const Int: BrandC<NumberC, IntBrand>
 ```
 
 Added in v1.8.1
-
-## BrandC (interface)
-
-**Signature**
-
-```ts
-export interface BrandC<C extends Any, B> extends RefinementType<C, Branded<TypeOf<C>, B>, OutputOf<C>, InputOf<C>> {}
-```
-
-Added in v1.8.1
-
-## Branded (type alias)
-
-**Signature**
-
-```ts
-export type Branded<A, B> = A & Brand<B>
-```
-
-Added in v1.8.1
-
-## DictionaryType (class)
-
-**Signature**
-
-```ts
-export declare class DictionaryType<D, C, A, O, I> {
-  constructor(
-    name: string,
-    is: DictionaryType<D, C, A, O, I>['is'],
-    validate: DictionaryType<D, C, A, O, I>['validate'],
-    encode: DictionaryType<D, C, A, O, I>['encode'],
-    readonly domain: D,
-    readonly codomain: C
-  )
-}
-```
-
-Added in v1.0.0
-
-### \_tag (property)
-
-**Signature**
-
-```ts
-readonly _tag: "DictionaryType"
-```
-
-Added in v1.0.0
-
-## ExactC (interface)
-
-**Signature**
-
-```ts
-export interface ExactC<C extends HasProps> extends ExactType<C, TypeOf<C>, OutputOf<C>, InputOf<C>> {}
-```
-
-Added in v1.5.3
-
-## ExactType (class)
-
-**Signature**
-
-```ts
-export declare class ExactType<C, A, O, I> {
-  constructor(
-    name: string,
-    is: ExactType<C, A, O, I>['is'],
-    validate: ExactType<C, A, O, I>['validate'],
-    encode: ExactType<C, A, O, I>['encode'],
-    readonly type: C
-  )
-}
-```
-
-Added in v1.1.0
-
-### \_tag (property)
-
-**Signature**
-
-```ts
-readonly _tag: "ExactType"
-```
-
-Added in v1.0.0
-
-## HasProps (type alias)
-
-**Signature**
-
-```ts
-export type HasProps =
-  | HasPropsRefinement
-  | HasPropsReadonly
-  | HasPropsIntersection
-  | InterfaceType<any, any, any, any>
-  // tslint:disable-next-line: deprecation
-  | StrictType<any, any, any, any>
-  | PartialType<any, any, any, any>
-```
-
-Added in v1.1.0
-
-## HasPropsIntersection (interface)
-
-**Signature**
-
-```ts
-export interface HasPropsIntersection extends IntersectionType<Array<HasProps>, any, any, any> {}
-```
-
-Added in v1.1.0
-
-## HasPropsReadonly (interface)
-
-**Signature**
-
-```ts
-export interface HasPropsReadonly extends ReadonlyType<HasProps, any, any, any> {}
-```
-
-Added in v1.1.0
-
-## HasPropsRefinement (interface)
-
-**Signature**
-
-```ts
-export interface HasPropsRefinement extends RefinementType<HasProps, any, any, any> {}
-```
-
-Added in v1.1.0
-
-## InputOf (type alias)
-
-**Signature**
-
-```ts
-export type InputOf<C extends Any> = C['_I']
-```
-
-Added in v1.0.0
 
 ## Int (type alias)
 
@@ -1662,180 +2076,6 @@ export interface IntBrand {
 ```
 
 Added in v1.8.1
-
-## InterfaceType (class)
-
-**Signature**
-
-```ts
-export declare class InterfaceType<P, A, O, I> {
-  constructor(
-    name: string,
-    is: InterfaceType<P, A, O, I>['is'],
-    validate: InterfaceType<P, A, O, I>['validate'],
-    encode: InterfaceType<P, A, O, I>['encode'],
-    readonly props: P
-  )
-}
-```
-
-Added in v1.0.0
-
-### \_tag (property)
-
-**Signature**
-
-```ts
-readonly _tag: "InterfaceType"
-```
-
-Added in v1.0.0
-
-## IntersectionC (interface)
-
-**Signature**
-
-```ts
-export interface IntersectionC<CS extends [Mixed, Mixed, ...Array<Mixed>]>
-  extends IntersectionType<
-    CS,
-    CS extends { length: 2 }
-      ? TypeOf<CS[0]> & TypeOf<CS[1]>
-      : CS extends { length: 3 }
-      ? TypeOf<CS[0]> & TypeOf<CS[1]> & TypeOf<CS[2]>
-      : CS extends { length: 4 }
-      ? TypeOf<CS[0]> & TypeOf<CS[1]> & TypeOf<CS[2]> & TypeOf<CS[3]>
-      : CS extends { length: 5 }
-      ? TypeOf<CS[0]> & TypeOf<CS[1]> & TypeOf<CS[2]> & TypeOf<CS[3]> & TypeOf<CS[4]>
-      : unknown,
-    CS extends { length: 2 }
-      ? OutputOf<CS[0]> & OutputOf<CS[1]>
-      : CS extends { length: 3 }
-      ? OutputOf<CS[0]> & OutputOf<CS[1]> & OutputOf<CS[2]>
-      : CS extends { length: 4 }
-      ? OutputOf<CS[0]> & OutputOf<CS[1]> & OutputOf<CS[2]> & OutputOf<CS[3]>
-      : CS extends { length: 5 }
-      ? OutputOf<CS[0]> & OutputOf<CS[1]> & OutputOf<CS[2]> & OutputOf<CS[3]> & OutputOf<CS[4]>
-      : unknown,
-    unknown
-  > {}
-```
-
-Added in v1.5.3
-
-## IntersectionType (class)
-
-**Signature**
-
-```ts
-export declare class IntersectionType<CS, A, O, I> {
-  constructor(
-    name: string,
-    is: IntersectionType<CS, A, O, I>['is'],
-    validate: IntersectionType<CS, A, O, I>['validate'],
-    encode: IntersectionType<CS, A, O, I>['encode'],
-    readonly types: CS
-  )
-}
-```
-
-Added in v1.0.0
-
-### \_tag (property)
-
-**Signature**
-
-```ts
-readonly _tag: "IntersectionType"
-```
-
-Added in v1.0.0
-
-## KeyofC (interface)
-
-**Signature**
-
-```ts
-export interface KeyofC<D extends { [key: string]: unknown }> extends KeyofType<D> {}
-```
-
-Added in v1.5.3
-
-## KeyofType (class)
-
-**Signature**
-
-```ts
-export declare class KeyofType<D> {
-  constructor(
-    name: string,
-    is: KeyofType<D>['is'],
-    validate: KeyofType<D>['validate'],
-    encode: KeyofType<D>['encode'],
-    readonly keys: D
-  )
-}
-```
-
-Added in v1.0.0
-
-### \_tag (property)
-
-**Signature**
-
-```ts
-readonly _tag: "KeyofType"
-```
-
-Added in v1.0.0
-
-## LiteralC (interface)
-
-**Signature**
-
-```ts
-export interface LiteralC<V extends LiteralValue> extends LiteralType<V> {}
-```
-
-Added in v1.5.3
-
-## LiteralType (class)
-
-**Signature**
-
-```ts
-export declare class LiteralType<V> {
-  constructor(
-    name: string,
-    is: LiteralType<V>['is'],
-    validate: LiteralType<V>['validate'],
-    encode: LiteralType<V>['encode'],
-    readonly value: V
-  )
-}
-```
-
-Added in v1.0.0
-
-### \_tag (property)
-
-**Signature**
-
-```ts
-readonly _tag: "LiteralType"
-```
-
-Added in v1.0.0
-
-## Mixed (interface)
-
-**Signature**
-
-```ts
-export interface Mixed extends Type<any, any, unknown> {}
-```
-
-Added in v1.0.0
 
 ## NullC (interface)
 
@@ -1901,253 +2141,6 @@ readonly _tag: "NumberType"
 
 Added in v1.0.0
 
-## OutputOf (type alias)
-
-**Signature**
-
-```ts
-export type OutputOf<C extends Any> = C['_O']
-```
-
-Added in v1.0.0
-
-## OutputOfDictionary (type alias)
-
-**Signature**
-
-```ts
-export type OutputOfDictionary<D extends Any, C extends Any> = { [K in OutputOf<D>]: OutputOf<C> }
-```
-
-Added in v1.0.0
-
-## OutputOfPartialProps (type alias)
-
-**Signature**
-
-```ts
-export type OutputOfPartialProps<P extends AnyProps> = { [K in keyof P]?: OutputOf<P[K]> }
-```
-
-Added in v1.0.0
-
-## OutputOfProps (type alias)
-
-**Signature**
-
-```ts
-export type OutputOfProps<P extends AnyProps> = { [K in keyof P]: OutputOf<P[K]> }
-```
-
-Added in v1.0.0
-
-## PartialC (interface)
-
-**Signature**
-
-```ts
-export interface PartialC<P extends Props>
-  extends PartialType<P, { [K in keyof P]?: TypeOf<P[K]> }, { [K in keyof P]?: OutputOf<P[K]> }, unknown> {}
-```
-
-Added in v1.5.3
-
-## PartialType (class)
-
-**Signature**
-
-```ts
-export declare class PartialType<P, A, O, I> {
-  constructor(
-    name: string,
-    is: PartialType<P, A, O, I>['is'],
-    validate: PartialType<P, A, O, I>['validate'],
-    encode: PartialType<P, A, O, I>['encode'],
-    readonly props: P
-  )
-}
-```
-
-Added in v1.0.0
-
-### \_tag (property)
-
-**Signature**
-
-```ts
-readonly _tag: "PartialType"
-```
-
-Added in v1.0.0
-
-## Props (interface)
-
-**Signature**
-
-```ts
-export interface Props {
-  [key: string]: Mixed
-}
-```
-
-Added in v1.0.0
-
-## ReadonlyArrayC (interface)
-
-**Signature**
-
-```ts
-export interface ReadonlyArrayC<C extends Mixed>
-  extends ReadonlyArrayType<C, ReadonlyArray<TypeOf<C>>, ReadonlyArray<OutputOf<C>>, unknown> {}
-```
-
-Added in v1.5.3
-
-## ReadonlyArrayType (class)
-
-**Signature**
-
-```ts
-export declare class ReadonlyArrayType<C, A, O, I> {
-  constructor(
-    name: string,
-    is: ReadonlyArrayType<C, A, O, I>['is'],
-    validate: ReadonlyArrayType<C, A, O, I>['validate'],
-    encode: ReadonlyArrayType<C, A, O, I>['encode'],
-    readonly type: C
-  )
-}
-```
-
-Added in v1.0.0
-
-### \_tag (property)
-
-**Signature**
-
-```ts
-readonly _tag: "ReadonlyArrayType"
-```
-
-Added in v1.0.0
-
-## ReadonlyC (interface)
-
-**Signature**
-
-```ts
-export interface ReadonlyC<C extends Mixed>
-  extends ReadonlyType<C, Readonly<TypeOf<C>>, Readonly<OutputOf<C>>, unknown> {}
-```
-
-Added in v1.5.3
-
-## ReadonlyType (class)
-
-**Signature**
-
-```ts
-export declare class ReadonlyType<C, A, O, I> {
-  constructor(
-    name: string,
-    is: ReadonlyType<C, A, O, I>['is'],
-    validate: ReadonlyType<C, A, O, I>['validate'],
-    encode: ReadonlyType<C, A, O, I>['encode'],
-    readonly type: C
-  )
-}
-```
-
-Added in v1.0.0
-
-### \_tag (property)
-
-**Signature**
-
-```ts
-readonly _tag: "ReadonlyType"
-```
-
-Added in v1.0.0
-
-## RecordC (interface)
-
-**Signature**
-
-```ts
-export interface RecordC<D extends Mixed, C extends Mixed>
-  extends DictionaryType<D, C, { [K in TypeOf<D>]: TypeOf<C> }, { [K in OutputOf<D>]: OutputOf<C> }, unknown> {}
-```
-
-Added in v1.5.3
-
-## RecursiveType (class)
-
-**Signature**
-
-```ts
-export declare class RecursiveType<C, A, O, I> {
-  constructor(
-    name: string,
-    is: RecursiveType<C, A, O, I>['is'],
-    validate: RecursiveType<C, A, O, I>['validate'],
-    encode: RecursiveType<C, A, O, I>['encode'],
-    public runDefinition: () => C
-  )
-}
-```
-
-Added in v1.0.0
-
-### \_tag (property)
-
-**Signature**
-
-```ts
-readonly _tag: "RecursiveType"
-```
-
-Added in v1.0.0
-
-### type (property)
-
-**Signature**
-
-```ts
-readonly type: C
-```
-
-Added in v1.0.0
-
-## RefinementType (class)
-
-**Signature**
-
-```ts
-export declare class RefinementType<C, A, O, I> {
-  constructor(
-    name: string,
-    is: RefinementType<C, A, O, I>['is'],
-    validate: RefinementType<C, A, O, I>['validate'],
-    encode: RefinementType<C, A, O, I>['encode'],
-    readonly type: C,
-    readonly predicate: Predicate<A>
-  )
-}
-```
-
-Added in v1.0.0
-
-### \_tag (property)
-
-**Signature**
-
-```ts
-readonly _tag: "RefinementType"
-```
-
-Added in v1.0.0
-
 ## StringC (interface)
 
 **Signature**
@@ -2176,121 +2169,6 @@ Added in v1.0.0
 
 ```ts
 readonly _tag: "StringType"
-```
-
-Added in v1.0.0
-
-## TupleC (interface)
-
-**Signature**
-
-```ts
-export interface TupleC<CS extends [Mixed, ...Array<Mixed>]>
-  extends TupleType<
-    CS,
-    CS extends { length: 1 }
-      ? [TypeOf<CS[0]>]
-      : CS extends { length: 2 }
-      ? [TypeOf<CS[0]>, TypeOf<CS[1]>]
-      : CS extends { length: 3 }
-      ? [TypeOf<CS[0]>, TypeOf<CS[1]>, TypeOf<CS[2]>]
-      : CS extends { length: 4 }
-      ? [TypeOf<CS[0]>, TypeOf<CS[1]>, TypeOf<CS[2]>, TypeOf<CS[3]>]
-      : CS extends { length: 5 }
-      ? [TypeOf<CS[0]>, TypeOf<CS[1]>, TypeOf<CS[2]>, TypeOf<CS[3]>, TypeOf<CS[4]>]
-      : unknown,
-    CS extends { length: 1 }
-      ? [OutputOf<CS[0]>]
-      : CS extends { length: 2 }
-      ? [OutputOf<CS[0]>, OutputOf<CS[1]>]
-      : CS extends { length: 3 }
-      ? [OutputOf<CS[0]>, OutputOf<CS[1]>, OutputOf<CS[2]>]
-      : CS extends { length: 4 }
-      ? [OutputOf<CS[0]>, OutputOf<CS[1]>, OutputOf<CS[2]>, OutputOf<CS[3]>]
-      : CS extends { length: 5 }
-      ? [OutputOf<CS[0]>, OutputOf<CS[1]>, OutputOf<CS[2]>, OutputOf<CS[3]>, OutputOf<CS[4]>]
-      : unknown,
-    unknown
-  > {}
-```
-
-Added in v1.5.3
-
-## TupleType (class)
-
-**Signature**
-
-```ts
-export declare class TupleType<CS, A, O, I> {
-  constructor(
-    name: string,
-    is: TupleType<CS, A, O, I>['is'],
-    validate: TupleType<CS, A, O, I>['validate'],
-    encode: TupleType<CS, A, O, I>['encode'],
-    readonly types: CS
-  )
-}
-```
-
-Added in v1.0.0
-
-### \_tag (property)
-
-**Signature**
-
-```ts
-readonly _tag: "TupleType"
-```
-
-Added in v1.0.0
-
-## TypeC (interface)
-
-**Signature**
-
-```ts
-export interface TypeC<P extends Props>
-  extends InterfaceType<P, { [K in keyof P]: TypeOf<P[K]> }, { [K in keyof P]: OutputOf<P[K]> }, unknown> {}
-```
-
-Added in v1.5.3
-
-## TypeOf (type alias)
-
-**Signature**
-
-```ts
-export type TypeOf<C extends Any> = C['_A']
-```
-
-Added in v1.0.0
-
-## TypeOfDictionary (type alias)
-
-**Signature**
-
-```ts
-export type TypeOfDictionary<D extends Any, C extends Any> = { [K in TypeOf<D>]: TypeOf<C> }
-```
-
-Added in v1.0.0
-
-## TypeOfPartialProps (type alias)
-
-**Signature**
-
-```ts
-export type TypeOfPartialProps<P extends AnyProps> = { [K in keyof P]?: TypeOf<P[K]> }
-```
-
-Added in v1.0.0
-
-## TypeOfProps (type alias)
-
-**Signature**
-
-```ts
-export type TypeOfProps<P extends AnyProps> = { [K in keyof P]: TypeOf<P[K]> }
 ```
 
 Added in v1.0.0
@@ -2327,44 +2205,15 @@ readonly _tag: "UndefinedType"
 
 Added in v1.0.0
 
-## UnionC (interface)
+## UnknownArray
 
 **Signature**
 
 ```ts
-export interface UnionC<CS extends [Mixed, Mixed, ...Array<Mixed>]>
-  extends UnionType<CS, TypeOf<CS[number]>, OutputOf<CS[number]>, unknown> {}
+export declare const UnknownArray: UnknownArrayC
 ```
 
-Added in v1.5.3
-
-## UnionType (class)
-
-**Signature**
-
-```ts
-export declare class UnionType<CS, A, O, I> {
-  constructor(
-    name: string,
-    is: UnionType<CS, A, O, I>['is'],
-    validate: UnionType<CS, A, O, I>['validate'],
-    encode: UnionType<CS, A, O, I>['encode'],
-    readonly types: CS
-  )
-}
-```
-
-Added in v1.0.0
-
-### \_tag (property)
-
-**Signature**
-
-```ts
-readonly _tag: "UnionType"
-```
-
-Added in v1.0.0
+Added in v1.7.1
 
 ## UnknownArrayC (interface)
 
@@ -2385,6 +2234,16 @@ export interface UnknownC extends UnknownType {}
 ```
 
 Added in v1.5.3
+
+## UnknownRecord
+
+**Signature**
+
+```ts
+export declare const UnknownRecord: UnknownRecordC
+```
+
+Added in v1.7.1
 
 ## UnknownRecordC (interface)
 
@@ -2450,74 +2309,22 @@ readonly _tag: "VoidType"
 
 Added in v1.0.0
 
-## appendContext
+## bigint
 
 **Signature**
 
 ```ts
-export declare const appendContext: (c: Context, key: string, decoder: Decoder<any, any>, actual?: unknown) => Context
+export declare const bigint: BigIntC
 ```
 
-Added in v1.0.0
+Added in v2.1.0
 
-## exact
-
-Strips additional properties
+## boolean
 
 **Signature**
 
 ```ts
-export declare const exact: <C extends HasProps>(codec: C, name?: string) => ExactC<C>
-```
-
-Added in v1.1.0
-
-## failure
-
-**Signature**
-
-```ts
-export declare const failure: <T>(value: unknown, context: Context, message?: string) => Either<Errors, T>
-```
-
-Added in v1.0.0
-
-## failures
-
-**Signature**
-
-```ts
-export declare const failures: <T>(errors: Errors) => Either<Errors, T>
-```
-
-Added in v1.0.0
-
-## getContextEntry
-
-**Signature**
-
-```ts
-export declare const getContextEntry: (key: string, decoder: Decoder<any, any>) => ContextEntry
-```
-
-Added in v1.0.0
-
-## getFunctionName
-
-**Signature**
-
-```ts
-export declare const getFunctionName: (f: Function) => string
-```
-
-Added in v1.0.0
-
-## identity
-
-**Signature**
-
-```ts
-export declare const identity: <A>(a: A) => A
+export declare const boolean: BooleanC
 ```
 
 Added in v1.0.0
@@ -2532,12 +2339,32 @@ export declare const null: NullC
 
 Added in v1.0.0
 
-## success
+## nullType
 
 **Signature**
 
 ```ts
-export declare const success: <T>(value: T) => Either<Errors, T>
+export declare const nullType: NullC
+```
+
+Added in v1.0.0
+
+## number
+
+**Signature**
+
+```ts
+export declare const number: NumberC
+```
+
+Added in v1.0.0
+
+## string
+
+**Signature**
+
+```ts
+export declare const string: StringC
 ```
 
 Added in v1.0.0
@@ -2552,12 +2379,205 @@ export declare const undefined: UndefinedC
 
 Added in v1.0.0
 
+## unknown
+
+**Signature**
+
+```ts
+export declare const unknown: UnknownC
+```
+
+Added in v1.5.0
+
 ## void
 
 **Signature**
 
 ```ts
 export declare const void: VoidC
+```
+
+Added in v1.0.0
+
+## voidType
+
+**Signature**
+
+```ts
+export declare const voidType: VoidC
+```
+
+Added in v1.2.0
+
+# utils
+
+## AnyProps (interface)
+
+**Signature**
+
+```ts
+export interface AnyProps {
+  [key: string]: Any
+}
+```
+
+Added in v1.0.0
+
+## HasProps (type alias)
+
+**Signature**
+
+```ts
+export type HasProps =
+  | HasPropsRefinement
+  | HasPropsReadonly
+  | HasPropsIntersection
+  | InterfaceType<any, any, any, any>
+  // tslint:disable-next-line: deprecation
+  | StrictType<any, any, any, any>
+  | PartialType<any, any, any, any>
+```
+
+Added in v1.1.0
+
+## HasPropsIntersection (interface)
+
+**Signature**
+
+```ts
+export interface HasPropsIntersection extends IntersectionType<Array<HasProps>, any, any, any> {}
+```
+
+Added in v1.1.0
+
+## HasPropsReadonly (interface)
+
+**Signature**
+
+```ts
+export interface HasPropsReadonly extends ReadonlyType<HasProps, any, any, any> {}
+```
+
+Added in v1.1.0
+
+## HasPropsRefinement (interface)
+
+**Signature**
+
+```ts
+export interface HasPropsRefinement extends RefinementType<HasProps, any, any, any> {}
+```
+
+Added in v1.1.0
+
+## OutputOfDictionary (type alias)
+
+**Signature**
+
+```ts
+export type OutputOfDictionary<D extends Any, C extends Any> = { [K in OutputOf<D>]: OutputOf<C> }
+```
+
+Added in v1.0.0
+
+## OutputOfPartialProps (type alias)
+
+**Signature**
+
+```ts
+export type OutputOfPartialProps<P extends AnyProps> = { [K in keyof P]?: OutputOf<P[K]> }
+```
+
+Added in v1.0.0
+
+## OutputOfProps (type alias)
+
+**Signature**
+
+```ts
+export type OutputOfProps<P extends AnyProps> = { [K in keyof P]: OutputOf<P[K]> }
+```
+
+Added in v1.0.0
+
+## Props (interface)
+
+**Signature**
+
+```ts
+export interface Props {
+  [key: string]: Mixed
+}
+```
+
+Added in v1.0.0
+
+## TypeOfDictionary (type alias)
+
+**Signature**
+
+```ts
+export type TypeOfDictionary<D extends Any, C extends Any> = { [K in TypeOf<D>]: TypeOf<C> }
+```
+
+Added in v1.0.0
+
+## TypeOfPartialProps (type alias)
+
+**Signature**
+
+```ts
+export type TypeOfPartialProps<P extends AnyProps> = { [K in keyof P]?: TypeOf<P[K]> }
+```
+
+Added in v1.0.0
+
+## TypeOfProps (type alias)
+
+**Signature**
+
+```ts
+export type TypeOfProps<P extends AnyProps> = { [K in keyof P]: TypeOf<P[K]> }
+```
+
+Added in v1.0.0
+
+## appendContext
+
+**Signature**
+
+```ts
+export declare function appendContext(c: Context, key: string, decoder: Decoder<any, any>, actual?: unknown): Context
+```
+
+Added in v1.0.0
+
+## getContextEntry
+
+**Signature**
+
+```ts
+export declare function getContextEntry(key: string, decoder: Decoder<any, any>): ContextEntry
+```
+
+Added in v1.0.0
+
+## getFunctionName
+
+**Signature**
+
+```ts
+export declare function getFunctionName(f: Function): string
+```
+
+Added in v1.0.0
+
+## identity
+
+**Signature**
+
+```ts
+export declare const identity: <A>(a: A) => A
 ```
 
 Added in v1.0.0

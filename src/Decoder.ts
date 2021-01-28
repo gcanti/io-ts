@@ -528,7 +528,7 @@ const make = <A>(value: A, forest: ReadonlyArray<Tree<A>> = empty): Tree<A> => (
 const drawTree = (tree: Tree<string>): string => tree.value + drawForest('\n', tree.forest)
 
 const drawForest = (indentation: string, forest: ReadonlyArray<Tree<string>>): string => {
-  let r: string = ''
+  let r = ''
   const len = forest.length
   let tree: Tree<string>
   for (let i = 0; i < len; i++) {

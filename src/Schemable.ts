@@ -164,7 +164,7 @@ export interface WithRefine2C<S extends URIS2, E> {
  * @since 2.2.0
  */
 export function memoize<A, B>(f: (a: A) => B): (a: A) => B {
-  let cache = new Map()
+  const cache = new Map()
   return (a) => {
     if (!cache.has(a)) {
       const b = f(a)
