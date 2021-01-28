@@ -74,37 +74,31 @@ export const success: <T>(value: T) => Validation<T> = right
 // -------------------------------------------------------------------------------------
 
 /**
- * @category Codec
  * @since 1.0.0
  */
 export type Is<A> = (u: unknown) => u is A
 
 /**
- * @category Codec
  * @since 1.0.0
  */
 export type Validate<I, A> = (i: I, context: Context) => Validation<A>
 
 /**
- * @category Codec
  * @since 1.0.0
  */
 export type Decode<I, A> = (i: I) => Validation<A>
 
 /**
- * @category Codec
  * @since 1.0.0
  */
 export type Encode<A, O> = (a: A) => O
 
 /**
- * @category Codec
  * @since 1.0.0
  */
 export interface Any extends Type<any, any, any> {}
 
 /**
- * @category Codec
  * @since 1.0.0
  */
 export interface Mixed extends Type<any, any, unknown> {}
@@ -744,7 +738,6 @@ export function getIndex(codecs: NonEmptyArray<Any>): [string, NonEmptyArray<Non
 // -------------------------------------------------------------------------------------
 
 /**
- * @category primitives
  * @since 1.0.0
  */
 export class NullType extends Type<null> {
@@ -763,7 +756,6 @@ export class NullType extends Type<null> {
 }
 
 /**
- * @category primitives
  * @since 1.5.3
  */
 export interface NullC extends NullType {}
@@ -775,7 +767,6 @@ export interface NullC extends NullType {}
 export const nullType: NullC = new NullType()
 
 /**
- * @category primitives
  * @since 1.0.0
  */
 export class UndefinedType extends Type<undefined> {
@@ -794,7 +785,6 @@ export class UndefinedType extends Type<undefined> {
 }
 
 /**
- * @category primitives
  * @since 1.5.3
  */
 export interface UndefinedC extends UndefinedType {}
@@ -802,7 +792,6 @@ export interface UndefinedC extends UndefinedType {}
 const undefinedType: UndefinedC = new UndefinedType()
 
 /**
- * @category primitives
  * @since 1.2.0
  */
 export class VoidType extends Type<void> {
@@ -816,7 +805,6 @@ export class VoidType extends Type<void> {
 }
 
 /**
- * @category primitives
  * @since 1.5.3
  */
 export interface VoidC extends VoidType {}
@@ -828,7 +816,6 @@ export interface VoidC extends VoidType {}
 export const voidType: VoidC = new VoidType()
 
 /**
- * @category primitives
  * @since 1.5.0
  */
 export class UnknownType extends Type<unknown> {
@@ -842,7 +829,6 @@ export class UnknownType extends Type<unknown> {
 }
 
 /**
- * @category primitives
  * @since 1.5.3
  */
 export interface UnknownC extends UnknownType {}
@@ -854,7 +840,6 @@ export interface UnknownC extends UnknownType {}
 export const unknown: UnknownC = new UnknownType()
 
 /**
- * @category primitives
  * @since 1.0.0
  */
 export class StringType extends Type<string> {
@@ -873,7 +858,6 @@ export class StringType extends Type<string> {
 }
 
 /**
- * @category primitives
  * @since 1.5.3
  */
 export interface StringC extends StringType {}
@@ -885,7 +869,6 @@ export interface StringC extends StringType {}
 export const string: StringC = new StringType()
 
 /**
- * @category primitives
  * @since 1.0.0
  */
 export class NumberType extends Type<number> {
@@ -904,7 +887,6 @@ export class NumberType extends Type<number> {
 }
 
 /**
- * @category primitives
  * @since 1.5.3
  */
 export interface NumberC extends NumberType {}
@@ -916,7 +898,6 @@ export interface NumberC extends NumberType {}
 export const number: NumberC = new NumberType()
 
 /**
- * @category primitives
  * @since 2.1.0
  */
 export class BigIntType extends Type<bigint> {
@@ -936,7 +917,6 @@ export class BigIntType extends Type<bigint> {
 }
 
 /**
- * @category primitives
  * @since 2.1.0
  */
 export interface BigIntC extends BigIntType {}
@@ -948,7 +928,6 @@ export interface BigIntC extends BigIntType {}
 export const bigint: BigIntC = new BigIntType()
 
 /**
- * @category primitives
  * @since 1.0.0
  */
 export class BooleanType extends Type<boolean> {
@@ -967,7 +946,6 @@ export class BooleanType extends Type<boolean> {
 }
 
 /**
- * @category primitives
  * @since 1.5.3
  */
 export interface BooleanC extends BooleanType {}
@@ -979,7 +957,6 @@ export interface BooleanC extends BooleanType {}
 export const boolean: BooleanC = new BooleanType()
 
 /**
- * @category primitives
  * @since 1.0.0
  */
 export class AnyArrayType extends Type<Array<unknown>> {
@@ -993,7 +970,6 @@ export class AnyArrayType extends Type<Array<unknown>> {
 }
 
 /**
- * @category primitives
  * @since 1.5.3
  */
 export interface UnknownArrayC extends AnyArrayType {}
@@ -1005,7 +981,6 @@ export interface UnknownArrayC extends AnyArrayType {}
 export const UnknownArray: UnknownArrayC = new AnyArrayType()
 
 /**
- * @category primitives
  * @since 1.0.0
  */
 export class AnyDictionaryType extends Type<{ [key: string]: unknown }> {
@@ -1027,10 +1002,15 @@ export class AnyDictionaryType extends Type<{ [key: string]: unknown }> {
 }
 
 /**
- * @category primitives
  * @since 1.5.3
  */
 export interface UnknownRecordC extends AnyDictionaryType {}
+
+/**
+ * @category primitives
+ * @since 1.7.1
+ */
+export const UnknownRecord: UnknownRecordC = new AnyDictionaryType()
 
 export {
   /**
@@ -1057,7 +1037,6 @@ export {
 type LiteralValue = string | number | boolean
 
 /**
- * @category constructors
  * @since 1.0.0
  */
 export class LiteralType<V extends LiteralValue> extends Type<V> {
@@ -1077,7 +1056,6 @@ export class LiteralType<V extends LiteralValue> extends Type<V> {
 }
 
 /**
- * @category constructors
  * @since 1.5.3
  */
 export interface LiteralC<V extends LiteralValue> extends LiteralType<V> {}
@@ -1092,7 +1070,6 @@ export function literal<V extends LiteralValue>(value: V, name: string = JSON.st
 }
 
 /**
- * @category constructors
  * @since 1.0.0
  */
 export class KeyofType<D extends { [key: string]: unknown }> extends Type<keyof D> {
@@ -1112,7 +1089,6 @@ export class KeyofType<D extends { [key: string]: unknown }> extends Type<keyof 
 }
 
 /**
- * @category constructors
  * @since 1.5.3
  */
 export interface KeyofC<D extends { [key: string]: unknown }> extends KeyofType<D> {}
@@ -1136,7 +1112,6 @@ export function keyof<D extends { [key: string]: unknown }>(
 // -------------------------------------------------------------------------------------
 
 /**
- * @category combinators
  * @since 1.0.0
  */
 export class RefinementType<C extends Any, A = any, O = A, I = unknown> extends Type<A, O, I> {
@@ -1159,7 +1134,6 @@ export class RefinementType<C extends Any, A = any, O = A, I = unknown> extends 
 declare const _brand: unique symbol
 
 /**
- * @category combinators
  * @since 1.8.1
  */
 export interface Brand<B> {
@@ -1167,13 +1141,11 @@ export interface Brand<B> {
 }
 
 /**
- * @category combinators
  * @since 1.8.1
  */
 export type Branded<A, B> = A & Brand<B>
 
 /**
- * @category combinators
  * @since 1.8.1
  */
 export interface BrandC<C extends Any, B> extends RefinementType<C, Branded<TypeOf<C>, B>, OutputOf<C>, InputOf<C>> {}
@@ -1192,13 +1164,6 @@ export function brand<C extends Any, N extends string, B extends { readonly [K i
 }
 
 /**
- * @category primitives
- * @since 1.7.1
- */
-export const UnknownRecord: UnknownRecordC = new AnyDictionaryType()
-
-/**
- * @category primitives
  * @since 1.8.1
  */
 export interface IntBrand {
@@ -1214,13 +1179,11 @@ export interface IntBrand {
 export const Int = brand(number, (n): n is Branded<number, IntBrand> => Number.isInteger(n), 'Int')
 
 /**
- * @category primitives
  * @since 1.8.1
  */
 export type Int = Branded<number, IntBrand>
 
 /**
- * @category combinators
  * @since 1.0.0
  */
 export class RecursiveType<C extends Any, A = any, O = A, I = unknown> extends Type<A, O, I> {
@@ -1278,7 +1241,6 @@ export function recursion<A, O = A, I = unknown, C extends Type<A, O, I> = Type<
 }
 
 /**
- * @category combinators
  * @since 1.0.0
  */
 export class ArrayType<C extends Any, A = any, O = A, I = unknown> extends Type<A, O, I> {
@@ -1298,7 +1260,6 @@ export class ArrayType<C extends Any, A = any, O = A, I = unknown> extends Type<
 }
 
 /**
- * @category combinators
  * @since 1.5.3
  */
 export interface ArrayC<C extends Mixed> extends ArrayType<C, Array<TypeOf<C>>, Array<OutputOf<C>>, unknown> {}
@@ -1343,7 +1304,6 @@ export function array<C extends Mixed>(item: C, name: string = `Array<${item.nam
 }
 
 /**
- * @category combinators
  * @since 1.0.0
  */
 export class InterfaceType<P, A = any, O = A, I = unknown> extends Type<A, O, I> {
@@ -1363,7 +1323,6 @@ export class InterfaceType<P, A = any, O = A, I = unknown> extends Type<A, O, I>
 }
 
 /**
- * @category combinators
  * @since 1.5.3
  */
 export interface TypeC<P extends Props>
@@ -1438,7 +1397,6 @@ export function type<P extends Props>(props: P, name: string = getInterfaceTypeN
 }
 
 /**
- * @category combinators
  * @since 1.0.0
  */
 export class PartialType<P, A = any, O = A, I = unknown> extends Type<A, O, I> {
@@ -1458,7 +1416,6 @@ export class PartialType<P, A = any, O = A, I = unknown> extends Type<A, O, I> {
 }
 
 /**
- * @category combinators
  * @since 1.5.3
  */
 export interface PartialC<P extends Props>
@@ -1538,7 +1495,6 @@ export function partial<P extends Props>(
 }
 
 /**
- * @category combinators
  * @since 1.0.0
  */
 export class DictionaryType<D extends Any, C extends Any, A = any, O = A, I = unknown> extends Type<A, O, I> {
@@ -1559,7 +1515,6 @@ export class DictionaryType<D extends Any, C extends Any, A = any, O = A, I = un
 }
 
 /**
- * @category combinators
  * @since 1.5.3
  */
 export interface RecordC<D extends Mixed, C extends Mixed>
@@ -1577,7 +1532,6 @@ export function record<D extends Mixed, C extends Mixed>(domain: D, codomain: C,
 }
 
 /**
- * @category combinators
  * @since 1.0.0
  */
 export class UnionType<CS extends Array<Any>, A = any, O = A, I = unknown> extends Type<A, O, I> {
@@ -1597,7 +1551,6 @@ export class UnionType<CS extends Array<Any>, A = any, O = A, I = unknown> exten
 }
 
 /**
- * @category combinators
  * @since 1.5.3
  */
 export interface UnionC<CS extends [Mixed, Mixed, ...Array<Mixed>]>
@@ -1694,7 +1647,6 @@ export function union<CS extends [Mixed, Mixed, ...Array<Mixed>]>(
 }
 
 /**
- * @category combinators
  * @since 1.0.0
  */
 export class IntersectionType<CS extends Array<Any>, A = any, O = A, I = unknown> extends Type<A, O, I> {
@@ -1714,7 +1666,6 @@ export class IntersectionType<CS extends Array<Any>, A = any, O = A, I = unknown
 }
 
 /**
- * @category combinators
  * @since 1.5.3
  */
 export interface IntersectionC<CS extends [Mixed, Mixed, ...Array<Mixed>]>
@@ -1794,7 +1745,6 @@ export function intersection<CS extends [Mixed, Mixed, ...Array<Mixed>]>(
 }
 
 /**
- * @category combinators
  * @since 1.0.0
  */
 export class TupleType<CS extends Array<Any>, A = any, O = A, I = unknown> extends Type<A, O, I> {
@@ -1814,7 +1764,6 @@ export class TupleType<CS extends Array<Any>, A = any, O = A, I = unknown> exten
 }
 
 /**
- * @category combinators
  * @since 1.5.3
  */
 export interface TupleC<CS extends [Mixed, ...Array<Mixed>]>
@@ -1904,7 +1853,6 @@ export function tuple<CS extends [Mixed, ...Array<Mixed>]>(
 }
 
 /**
- * @category combinators
  * @since 1.0.0
  */
 export class ReadonlyType<C extends Any, A = any, O = A, I = unknown> extends Type<A, O, I> {
@@ -1924,7 +1872,6 @@ export class ReadonlyType<C extends Any, A = any, O = A, I = unknown> extends Ty
 }
 
 /**
- * @category combinators
  * @since 1.5.3
  */
 export interface ReadonlyC<C extends Mixed>
@@ -1939,7 +1886,6 @@ export function readonly<C extends Mixed>(codec: C, name: string = `Readonly<${c
 }
 
 /**
- * @category combinators
  * @since 1.0.0
  */
 export class ReadonlyArrayType<C extends Any, A = any, O = A, I = unknown> extends Type<A, O, I> {
@@ -1959,7 +1905,6 @@ export class ReadonlyArrayType<C extends Any, A = any, O = A, I = unknown> exten
 }
 
 /**
- * @category combinators
  * @since 1.5.3
  */
 export interface ReadonlyArrayC<C extends Mixed>
@@ -1978,7 +1923,7 @@ export function readonlyArray<C extends Mixed>(
 }
 
 /**
- * Strips additional properties
+ * Strips additional properties, equivalent to `exact(type(props))`.
  *
  * @category combinators
  * @since 1.0.0
@@ -1986,7 +1931,6 @@ export function readonlyArray<C extends Mixed>(
 export const strict = <P extends Props>(props: P, name?: string): ExactC<TypeC<P>> => exact(type(props), name)
 
 /**
- * @category combinators
  * @since 1.1.0
  */
 export class ExactType<C extends Any, A = any, O = A, I = unknown> extends Type<A, O, I> {
@@ -2006,13 +1950,12 @@ export class ExactType<C extends Any, A = any, O = A, I = unknown> extends Type<
 }
 
 /**
- * @category combinators
  * @since 1.5.3
  */
 export interface ExactC<C extends HasProps> extends ExactType<C, TypeOf<C>, OutputOf<C>, InputOf<C>> {}
 
 /**
- * Strips additional properties
+ * Strips additional properties.
  *
  * @category combinators
  * @since 1.1.0
@@ -2043,7 +1986,6 @@ export function exact<C extends HasProps>(codec: C, name: string = getExactTypeN
 // -------------------------------------------------------------------------------------
 
 /**
- * @category deprecated
  * @since 1.0.0
  * @deprecated
  */
@@ -2064,7 +2006,6 @@ export class FunctionType extends Type<Function> {
 }
 
 /**
- * @category deprecated
  * @since 1.5.3
  * @deprecated
  */
@@ -2072,7 +2013,7 @@ export class FunctionType extends Type<Function> {
 export interface FunctionC extends FunctionType {}
 
 /**
- * @category deprecated
+ * @category primitives
  * @since 1.0.0
  * @deprecated
  */
@@ -2080,7 +2021,6 @@ export interface FunctionC extends FunctionType {}
 export const Function: FunctionC = new FunctionType()
 
 /**
- * @category deprecated
  * @since 1.3.0
  * @deprecated
  */
@@ -2107,7 +2047,6 @@ export class TaggedUnionType<
 }
 
 /**
- * @category deprecated
  * @since 1.5.3
  * @deprecated
  */
@@ -2115,9 +2054,9 @@ export interface TaggedUnionC<Tag extends string, CS extends [Mixed, Mixed, ...A
   extends TaggedUnionType<Tag, CS, TypeOf<CS[number]>, OutputOf<CS[number]>, unknown> {}
 
 /**
- * Use `union` instead
+ * Use `union` instead.
  *
- * @category deprecated
+ * @category combinators
  * @since 1.3.0
  * @deprecated
  */
@@ -2140,9 +2079,9 @@ export const taggedUnion = <Tag extends string, CS extends [Mixed, Mixed, ...Arr
 
 export {
   /**
-   * Use `UnknownArray` instead
+   * Use `UnknownArray` instead.
    *
-   * @category deprecated
+   * @category primitives
    * @deprecated
    * @since 1.0.0
    */
@@ -2151,9 +2090,9 @@ export {
 
 export {
   /**
-   * Use `type` instead
+   * Use `type` instead.
    *
-   * @category deprecated
+   * @category combinators
    * @deprecated
    * @since 1.0.0
    */
@@ -2161,16 +2100,14 @@ export {
 }
 
 /**
- * Use `unknown` instead
+ * Use `unknown` instead.
  *
- * @category deprecated
  * @since 1.0.0
  * @deprecated
  */
 export type mixed = unknown
 
 /**
- * @category deprecated
  * @since 1.0.0
  * @deprecated
  */
@@ -2180,7 +2117,6 @@ export const getValidationError /* istanbul ignore next */ = (value: unknown, co
 })
 
 /**
- * @category deprecated
  * @since 1.0.0
  * @deprecated
  */
@@ -2189,7 +2125,6 @@ export const getDefaultContext /* istanbul ignore next */ = (decoder: Decoder<an
 ]
 
 /**
- * @category deprecated
  * @since 1.0.0
  * @deprecated
  */
@@ -2212,7 +2147,6 @@ export class NeverType extends Type<never> {
 }
 
 /**
- * @category deprecated
  * @since 1.5.3
  * @deprecated
  */
@@ -2220,7 +2154,7 @@ export class NeverType extends Type<never> {
 export interface NeverC extends NeverType {}
 
 /**
- * @category deprecated
+ * @category primitives
  * @since 1.0.0
  * @deprecated
  */
@@ -2228,7 +2162,6 @@ export interface NeverC extends NeverType {}
 export const never: NeverC = new NeverType()
 
 /**
- * @category deprecated
  * @since 1.0.0
  * @deprecated
  */
@@ -2243,7 +2176,6 @@ export class AnyType extends Type<any> {
 }
 
 /**
- * @category deprecated
  * @since 1.5.3
  * @deprecated
  */
@@ -2251,9 +2183,9 @@ export class AnyType extends Type<any> {
 export interface AnyC extends AnyType {}
 
 /**
- * Use `unknown` instead
+ * Use `unknown` instead.
  *
- * @category deprecated
+ * @category primitives
  * @since 1.0.0
  * @deprecated
  */
@@ -2261,16 +2193,15 @@ export interface AnyC extends AnyType {}
 export const any: AnyC = new AnyType()
 
 /**
- * Use `UnknownRecord` instead
+ * Use `UnknownRecord` instead.
  *
- * @category deprecated
+ * @category primitives
  * @since 1.0.0
  * @deprecated
  */
 export const Dictionary: UnknownRecordC = UnknownRecord
 
 /**
- * @category deprecated
  * @since 1.0.0
  * @deprecated
  */
@@ -2290,7 +2221,6 @@ export class ObjectType extends Type<object> {
 }
 
 /**
- * @category deprecated
  * @since 1.5.3
  * @deprecated
  */
@@ -2298,9 +2228,9 @@ export class ObjectType extends Type<object> {
 export interface ObjectC extends ObjectType {}
 
 /**
- * Use `UnknownRecord` instead
+ * Use `UnknownRecord` instead.
  *
- * @category deprecated
+ * @category primitives
  * @since 1.0.0
  * @deprecated
  */
@@ -2308,18 +2238,17 @@ export interface ObjectC extends ObjectType {}
 export const object: ObjectC = new ObjectType()
 
 /**
- * Use `BrandC` instead
+ * Use `BrandC` instead.
  *
- * @category deprecated
  * @since 1.5.3
  * @deprecated
  */
 export interface RefinementC<C extends Any> extends RefinementType<C, TypeOf<C>, OutputOf<C>, InputOf<C>> {}
 
 /**
- * Use `brand` instead
+ * Use `brand` instead.
  *
- * @category deprecated
+ * @category combinators
  * @since 1.0.0
  * @deprecated
  */
@@ -2347,9 +2276,9 @@ RefinementC<C> {
 }
 
 /**
- * Use `Int` instead
+ * Use `Int` instead.
  *
- * @category deprecated
+ * @category primitives
  * @since 1.0.0
  * @deprecated
  */
@@ -2357,25 +2286,21 @@ RefinementC<C> {
 export const Integer = refinement(number, Number.isInteger, 'Integer')
 
 /**
- * Use `record` instead
+ * Use `record` instead.
  *
- * @category deprecated
+ * @category combinators
  * @since 1.0.0
  * @deprecated
  */
 export const dictionary: typeof record = record
 
 /**
- * used in `intersection` as a workaround for #234
- *
- * @category deprecated
  * @since 1.4.2
  * @deprecated
  */
 export type Compact<A> = { [K in keyof A]: A[K] }
 
 /**
- * @category deprecated
  * @since 1.0.0
  * @deprecated
  */
@@ -2399,7 +2324,6 @@ export class StrictType<P, A = any, O = A, I = unknown> extends Type<A, O, I> {
 }
 
 /**
- * @category deprecated
  * @since 1.5.3
  * @deprecated
  */
@@ -2407,14 +2331,12 @@ export interface StrictC<P extends Props>  // tslint:disable-next-line: deprecat
   extends StrictType<P, { [K in keyof P]: TypeOf<P[K]> }, { [K in keyof P]: OutputOf<P[K]> }, unknown> {}
 
 /**
- * @category deprecated
  * @since 1.3.0
  * @deprecated
  */
 export type TaggedProps<Tag extends string> = { [K in Tag]: LiteralType<any> }
 
 /**
- * @category deprecated
  * @since 1.3.0
  * @deprecated
  */
@@ -2422,7 +2344,6 @@ export type TaggedProps<Tag extends string> = { [K in Tag]: LiteralType<any> }
 export interface TaggedRefinement<Tag extends string, A, O = A> extends RefinementType<Tagged<Tag>, A, O> {}
 
 /**
- * @category deprecated
  * @since 1.3.0
  * @deprecated
  */
@@ -2430,7 +2351,6 @@ export interface TaggedRefinement<Tag extends string, A, O = A> extends Refineme
 export interface TaggedUnion<Tag extends string, A, O = A> extends UnionType<Array<Tagged<Tag>>, A, O> {}
 
 /**
- * @category deprecated
  * @since 1.3.0
  * @deprecated
  */
@@ -2467,7 +2387,6 @@ export type TaggedIntersectionArgument<Tag extends string> =
   | [Mixed, Mixed, Mixed, Mixed, Tagged<Tag>]
 
 /**
- * @category deprecated
  * @since 1.3.0
  * @deprecated
  */
@@ -2475,7 +2394,6 @@ export interface TaggedIntersection<Tag extends string, A, O = A>  // tslint:dis
   extends IntersectionType<TaggedIntersectionArgument<Tag>, A, O> {}
 
 /**
- * @category deprecated
  * @since 1.3.0
  * @deprecated
  */
@@ -2483,7 +2401,6 @@ export interface TaggedIntersection<Tag extends string, A, O = A>  // tslint:dis
 export interface TaggedExact<Tag extends string, A, O = A> extends ExactType<Tagged<Tag>, A, O> {}
 
 /**
- * @category deprecated
  * @since 1.3.0
  * @deprecated
  */
@@ -2503,9 +2420,9 @@ export type Tagged<Tag extends string, A = any, O = A> =
   | RecursiveType<any, A, O>
 
 /**
- * Drops the codec "kind"
+ * Drops the codec "kind".
  *
- * @category deprecated
+ * @category combinators
  * @since 1.1.0
  * @deprecated
  */
@@ -2514,14 +2431,12 @@ export function clean<A, O = A, I = unknown>(codec: Type<A, O, I>): Type<A, O, I
 }
 
 /**
- * @category deprecated
  * @since 1.0.0
  * @deprecated
  */
 export type PropsOf<T extends { props: any }> = T['props']
 
 /**
- * @category deprecated
  * @since 1.1.0
  * @deprecated
  */
@@ -2529,9 +2444,9 @@ export type Exact<T, X extends T> = T &
   { [K in ({ [K in keyof X]: K } & { [K in keyof T]: never } & { [key: string]: never })[keyof X]]?: never }
 
 /**
- * Keeps the codec "kind"
+ * Keeps the codec "kind".
  *
- * @category deprecated
+ * @category combinators
  * @since 1.1.0
  * @deprecated
  */
