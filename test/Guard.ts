@@ -1,6 +1,7 @@
 import * as assert from 'assert'
 import * as G from '../src/Guard'
 import { pipe } from 'fp-ts/lib/pipeable'
+import { Stream } from 'stream'
 
 interface NonEmptyStringBrand {
   readonly NonEmptyString: unique symbol
@@ -279,6 +280,18 @@ describe('Guard', () => {
       assert.deepStrictEqual(guard.is({ _tag: 1, a: 'a' }), true)
       assert.deepStrictEqual(guard.is({ _tag: 2, b: 1 }), true)
       assert.deepStrictEqual(guard.is({ _tag: 2, b: 'a' }), false)
+    })
+  })
+
+  describe('UnknownRecord', () => {
+    it('should accept valid inputs', () => {
+      assert.strictEqual(G.UnknownRecord.is(new Set()), true)
+      assert.strictEqual(G.UnknownRecord.is(new Map()), true)
+      assert.strictEqual(G.UnknownRecord.is(new Stream()), true)
+    })
+
+    it('should reject invalid inputs', () => {
+      assert.strictEqual(G.UnknownRecord.is([]), false)
     })
   })
 })
