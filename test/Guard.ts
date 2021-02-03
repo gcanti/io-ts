@@ -285,13 +285,18 @@ describe('Guard', () => {
 
   describe('UnknownRecord', () => {
     it('should accept valid inputs', () => {
-      assert.strictEqual(G.UnknownRecord.is(new Set()), true)
-      assert.strictEqual(G.UnknownRecord.is(new Map()), true)
-      assert.strictEqual(G.UnknownRecord.is(new Stream()), true)
+      assert.deepStrictEqual(G.UnknownRecord.is({}), true)
+      assert.deepStrictEqual(G.UnknownRecord.is(new String()), true)
+      assert.deepStrictEqual(G.UnknownRecord.is(new Number()), true)
+      assert.deepStrictEqual(G.UnknownRecord.is(new Set()), true)
+      assert.deepStrictEqual(G.UnknownRecord.is(new Map()), true)
+      assert.deepStrictEqual(G.UnknownRecord.is(new Stream()), true)
     })
 
     it('should reject invalid inputs', () => {
-      assert.strictEqual(G.UnknownRecord.is([]), false)
+      assert.deepStrictEqual(G.UnknownRecord.is(null), false)
+      assert.deepStrictEqual(G.UnknownRecord.is(undefined), false)
+      assert.deepStrictEqual(G.UnknownRecord.is([]), false)
     })
   })
 })
