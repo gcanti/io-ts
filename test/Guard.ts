@@ -47,7 +47,7 @@ describe('Guard', () => {
   })
 
   describe('refine', () => {
-    it('should accepts valid inputs', () => {
+    it('should accept valid inputs', () => {
       const guard = pipe(
         G.string,
         G.refine((s): s is string => s.length > 0)
@@ -55,7 +55,7 @@ describe('Guard', () => {
       assert.strictEqual(guard.is('a'), true)
     })
 
-    it('should rejects invalid inputs', () => {
+    it('should reject invalid inputs', () => {
       const guard = pipe(
         G.string,
         G.refine((s): s is string => s.length > 0)
@@ -66,30 +66,30 @@ describe('Guard', () => {
   })
 
   describe('nullable', () => {
-    it('should accepts valid inputs', () => {
+    it('should accept valid inputs', () => {
       const guard = G.nullable(G.string)
       assert.strictEqual(guard.is(null), true)
       assert.strictEqual(guard.is('a'), true)
     })
 
-    it('should rejects invalid inputs', () => {
+    it('should reject invalid inputs', () => {
       const guard = G.nullable(G.string)
       assert.strictEqual(guard.is(1), false)
     })
   })
 
   describe('type', () => {
-    it('should accepts valid inputs', () => {
+    it('should accept valid inputs', () => {
       const guard = G.type({ a: G.string, b: G.number })
       assert.strictEqual(guard.is({ a: 'a', b: 1 }), true)
     })
 
-    it('should accepts additional fields', () => {
+    it('should accept additional fields', () => {
       const guard = G.type({ a: G.string, b: G.number })
       assert.strictEqual(guard.is({ a: 'a', b: 1, c: true }), true)
     })
 
-    it('should rejects invalid inputs', () => {
+    it('should reject invalid inputs', () => {
       const guard = G.type({ a: G.string, b: G.number })
       assert.strictEqual(guard.is(undefined), false)
       assert.strictEqual(guard.is({ a: 'a' }), false)
@@ -118,7 +118,7 @@ describe('Guard', () => {
   })
 
   describe('partial', () => {
-    it('should accepts valid inputs', () => {
+    it('should accept valid inputs', () => {
       const guard = G.partial({ a: G.string, b: G.number })
       assert.strictEqual(guard.is({ a: 'a', b: 1 }), true)
       assert.strictEqual(guard.is({ a: 'a' }), true)
@@ -126,12 +126,12 @@ describe('Guard', () => {
       assert.strictEqual(guard.is({}), true)
     })
 
-    it('should accepts additional fields', () => {
+    it('should accept additional fields', () => {
       const guard = G.partial({ a: G.string, b: G.number })
       assert.strictEqual(guard.is({ a: 'a', b: 1, c: true }), true)
     })
 
-    it('should rejects invalid inputs', () => {
+    it('should reject invalid inputs', () => {
       const guard = G.partial({ a: G.string, b: G.number })
       assert.strictEqual(guard.is(undefined), false)
       assert.strictEqual(guard.is({ a: 'a', b: 'b' }), false)
@@ -152,13 +152,13 @@ describe('Guard', () => {
   })
 
   describe('record', () => {
-    it('should accepts valid inputs', () => {
+    it('should accept valid inputs', () => {
       const guard = G.record(G.string)
       assert.strictEqual(guard.is({}), true)
       assert.strictEqual(guard.is({ a: 'a', b: 'b' }), true)
     })
 
-    it('should rejects invalid inputs', () => {
+    it('should reject invalid inputs', () => {
       const guard = G.record(G.string)
       assert.strictEqual(guard.is(undefined), false)
       assert.strictEqual(guard.is({ a: 'a', b: 1 }), false)
@@ -166,13 +166,13 @@ describe('Guard', () => {
   })
 
   describe('array', () => {
-    it('should accepts valid inputs', () => {
+    it('should accept valid inputs', () => {
       const guard = G.array(G.number)
       assert.strictEqual(guard.is([]), true)
       assert.strictEqual(guard.is([1, 2, 3]), true)
     })
 
-    it('should rejects invalid inputs', () => {
+    it('should reject invalid inputs', () => {
       const guard = G.array(G.number)
       assert.strictEqual(guard.is(undefined), false)
       assert.strictEqual(guard.is(['a']), false)
@@ -180,47 +180,47 @@ describe('Guard', () => {
   })
 
   describe('tuple', () => {
-    it('should accepts valid inputs', () => {
+    it('should accept valid inputs', () => {
       const guard = G.tuple(G.string, G.number)
       assert.strictEqual(guard.is(['a', 1]), true)
     })
 
-    it('should rejects invalid inputs', () => {
+    it('should reject invalid inputs', () => {
       const guard = G.tuple(G.string, G.number)
       assert.strictEqual(guard.is([1, 2]), false)
     })
 
-    it('should rejects additional fields', () => {
+    it('should reject additional fields', () => {
       const guard = G.tuple(G.string, G.number)
       assert.strictEqual(guard.is(['a', 1, true]), false)
     })
 
-    it('should rejects missing fields', () => {
+    it('should reject missing fields', () => {
       const guard = G.tuple(G.string, G.number)
       assert.strictEqual(guard.is(['a']), false)
     })
   })
 
   describe('intersect', () => {
-    it('should accepts valid inputs', () => {
+    it('should accept valid inputs', () => {
       const guard = pipe(G.type({ a: G.string }), G.intersect(G.type({ b: G.number })))
       assert.strictEqual(guard.is({ a: 'a', b: 1 }), true)
     })
 
-    it('should rejects invalid inputs', () => {
+    it('should reject invalid inputs', () => {
       const guard = pipe(G.type({ a: G.string }), G.intersect(G.type({ b: G.number })))
       assert.strictEqual(guard.is({ a: 'a' }), false)
     })
   })
 
   describe('union', () => {
-    it('should accepts valid inputs', () => {
+    it('should accept valid inputs', () => {
       const guard = G.union(G.string, G.number)
       assert.strictEqual(guard.is('a'), true)
       assert.strictEqual(guard.is(1), true)
     })
 
-    it('should rejects invalid inputs', () => {
+    it('should reject invalid inputs', () => {
       const guard = G.union(G.string, G.number)
       assert.strictEqual(guard.is(undefined), false)
     })
@@ -239,12 +239,12 @@ describe('Guard', () => {
       })
     )
 
-    it('should accepts valid inputs', () => {
+    it('should accept valid inputs', () => {
       assert.strictEqual(guard.is({ a: 1, b: [] }), true)
       assert.strictEqual(guard.is({ a: 1, b: [{ a: 2, b: [] }] }), true)
     })
 
-    it('should rejects invalid inputs', () => {
+    it('should reject invalid inputs', () => {
       const guard = G.union(G.string, G.number)
       assert.strictEqual(guard.is(undefined), false)
     })
@@ -253,7 +253,7 @@ describe('Guard', () => {
   describe('sum', () => {
     const sum = G.sum('_tag')
 
-    it('should accepts valid inputs', () => {
+    it('should accept valid inputs', () => {
       const guard = sum({
         A: G.type({ _tag: G.literal('A'), a: G.string }),
         B: G.type({ _tag: G.literal('B'), b: G.number })
@@ -262,7 +262,7 @@ describe('Guard', () => {
       assert.deepStrictEqual(guard.is({ _tag: 'B', b: 1 }), true)
     })
 
-    it('should rejects invalid inputs', () => {
+    it('should reject invalid inputs', () => {
       const guard = sum({
         A: G.type({ _tag: G.literal('A'), a: G.string }),
         B: G.type({ _tag: G.literal('B'), b: G.number })
