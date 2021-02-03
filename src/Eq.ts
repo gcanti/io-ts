@@ -6,6 +6,9 @@ import * as E from 'fp-ts/Eq'
 import * as R from 'fp-ts/ReadonlyRecord'
 import { memoize, Schemable1, WithRefine1, WithUnknownContainers1 } from './Schemable'
 import Eq = E.Eq
+import * as S from 'fp-ts/string'
+import * as N from 'fp-ts/number'
+import * as B from 'fp-ts/boolean'
 
 // -------------------------------------------------------------------------------------
 // utils
@@ -29,19 +32,19 @@ export type TypeOf<E> = E extends Eq<infer A> ? A : never
  * @category primitives
  * @since 3.0.0
  */
-export const string: Eq<string> = E.eqString
+export const string: Eq<string> = S.Eq
 
 /**
  * @category primitives
  * @since 3.0.0
  */
-export const number: Eq<number> = E.eqNumber
+export const number: Eq<number> = N.Eq
 
 /**
  * @category primitives
  * @since 3.0.0
  */
-export const boolean: Eq<boolean> = E.eqBoolean
+export const boolean: Eq<boolean> = B.Eq
 
 /**
  * @category primitives
@@ -181,7 +184,7 @@ export function lazy<A>(f: () => Eq<A>): Eq<A> {
  * @since 3.0.0
  */
 export const Schemable: Schemable1<E.URI> = {
-  literal: () => E.eqStrict,
+  literal: () => E.EqStrict,
   string,
   number,
   boolean,
