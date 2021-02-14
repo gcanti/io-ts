@@ -176,7 +176,7 @@ export const URI = 'io-ts/JsonSchema'
 
 export type URI = typeof URI
 
-declare module 'fp-ts/lib/HKT' {
+declare module 'fp-ts/HKT' {
   interface URItoKind<A> {
     readonly [URI]: JsonSchema<A>
   }
