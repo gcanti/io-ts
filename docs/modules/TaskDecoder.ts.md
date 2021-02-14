@@ -124,7 +124,7 @@ Added in v2.2.7
 **Signature**
 
 ```ts
-export declare const error: (actual: unknown, message: string) => FS.FreeSemigroup<DE.DecodeError<string>>
+export declare const error: (actual: unknown, message: string) => DecodeError
 ```
 
 Added in v2.2.7
@@ -291,7 +291,7 @@ Added in v2.2.7
 
 ```ts
 export declare const mapLeftWithInput: <I>(
-  f: (input: I, e: FS.FreeSemigroup<DE.DecodeError<string>>) => FS.FreeSemigroup<DE.DecodeError<string>>
+  f: (input: I, e: DecodeError) => DecodeError
 ) => <A>(decoder: TaskDecoder<I, A>) => TaskDecoder<I, A>
 ```
 
@@ -408,7 +408,7 @@ Added in v2.2.7
 
 ```ts
 export declare const withMessage: <I>(
-  message: (input: I, e: FS.FreeSemigroup<DE.DecodeError<string>>) => string
+  message: (input: I, e: DecodeError) => string
 ) => <A>(decoder: TaskDecoder<I, A>) => TaskDecoder<I, A>
 ```
 
@@ -644,7 +644,7 @@ Added in v2.2.7
 **Signature**
 
 ```ts
-export declare const draw: (e: FS.FreeSemigroup<DE.DecodeError<string>>) => string
+export declare const draw: (e: DecodeError) => string
 ```
 
 Added in v2.2.7

@@ -207,7 +207,7 @@ Added in v2.2.3
 
 ```ts
 export declare const mapLeftWithInput: <I>(
-  f: (i: I, e: FreeSemigroup<DecodeError<string>>) => FreeSemigroup<DecodeError<string>>
+  f: (i: I, e: D.DecodeError) => D.DecodeError
 ) => <O, A>(codec: Codec<I, O, A>) => Codec<I, O, A>
 ```
 

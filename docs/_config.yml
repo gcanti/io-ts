@@ -6,4 +6,4 @@ search_enabled: true
 # Aux links for the upper right navigation
 aux_links:
   'io-ts on GitHub':
-    - '//github.com/gcanti/io-ts'
+    - 'https://github.com/gcanti/io-ts'
