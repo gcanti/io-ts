@@ -15,3 +15,14 @@ _.partial({
     c: _.number
   })
 })
+
+//
+// readonly
+//
+
+// $ExpectType Type<Readonly<{ a: string; }>>
+_.readonly(
+  _.type({
+    a: _.string
+  })
+)

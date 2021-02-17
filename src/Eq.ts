@@ -10,6 +10,7 @@
  */
 import * as A from 'fp-ts/lib/Array'
 import * as E from 'fp-ts/lib/Eq'
+import { identity } from 'fp-ts/lib/function'
 import * as R from 'fp-ts/lib/Record'
 import { memoize, Schemable1, WithRefine1, WithUnknownContainers1 } from './Schemable'
 import Eq = E.Eq
@@ -173,6 +174,12 @@ export function lazy<A>(f: () => Eq<A>): Eq<A> {
   }
 }
 
+/**
+ * @category combinators
+ * @since 2.2.15
+ */
+export const readonly: <A>(eq: Eq<A>) => Eq<Readonly<A>> = identity
+
 // -------------------------------------------------------------------------------------
 // instances
 // -------------------------------------------------------------------------------------
@@ -195,7 +202,8 @@ export const Schemable: Schemable1<E.URI> = {
   tuple,
   intersect,
   sum,
-  lazy: (_, f) => lazy(f)
+  lazy: (_, f) => lazy(f),
+  readonly
 }
 
 /**

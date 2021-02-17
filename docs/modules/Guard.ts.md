@@ -28,6 +28,7 @@ Added in v2.2.0
   - [lazy](#lazy)
   - [nullable](#nullable)
   - [partial](#partial)
+  - [readonly](#readonly)
   - [record](#record)
   - [refine](#refine)
   - [sum](#sum)
@@ -141,6 +142,16 @@ export declare const partial: <A>(
 ```
 
 Added in v2.2.0
+
+## readonly
+
+**Signature**
+
+```ts
+export declare const readonly: <I, A extends I>(guard: Guard<I, A>) => Guard<I, Readonly<A>>
+```
+
+Added in v2.2.15
 
 ## record
 

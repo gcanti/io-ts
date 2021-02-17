@@ -36,6 +36,7 @@ export interface Schemable<S> {
     tag: T
   ) => <A>(members: { [K in keyof A]: HKT<S, A[K] & Record<T, K>> }) => HKT<S, A[keyof A]>
   readonly lazy: <A>(id: string, f: () => HKT<S, A>) => HKT<S, A>
+  readonly readonly: <A>(sa: HKT<S, A>) => HKT<S, Readonly<A>>
 }
 
 /**
@@ -58,6 +59,7 @@ export interface Schemable1<S extends URIS> {
     tag: T
   ) => <A>(members: { [K in keyof A]: Kind<S, A[K] & Record<T, K>> }) => Kind<S, A[keyof A]>
   readonly lazy: <A>(id: string, f: () => Kind<S, A>) => Kind<S, A>
+  readonly readonly: <A>(sa: Kind<S, A>) => Kind<S, Readonly<A>>
 }
 
 /**
@@ -84,6 +86,7 @@ export interface Schemable2C<S extends URIS2, E> {
     tag: T
   ) => <A>(members: { [K in keyof A]: Kind2<S, E, A[K] & Record<T, K>> }) => Kind2<S, E, A[keyof A]>
   readonly lazy: <A>(id: string, f: () => Kind2<S, E, A>) => Kind2<S, E, A>
+  readonly readonly: <A>(sa: Kind2<S, E, A>) => Kind2<S, E, Readonly<A>>
 }
 
 /**

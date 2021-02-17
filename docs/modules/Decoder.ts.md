@@ -46,6 +46,7 @@ Added in v2.2.7
   - [nullable](#nullable)
   - [parse](#parse)
   - [partial](#partial)
+  - [readonly](#readonly)
   - [record](#record)
   - [refine](#refine)
   - [sum](#sum)
@@ -327,6 +328,16 @@ export declare const partial: <A>(
 ```
 
 Added in v2.2.7
+
+## readonly
+
+**Signature**
+
+```ts
+export declare const readonly: <I, A>(decoder: Decoder<I, A>) => Decoder<I, Readonly<A>>
+```
+
+Added in v2.2.15
 
 ## record
 

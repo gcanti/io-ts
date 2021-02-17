@@ -25,6 +25,7 @@ Added in v2.2.2
   - [lazy](#lazy)
   - [nullable](#nullable)
   - [partial](#partial)
+  - [readonly](#readonly)
   - [record](#record)
   - [sum](#sum)
   - [tuple](#tuple)
@@ -96,6 +97,16 @@ export declare function partial<A>(properties: { [K in keyof A]: Eq<A[K]> }): Eq
 ```
 
 Added in v2.2.2
+
+## readonly
+
+**Signature**
+
+```ts
+export declare const readonly: <A>(eq: E.Eq<A>) => E.Eq<Readonly<A>>
+```
+
+Added in v2.2.15
 
 ## record
 

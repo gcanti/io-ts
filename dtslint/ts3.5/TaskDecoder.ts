@@ -11,3 +11,14 @@ const S2 = _.type({ _tag: _.literal('B'), b: _.number })
 _.sum('_tag')({ A: S1, B: S2 })
 // $ExpectError
 _.sum('_tag')({ A: S1, B: S1 })
+
+//
+// readonly
+//
+
+// $ExpectType TaskDecoder<unknown, Readonly<{ a: string; }>>
+_.readonly(
+  _.type({
+    a: _.string
+  })
+)

@@ -8,7 +8,7 @@
  *
  * @since 2.2.0
  */
-import { Refinement } from 'fp-ts/lib/function'
+import { identity, Refinement } from 'fp-ts/lib/function'
 import { pipe } from 'fp-ts/lib/pipeable'
 import { Literal, memoize, Schemable1, WithRefine1, WithUnion1, WithUnknownContainers1 } from './Schemable'
 
@@ -245,6 +245,12 @@ export const lazy = <A>(f: () => Guard<unknown, A>): Guard<unknown, A> => {
 
 /**
  * @category combinators
+ * @since 2.2.15
+ */
+export const readonly: <I, A extends I>(guard: Guard<I, A>) => Guard<I, Readonly<A>> = identity
+
+/**
+ * @category combinators
  * @since 2.2.8
  */
 export const alt = <I, A extends I>(that: () => Guard<I, A>) => (me: Guard<I, A>): Guard<I, A> => ({
@@ -315,7 +321,8 @@ export const Schemable: Schemable1<URI> = {
   tuple: tuple as Schemable1<URI>['tuple'],
   intersect,
   sum,
-  lazy: (_, f) => lazy(f)
+  lazy: (_, f) => lazy(f),
+  readonly
 }
 
 /**
