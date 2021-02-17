@@ -91,9 +91,18 @@ export function nullable<A>(or: Eq<A>): Eq<null | A> {
 
 /**
  * @category combinators
- * @since 2.2.2
+ * @since 2.2.15
  */
-export const type: <A>(eqs: { [K in keyof A]: Eq<A[K]> }) => Eq<{ [K in keyof A]: A[K] }> = E.getStructEq
+export const struct: <A>(eqs: { [K in keyof A]: Eq<A[K]> }) => Eq<{ [K in keyof A]: A[K] }> = E.getStructEq
+
+/**
+ * Use `struct` instead.
+ *
+ * @category combinators
+ * @since 2.2.2
+ * @deprecated
+ */
+export const type = struct
 
 /**
  * @category combinators
@@ -196,6 +205,7 @@ export const Schemable: Schemable1<E.URI> = {
   boolean,
   nullable,
   type,
+  struct,
   partial,
   record,
   array,

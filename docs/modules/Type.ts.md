@@ -28,10 +28,11 @@ Added in v2.2.3
   - [readonly](#readonly)
   - [record](#record)
   - [refine](#refine)
+  - [struct](#struct)
   - [sum](#sum)
   - [tuple](#tuple)
-  - [type](#type)
   - [union](#union)
+  - [~~type~~](#type)
 - [constructors](#constructors)
   - [literal](#literal)
 - [instances](#instances)
@@ -134,6 +135,16 @@ export declare const refine: <A, B extends A>(refinement: Refinement<A, B>, id: 
 
 Added in v2.2.3
 
+## struct
+
+**Signature**
+
+```ts
+export declare const struct: <A>(properties: { [K in keyof A]: Type<A[K]> }) => Type<{ [K in keyof A]: A[K] }>
+```
+
+Added in v2.2.15
+
 ## sum
 
 **Signature**
@@ -156,16 +167,6 @@ export declare const tuple: <A extends readonly unknown[]>(...components: { [K i
 
 Added in v2.2.3
 
-## type
-
-**Signature**
-
-```ts
-export declare const type: <A>(properties: { [K in keyof A]: Type<A[K]> }) => Type<{ [K in keyof A]: A[K] }>
-```
-
-Added in v2.2.3
-
 ## union
 
 **Signature**
@@ -174,6 +175,18 @@ Added in v2.2.3
 export declare const union: <A extends readonly [unknown, ...unknown[]]>(
   ...members: { [K in keyof A]: Type<A[K]> }
 ) => Type<A[number]>
+```
+
+Added in v2.2.3
+
+## ~~type~~
+
+Use `struct` instead.
+
+**Signature**
+
+```ts
+export declare const type: <A>(properties: { [K in keyof A]: Type<A[K]> }) => Type<{ [K in keyof A]: A[K] }>
 ```
 
 Added in v2.2.3

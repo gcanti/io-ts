@@ -105,10 +105,10 @@ describe('Type', () => {
     )
   })
 
-  it('type', () => {
+  it('struct', () => {
     check(
       make((S) =>
-        S.type({
+        S.struct({
           name: S.string,
           age: S.number
         })
@@ -162,7 +162,7 @@ describe('Type', () => {
 
   it('intersect', () => {
     check(
-      make((S) => pipe(S.type({ a: S.string }), S.intersect(S.type({ b: S.number })))),
+      make((S) => pipe(S.struct({ a: S.string }), S.intersect(S.struct({ b: S.number })))),
       t.intersection([t.type({ a: t.string }), t.type({ b: t.number })])
     )
   })
@@ -171,8 +171,8 @@ describe('Type', () => {
     check(
       make((S) =>
         S.sum('_tag')({
-          A: S.type({ _tag: S.literal('A'), a: S.string }),
-          B: S.type({ _tag: S.literal('B'), b: S.number })
+          A: S.struct({ _tag: S.literal('A'), a: S.string }),
+          B: S.struct({ _tag: S.literal('B'), b: S.number })
         })
       ),
       t.union([t.type({ _tag: t.literal('A'), a: t.string }), t.type({ _tag: t.literal('B'), b: t.number })])
@@ -187,7 +187,7 @@ describe('Type', () => {
     }
 
     const schema: Schema<A> = make((S) =>
-      S.lazy('A', () => pipe(S.type({ a: S.string }), S.intersect(S.partial({ b: schema(S), c: S.number }))))
+      S.lazy('A', () => pipe(S.struct({ a: S.string }), S.intersect(S.partial({ b: schema(S), c: S.number }))))
     )
     const type: t.Type<A> = t.recursion('A', () =>
       t.intersection([t.type({ a: t.string }), t.partial({ b: type, c: t.number })])

@@ -37,9 +37,9 @@ Added in v2.2.7
   - [fromArray](#fromarray)
   - [fromPartial](#frompartial)
   - [fromRecord](#fromrecord)
+  - [fromStruct](#fromstruct)
   - [fromSum](#fromsum)
   - [fromTuple](#fromtuple)
-  - [fromType](#fromtype)
   - [intersect](#intersect)
   - [lazy](#lazy)
   - [mapLeftWithInput](#mapleftwithinput)
@@ -49,11 +49,13 @@ Added in v2.2.7
   - [readonly](#readonly)
   - [record](#record)
   - [refine](#refine)
+  - [struct](#struct)
   - [sum](#sum)
   - [tuple](#tuple)
-  - [type](#type)
   - [union](#union)
   - [withMessage](#withmessage)
+  - [~~fromType~~](#fromtype)
+  - [~~type~~](#type)
 - [constructors](#constructors)
   - [fromGuard](#fromguard)
   - [fromRefinement](#fromrefinement)
@@ -223,6 +225,18 @@ export declare const fromRecord: <I, A>(codomain: Decoder<I, A>) => Decoder<Reco
 
 Added in v2.2.8
 
+## fromStruct
+
+**Signature**
+
+```ts
+export declare const fromStruct: <P extends Record<string, Decoder<any, any>>>(
+  properties: P
+) => Decoder<{ [K in keyof P]: K.InputOf<'Either', P[K]> }, { [K in keyof P]: K.TypeOf<'Either', P[K]> }>
+```
+
+Added in v2.2.15
+
 ## fromSum
 
 **Signature**
@@ -245,18 +259,6 @@ Added in v2.2.8
 export declare const fromTuple: <C extends readonly Decoder<any, any>[]>(
   ...components: C
 ) => Decoder<{ [K in keyof C]: K.InputOf<'Either', C[K]> }, { [K in keyof C]: K.TypeOf<'Either', C[K]> }>
-```
-
-Added in v2.2.8
-
-## fromType
-
-**Signature**
-
-```ts
-export declare const fromType: <P extends Record<string, Decoder<any, any>>>(
-  properties: P
-) => Decoder<{ [K in keyof P]: K.InputOf<'Either', P[K]> }, { [K in keyof P]: K.TypeOf<'Either', P[K]> }>
 ```
 
 Added in v2.2.8
@@ -362,6 +364,18 @@ export declare const refine: <A, B extends A>(
 
 Added in v2.2.7
 
+## struct
+
+**Signature**
+
+```ts
+export declare const struct: <A>(
+  properties: { [K in keyof A]: Decoder<unknown, A[K]> }
+) => Decoder<unknown, { [K in keyof A]: A[K] }>
+```
+
+Added in v2.2.15
+
 ## sum
 
 **Signature**
@@ -382,18 +396,6 @@ Added in v2.2.7
 export declare const tuple: <A extends readonly unknown[]>(
   ...components: { [K in keyof A]: Decoder<unknown, A[K]> }
 ) => Decoder<unknown, A>
-```
-
-Added in v2.2.7
-
-## type
-
-**Signature**
-
-```ts
-export declare const type: <A>(
-  properties: { [K in keyof A]: Decoder<unknown, A[K]> }
-) => Decoder<unknown, { [K in keyof A]: A[K] }>
 ```
 
 Added in v2.2.7
@@ -421,6 +423,34 @@ export declare const withMessage: <I>(
 ```
 
 Added in v2.2.9
+
+## ~~fromType~~
+
+Use `fromStruct` instead.
+
+**Signature**
+
+```ts
+export declare const fromType: <P extends Record<string, Decoder<any, any>>>(
+  properties: P
+) => Decoder<{ [K in keyof P]: K.InputOf<'Either', P[K]> }, { [K in keyof P]: K.TypeOf<'Either', P[K]> }>
+```
+
+Added in v2.2.8
+
+## ~~type~~
+
+Use `struct` instead.
+
+**Signature**
+
+```ts
+export declare const type: <A>(
+  properties: { [K in keyof A]: Decoder<unknown, A[K]> }
+) => Decoder<unknown, { [K in keyof A]: A[K] }>
+```
+
+Added in v2.2.7
 
 # constructors
 

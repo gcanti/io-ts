@@ -20,25 +20,25 @@ export type TypeOfNumberFromString = _.TypeOf<typeof NumberFromString>
 export type InputOfNumberFromString = _.InputOf<typeof NumberFromString>
 
 //
-// fromType
+// fromStruct
 //
 
 // $ExpectType Decoder<{ a: unknown; b: { c: string; }; }, { a: string; b: { c: number; }; }>
-_.fromType({
+_.fromStruct({
   a: _.string,
-  b: _.fromType({
+  b: _.fromStruct({
     c: NumberFromString
   })
 })
 
 //
-// type
+// struct
 //
 
 // $ExpectType Decoder<unknown, { a: string; b: { c: number; }; }>
-_.type({
+_.struct({
   a: _.string,
-  b: _.type({
+  b: _.struct({
     c: _.number
   })
 })
@@ -115,16 +115,16 @@ _.tuple(_.string, _.number, _.boolean)
 
 // $ExpectType Decoder<{ _tag: unknown; a: unknown; } | { _tag: unknown; b: string; }, { _tag: "A"; a: string; } | { _tag: "B"; b: number; }>
 _.fromSum('_tag')({
-  A: _.fromType({ _tag: _.literal('A'), a: _.string }),
-  B: _.fromType({ _tag: _.literal('B'), b: NumberFromString })
+  A: _.fromStruct({ _tag: _.literal('A'), a: _.string }),
+  B: _.fromStruct({ _tag: _.literal('B'), b: NumberFromString })
 })
 
 //
 // sum
 //
 
-const S1 = _.type({ _tag: _.literal('A'), a: _.string })
-const S2 = _.type({ _tag: _.literal('B'), b: _.number })
+const S1 = _.struct({ _tag: _.literal('A'), a: _.string })
+const S2 = _.struct({ _tag: _.literal('B'), b: _.number })
 
 // $ExpectType Decoder<unknown, { _tag: "A"; a: string; } | { _tag: "B"; b: number; }>
 _.sum('_tag')({ A: S1, B: S2 })
@@ -154,7 +154,7 @@ pipe(
 
 // $ExpectType Decoder<unknown, Readonly<{ a: string; }>>
 _.readonly(
-  _.type({
+  _.struct({
     a: _.string
   })
 )

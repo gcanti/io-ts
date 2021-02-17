@@ -61,7 +61,7 @@ export function nullable<A>(or: JsonSchema<A>): JsonSchema<null | A> {
   return union(nullJsonSchema, or)
 }
 
-export function type<A>(properties: { [K in keyof A]: JsonSchema<A[K]> }): JsonSchema<A> {
+export function struct<A>(properties: { [K in keyof A]: JsonSchema<A[K]> }): JsonSchema<A> {
   return {
     compile: (lazy) =>
       C.make({
@@ -193,7 +193,8 @@ export const Schemable: S.Schemable1<URI> & S.WithUnknownContainers1<URI> & S.Wi
   UnknownArray,
   UnknownRecord,
   nullable,
-  type,
+  type: struct,
+  struct,
   partial,
   record,
   array,

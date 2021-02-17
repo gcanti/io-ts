@@ -1,9 +1,9 @@
 import * as _ from '../../src/Type'
 
 // $ExpectType Type<{ a: string; b: { c: number; }; }>
-_.type({
+_.struct({
   a: _.string,
-  b: _.type({
+  b: _.struct({
     c: _.number
   })
 })
@@ -22,7 +22,7 @@ _.partial({
 
 // $ExpectType Type<Readonly<{ a: string; }>>
 _.readonly(
-  _.type({
+  _.struct({
     a: _.string
   })
 )

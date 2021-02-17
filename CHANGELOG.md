@@ -19,6 +19,9 @@
 - **Experimental**
   - `Schemable`
     - (\*) add `readonly` combinator (@gcanti)
+    - (\*) add `struct` combinator (@gcanti)
+  - deprecate `type` in favour of `struct` (@gcanti)
+  - deprecate `fromType` in favour of `fromStruct` (@gcanti)
 
 (\*) breaking change
 

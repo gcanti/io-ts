@@ -98,10 +98,19 @@ export const nullable = <A>(or: Type<A>): Type<null | A> => t.union([t.null, or]
 
 /**
  * @category combinators
- * @since 2.2.3
+ * @since 2.2.15
  */
-export const type = <A>(properties: { [K in keyof A]: Type<A[K]> }): Type<{ [K in keyof A]: A[K] }> =>
+export const struct = <A>(properties: { [K in keyof A]: Type<A[K]> }): Type<{ [K in keyof A]: A[K] }> =>
   t.type(properties) as any
+
+/**
+ * Use `struct` instead.
+ *
+ * @category combinators
+ * @since 2.2.3
+ * @deprecated
+ */
+export const type = struct
 
 /**
  * @category combinators
@@ -197,6 +206,7 @@ export const Schemable: S.Schemable1<URI> = {
   boolean,
   nullable,
   type,
+  struct,
   partial,
   record,
   array,
