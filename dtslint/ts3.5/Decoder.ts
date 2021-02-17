@@ -147,3 +147,14 @@ pipe(
   _.number,
   _.mapLeftWithInput((u) => FS.of(DE.leaf(u, 'not a number')))
 )
+
+//
+// readonly
+//
+
+// $ExpectType Decoder<unknown, Readonly<{ a: string; }>>
+_.readonly(
+  _.type({
+    a: _.string
+  })
+)

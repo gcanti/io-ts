@@ -25,6 +25,7 @@ Added in v2.2.3
   - [lazy](#lazy)
   - [nullable](#nullable)
   - [partial](#partial)
+  - [readonly](#readonly)
   - [record](#record)
   - [refine](#refine)
   - [sum](#sum)
@@ -102,6 +103,16 @@ export declare const partial: <A>(properties: { [K in keyof A]: Type<A[K]> }) =>
 ```
 
 Added in v2.2.3
+
+## readonly
+
+**Signature**
+
+```ts
+export declare const readonly: <A>(type: Type<A>) => Type<Readonly<A>>
+```
+
+Added in v2.2.15
 
 ## record
 

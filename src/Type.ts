@@ -9,7 +9,7 @@
  * @since 2.2.3
  */
 import * as E from 'fp-ts/lib/Either'
-import { Refinement } from 'fp-ts/lib/function'
+import { identity, Refinement } from 'fp-ts/lib/function'
 import { pipe } from 'fp-ts/lib/pipeable'
 import * as t from './index'
 import * as S from './Schemable'
@@ -143,6 +143,12 @@ export const lazy = <A>(id: string, f: () => Type<A>): Type<A> => t.recursion(id
 
 /**
  * @category combinators
+ * @since 2.2.15
+ */
+export const readonly: <A>(type: Type<A>) => Type<Readonly<A>> = identity
+
+/**
+ * @category combinators
  * @since 2.2.3
  */
 export const sum = <T extends string>(_tag: T) => <A>(
@@ -197,7 +203,8 @@ export const Schemable: S.Schemable1<URI> = {
   tuple: tuple as S.Schemable1<URI>['tuple'],
   intersect,
   sum,
-  lazy
+  lazy,
+  readonly
 }
 
 /**

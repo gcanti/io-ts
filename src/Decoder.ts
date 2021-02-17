@@ -12,7 +12,7 @@ import { Alt2, Alt2C } from 'fp-ts/lib/Alt'
 import { Bifunctor2 } from 'fp-ts/lib/Bifunctor'
 import { Category2 } from 'fp-ts/lib/Category'
 import * as E from 'fp-ts/lib/Either'
-import { Refinement } from 'fp-ts/lib/function'
+import { identity, Refinement } from 'fp-ts/lib/function'
 import { Functor2 } from 'fp-ts/lib/Functor'
 import { MonadThrow2C } from 'fp-ts/lib/MonadThrow'
 import { pipe } from 'fp-ts/lib/pipeable'
@@ -356,6 +356,12 @@ export const lazy: <I, A>(id: string, f: () => Decoder<I, A>) => Decoder<I, A> =
   /*#__PURE__*/
   K.lazy(M)((id, e) => FS.of(DE.lazy(id, e)))
 
+/**
+ * @category combinators
+ * @since 2.2.15
+ */
+export const readonly: <I, A>(decoder: Decoder<I, A>) => Decoder<I, Readonly<A>> = identity
+
 // -------------------------------------------------------------------------------------
 // non-pipeables
 // -------------------------------------------------------------------------------------
@@ -471,7 +477,8 @@ export const Schemable: S.Schemable2C<URI, unknown> = {
   tuple: tuple as S.Schemable2C<URI, unknown>['tuple'],
   intersect,
   sum,
-  lazy
+  lazy,
+  readonly
 }
 
 /**

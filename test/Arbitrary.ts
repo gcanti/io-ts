@@ -2,7 +2,7 @@
  * An instance of `Schemable` for `fast-check` arbitraries that emit valid values
  */
 import * as fc from 'fast-check'
-import { Refinement } from 'fp-ts/lib/function'
+import { identity, Refinement } from 'fp-ts/lib/function'
 import * as S from '../src/Schemable'
 
 // -------------------------------------------------------------------------------------
@@ -94,6 +94,8 @@ export function lazy<A>(f: () => Arbitrary<A>): Arbitrary<A> {
   return fc.constant(null).chain(() => get())
 }
 
+export const readonly: <A>(arb: Arbitrary<A>) => Arbitrary<Readonly<A>> = identity
+
 export function union<A extends [Arbitrary<unknown>, ...Array<Arbitrary<unknown>>]>(
   ...members: { [K in keyof A]: Arbitrary<A[K]> }
 ): Arbitrary<A[number]> {
@@ -129,6 +131,7 @@ export const Schemable: S.Schemable1<URI> & S.WithUnknownContainers1<URI> & S.Wi
   intersect,
   sum,
   lazy: (_, f) => lazy(f),
+  readonly,
   UnknownArray,
   UnknownRecord,
   union: union as S.WithUnion1<URI>['union'],
