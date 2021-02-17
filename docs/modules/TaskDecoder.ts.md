@@ -37,9 +37,9 @@ Added in v2.2.7
   - [fromArray](#fromarray)
   - [fromPartial](#frompartial)
   - [fromRecord](#fromrecord)
+  - [fromStruct](#fromstruct)
   - [fromSum](#fromsum)
   - [fromTuple](#fromtuple)
-  - [fromType](#fromtype)
   - [intersect](#intersect)
   - [lazy](#lazy)
   - [mapLeftWithInput](#mapleftwithinput)
@@ -49,11 +49,13 @@ Added in v2.2.7
   - [readonly](#readonly)
   - [record](#record)
   - [refine](#refine)
+  - [struct](#struct)
   - [sum](#sum)
   - [tuple](#tuple)
-  - [type](#type)
   - [union](#union)
   - [withMessage](#withmessage)
+  - [~~fromType~~](#fromtype)
+  - [~~type~~](#type)
 - [constructors](#constructors)
   - [fromDecoder](#fromdecoder)
   - [fromGuard](#fromguard)
@@ -226,6 +228,18 @@ export declare const fromRecord: <I, A>(
 
 Added in v2.2.8
 
+## fromStruct
+
+**Signature**
+
+```ts
+export declare const fromStruct: <P extends Record<string, TaskDecoder<any, any>>>(
+  properties: P
+) => TaskDecoder<{ [K in keyof P]: K.InputOf<'TaskEither', P[K]> }, { [K in keyof P]: K.TypeOf<'TaskEither', P[K]> }>
+```
+
+Added in v2.2.15
+
 ## fromSum
 
 **Signature**
@@ -248,18 +262,6 @@ Added in v2.2.8
 export declare const fromTuple: <C extends readonly TaskDecoder<any, any>[]>(
   ...components: C
 ) => TaskDecoder<{ [K in keyof C]: K.InputOf<'TaskEither', C[K]> }, { [K in keyof C]: K.TypeOf<'TaskEither', C[K]> }>
-```
-
-Added in v2.2.8
-
-## fromType
-
-**Signature**
-
-```ts
-export declare const fromType: <P extends Record<string, TaskDecoder<any, any>>>(
-  properties: P
-) => TaskDecoder<{ [K in keyof P]: K.InputOf<'TaskEither', P[K]> }, { [K in keyof P]: K.TypeOf<'TaskEither', P[K]> }>
 ```
 
 Added in v2.2.8
@@ -365,6 +367,18 @@ export declare const refine: <A, B extends A>(
 
 Added in v2.2.7
 
+## struct
+
+**Signature**
+
+```ts
+export declare const struct: <A>(
+  properties: { [K in keyof A]: TaskDecoder<unknown, A[K]> }
+) => TaskDecoder<unknown, { [K in keyof A]: A[K] }>
+```
+
+Added in v2.2.15
+
 ## sum
 
 **Signature**
@@ -385,18 +399,6 @@ Added in v2.2.7
 export declare const tuple: <A extends readonly unknown[]>(
   ...components: { [K in keyof A]: TaskDecoder<unknown, A[K]> }
 ) => TaskDecoder<unknown, A>
-```
-
-Added in v2.2.7
-
-## type
-
-**Signature**
-
-```ts
-export declare const type: <A>(
-  properties: { [K in keyof A]: TaskDecoder<unknown, A[K]> }
-) => TaskDecoder<unknown, { [K in keyof A]: A[K] }>
 ```
 
 Added in v2.2.7
@@ -424,6 +426,34 @@ export declare const withMessage: <I>(
 ```
 
 Added in v2.2.9
+
+## ~~fromType~~
+
+Use `fromStruct` instead.
+
+**Signature**
+
+```ts
+export declare const fromType: <P extends Record<string, TaskDecoder<any, any>>>(
+  properties: P
+) => TaskDecoder<{ [K in keyof P]: K.InputOf<'TaskEither', P[K]> }, { [K in keyof P]: K.TypeOf<'TaskEither', P[K]> }>
+```
+
+Added in v2.2.8
+
+## ~~type~~
+
+Use `struct` instead.
+
+**Signature**
+
+```ts
+export declare const type: <A>(
+  properties: { [K in keyof A]: TaskDecoder<unknown, A[K]> }
+) => TaskDecoder<unknown, { [K in keyof A]: A[K] }>
+```
+
+Added in v2.2.7
 
 # constructors
 

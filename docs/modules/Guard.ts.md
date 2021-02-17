@@ -31,11 +31,12 @@ Added in v2.2.0
   - [readonly](#readonly)
   - [record](#record)
   - [refine](#refine)
+  - [struct](#struct)
   - [sum](#sum)
   - [tuple](#tuple)
-  - [type](#type)
   - [union](#union)
   - [zero](#zero)
+  - [~~type~~](#type)
 - [constructors](#constructors)
   - [literal](#literal)
 - [instances](#instances)
@@ -175,6 +176,18 @@ export declare const refine: <I, A extends I, B extends A>(
 
 Added in v2.2.0
 
+## struct
+
+**Signature**
+
+```ts
+export declare const struct: <A>(
+  properties: { [K in keyof A]: Guard<unknown, A[K]> }
+) => Guard<unknown, { [K in keyof A]: A[K] }>
+```
+
+Added in v2.2.15
+
 ## sum
 
 **Signature**
@@ -195,18 +208,6 @@ Added in v2.2.0
 export declare const tuple: <A extends readonly unknown[]>(
   ...components: { [K in keyof A]: Guard<unknown, A[K]> }
 ) => Guard<unknown, A>
-```
-
-Added in v2.2.0
-
-## type
-
-**Signature**
-
-```ts
-export declare const type: <A>(
-  properties: { [K in keyof A]: Guard<unknown, A[K]> }
-) => Guard<unknown, { [K in keyof A]: A[K] }>
 ```
 
 Added in v2.2.0
@@ -232,6 +233,20 @@ export declare const zero: <I, A extends I>() => Guard<I, A>
 ```
 
 Added in v2.2.8
+
+## ~~type~~
+
+Use `struct` instead.
+
+**Signature**
+
+```ts
+export declare const type: <A>(
+  properties: { [K in keyof A]: Guard<unknown, A[K]> }
+) => Guard<unknown, { [K in keyof A]: A[K] }>
+```
+
+Added in v2.2.0
 
 # constructors
 

@@ -94,7 +94,7 @@ describe('Decoder', () => {
 
   it('withMessage', () => {
     const decoder = pipe(
-      _.type({
+      _.struct({
         name: _.string,
         age: _.number
       }),
@@ -153,30 +153,30 @@ describe('Decoder', () => {
     })
   })
 
-  describe('type', () => {
+  describe('struct', () => {
     it('should decode a valid input', async () => {
-      const decoder = _.type({
+      const decoder = _.struct({
         a: _.string
       })
       assert.deepStrictEqual(decoder.decode({ a: 'a' }), _.success({ a: 'a' }))
     })
 
     it('should strip additional fields', async () => {
-      const decoder = _.type({
+      const decoder = _.struct({
         a: _.string
       })
       assert.deepStrictEqual(decoder.decode({ a: 'a', b: 1 }), _.success({ a: 'a' }))
     })
 
     it('should not strip fields corresponding to undefined values', async () => {
-      const decoder = _.type({
+      const decoder = _.struct({
         a: H.decoderUndefined
       })
       assert.deepStrictEqual(decoder.decode({}), _.success({ a: undefined }))
     })
 
     it('should reject an invalid input', async () => {
-      const decoder = _.type({
+      const decoder = _.struct({
         a: _.string
       })
       assert.deepStrictEqual(decoder.decode(undefined), E.left(FS.of(DE.leaf(undefined, 'Record<string, unknown>'))))
@@ -187,7 +187,7 @@ describe('Decoder', () => {
     })
 
     it('should collect all errors', async () => {
-      const decoder = _.type({
+      const decoder = _.struct({
         a: _.string,
         b: _.number
       })
@@ -211,7 +211,7 @@ describe('Decoder', () => {
           return 'b'
         }
       }
-      const decoder = _.type({ a: _.string, b: _.string })
+      const decoder = _.struct({ a: _.string, b: _.string })
       assert.deepStrictEqual(decoder.decode(new A()), _.success({ a: 'a', b: 'b' }))
     })
   })
@@ -406,7 +406,7 @@ describe('Decoder', () => {
 
   describe('intersect', () => {
     it('should decode a valid input', () => {
-      const decoder = pipe(_.type({ a: _.string }), _.intersect(_.type({ b: _.number })))
+      const decoder = pipe(_.struct({ a: _.string }), _.intersect(_.struct({ b: _.number })))
       assert.deepStrictEqual(decoder.decode({ a: 'a', b: 1 }), _.success({ a: 'a', b: 1 }))
     })
 
@@ -416,7 +416,7 @@ describe('Decoder', () => {
     })
 
     it('should accumulate all errors', () => {
-      const decoder = pipe(_.type({ a: _.string }), _.intersect(_.type({ b: _.number })))
+      const decoder = pipe(_.struct({ a: _.string }), _.intersect(_.struct({ b: _.number })))
       assert.deepStrictEqual(
         decoder.decode({ a: 'a' }),
         E.left(FS.of(DE.key('b', DE.required, FS.of(DE.leaf(undefined, 'number')))))
@@ -441,16 +441,16 @@ describe('Decoder', () => {
     const sum = _.sum('_tag')
 
     it('should decode a valid input', () => {
-      const A = _.type({ _tag: _.literal('A'), a: _.string })
-      const B = _.type({ _tag: _.literal('B'), b: _.number })
+      const A = _.struct({ _tag: _.literal('A'), a: _.string })
+      const B = _.struct({ _tag: _.literal('B'), b: _.number })
       const decoder = sum({ A, B })
       assert.deepStrictEqual(decoder.decode({ _tag: 'A', a: 'a' }), _.success({ _tag: 'A', a: 'a' }))
       assert.deepStrictEqual(decoder.decode({ _tag: 'B', b: 1 }), _.success({ _tag: 'B', b: 1 }))
     })
 
     it('should reject an invalid input', () => {
-      const A = _.type({ _tag: _.literal('A'), a: _.string })
-      const B = _.type({ _tag: _.literal('B'), b: _.number })
+      const A = _.struct({ _tag: _.literal('A'), a: _.string })
+      const B = _.struct({ _tag: _.literal('B'), b: _.number })
       const decoder = sum({ A, B })
       assert.deepStrictEqual(decoder.decode(null), E.left(FS.of(DE.leaf(null, 'Record<string, unknown>'))))
       assert.deepStrictEqual(
@@ -473,8 +473,8 @@ describe('Decoder', () => {
 
     it('should support non-`string` tag values', () => {
       const decoder = _.sum('_tag')({
-        [1]: _.type({ _tag: _.literal(1), a: _.string }),
-        [2]: _.type({ _tag: _.literal(2), b: _.number })
+        [1]: _.struct({ _tag: _.literal(1), a: _.string }),
+        [2]: _.struct({ _tag: _.literal(2), b: _.number })
       })
       assert.deepStrictEqual(decoder.decode({ _tag: 1, a: 'a' }), E.right({ _tag: 1, a: 'a' }))
       assert.deepStrictEqual(decoder.decode({ _tag: 2, b: 1 }), E.right({ _tag: 2, b: 1 }))
@@ -491,7 +491,7 @@ describe('Decoder', () => {
   }
 
   const lazyDecoder: _.Decoder<unknown, A> = _.lazy('A', () =>
-    pipe(_.type({ a: H.decoderNumberFromUnknownString }), _.intersect(_.partial({ b: lazyDecoder })))
+    pipe(_.struct({ a: H.decoderNumberFromUnknownString }), _.intersect(_.partial({ b: lazyDecoder })))
   )
 
   describe('lazy', () => {
@@ -537,7 +537,7 @@ describe('Decoder', () => {
     it('is stack safe', () => {
       expect(() => {
         E.mapLeft(_.draw)(
-          _.record(_.type({ done: _.boolean })).decode(
+          _.record(_.struct({ done: _.boolean })).decode(
             new Array(10000)
               .fill({})
               .map((v, k) => [k, v])
@@ -551,7 +551,7 @@ describe('Decoder', () => {
     })
 
     it('draw', () => {
-      const decoder = _.type({
+      const decoder = _.struct({
         a: _.string,
         b: _.number,
         c: _.array(_.boolean),

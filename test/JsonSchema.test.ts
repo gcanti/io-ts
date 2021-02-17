@@ -41,8 +41,8 @@ describe('JsonSchema', () => {
     assert.strictEqual(validate({ a: 'a', b: 1, c: undefined }), true)
   })
 
-  it('type', () => {
-    const schema = J.type({ a: J.string, b: J.number }).compile()
+  it('struct', () => {
+    const schema = J.struct({ a: J.string, b: J.number }).compile()
     const validate = ajv.compile(schema)
     assert.strictEqual(validate({ a: 'a', b: 1 }), true)
     assert.strictEqual(validate({ a: 'a' }), false)
@@ -79,7 +79,7 @@ describe('JsonSchema', () => {
 
   describe('intersection', () => {
     it('should handle non primitive values', () => {
-      const validate = ajv.compile(pipe(J.type({ a: J.string }), J.intersect(J.type({ b: J.number }))).compile())
+      const validate = ajv.compile(pipe(J.struct({ a: J.string }), J.intersect(J.struct({ b: J.number }))).compile())
       assert.strictEqual(validate({ a: 'a', b: 1 }), true)
       assert.strictEqual(validate({ a: 'a' }), false)
     })
@@ -113,8 +113,8 @@ describe('JsonSchema', () => {
   it('sum', () => {
     const sum = J.sum('_tag')
 
-    const A = J.type({ _tag: J.literal('A'), a: J.string })
-    const B = J.type({ _tag: J.literal('B'), b: J.number })
+    const A = J.struct({ _tag: J.literal('A'), a: J.string })
+    const B = J.struct({ _tag: J.literal('B'), b: J.number })
     const validate = ajv.compile(sum({ A, B }).compile())
     assert.strictEqual(validate({ _tag: 'A', a: 'a' }), true)
     assert.strictEqual(validate({ _tag: 'B', b: 1 }), true)
@@ -137,7 +137,7 @@ describe('JsonSchema', () => {
       }
 
       const schema: J.JsonSchema<A> = J.lazy('A', () =>
-        pipe(J.type({ a: J.number }), J.intersect(J.partial({ b: schema })))
+        pipe(J.struct({ a: J.number }), J.intersect(J.partial({ b: schema })))
       )
 
       const jsonSchema = schema.compile()

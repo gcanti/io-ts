@@ -79,19 +79,19 @@ describe('Guard', () => {
     })
   })
 
-  describe('type', () => {
+  describe('struct', () => {
     it('should accept valid inputs', () => {
-      const guard = G.type({ a: G.string, b: G.number })
+      const guard = G.struct({ a: G.string, b: G.number })
       assert.strictEqual(guard.is({ a: 'a', b: 1 }), true)
     })
 
     it('should accept additional fields', () => {
-      const guard = G.type({ a: G.string, b: G.number })
+      const guard = G.struct({ a: G.string, b: G.number })
       assert.strictEqual(guard.is({ a: 'a', b: 1, c: true }), true)
     })
 
     it('should reject invalid inputs', () => {
-      const guard = G.type({ a: G.string, b: G.number })
+      const guard = G.struct({ a: G.string, b: G.number })
       assert.strictEqual(guard.is(undefined), false)
       assert.strictEqual(guard.is({ a: 'a' }), false)
     })
@@ -100,7 +100,7 @@ describe('Guard', () => {
       const undef: G.Guard<unknown, undefined> = {
         is: (u): u is undefined => u === undefined
       }
-      const guard = G.type({ a: undef })
+      const guard = G.struct({ a: undef })
       assert.strictEqual(guard.is({}), false)
     })
 
@@ -113,7 +113,7 @@ describe('Guard', () => {
           return 'b'
         }
       }
-      const guard = G.type({ a: G.string, b: G.string })
+      const guard = G.struct({ a: G.string, b: G.string })
       assert.deepStrictEqual(guard.is(new A()), true)
     })
   })
@@ -204,12 +204,12 @@ describe('Guard', () => {
 
   describe('intersect', () => {
     it('should accept valid inputs', () => {
-      const guard = pipe(G.type({ a: G.string }), G.intersect(G.type({ b: G.number })))
+      const guard = pipe(G.struct({ a: G.string }), G.intersect(G.struct({ b: G.number })))
       assert.strictEqual(guard.is({ a: 'a', b: 1 }), true)
     })
 
     it('should reject invalid inputs', () => {
-      const guard = pipe(G.type({ a: G.string }), G.intersect(G.type({ b: G.number })))
+      const guard = pipe(G.struct({ a: G.string }), G.intersect(G.struct({ b: G.number })))
       assert.strictEqual(guard.is({ a: 'a' }), false)
     })
   })
@@ -234,7 +234,7 @@ describe('Guard', () => {
     }
 
     const guard: G.Guard<unknown, A> = G.Schemable.lazy('A', () =>
-      G.type({
+      G.struct({
         a: G.number,
         b: G.array(guard)
       })
@@ -256,8 +256,8 @@ describe('Guard', () => {
 
     it('should accept valid inputs', () => {
       const guard = sum({
-        A: G.type({ _tag: G.literal('A'), a: G.string }),
-        B: G.type({ _tag: G.literal('B'), b: G.number })
+        A: G.struct({ _tag: G.literal('A'), a: G.string }),
+        B: G.struct({ _tag: G.literal('B'), b: G.number })
       })
       assert.deepStrictEqual(guard.is({ _tag: 'A', a: 'a' }), true)
       assert.deepStrictEqual(guard.is({ _tag: 'B', b: 1 }), true)
@@ -265,8 +265,8 @@ describe('Guard', () => {
 
     it('should reject invalid inputs', () => {
       const guard = sum({
-        A: G.type({ _tag: G.literal('A'), a: G.string }),
-        B: G.type({ _tag: G.literal('B'), b: G.number })
+        A: G.struct({ _tag: G.literal('A'), a: G.string }),
+        B: G.struct({ _tag: G.literal('B'), b: G.number })
       })
       assert.strictEqual(guard.is(undefined), false)
       assert.strictEqual(guard.is({}), false)
@@ -274,8 +274,8 @@ describe('Guard', () => {
 
     it('should support non-`string` tag values', () => {
       const guard = G.sum('_tag')({
-        [1]: G.type({ _tag: G.literal(1), a: G.string }),
-        [2]: G.type({ _tag: G.literal(2), b: G.number })
+        [1]: G.struct({ _tag: G.literal(1), a: G.string }),
+        [2]: G.struct({ _tag: G.literal(2), b: G.number })
       })
       assert.deepStrictEqual(guard.is({ _tag: 1, a: 'a' }), true)
       assert.deepStrictEqual(guard.is({ _tag: 2, b: 1 }), true)

@@ -27,9 +27,10 @@ Added in v2.2.2
   - [partial](#partial)
   - [readonly](#readonly)
   - [record](#record)
+  - [struct](#struct)
   - [sum](#sum)
   - [tuple](#tuple)
-  - [type](#type)
+  - [~~type~~](#type)
 - [instances](#instances)
   - [Schemable](#schemable)
   - [WithRefine](#withrefine)
@@ -118,6 +119,16 @@ export declare const record: <A>(codomain: E.Eq<A>) => E.Eq<Record<string, A>>
 
 Added in v2.2.2
 
+## struct
+
+**Signature**
+
+```ts
+export declare const struct: <A>(eqs: { [K in keyof A]: E.Eq<A[K]> }) => E.Eq<{ [K in keyof A]: A[K] }>
+```
+
+Added in v2.2.15
+
 ## sum
 
 **Signature**
@@ -140,7 +151,9 @@ export declare const tuple: <A extends readonly unknown[]>(...components: { [K i
 
 Added in v2.2.2
 
-## type
+## ~~type~~
+
+Use `struct` instead.
 
 **Signature**
 

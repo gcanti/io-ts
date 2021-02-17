@@ -1,13 +1,13 @@
 import * as _ from '../../src/Guard'
 
 //
-// type
+// struct
 //
 
 // $ExpectType Guard<unknown, { a: string; b: { c: number; }; }>
-const A = _.type({
+const A = _.struct({
   a: _.string,
-  b: _.type({
+  b: _.struct({
     c: _.number
   })
 })
@@ -35,8 +35,8 @@ export type A = _.TypeOf<typeof A>
 // sum
 //
 
-const S1 = _.type({ _tag: _.literal('A'), a: _.string })
-const S2 = _.type({ _tag: _.literal('B'), b: _.number })
+const S1 = _.struct({ _tag: _.literal('A'), a: _.string })
+const S2 = _.struct({ _tag: _.literal('B'), b: _.number })
 
 // $ExpectType Guard<unknown, { _tag: "A"; a: string; } | { _tag: "B"; b: number; }>
 _.sum('_tag')({ A: S1, B: S2 })
@@ -49,7 +49,7 @@ _.sum('_tag')({ A: S1, B: S1 })
 
 // $ExpectType Guard<unknown, Readonly<{ a: string; }>>
 _.readonly(
-  _.type({
+  _.struct({
     a: _.string
   })
 )

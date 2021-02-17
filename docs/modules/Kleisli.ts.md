@@ -25,9 +25,9 @@ Added in v2.2.7
   - [fromArray](#fromarray)
   - [fromPartial](#frompartial)
   - [fromRecord](#fromrecord)
+  - [fromStruct](#fromstruct)
   - [fromSum](#fromsum)
   - [fromTuple](#fromtuple)
-  - [fromType](#fromtype)
   - [id](#id)
   - [intersect](#intersect)
   - [lazy](#lazy)
@@ -37,6 +37,7 @@ Added in v2.2.7
   - [parse](#parse)
   - [refine](#refine)
   - [union](#union)
+  - [~~fromType~~](#fromtype)
 - [constructors](#constructors)
   - [fromRefinement](#fromrefinement)
   - [literal](#literal)
@@ -116,6 +117,22 @@ export declare function fromRecord<M extends URIS2, E>(
 
 Added in v2.2.7
 
+## fromStruct
+
+**Signature**
+
+```ts
+export declare function fromStruct<M extends URIS2, E>(
+  M: Applicative2C<M, E> & Bifunctor2<M>
+): (
+  onPropertyError: (key: string, e: E) => E
+) => <P extends Record<string, Kleisli<M, any, E, any>>>(
+  properties: P
+) => Kleisli<M, { [K in keyof P]: InputOf<M, P[K]> }, E, { [K in keyof P]: TypeOf<M, P[K]> }>
+```
+
+Added in v2.2.15
+
 ## fromSum
 
 **Signature**
@@ -146,22 +163,6 @@ export declare function fromTuple<M extends URIS2, E>(
 ) => <C extends ReadonlyArray<Kleisli<M, any, E, any>>>(
   ...components: C
 ) => Kleisli<M, { [K in keyof C]: InputOf<M, C[K]> }, E, { [K in keyof C]: TypeOf<M, C[K]> }>
-```
-
-Added in v2.2.7
-
-## fromType
-
-**Signature**
-
-```ts
-export declare function fromType<M extends URIS2, E>(
-  M: Applicative2C<M, E> & Bifunctor2<M>
-): (
-  onPropertyError: (key: string, e: E) => E
-) => <P extends Record<string, Kleisli<M, any, E, any>>>(
-  properties: P
-) => Kleisli<M, { [K in keyof P]: InputOf<M, P[K]> }, E, { [K in keyof P]: TypeOf<M, P[K]> }>
 ```
 
 Added in v2.2.7
@@ -275,6 +276,18 @@ export declare function union<M extends URIS2, E>(
 ) => <MS extends readonly [Kleisli<M, any, E, any>, ...Array<Kleisli<M, any, E, any>>]>(
   ...members: MS
 ) => Kleisli<M, InputOf<M, MS[keyof MS]>, E, TypeOf<M, MS[keyof MS]>>
+```
+
+Added in v2.2.7
+
+## ~~fromType~~
+
+Use `fromStruct` instead.
+
+**Signature**
+
+```ts
+export declare const fromType: typeof fromStruct
 ```
 
 Added in v2.2.7

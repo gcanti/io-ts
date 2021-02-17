@@ -193,31 +193,31 @@ describe('Codec', () => {
     })
   })
 
-  describe('type', () => {
+  describe('struct', () => {
     describe('decode', () => {
       it('should decode a valid input', () => {
-        const codec = _.type({
+        const codec = _.struct({
           a: _.string
         })
         assert.deepStrictEqual(codec.decode({ a: 'a' }), D.success({ a: 'a' }))
       })
 
       it('should strip additional fields', () => {
-        const codec = _.type({
+        const codec = _.struct({
           a: _.string
         })
         assert.deepStrictEqual(codec.decode({ a: 'a', b: 1 }), D.success({ a: 'a' }))
       })
 
       it('should not strip fields corresponding to undefined values', () => {
-        const codec = _.type({
+        const codec = _.struct({
           a: codecUndefined
         })
         assert.deepStrictEqual(codec.decode({}), D.success({ a: undefined }))
       })
 
       it('should reject an invalid input', () => {
-        const codec = _.type({
+        const codec = _.struct({
           a: _.string
         })
         assert.deepStrictEqual(codec.decode(undefined), D.failure(undefined, 'Record<string, unknown>'))
@@ -228,7 +228,7 @@ describe('Codec', () => {
       })
 
       it('should collect all errors', () => {
-        const codec = _.type({
+        const codec = _.struct({
           a: _.string,
           b: _.number
         })
@@ -252,19 +252,19 @@ describe('Codec', () => {
             return 'b'
           }
         }
-        const codec = _.type({ a: _.string, b: _.string })
+        const codec = _.struct({ a: _.string, b: _.string })
         assert.deepStrictEqual(codec.decode(new A()), D.success({ a: 'a', b: 'b' }))
       })
     })
 
     describe('encode', () => {
       it('should encode a value', () => {
-        const codec = _.type({ a: codecNumber })
+        const codec = _.struct({ a: codecNumber })
         assert.deepStrictEqual(codec.encode({ a: 1 }), { a: '1' })
       })
 
       it('should strip additional fields', () => {
-        const codec = _.type({ a: _.number })
+        const codec = _.struct({ a: _.number })
         const a = { a: 1, b: true }
         assert.deepStrictEqual(codec.encode(a), { a: 1 })
       })
@@ -487,7 +487,7 @@ describe('Codec', () => {
   describe('intersect', () => {
     describe('decode', () => {
       it('should decode a valid input', () => {
-        const codec = pipe(_.type({ a: _.string }), _.intersect(_.type({ b: _.number })))
+        const codec = pipe(_.struct({ a: _.string }), _.intersect(_.struct({ b: _.number })))
         assert.deepStrictEqual(codec.decode({ a: 'a', b: 1 }), D.success({ a: 'a', b: 1 }))
       })
 
@@ -499,7 +499,7 @@ describe('Codec', () => {
 
     describe('encode', () => {
       it('should encode a value', () => {
-        const codec = pipe(_.type({ a: _.string }), _.intersect(_.type({ b: codecNumber })))
+        const codec = pipe(_.struct({ a: _.string }), _.intersect(_.struct({ b: codecNumber })))
         assert.deepStrictEqual(codec.encode({ a: 'a', b: 1 }), { a: 'a', b: '1' })
       })
 
@@ -515,16 +515,16 @@ describe('Codec', () => {
 
     describe('decode', () => {
       it('should decode a valid input', () => {
-        const A = _.type({ _tag: _.literal('A'), a: _.string })
-        const B = _.type({ _tag: _.literal('B'), b: _.number })
+        const A = _.struct({ _tag: _.literal('A'), a: _.string })
+        const B = _.struct({ _tag: _.literal('B'), b: _.number })
         const codec = sum({ A, B })
         assert.deepStrictEqual(codec.decode({ _tag: 'A', a: 'a' }), D.success({ _tag: 'A', a: 'a' }))
         assert.deepStrictEqual(codec.decode({ _tag: 'B', b: 1 }), D.success({ _tag: 'B', b: 1 }))
       })
 
       it('should reject an invalid input', () => {
-        const A = _.type({ _tag: _.literal('A'), a: _.string })
-        const B = _.type({ _tag: _.literal('B'), b: _.number })
+        const A = _.struct({ _tag: _.literal('A'), a: _.string })
+        const B = _.struct({ _tag: _.literal('B'), b: _.number })
         const codec = sum({ A, B })
         assert.deepStrictEqual(codec.decode(null), D.failure(null, 'Record<string, unknown>'))
         assert.deepStrictEqual(
@@ -548,8 +548,8 @@ describe('Codec', () => {
 
     describe('encode', () => {
       it('should encode a value', () => {
-        const A = _.type({ _tag: _.literal('A'), a: _.string })
-        const B = _.type({ _tag: _.literal('B'), b: codecNumber })
+        const A = _.struct({ _tag: _.literal('A'), a: _.string })
+        const B = _.struct({ _tag: _.literal('B'), b: codecNumber })
         const codec = sum({ A, B })
         assert.deepStrictEqual(codec.encode({ _tag: 'A', a: 'a' }), { _tag: 'A', a: 'a' })
         assert.deepStrictEqual(codec.encode({ _tag: 'B', b: 1 }), { _tag: 'B', b: '1' })
@@ -568,7 +568,7 @@ describe('Codec', () => {
     }
 
     const lazyCodec: _.Codec<unknown, AOut, A> = _.lazy('A', () =>
-      pipe(_.type({ a: codecNumber }), _.intersect(_.partial({ b: lazyCodec })))
+      pipe(_.struct({ a: codecNumber }), _.intersect(_.partial({ b: lazyCodec })))
     )
 
     describe('decode', () => {
@@ -639,7 +639,7 @@ describe('Codec', () => {
       { encode: String }
     )
 
-    const User = _.type({ a: _.string, b: pipe(_.string, _.compose(DateFromString)) })
+    const User = _.struct({ a: _.string, b: pipe(_.string, _.compose(DateFromString)) })
 
     const codec = pipe(_.string, _.compose(Base64), _.compose(Json), _.compose(User))
 
