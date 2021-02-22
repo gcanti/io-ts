@@ -6,7 +6,7 @@
 - [Combinators](#combinators)
   - [The `literal` constructor](#the-literal-constructor)
   - [The `nullable` combinator](#the-nullable-combinator)
-  - [The `type` combinator](#the-type-combinator)
+  - [The `struct` combinator](#the-struct-combinator)
   - [The `partial` combinator](#the-partial-combinator)
   - [The `record` combinator](#the-record-combinator)
   - [The `array` combinator](#the-array-combinator)
@@ -100,12 +100,12 @@ The `nullable` combinator describes a nullable value
 export const NullableString: D.Decoder<unknown, null | string> = D.nullable(D.string)
 ```
 
-## The `type` combinator
+## The `struct` combinator
 
-The `type` combinator describes an object with required fields.
+The `struct` combinator describes an object with required fields.
 
 ```ts
-export const Person = D.type({
+export const Person = D.struct({
   name: D.string,
   age: D.number
 })
@@ -114,7 +114,7 @@ console.log(isRight(Person.decode({ name: 'name', age: 42 }))) // => true
 console.log(isRight(Person.decode({ name: 'name' }))) // => false
 ```
 
-The `type` combinator will strip additional fields while decoding
+The `struct` combinator will strip additional fields while decoding
 
 ```ts
 console.log(Person.decode({ name: 'name', age: 42, rememberMe: true }))
@@ -184,7 +184,7 @@ The `intersect` combinator is useful in order to mix required and optional props
 
 ```ts
 export const Person = pipe(
-  D.type({
+  D.struct({
     name: D.string
   }),
   D.intersect(
@@ -215,12 +215,12 @@ export const MySum: D.Decoder<
     }
   //        v--- tag name
 > = D.sum('type')({
-  //           +----- all union members in the dictionary must own a field named like the chosen tag ("type" in this case)
-  //           |
-  //           v               v----- this value must be equal to its corresponding dictionary key ("A" in this case)
-  A: D.type({ type: D.literal('A'), a: D.string }),
-  //                           v----- this value must be equal to its corresponding dictionary key ("B" in this case)
-  B: D.type({ type: D.literal('B'), b: D.number })
+  //             +----- all union members in the dictionary must own a field named like the chosen tag ("type" in this case)
+  //             |
+  //             v               v----- this value must be equal to its corresponding dictionary key ("A" in this case)
+  A: D.struct({ type: D.literal('A'), a: D.string }),
+  //                             v----- this value must be equal to its corresponding dictionary key ("B" in this case)
+  B: D.struct({ type: D.literal('B'), b: D.number })
 })
 ```
 
@@ -240,8 +240,8 @@ export const MySum: D.Decoder<
       b: number
     }
 > = D.sum('type')({
-  [1]: D.type({ type: D.literal(1), a: D.string }),
-  [2]: D.type({ type: D.literal(2), b: D.number })
+  [1]: D.struct({ type: D.literal(1), a: D.string }),
+  [2]: D.struct({ type: D.literal(2), b: D.number })
 })
 ```
 
@@ -270,7 +270,7 @@ interface Category {
 }
 
 const Category: D.Decoder<unknown, Category> = D.lazy('Category', () =>
-  D.type({
+  D.struct({
     title: D.string,
     subcategory: D.nullable(Category)
   })
@@ -291,14 +291,14 @@ interface Bar {
 }
 
 const Foo: D.Decoder<unknown, Foo> = D.lazy('Foo', () =>
-  D.type({
+  D.struct({
     foo: D.string,
     bar: D.nullable(Bar)
   })
 )
 
 const Bar: D.Decoder<unknown, Bar> = D.lazy('Bar', () =>
-  D.type({
+  D.struct({
     bar: D.number,
     foo: D.nullable(Foo)
   })
@@ -352,7 +352,7 @@ console.log(isRight(NumberFromString.decode('a'))) // => false
 Static types can be extracted from decoders using the `TypeOf` and `InputOf` operators
 
 ```ts
-export const Person = D.type({
+export const Person = D.struct({
   name: D.string,
   age: D.number
 })
@@ -382,7 +382,7 @@ export interface Person extends D.TypeOf<typeof Person> {}
 ```ts
 import { isLeft } from 'fp-ts/Either'
 
-export const Person = D.type({
+export const Person = D.struct({
   name: D.string,
   age: D.number
 })

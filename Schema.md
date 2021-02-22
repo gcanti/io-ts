@@ -26,7 +26,7 @@ import * as S from 'io-ts/Schema'
 import * as TD from 'io-ts/TaskDecoder'
 
 export const Person = S.make((S) =>
-  S.type({
+  S.struct({
     name: S.string,
     age: S.number
   })
@@ -111,7 +111,7 @@ Now we can define a schema leveraging the new `Int` capability
 
 ```ts
 export const Person = make((S) =>
-  S.type({
+  S.struct({
     name: S.string,
     age: S.Int
   })
