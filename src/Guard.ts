@@ -117,7 +117,7 @@ export const nullable = <I, A extends I>(or: Guard<I, A>): Guard<null | I, null 
  * @category combinators
  * @since 3.0.0
  */
-export const type = <A>(
+export const struct = <A>(
   properties: { [K in keyof A]: Guard<unknown, A[K]> }
 ): Guard<unknown, { [K in keyof A]: A[K] }> =>
   pipe(
@@ -301,7 +301,7 @@ export const Schemable: Schemable1<URI> = {
   number,
   boolean,
   nullable,
-  type,
+  struct,
   partial,
   record,
   array,

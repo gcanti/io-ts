@@ -207,18 +207,18 @@ export const nullable: <I, A>(or: Decoder<I, A>) => Decoder<null | I, null | A> 
  * @category combinators
  * @since 3.0.0
  */
-export const fromType = <P extends Record<string, Decoder<any, any>>>(
+export const fromStruct = <P extends Record<string, Decoder<any, any>>>(
   properties: P
 ): Decoder<{ [K in keyof P]: InputOf<P[K]> }, { [K in keyof P]: TypeOf<P[K]> }> =>
-  K.fromType(M)((k, e) => FS.of(DE.key(k, DE.required, e)))(properties)
+  K.fromStruct(M)((k, e) => FS.of(DE.key(k, DE.required, e)))(properties)
 
 /**
  * @category combinators
  * @since 3.0.0
  */
-export const type = <A>(
+export const struct = <A>(
   properties: { [K in keyof A]: Decoder<unknown, A[K]> }
-): Decoder<unknown, { [K in keyof A]: A[K] }> => pipe(UnknownRecord as any, compose(fromType(properties)))
+): Decoder<unknown, { [K in keyof A]: A[K] }> => pipe(UnknownRecord as any, compose(fromStruct(properties)))
 
 /**
  * @category combinators
@@ -423,7 +423,7 @@ export const Schemable: S.Schemable2C<URI, unknown> = {
   number,
   boolean,
   nullable,
-  type,
+  struct,
   partial,
   record,
   array,

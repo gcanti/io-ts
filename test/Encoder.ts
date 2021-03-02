@@ -41,8 +41,8 @@ describe('Encoder', () => {
     deepStrictEqual(encoder.encode(null), null)
   })
 
-  it('type', () => {
-    const encoder = E.type({ a: H.encoderNumberToString, b: H.encoderBooleanToNumber })
+  it('struct', () => {
+    const encoder = E.struct({ a: H.encoderNumberToString, b: H.encoderBooleanToNumber })
     deepStrictEqual(encoder.encode({ a: 1, b: true }), { a: '1', b: 1 })
   })
 
@@ -71,13 +71,16 @@ describe('Encoder', () => {
   })
 
   it('intersect', () => {
-    const encoder = pipe(E.type({ a: H.encoderNumberToString }), E.intersect(E.type({ b: H.encoderBooleanToNumber })))
+    const encoder = pipe(
+      E.struct({ a: H.encoderNumberToString }),
+      E.intersect(E.struct({ b: H.encoderBooleanToNumber }))
+    )
     deepStrictEqual(encoder.encode({ a: 1, b: true }), { a: '1', b: 1 })
   })
 
   it('sum', () => {
-    const S1 = E.type({ _tag: E.id<'A'>(), a: H.encoderNumberToString })
-    const S2 = E.type({ _tag: E.id<'B'>(), b: H.encoderBooleanToNumber })
+    const S1 = E.struct({ _tag: E.id<'A'>(), a: H.encoderNumberToString })
+    const S2 = E.struct({ _tag: E.id<'B'>(), b: H.encoderBooleanToNumber })
     const sum = E.sum('_tag')
     const encoder = sum({ A: S1, B: S2 })
     deepStrictEqual(encoder.encode({ _tag: 'A', a: 1 }), { _tag: 'A', a: '1' })
@@ -106,14 +109,14 @@ describe('Encoder', () => {
       readonly as: Array<AOut>
     }
     const A: E.Encoder<AOut, A> = E.lazy(() =>
-      E.type({
+      E.struct({
         a: H.encoderNumberToString,
         bs: E.array(B)
       })
     )
 
     const B: E.Encoder<BOut, B> = E.lazy(() =>
-      E.type({
+      E.struct({
         b: H.encoderBooleanToNumber,
         as: E.array(A)
       })

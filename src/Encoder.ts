@@ -36,7 +36,7 @@ export function nullable<O, A>(or: Encoder<O, A>): Encoder<null | O, null | A> {
  * @category combinators
  * @since 3.0.0
  */
-export function type<P extends Record<string, Encoder<any, any>>>(
+export function struct<P extends Record<string, Encoder<any, any>>>(
   properties: P
 ): Encoder<{ [K in keyof P]: OutputOf<P[K]> }, { [K in keyof P]: TypeOf<P[K]> }> {
   return {

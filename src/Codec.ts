@@ -139,20 +139,20 @@ export function nullable<I, O, A>(or: Codec<I, O, A>): Codec<null | I, null | O,
  * @category combinators
  * @since 3.0.0
  */
-export function fromType<P extends Record<string, Codec<any, any, any>>>(
+export function fromStruct<P extends Record<string, Codec<any, any, any>>>(
   properties: P
 ): Codec<{ [K in keyof P]: InputOf<P[K]> }, { [K in keyof P]: OutputOf<P[K]> }, { [K in keyof P]: TypeOf<P[K]> }> {
-  return make(D.fromType(properties) as any, E.type(properties))
+  return make(D.fromStruct(properties) as any, E.struct(properties))
 }
 
 /**
  * @category combinators
  * @since 3.0.0
  */
-export function type<P extends Record<string, Codec<unknown, any, any>>>(
+export function struct<P extends Record<string, Codec<unknown, any, any>>>(
   properties: P
 ): Codec<unknown, { [K in keyof P]: OutputOf<P[K]> }, { [K in keyof P]: TypeOf<P[K]> }> {
-  return pipe(UnknownRecord, compose(fromType(properties as any))) as any
+  return pipe(UnknownRecord, compose(fromStruct(properties as any))) as any
 }
 
 /**

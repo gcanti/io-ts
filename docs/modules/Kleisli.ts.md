@@ -18,9 +18,9 @@ Added in v3.0.0
   - [fromArray](#fromarray)
   - [fromPartial](#frompartial)
   - [fromRecord](#fromrecord)
+  - [fromStruct](#fromstruct)
   - [fromSum](#fromsum)
   - [fromTuple](#fromtuple)
-  - [fromType](#fromtype)
   - [id](#id)
   - [intersect](#intersect)
   - [lazy](#lazy)
@@ -110,6 +110,22 @@ export declare function fromRecord<M extends URIS2, E>(
 
 Added in v3.0.0
 
+## fromStruct
+
+**Signature**
+
+```ts
+export declare function fromStruct<M extends URIS2, E>(
+  M: Applicative2C<M, E> & Bifunctor2<M>
+): (
+  onPropertyError: (key: string, e: E) => E
+) => <P extends Record<string, Kleisli<M, any, E, any>>>(
+  properties: P
+) => Kleisli<M, { [K in keyof P]: InputOf<M, P[K]> }, E, { [K in keyof P]: TypeOf<M, P[K]> }>
+```
+
+Added in v3.0.0
+
 ## fromSum
 
 **Signature**
@@ -140,22 +156,6 @@ export declare function fromTuple<M extends URIS2, E>(
 ) => <C extends ReadonlyArray<Kleisli<M, any, E, any>>>(
   ...components: C
 ) => Kleisli<M, { [K in keyof C]: InputOf<M, C[K]> }, E, { [K in keyof C]: TypeOf<M, C[K]> }>
-```
-
-Added in v3.0.0
-
-## fromType
-
-**Signature**
-
-```ts
-export declare function fromType<M extends URIS2, E>(
-  M: Applicative2C<M, E> & Bifunctor2<M>
-): (
-  onPropertyError: (key: string, e: E) => E
-) => <P extends Record<string, Kleisli<M, any, E, any>>>(
-  properties: P
-) => Kleisli<M, { [K in keyof P]: InputOf<M, P[K]> }, E, { [K in keyof P]: TypeOf<M, P[K]> }>
 ```
 
 Added in v3.0.0

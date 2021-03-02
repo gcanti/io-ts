@@ -127,7 +127,7 @@ export function nullable<M extends URIS2, E>(
  * @category combinators
  * @since 3.0.0
  */
-export function fromType<M extends URIS2, E>(
+export function fromStruct<M extends URIS2, E>(
   M: Applicative2C<M, E> & Bifunctor2<M>
 ): (
   onPropertyError: (key: string, e: E) => E

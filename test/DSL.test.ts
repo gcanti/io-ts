@@ -13,14 +13,14 @@ describe('DSL', () => {
     deepStrictEqual(_.number.dsl(), C.make({ _tag: 'number' }))
   })
 
-  it('type', () => {
+  it('struct', () => {
     deepStrictEqual(
-      _.type({
+      _.struct({
         name: _.string,
         age: _.number
       }).dsl(),
       C.make({
-        _tag: 'type',
+        _tag: 'struct',
         props: {
           name: { _tag: 'string' },
           age: { _tag: 'number' }
@@ -30,7 +30,7 @@ describe('DSL', () => {
   })
 
   it('toSchema', () => {
-    const dsl = _.type({
+    const dsl = _.struct({
       a: _.string
     })
     const schema = _.toSchema(dsl)

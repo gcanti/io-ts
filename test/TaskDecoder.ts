@@ -143,7 +143,7 @@ describe('UnknownTaskDecoder', () => {
 
   it('withMessage', async () => {
     const decoder = pipe(
-      _.type({
+      _.struct({
         name: _.string,
         age: _.number
       }),
@@ -202,30 +202,30 @@ describe('UnknownTaskDecoder', () => {
     })
   })
 
-  describe('type', () => {
+  describe('struct', () => {
     it('should decode a valid input', async () => {
-      const decoder = _.type({
+      const decoder = _.struct({
         a: _.string
       })
       deepStrictEqual(await decoder.decode({ a: 'a' })(), D.success({ a: 'a' }))
     })
 
     it('should strip additional fields', async () => {
-      const decoder = _.type({
+      const decoder = _.struct({
         a: _.string
       })
       deepStrictEqual(await decoder.decode({ a: 'a', b: 1 })(), D.success({ a: 'a' }))
     })
 
     it('should not strip fields corresponding to undefined values', async () => {
-      const decoder = _.type({
+      const decoder = _.struct({
         a: undef
       })
       deepStrictEqual(await decoder.decode({})(), D.success({ a: undefined }))
     })
 
     it('should reject an invalid input', async () => {
-      const decoder = _.type({
+      const decoder = _.struct({
         a: _.string
       })
       deepStrictEqual(await decoder.decode(undefined)(), D.failure(undefined, 'Record<string, unknown>'))
@@ -236,7 +236,7 @@ describe('UnknownTaskDecoder', () => {
     })
 
     it('should collect all errors', async () => {
-      const decoder = _.type({
+      const decoder = _.struct({
         a: _.string,
         b: _.number
       })
@@ -260,7 +260,7 @@ describe('UnknownTaskDecoder', () => {
           return 'b'
         }
       }
-      const decoder = _.type({ a: _.string, b: _.string })
+      const decoder = _.struct({ a: _.string, b: _.string })
       deepStrictEqual(await decoder.decode(new A())(), D.success({ a: 'a', b: 'b' }))
     })
   })
@@ -468,7 +468,7 @@ describe('UnknownTaskDecoder', () => {
 
   describe('intersect', () => {
     it('should decode a valid input', async () => {
-      const decoder = pipe(_.type({ a: _.string }), _.intersect(_.type({ b: _.number })))
+      const decoder = pipe(_.struct({ a: _.string }), _.intersect(_.struct({ b: _.number })))
       deepStrictEqual(await decoder.decode({ a: 'a', b: 1 })(), D.success({ a: 'a', b: 1 }))
     })
 
@@ -478,7 +478,7 @@ describe('UnknownTaskDecoder', () => {
     })
 
     it('should accumulate all errors', async () => {
-      const decoder = pipe(_.type({ a: _.string }), _.intersect(_.type({ b: _.number })))
+      const decoder = pipe(_.struct({ a: _.string }), _.intersect(_.struct({ b: _.number })))
       deepStrictEqual(
         await decoder.decode({ a: 'a' })(),
         E.left(FS.of(DE.key('b', DE.required, FS.of(DE.leaf(undefined, 'number')))))
@@ -503,16 +503,16 @@ describe('UnknownTaskDecoder', () => {
     const sum = _.sum('_tag')
 
     it('should decode a valid input', async () => {
-      const A = _.type({ _tag: _.literal('A'), a: _.string })
-      const B = _.type({ _tag: _.literal('B'), b: _.number })
+      const A = _.struct({ _tag: _.literal('A'), a: _.string })
+      const B = _.struct({ _tag: _.literal('B'), b: _.number })
       const decoder = sum({ A, B })
       deepStrictEqual(await decoder.decode({ _tag: 'A', a: 'a' })(), D.success({ _tag: 'A', a: 'a' } as const))
       deepStrictEqual(await decoder.decode({ _tag: 'B', b: 1 })(), D.success({ _tag: 'B', b: 1 } as const))
     })
 
     it('should reject an invalid input', async () => {
-      const A = _.type({ _tag: _.literal('A'), a: _.string })
-      const B = _.type({ _tag: _.literal('B'), b: _.number })
+      const A = _.struct({ _tag: _.literal('A'), a: _.string })
+      const B = _.struct({ _tag: _.literal('B'), b: _.number })
       const decoder = sum({ A, B })
       deepStrictEqual(await decoder.decode(null)(), D.failure(null, 'Record<string, unknown>'))
       deepStrictEqual(
@@ -540,7 +540,7 @@ describe('UnknownTaskDecoder', () => {
   }
 
   const lazyDecoder: _.TaskDecoder<unknown, A> = _.lazy('A', () =>
-    pipe(_.type({ a: NumberFromString }), _.intersect(_.partial({ b: lazyDecoder })))
+    pipe(_.struct({ a: NumberFromString }), _.intersect(_.partial({ b: lazyDecoder })))
   )
 
   describe('lazy', () => {
@@ -584,7 +584,7 @@ describe('UnknownTaskDecoder', () => {
 
   describe('draw', () => {
     it('draw', async () => {
-      const decoder = _.type({
+      const decoder = _.struct({
         a: _.string,
         b: _.number,
         c: _.array(_.boolean),

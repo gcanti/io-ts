@@ -38,10 +38,10 @@ describe('Schema', () => {
     check(make((S) => S.nullable(S.string)))
   })
 
-  it('type', () => {
+  it('struct', () => {
     check(
       make((S) =>
-        S.type({
+        S.struct({
           name: S.string,
           age: S.number
         })
@@ -75,12 +75,12 @@ describe('Schema', () => {
   })
 
   it('intersect', () => {
-    check(make((S) => pipe(S.type({ a: S.string }), S.intersect(S.type({ b: S.number })))))
+    check(make((S) => pipe(S.struct({ a: S.string }), S.intersect(S.struct({ b: S.number })))))
   })
 
   it('sum', () => {
-    const A = make((S) => S.type({ _tag: S.literal('A'), a: S.string }))
-    const B = make((S) => S.type({ _tag: S.literal('B'), b: S.number }))
+    const A = make((S) => S.struct({ _tag: S.literal('A'), a: S.string }))
+    const B = make((S) => S.struct({ _tag: S.literal('B'), b: S.number }))
     check(make((S) => S.sum('_tag')({ A: A(S), B: B(S) })))
   })
 
@@ -92,7 +92,7 @@ describe('Schema', () => {
     }
 
     const schema: Schema<A> = make((S) =>
-      S.lazy('A', () => pipe(S.type({ a: S.string }), S.intersect(S.partial({ b: schema(S), c: S.number }))))
+      S.lazy('A', () => pipe(S.struct({ a: S.string }), S.intersect(S.partial({ b: schema(S), c: S.number }))))
     )
     check(schema)
   })

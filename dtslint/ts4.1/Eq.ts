@@ -1,9 +1,9 @@
 import * as _ from '../../src/Eq'
 
 // $ExpectType Eq<{ a: string; b: { c: number; }; }>
-_.type({
+_.struct({
   a: _.string,
-  b: _.type({
+  b: _.struct({
     c: _.number
   })
 })
@@ -20,8 +20,8 @@ _.partial({
 // sum
 //
 
-const S1 = _.type({ _tag: _.Schemable.literal('A'), a: _.string })
-const S2 = _.type({ _tag: _.Schemable.literal('B'), b: _.number })
+const S1 = _.struct({ _tag: _.Schemable.literal('A'), a: _.string })
+const S2 = _.struct({ _tag: _.Schemable.literal('B'), b: _.number })
 
 // $ExpectType Eq<{ _tag: "A"; a: string; } | { _tag: "B"; b: number; }>
 _.sum('_tag')({ A: S1, B: S2 })

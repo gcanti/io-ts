@@ -19,9 +19,9 @@ Added in v3.0.0
   - [nullable](#nullable)
   - [partial](#partial)
   - [record](#record)
+  - [struct](#struct)
   - [sum](#sum)
   - [tuple](#tuple)
-  - [type](#type)
 - [instances](#instances)
   - [Schemable](#schemable)
   - [WithRefine](#withrefine)
@@ -100,6 +100,16 @@ export declare const record: <A>(codomain: E.Eq<A>) => E.Eq<Record<string, A>>
 
 Added in v3.0.0
 
+## struct
+
+**Signature**
+
+```ts
+export declare const struct: <A>(eqs: { [K in keyof A]: E.Eq<A[K]> }) => E.Eq<{ [K in keyof A]: A[K] }>
+```
+
+Added in v3.0.0
+
 ## sum
 
 **Signature**
@@ -118,16 +128,6 @@ Added in v3.0.0
 
 ```ts
 export declare const tuple: <A extends readonly unknown[]>(...components: { [K in keyof A]: E.Eq<A[K]> }) => E.Eq<A>
-```
-
-Added in v3.0.0
-
-## type
-
-**Signature**
-
-```ts
-export declare const type: <A>(eqs: { [K in keyof A]: E.Eq<A[K]> }) => E.Eq<{ [K in keyof A]: A[K] }>
 ```
 
 Added in v3.0.0

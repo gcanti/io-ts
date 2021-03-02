@@ -9,7 +9,7 @@ const BooleanToNumber: _.Encoder<number, boolean> = {
   encode: (b) => (b ? 1 : 0)
 }
 
-export const OfTest = _.type({ a: _.id<string>(), b: _.type({ c: NumberToString }) })
+export const OfTest = _.struct({ a: _.id<string>(), b: _.struct({ c: NumberToString }) })
 
 //
 // TypeOf
@@ -27,9 +27,9 @@ export type OfTestOutput = _.OutputOf<typeof OfTest> // $ExpectType { a: string;
 _.nullable(NumberToString) // $ExpectType Encoder<string | null, number | null>
 
 //
-// type
+// struct
 //
-_.type({ a: _.type({ b: NumberToString }) }) // $ExpectType Encoder<{ a: { b: string; }; }, { a: { b: number; }; }>
+_.struct({ a: _.struct({ b: NumberToString }) }) // $ExpectType Encoder<{ a: { b: string; }; }, { a: { b: number; }; }>
 
 //
 // partial
@@ -56,19 +56,19 @@ _.tuple(NumberToString, BooleanToNumber) // $ExpectType Encoder<[string, number]
 //
 // intersection
 //
-pipe(_.type({ a: NumberToString }), _.intersect(_.type({ b: BooleanToNumber }))) // $ExpectType Encoder<{ a: string; } & { b: number; }, { a: number; } & { b: boolean; }>
+pipe(_.struct({ a: NumberToString }), _.intersect(_.struct({ b: BooleanToNumber }))) // $ExpectType Encoder<{ a: string; } & { b: number; }, { a: number; } & { b: boolean; }>
 
 //
 // sum
 //
-const S1 = _.type({ _tag: _.id<'A'>(), a: NumberToString })
-const S2 = _.type({ _tag: _.id<'B'>(), b: BooleanToNumber })
+const S1 = _.struct({ _tag: _.id<'A'>(), a: NumberToString })
+const S2 = _.struct({ _tag: _.id<'B'>(), b: BooleanToNumber })
 const sum = _.sum('_tag')
 
 // $ExpectType Encoder<{ _tag: "A"; a: string; } | { _tag: "B"; b: number; }, { _tag: "A"; a: number; } | { _tag: "B"; b: boolean; }>
 sum({ A: S1, B: S2 })
 
-const S3 = _.type({ _tag: _.id<'C'>(), c: _.id<string>() })
+const S3 = _.struct({ _tag: _.id<'C'>(), c: _.id<string>() })
 
 //
 // lazy
@@ -90,14 +90,14 @@ interface BOut {
   as: Array<AOut>
 }
 const A: _.Encoder<AOut, A> = _.lazy(() =>
-  _.type({
+  _.struct({
     a: NumberToString,
     bs: _.array(B)
   })
 )
 
 const B: _.Encoder<BOut, B> = _.lazy(() =>
-  _.type({
+  _.struct({
     b: BooleanToNumber,
     as: _.array(A)
   })

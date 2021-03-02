@@ -20,9 +20,9 @@ Added in v3.0.0
   - [fromArray](#fromarray)
   - [fromPartial](#frompartial)
   - [fromRecord](#fromrecord)
+  - [fromStruct](#fromstruct)
   - [fromSum](#fromsum)
   - [fromTuple](#fromtuple)
-  - [fromType](#fromtype)
   - [intersect](#intersect)
   - [lazy](#lazy)
   - [mapLeftWithInput](#mapleftwithinput)
@@ -30,9 +30,9 @@ Added in v3.0.0
   - [partial](#partial)
   - [record](#record)
   - [refine](#refine)
+  - [struct](#struct)
   - [sum](#sum)
   - [tuple](#tuple)
-  - [type](#type)
 - [constructors](#constructors)
   - [fromDecoder](#fromdecoder)
   - [literal](#literal)
@@ -129,6 +129,18 @@ export declare function fromRecord<I, O, A>(
 
 Added in v3.0.0
 
+## fromStruct
+
+**Signature**
+
+```ts
+export declare function fromStruct<P extends Record<string, Codec<any, any, any>>>(
+  properties: P
+): Codec<{ [K in keyof P]: InputOf<P[K]> }, { [K in keyof P]: OutputOf<P[K]> }, { [K in keyof P]: TypeOf<P[K]> }>
+```
+
+Added in v3.0.0
+
 ## fromSum
 
 **Signature**
@@ -155,18 +167,6 @@ export declare const fromTuple: <C extends readonly Codec<any, any, any>[]>(
   { [K in keyof C]: E.OutputOf<C[K]> },
   { [K in keyof C]: E.TypeOf<C[K]> }
 >
-```
-
-Added in v3.0.0
-
-## fromType
-
-**Signature**
-
-```ts
-export declare function fromType<P extends Record<string, Codec<any, any, any>>>(
-  properties: P
-): Codec<{ [K in keyof P]: InputOf<P[K]> }, { [K in keyof P]: OutputOf<P[K]> }, { [K in keyof P]: TypeOf<P[K]> }>
 ```
 
 Added in v3.0.0
@@ -252,6 +252,18 @@ export declare const refine: <A, B extends A>(
 
 Added in v3.0.0
 
+## struct
+
+**Signature**
+
+```ts
+export declare function struct<P extends Record<string, Codec<unknown, any, any>>>(
+  properties: P
+): Codec<unknown, { [K in keyof P]: OutputOf<P[K]> }, { [K in keyof P]: TypeOf<P[K]> }>
+```
+
+Added in v3.0.0
+
 ## sum
 
 **Signature**
@@ -274,18 +286,6 @@ Added in v3.0.0
 export declare function tuple<C extends ReadonlyArray<Codec<unknown, any, any>>>(
   ...components: C
 ): Codec<unknown, { [K in keyof C]: OutputOf<C[K]> }, { [K in keyof C]: TypeOf<C[K]> }>
-```
-
-Added in v3.0.0
-
-## type
-
-**Signature**
-
-```ts
-export declare function type<P extends Record<string, Codec<unknown, any, any>>>(
-  properties: P
-): Codec<unknown, { [K in keyof P]: OutputOf<P[K]> }, { [K in keyof P]: TypeOf<P[K]> }>
 ```
 
 Added in v3.0.0

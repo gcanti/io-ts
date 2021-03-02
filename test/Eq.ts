@@ -45,7 +45,7 @@ describe('Eq', () => {
   })
 
   it('intersect', () => {
-    const eq = pipe(E.type({ a: E.string }), E.intersect(E.type({ b: E.number })))
+    const eq = pipe(E.struct({ a: E.string }), E.intersect(E.struct({ b: E.number })))
     deepStrictEqual(eq.equals({ a: 'a', b: 1 })({ a: 'a', b: 1 }), true)
     deepStrictEqual(eq.equals({ a: 'a', b: 1 })({ a: 'c', b: 1 }), false)
     deepStrictEqual(eq.equals({ a: 'a', b: 1 })({ a: 'a', b: 2 }), false)
@@ -59,7 +59,7 @@ describe('Eq', () => {
     }
 
     const eq: Eq<A> = E.Schemable.lazy('A', () =>
-      E.type({
+      E.struct({
         a: E.number,
         b: E.array(eq)
       })
@@ -73,8 +73,8 @@ describe('Eq', () => {
   it('sum', () => {
     const sum = E.sum('_tag')
     const eq = sum({
-      A: E.type({ _tag: E.Schemable.literal('A'), a: E.string }),
-      B: E.type({ _tag: E.Schemable.literal('B'), b: E.number })
+      A: E.struct({ _tag: E.Schemable.literal('A'), a: E.string }),
+      B: E.struct({ _tag: E.Schemable.literal('B'), b: E.number })
     })
     assert.strictEqual(eq.equals({ _tag: 'A', a: 'a' })({ _tag: 'A', a: 'a' }), true)
     assert.strictEqual(eq.equals({ _tag: 'B', b: 1 })({ _tag: 'B', b: 1 }), true)

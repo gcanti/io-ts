@@ -16,7 +16,7 @@ function make<A>(f: Schema<A>): Schema<A> {
 // TypeOf
 //
 
-export const OfTest = make((S) => S.type({ a: S.string, b: S.type({ c: S.number }) }))
+export const OfTest = make((S) => S.struct({ a: S.string, b: S.struct({ c: S.number }) }))
 export type OfTest = TypeOf<typeof OfTest> // $ExpectType { a: string; b: { c: number; }; }
 
 //
@@ -53,10 +53,10 @@ make((S) => S.boolean) // $ExpectType Schema<boolean>
 make((S) => S.nullable(S.string)) // $ExpectType Schema<string | null>
 
 //
-// type
+// struct
 //
 
-make((S) => S.type({ a: S.string, b: S.type({ c: S.number }) })) // $ExpectType Schema<{ a: string; b: { c: number; }; }>
+make((S) => S.struct({ a: S.string, b: S.struct({ c: S.number }) })) // $ExpectType Schema<{ a: string; b: { c: number; }; }>
 
 //
 // partial
@@ -89,14 +89,14 @@ make((S) => S.tuple(S.string, S.number, S.boolean)) // $ExpectType Schema<[strin
 // intersection
 //
 
-make((S) => pipe(S.type({ a: S.string }), S.intersect(S.type({ b: S.number })))) // $ExpectType Schema<{ a: string; } & { b: number; }>
+make((S) => pipe(S.struct({ a: S.string }), S.intersect(S.struct({ b: S.number })))) // $ExpectType Schema<{ a: string; } & { b: number; }>
 
 //
 // sum
 //
 
-const S1 = make((S) => S.type({ _tag: S.literal('A'), a: S.string }))
-const S2 = make((S) => S.type({ _tag: S.literal('B'), b: S.number }))
+const S1 = make((S) => S.struct({ _tag: S.literal('A'), a: S.string }))
+const S2 = make((S) => S.struct({ _tag: S.literal('B'), b: S.number }))
 
 // $ExpectType Schema<{ _tag: "A"; a: string; } | { _tag: "B"; b: number; }>
 make((S) => S.sum('_tag')({ A: S1(S), B: S2(S) }))
@@ -119,7 +119,7 @@ interface B {
 
 const A: Schema<A> = make((S) =>
   S.lazy('A', () =>
-    S.type({
+    S.struct({
       a: S.string,
       bs: S.array(B(S))
     })
@@ -128,7 +128,7 @@ const A: Schema<A> = make((S) =>
 
 const B: Schema<B> = make((S) =>
   S.lazy('B', () =>
-    S.type({
+    S.struct({
       b: S.number,
       as: S.array(A(S))
     })

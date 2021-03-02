@@ -10,7 +10,7 @@ import { make, Schema } from '../src/Schema'
 export type Model =
   | { readonly _tag: 'string' }
   | { readonly _tag: 'number' }
-  | { readonly _tag: 'type'; readonly props: Record<string, Model> }
+  | { readonly _tag: 'struct'; readonly props: Record<string, Model> }
 
 export interface DSL<A> {
   readonly dsl: () => C.Const<Model, A>
@@ -32,11 +32,11 @@ export const number: DSL<number> = {
 // combinators
 // -------------------------------------------------------------------------------------
 
-export function type<A>(properties: { [K in keyof A]: DSL<A[K]> }): DSL<A> {
+export function struct<A>(properties: { [K in keyof A]: DSL<A[K]> }): DSL<A> {
   return {
     dsl: () =>
       C.make({
-        _tag: 'type',
+        _tag: 'struct',
         props: pipe(
           properties,
           R.map<DSL<unknown>, Model>((p) => p.dsl())
@@ -52,9 +52,9 @@ export function toSchema<A>(dsl: DSL<A>): Schema<A> {
         return make((S) => S.string)
       case 'number':
         return make((S) => S.number)
-      case 'type':
+      case 'struct':
         return make((S) =>
-          S.type(
+          S.struct(
             pipe(
               model.props,
               R.map((model) => go(model)(S))

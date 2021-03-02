@@ -23,9 +23,9 @@ Added in v3.0.0
   - [partial](#partial)
   - [record](#record)
   - [refine](#refine)
+  - [struct](#struct)
   - [sum](#sum)
   - [tuple](#tuple)
-  - [type](#type)
   - [union](#union)
   - [zero](#zero)
 - [constructors](#constructors)
@@ -156,6 +156,18 @@ export declare const refine: <I, A extends I, B extends A>(
 
 Added in v3.0.0
 
+## struct
+
+**Signature**
+
+```ts
+export declare const struct: <A>(
+  properties: { [K in keyof A]: Guard<unknown, A[K]> }
+) => Guard<unknown, { [K in keyof A]: A[K] }>
+```
+
+Added in v3.0.0
+
 ## sum
 
 **Signature**
@@ -176,18 +188,6 @@ Added in v3.0.0
 export declare const tuple: <A extends readonly unknown[]>(
   ...components: { [K in keyof A]: Guard<unknown, A[K]> }
 ) => Guard<unknown, A>
-```
-
-Added in v3.0.0
-
-## type
-
-**Signature**
-
-```ts
-export declare const type: <A>(
-  properties: { [K in keyof A]: Guard<unknown, A[K]> }
-) => Guard<unknown, { [K in keyof A]: A[K] }>
 ```
 
 Added in v3.0.0

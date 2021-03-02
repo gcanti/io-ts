@@ -23,9 +23,9 @@ Added in v3.0.0
   - [nullable](#nullable)
   - [partial](#partial)
   - [record](#record)
+  - [struct](#struct)
   - [sum](#sum)
   - [tuple](#tuple)
-  - [type](#type)
 - [instances](#instances)
   - [Category](#category-1)
   - [Contravariant](#contravariant-1)
@@ -127,6 +127,18 @@ export declare function record<O, A>(codomain: Encoder<O, A>): Encoder<Record<st
 
 Added in v3.0.0
 
+## struct
+
+**Signature**
+
+```ts
+export declare function struct<P extends Record<string, Encoder<any, any>>>(
+  properties: P
+): Encoder<{ [K in keyof P]: OutputOf<P[K]> }, { [K in keyof P]: TypeOf<P[K]> }>
+```
+
+Added in v3.0.0
+
 ## sum
 
 **Signature**
@@ -147,18 +159,6 @@ Added in v3.0.0
 export declare function tuple<C extends ReadonlyArray<Encoder<any, any>>>(
   ...components: C
 ): Encoder<{ [K in keyof C]: OutputOf<C[K]> }, { [K in keyof C]: TypeOf<C[K]> }>
-```
-
-Added in v3.0.0
-
-## type
-
-**Signature**
-
-```ts
-export declare function type<P extends Record<string, Encoder<any, any>>>(
-  properties: P
-): Encoder<{ [K in keyof P]: OutputOf<P[K]> }, { [K in keyof P]: TypeOf<P[K]> }>
 ```
 
 Added in v3.0.0

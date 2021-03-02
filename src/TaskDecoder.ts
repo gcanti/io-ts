@@ -211,18 +211,18 @@ export const nullable: <I, A>(or: TaskDecoder<I, A>) => TaskDecoder<null | I, nu
  * @category combinators
  * @since 3.0.0
  */
-export const fromType = <P extends Record<string, TaskDecoder<any, any>>>(
+export const fromStruct = <P extends Record<string, TaskDecoder<any, any>>>(
   properties: P
 ): TaskDecoder<{ [K in keyof P]: InputOf<P[K]> }, { [K in keyof P]: TypeOf<P[K]> }> =>
-  K.fromType(M)((k, e) => FS.of(DE.key(k, DE.required, e)))(properties)
+  K.fromStruct(M)((k, e) => FS.of(DE.key(k, DE.required, e)))(properties)
 
 /**
  * @category combinators
  * @since 3.0.0
  */
-export const type = <A>(
+export const struct = <A>(
   properties: { [K in keyof A]: TaskDecoder<unknown, A[K]> }
-): TaskDecoder<unknown, { [K in keyof A]: A[K] }> => pipe(UnknownRecord as any, compose(fromType(properties)))
+): TaskDecoder<unknown, { [K in keyof A]: A[K] }> => pipe(UnknownRecord as any, compose(fromStruct(properties)))
 
 /**
  * @category combinators
@@ -430,7 +430,7 @@ export const Schemable: S.Schemable2C<URI, unknown> = {
   number,
   boolean,
   nullable,
-  type,
+  struct,
   partial,
   record,
   array,
