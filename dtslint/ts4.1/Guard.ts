@@ -42,3 +42,14 @@ const S2 = _.struct({ _tag: _.literal('B'), b: _.number })
 _.sum('_tag')({ A: S1, B: S2 })
 // $ExpectError
 _.sum('_tag')({ A: S1, B: S1 })
+
+//
+// readonly
+//
+
+// $ExpectType Guard<unknown, Readonly<{ a: string; }>>
+_.readonly(
+  _.struct({
+    a: _.string
+  })
+)

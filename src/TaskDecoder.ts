@@ -6,7 +6,7 @@ import { Applicative2C } from 'fp-ts/Applicative'
 import { Bifunctor2 } from 'fp-ts/Bifunctor'
 import { Category2 } from 'fp-ts/Category'
 import { FromEither2C } from 'fp-ts/FromEither'
-import { pipe, Refinement } from 'fp-ts/function'
+import { identity, pipe, Refinement } from 'fp-ts/function'
 import { Functor2 } from 'fp-ts/Functor'
 import { Monad2 } from 'fp-ts/Monad'
 import * as T from 'fp-ts/Task'
@@ -342,6 +342,12 @@ export const lazy: <I, A>(id: string, f: () => TaskDecoder<I, A>) => TaskDecoder
   /*#__PURE__*/
   K.lazy(M)((id, e) => FS.of(DE.lazy(id, e)))
 
+/**
+ * @category combinators
+ * @since 3.0.0
+ */
+export const readonly: <I, A>(decoder: TaskDecoder<I, A>) => TaskDecoder<I, Readonly<A>> = identity
+
 // -------------------------------------------------------------------------------------
 // type class members
 // -------------------------------------------------------------------------------------
@@ -437,7 +443,8 @@ export const Schemable: S.Schemable2C<URI, unknown> = {
   tuple: tuple as S.Schemable2C<URI, unknown>['tuple'],
   intersect,
   sum,
-  lazy
+  lazy,
+  readonly
 }
 
 /**

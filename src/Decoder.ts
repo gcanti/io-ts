@@ -335,6 +335,12 @@ export const lazy: <I, A>(id: string, f: () => Decoder<I, A>) => Decoder<I, A> =
   /*#__PURE__*/
   K.lazy(M)((id, e) => FS.of(DE.lazy(id, e)))
 
+/**
+ * @category combinators
+ * @since 3.0.0
+ */
+export const readonly: <I, A>(decoder: Decoder<I, A>) => Decoder<I, Readonly<A>> = identity
+
 // -------------------------------------------------------------------------------------
 // type class members
 // -------------------------------------------------------------------------------------
@@ -430,7 +436,8 @@ export const Schemable: S.Schemable2C<URI, unknown> = {
   tuple: tuple as S.Schemable2C<URI, unknown>['tuple'],
   intersect,
   sum,
-  lazy
+  lazy,
+  readonly
 }
 
 /**

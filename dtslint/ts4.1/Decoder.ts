@@ -149,6 +149,17 @@ pipe(
 )
 
 //
+// readonly
+//
+
+// $ExpectType Decoder<unknown, Readonly<{ a: string; }>>
+_.readonly(
+  _.struct({
+    a: _.string
+  })
+)
+
+//
 // compose
 //
 

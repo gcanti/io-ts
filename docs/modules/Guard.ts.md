@@ -21,6 +21,7 @@ Added in v3.0.0
   - [lazy](#lazy)
   - [nullable](#nullable)
   - [partial](#partial)
+  - [readonly](#readonly)
   - [record](#record)
   - [refine](#refine)
   - [struct](#struct)
@@ -130,6 +131,16 @@ Added in v3.0.0
 export declare const partial: <A>(
   properties: { [K in keyof A]: Guard<unknown, A[K]> }
 ) => Guard<unknown, Partial<{ [K in keyof A]: A[K] }>>
+```
+
+Added in v3.0.0
+
+## readonly
+
+**Signature**
+
+```ts
+export declare const readonly: <I, A extends I>(guard: Guard<I, A>) => Guard<I, Readonly<A>>
 ```
 
 Added in v3.0.0

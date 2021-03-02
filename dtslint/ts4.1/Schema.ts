@@ -172,3 +172,10 @@ make((S) =>
 make((S) => S.union())
 make((S) => S.union(S.string)) // $ExpectType Schema<string>
 make((S) => S.union(S.string, S.number)) // $ExpectType Schema<string | number>
+
+//
+// readonly
+//
+
+// $ExpectType Schema<Readonly<{ a: string; }>>
+make((S) => S.readonly(S.struct({ a: S.string })))

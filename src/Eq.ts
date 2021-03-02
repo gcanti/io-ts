@@ -9,6 +9,7 @@ import Eq = E.Eq
 import * as S from 'fp-ts/string'
 import * as N from 'fp-ts/number'
 import * as B from 'fp-ts/boolean'
+import { identity } from 'fp-ts/function'
 
 // -------------------------------------------------------------------------------------
 // utils
@@ -175,6 +176,12 @@ export function lazy<A>(f: () => Eq<A>): Eq<A> {
   }
 }
 
+/**
+ * @category combinators
+ * @since 3.0.0
+ */
+export const readonly: <A>(eq: Eq<A>) => Eq<Readonly<A>> = identity
+
 // -------------------------------------------------------------------------------------
 // instances
 // -------------------------------------------------------------------------------------
@@ -196,7 +203,8 @@ export const Schemable: Schemable1<E.URI> = {
   tuple,
   intersect,
   sum,
-  lazy: (_, f) => lazy(f)
+  lazy: (_, f) => lazy(f),
+  readonly
 }
 
 /**

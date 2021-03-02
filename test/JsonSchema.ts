@@ -1,5 +1,5 @@
 import * as C from 'fp-ts/Const'
-import { pipe } from 'fp-ts/function'
+import { identity, pipe } from 'fp-ts/function'
 import * as R from 'fp-ts/ReadonlyRecord'
 import { JSONSchema7 } from 'json-schema'
 import * as S from '../src/Schemable'
@@ -160,6 +160,8 @@ export function lazy<A>(id: string, f: () => JsonSchema<A>): JsonSchema<A> {
   }
 }
 
+export const readonly: <A>(arb: JsonSchema<A>) => JsonSchema<Readonly<A>> = identity
+
 export function union<A extends readonly [unknown, ...ReadonlyArray<unknown>]>(
   ...members: { [K in keyof A]: JsonSchema<A[K]> }
 ): JsonSchema<A[number]> {
@@ -199,5 +201,6 @@ export const Schemable: S.Schemable1<URI> & S.WithUnknownContainers1<URI> & S.Wi
   intersect,
   sum,
   lazy,
+  readonly,
   union: union as S.WithUnion1<URI>['union']
 }
