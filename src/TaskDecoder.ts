@@ -487,7 +487,7 @@ export const draw: (e: DecodeError) => string = D.draw
 /**
  * @internal
  */
-export const stringify: <A>(e: TE.TaskEither<DecodeError, A>) => T.Task<string> = TE.fold(
+export const stringify: <A>(e: TE.TaskEither<DecodeError, A>) => T.Task<string> = TE.match(
   (e) => T.of(draw(e)),
   (a) => T.of(JSON.stringify(a, null, 2))
 )

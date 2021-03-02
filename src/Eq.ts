@@ -89,7 +89,7 @@ export function nullable<A>(or: Eq<A>): Eq<null | A> {
  * @category combinators
  * @since 3.0.0
  */
-export const type: <A>(eqs: { [K in keyof A]: Eq<A[K]> }) => Eq<{ [K in keyof A]: A[K] }> = E.getStructEq
+export const type: <A>(eqs: { [K in keyof A]: Eq<A[K]> }) => Eq<{ [K in keyof A]: A[K] }> = E.struct
 
 /**
  * @category combinators
@@ -133,7 +133,7 @@ export const array: <A>(eq: Eq<A>) => Eq<Array<A>> = A.getEq
  */
 export const tuple: <A extends ReadonlyArray<unknown>>(
   ...components: { [K in keyof A]: Eq<A[K]> }
-) => Eq<A> = E.getTupleEq as any
+) => Eq<A> = E.tuple as any
 
 /**
  * @category combinators

@@ -1,5 +1,6 @@
 import * as assert from 'assert'
 import * as E from 'fp-ts/Either'
+import * as J from 'fp-ts/Json'
 import { pipe } from 'fp-ts/function'
 import * as _ from '../src/Codec'
 import * as DE from '../src/DecodeError'
@@ -618,10 +619,10 @@ describe('Codec', () => {
       encode: (s) => Buffer.from(s).toString('base64')
     }
 
-    const Json: _.Codec<string, string, E.Json> = {
+    const Json: _.Codec<string, string, J.Json> = {
       decode: (s) =>
         pipe(
-          E.parseJSON(s),
+          J.parse(s),
           E.mapLeft(() => D.error(s, 'Json'))
         ),
       encode: (a) => JSON.stringify(a)

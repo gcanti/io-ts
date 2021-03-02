@@ -1,12 +1,13 @@
-import * as fs from 'fs'
-import G from 'glob'
-import * as path from 'path'
 import * as Console from 'fp-ts/Console'
 import * as E from 'fp-ts/Either'
 import { pipe } from 'fp-ts/function'
+import * as J from 'fp-ts/Json'
 import * as RA from 'fp-ts/ReadonlyArray'
 import * as T from 'fp-ts/Task'
 import * as TE from 'fp-ts/TaskEither'
+import * as fs from 'fs'
+import G from 'glob'
+import * as path from 'path'
 
 // -------------------------------------------------------------------------------------
 // model
@@ -112,10 +113,10 @@ const writeProjectPackageJson = pipe(
   TE.chain((s) =>
     TE.fromEither(
       pipe(
-        E.parseJSON(s),
+        J.parse(s),
         E.bimap(
           () => new Error('invalid JSON'),
-          (json): E.Json => {
+          (json): J.Json => {
             const clone = Object.assign(
               {
                 main: 'index/index.js',
@@ -143,7 +144,7 @@ const tree = pipe(
   writeModules,
   TE.chainFirst(() => copyProjectFiles),
   TE.chainFirst(() => writeProjectPackageJson),
-  TE.fold(
+  TE.match(
     (e) => T.fromIO(Console.error(e)),
     (modules) => T.fromIO(Console.log(`${modules.length} module(s) found`))
   )
