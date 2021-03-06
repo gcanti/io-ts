@@ -1,6 +1,7 @@
-import * as C from 'fp-ts/Const'
-import { identity, pipe } from 'fp-ts/function'
-import * as R from 'fp-ts/ReadonlyRecord'
+import * as C from 'fp-ts/lib/Const'
+import { identity } from 'fp-ts/lib/function'
+import { pipe } from 'fp-ts/lib/pipeable'
+import * as R from 'fp-ts/lib/ReadonlyRecord'
 import { JSONSchema7 } from 'json-schema'
 import * as S from '../src/Schemable'
 

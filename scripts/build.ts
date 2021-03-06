@@ -1,9 +1,9 @@
 import * as path from 'path'
-import * as E from 'fp-ts/Either'
-import { pipe } from 'fp-ts/function'
-import * as RTE from 'fp-ts/ReaderTaskEither'
-import * as A from 'fp-ts/ReadonlyArray'
-import * as TE from 'fp-ts/TaskEither'
+import * as E from 'fp-ts/lib/Either'
+import { pipe } from 'fp-ts/lib/pipeable'
+import * as RTE from 'fp-ts/lib/ReaderTaskEither'
+import * as A from 'fp-ts/lib/ReadonlyArray'
+import * as TE from 'fp-ts/lib/TaskEither'
 import { FileSystem, fileSystem } from './FileSystem'
 import { run } from './run'
 
@@ -31,18 +31,15 @@ export const copyPackageJson: Build<void> = (C) =>
 export const FILES: ReadonlyArray<string> = ['CHANGELOG.md', 'LICENSE', 'README.md']
 
 export const copyFiles: Build<ReadonlyArray<void>> = (C) =>
-  pipe(
-    FILES,
-    A.traverse(TE.taskEither)((from) => C.copyFile(from, path.resolve(OUTPUT_FOLDER, from)))
-  )
+  A.readonlyArray.traverse(TE.taskEither)(FILES, (from) => C.copyFile(from, path.resolve(OUTPUT_FOLDER, from)))
 
-const traverse = A.traverse(TE.taskEither)
+const traverse = A.readonlyArray.traverse(TE.taskEither)
 
 export const makeModules: Build<void> = (C) =>
   pipe(
     C.glob(`${OUTPUT_FOLDER}/lib/*.js`),
     TE.map(getModules),
-    TE.chain(traverse(makeSingleModule(C))),
+    TE.chain((modules) => traverse(modules, makeSingleModule(C))),
     TE.map(() => undefined)
   )
 

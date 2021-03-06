@@ -1,8 +1,8 @@
 import * as assert from 'assert'
 import Ajv from 'ajv'
 import * as J from './JsonSchema'
-import * as C from 'fp-ts/Const'
-import { pipe } from 'fp-ts/function'
+import * as C from 'fp-ts/lib/Const'
+import { pipe } from 'fp-ts/lib/pipeable'
 
 const ajv = new Ajv()
 

@@ -20,6 +20,18 @@ const codecInt: _.Codec<unknown, number, H.Int> = _.fromDecoder(H.decoderInt)
 
 const codecUndefined: _.Codec<unknown, undefined, undefined> = _.fromDecoder(H.decoderUndefined)
 
+export type Json = boolean | number | string | null | JsonArray | JsonRecord
+
+export interface JsonRecord {
+  readonly [key: string]: Json
+}
+
+export interface JsonArray extends ReadonlyArray<Json> {}
+
+export function parseJSON<E>(s: string, onError: (reason: unknown) => E): E.Either<E, Json> {
+  return E.tryCatch(() => JSON.parse(s), onError)
+}
+
 describe('Codec', () => {
   describe('Invariant', () => {
     it('imap', () => {
@@ -624,8 +636,8 @@ describe('Codec', () => {
       encode: (s) => Buffer.from(s).toString('base64')
     }
 
-    const Json: _.Codec<string, string, E.Json> = {
-      decode: (s) => E.parseJSON(s, () => D.error(s, 'Json')),
+    const Json: _.Codec<string, string, Json> = {
+      decode: (s) => parseJSON(s, () => D.error(s, 'Json')),
       encode: (a) => JSON.stringify(a)
     }
 

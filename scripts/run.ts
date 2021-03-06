@@ -1,5 +1,5 @@
-import { fold } from 'fp-ts/Either'
-import { TaskEither } from 'fp-ts/TaskEither'
+import { fold } from 'fp-ts/lib/Either'
+import { TaskEither } from 'fp-ts/lib/TaskEither'
 
 export function run<A>(eff: TaskEither<Error, A>): void {
   eff()
