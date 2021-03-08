@@ -31,6 +31,7 @@ Added in v2.2.3
   - [lazy](#lazy)
   - [nullable](#nullable)
   - [partial](#partial)
+  - [readonly](#readonly)
   - [record](#record)
   - [struct](#struct)
   - [sum](#sum)
@@ -138,6 +139,16 @@ export declare function partial<P extends Record<string, Encoder<any, any>>>(
 ```
 
 Added in v2.2.3
+
+## readonly
+
+**Signature**
+
+```ts
+export declare const readonly: <O, A>(decoder: Encoder<O, A>) => Encoder<O, Readonly<A>>
+```
+
+Added in v2.2.16
 
 ## record
 

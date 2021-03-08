@@ -1,13 +1,13 @@
 {
   "name": "io-ts",
-  "version": "2.2.15",
+  "version": "2.2.16",
   "description": "TypeScript runtime type system for IO decoding/encoding",
   "main": "lib/index.js",
   "module": "es6/index.js",
   "typings": "lib/index.d.ts",
   "sideEffects": false,
   "scripts": {
-    "lint": "tslint -p tsconfig.tslint.json src/**/*.ts test/**/*.ts",
+    "lint": "tslint -p .",
     "eslint": "eslint \"src/**/*.ts\" \"test/**/*.ts\" \"scripts/**/*.ts\"",
     "jest": "jest",
     "prettier": "prettier --no-semi --single-quote --print-width 120 --parser typescript --list-different \"{src,test}/**/*.ts\"",

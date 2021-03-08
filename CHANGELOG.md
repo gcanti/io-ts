@@ -14,6 +14,16 @@
 **Note**: Gaps between patch versions are faulty/broken releases.
 **Note**: A feature tagged as Experimental is in a high state of flux, you're at risk of it changing without notice.
 
+# 2.2.16
+
+Experimental modules require `fp-ts@^2.5.0`.
+
+- **Experimental**
+  - `Codec`
+    - add `readonly` combinator (@gcanti)
+  - `Encoder`
+    - add `readonly` combinator (@gcanti)
+
 # 2.2.15
 
 - **Experimental**

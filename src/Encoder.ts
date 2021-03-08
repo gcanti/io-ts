@@ -162,6 +162,12 @@ export function lazy<O, A>(f: () => Encoder<O, A>): Encoder<O, A> {
   }
 }
 
+/**
+ * @category combinators
+ * @since 2.2.16
+ */
+export const readonly: <O, A>(decoder: Encoder<O, A>) => Encoder<O, Readonly<A>> = identity
+
 // -------------------------------------------------------------------------------------
 // non-pipeables
 // -------------------------------------------------------------------------------------

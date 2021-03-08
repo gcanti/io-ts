@@ -35,6 +35,7 @@ Added in v2.2.3
   - [mapLeftWithInput](#mapleftwithinput)
   - [nullable](#nullable)
   - [partial](#partial)
+  - [readonly](#readonly)
   - [record](#record)
   - [refine](#refine)
   - [struct](#struct)
@@ -236,6 +237,16 @@ export declare function partial<P extends Record<string, Codec<unknown, any, any
 ```
 
 Added in v2.2.3
+
+## readonly
+
+**Signature**
+
+```ts
+export declare const readonly: <I, O, A>(codec: Codec<I, O, A>) => Codec<I, O, Readonly<A>>
+```
+
+Added in v2.2.16
 
 ## record
 

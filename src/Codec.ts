@@ -306,6 +306,12 @@ export function lazy<I, O, A>(id: string, f: () => Codec<I, O, A>): Codec<I, O, 
 
 /**
  * @category combinators
+ * @since 2.2.16
+ */
+export const readonly: <I, O, A>(codec: Codec<I, O, A>) => Codec<I, O, Readonly<A>> = identity
+
+/**
+ * @category combinators
  * @since 2.2.8
  */
 export const compose = <L, A extends L, P extends A, B>(to: Codec<L, P, B>) => <I, O>(
