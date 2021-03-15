@@ -28,9 +28,11 @@ npm i io-ts fp-ts
 
 - [`index.ts` module](index.md)
 
-## Experimental features (version `2.2+`)
+## Experimental modules (version `2.2+`)
 
-Experimental features (\*) are published in order to get early feedback from the community, see these tracking [issues](https://github.com/gcanti/io-ts/issues?q=label%3Av2.2+) for further discussions and enhancements.
+Experimental modules (\*) are published in order to get early feedback from the community, see these tracking [issues](https://github.com/gcanti/io-ts/issues?q=label%3Av2.2+) for further discussions and enhancements.
+
+The experimental modules are **independent and backward-incompatible** with stable ones.
 
 - [`Decoder.ts` module](Decoder.md)
 - [`Encoder.ts` module](Encoder.md)
