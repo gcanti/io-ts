@@ -6,6 +6,7 @@
     "variable-name": false,
     "ter-indent": false,
     "strict-type-predicates": false,
-    "deprecation": true
+    "deprecation": true,
+    "class-name": false
   }
 }
