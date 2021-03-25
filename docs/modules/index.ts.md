@@ -22,10 +22,15 @@ Added in v1.0.0
     - [asDecoder (method)](#asdecoder-method)
     - [asEncoder (method)](#asencoder-method)
     - [decode (method)](#decode-method)
+    - [validate (method)](#validate-method)
+    - [validateWith (method)](#validatewith-method)
     - [\_A (property)](#_a-property)
     - [\_O (property)](#_o-property)
     - [\_I (property)](#_i-property)
+    - [\_validators (property)](#_validators-property)
+    - [\_validate (property)](#_validate-property)
   - [TypeOf (type alias)](#typeof-type-alias)
+  - [TypeValidator (type alias)](#typevalidator-type-alias)
 - [Decode error](#decode-error)
   - [Context (interface)](#context-interface)
   - [ContextEntry (interface)](#contextentry-interface)
@@ -272,7 +277,7 @@ export declare class Type<A, O, I> {
     /** a custom type guard */
     readonly is: Is<A>,
     /** succeeds if a value of type I can be decoded to a value of type A */
-    readonly validate: Validate<I, A>,
+    validate: Validate<I, A>,
     /** converts a value of type A to a value of type O */
     readonly encode: Encode<A, O>
   )
@@ -327,6 +332,26 @@ decode(i: I): Validation<A>
 
 Added in v1.0.0
 
+### validate (method)
+
+**Signature**
+
+```ts
+validate(i: I, c: Context): Validation<A>
+```
+
+Added in v2.2.16
+
+### validateWith (method)
+
+**Signature**
+
+```ts
+validateWith(v: TypeValidator<A>): Type<A, O, I>
+```
+
+Added in v2.2.16
+
 ### \_A (property)
 
 **Signature**
@@ -357,6 +382,26 @@ readonly _I: I
 
 Added in v1.0.0
 
+### \_validators (property)
+
+**Signature**
+
+```ts
+_validators: Validate<A, void>[]
+```
+
+Added in v2.2.16
+
+### \_validate (property)
+
+**Signature**
+
+```ts
+readonly _validate: Validate<I, A>
+```
+
+Added in v2.2.16
+
 ## TypeOf (type alias)
 
 **Signature**
@@ -366,6 +411,16 @@ export type TypeOf<C extends Any> = C['_A']
 ```
 
 Added in v1.0.0
+
+## TypeValidator (type alias)
+
+**Signature**
+
+```ts
+export type TypeValidator<A> = Validate<A, void>
+```
+
+Added in v2.2.16
 
 # Decode error
 

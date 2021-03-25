@@ -1,8 +1,10 @@
 /**
  * @since 1.0.0
  */
-import { Either, isLeft, left, right } from 'fp-ts/lib/Either'
-import { Predicate, Refinement } from 'fp-ts/lib/function'
+import { Either, isLeft, left, right, fold } from 'fp-ts/lib/Either'
+import { Predicate, Refinement, flow } from 'fp-ts/lib/function'
+import { flatten, map as aMap } from 'fp-ts/lib/Array'
+import { pipe } from 'fp-ts/lib/pipeable'
 
 // -------------------------------------------------------------------------------------
 // Decode error
@@ -141,6 +143,12 @@ export interface Encoder<A, O> {
 
 /**
  * @category Codec
+ * @since 2.2.16
+ */
+export type TypeValidator<A> = Validate<A, void>
+
+/**
+ * @category Codec
  * @since 1.0.0
  */
 export class Type<A, O = A, I = unknown> implements Decoder<I, A>, Encoder<A, O> {
@@ -156,17 +164,27 @@ export class Type<A, O = A, I = unknown> implements Decoder<I, A>, Encoder<A, O>
    * @since 1.0.0
    */
   readonly _I!: I
+  /**
+   * @since 2.2.16
+   */
+  _validators: TypeValidator<A>[] = []
+  /**
+   * @since 2.2.16
+   */
+  readonly _validate: Validate<I, A>
   constructor(
     /** a unique name for this codec */
     readonly name: string,
     /** a custom type guard */
     readonly is: Is<A>,
     /** succeeds if a value of type I can be decoded to a value of type A */
-    readonly validate: Validate<I, A>,
+    validate: Validate<I, A>,
     /** converts a value of type A to a value of type O */
     readonly encode: Encode<A, O>
   ) {
     this.decode = this.decode.bind(this)
+    this.validate = this.validate.bind(this)
+    this._validate = validate
   }
 
   /**
@@ -208,6 +226,38 @@ export class Type<A, O = A, I = unknown> implements Decoder<I, A>, Encoder<A, O>
    */
   decode(i: I): Validation<A> {
     return this.validate(i, [{ key: '', type: this, actual: i }])
+  }
+  /**
+   * @since 2.2.16
+   */
+  validate(i: I, c: Context): Validation<A> {
+    return fold<Errors, A, Validation<A>>(
+      (errors) => left(errors),
+      (i) =>
+        pipe(
+          this._validators,
+          aMap(
+            flow(
+              (v) => v(i, c),
+              fold(
+                (errors) => errors,
+                () => []
+              )
+            )
+          ),
+          flatten,
+          (errors) => {
+            return errors.length === 0 ? right(i) : left(errors)
+          }
+        )
+    )(this._validate(i, c))
+  }
+  /**
+   * @since 2.2.16
+   */
+  validateWith(v: TypeValidator<A>): Type<A, O, I> {
+    this._validators.push(v)
+    return this
   }
 }
 
