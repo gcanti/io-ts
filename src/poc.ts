@@ -1,9 +1,10 @@
 import * as E from 'fp-ts/lib/Either'
-import { pipe } from 'fp-ts/lib/pipeable'
-import { ReadonlyNonEmptyArray } from 'fp-ts/lib/ReadonlyNonEmptyArray'
 import { Refinement } from 'fp-ts/lib/function'
+import { pipe } from 'fp-ts/lib/pipeable'
+import * as RNEA from 'fp-ts/lib/ReadonlyNonEmptyArray'
 
 import Either = E.Either
+import ReadonlyNonEmptyArray = RNEA.ReadonlyNonEmptyArray
 
 // -------------------------------------------------------------------------------------
 // errors
@@ -41,7 +42,6 @@ export interface NullableE<E> {
   readonly error: E
 }
 export interface KeyE<E> {
-  readonly _tag: 'KeyE'
   readonly actual: unknown
   readonly key: string
   readonly error: E
@@ -57,7 +57,6 @@ export interface PartialE<E> {
   readonly error: ReadonlyNonEmptyArray<KeyE<E>>
 }
 export interface IndexE<E> {
-  readonly _tag: 'IndexE'
   readonly actual: unknown
   readonly index: number
   readonly error: E
@@ -106,24 +105,6 @@ export interface IntersectionE<E> {
   - lazy
 
 */
-
-type DecodeError<E> =
-  | StringE
-  | NumberE
-  | BooleanE
-  | UnknownArrayE
-  | UnknownRecordE
-  | LiteralE<ReadonlyNonEmptyArray<Literal>>
-  | NullableE<E>
-  | RefineE<E>
-  | ParseE<E>
-  | StructE<DecodeError<E>>
-  | PartialE<E>
-  | TupleE<DecodeError<E>>
-  | ArrayE<DecodeError<E>>
-  | RecordE<DecodeError<E>>
-  | UnionE<DecodeError<E>>
-  | IntersectionE<E>
 
 // -------------------------------------------------------------------------------------
 // model
@@ -184,11 +165,11 @@ export declare const UnknownRecord: UnknownRecordUD
 // constructors
 // -------------------------------------------------------------------------------------
 
-export interface LiteralD<A extends ReadonlyNonEmptyArray<Literal>> extends UDecoder<LiteralE<A>, A[number]> {
+export interface LiteralUD<A extends ReadonlyNonEmptyArray<Literal>> extends UDecoder<LiteralE<A>, A[number]> {
   readonly literals: A
 }
 
-export declare const literal: <A extends ReadonlyNonEmptyArray<Literal>>(...values: A) => LiteralD<A>
+export declare const literal: <A extends ReadonlyNonEmptyArray<Literal>>(...values: A) => LiteralUD<A>
 
 // -------------------------------------------------------------------------------------
 // Decoder combinators
@@ -368,8 +349,6 @@ export declare const fromTupleE: <Components>(tuple: {
   readonly components: Components
 }) => (error: TupleE<ErrorOf<Components[keyof Components]>>) => { [K in keyof Components]?: ErrorOf<Components[K]> }
 
-export declare const draw: <E>(de: DecodeError<E>) => string
-
 // -------------------------------------------------------------------------------------
 // examples
 // -------------------------------------------------------------------------------------
@@ -384,9 +363,9 @@ export const SD = fromStruct({
   a: string,
   b: number
 })
-export type SDI = InputOf<typeof SD>
-export type SDE = ErrorOf<typeof SD>
-export type SDA = TypeOf<typeof SD>
+export type SDI = InputOf<typeof MLD>
+export type SDE = ErrorOf<typeof MLD>
+export type SDA = TypeOf<typeof MLD>
 export const SUD = struct({
   a: string,
   b: number
@@ -478,7 +457,10 @@ export type NUDE = ErrorOf<typeof NUD>
 export type NUDA = TypeOf<typeof NUD>
 
 // parse
-declare const parseNumber: (s: string) => E.Either<string, number>
+interface ParseNumberE {
+  readonly _tag: 'ParseNumberE'
+}
+declare const parseNumber: (s: string) => E.Either<ParseNumberE, number>
 const PD = pipe(id<string>(), parse(parseNumber))
 export type PDI = InputOf<typeof PD>
 export type PDE = ErrorOf<typeof PD>
@@ -501,15 +483,14 @@ export type IUDA = TypeOf<typeof IUD>
 // all
 const AllD = fromStruct({
   a: LDU,
-  b: SD,
-  c: TD,
-  d: AD,
-  e: RD,
-  f: UD,
-  g: ND,
-  h: EmailD,
-  i: PD,
-  l: ID
+  b: TD,
+  c: AD,
+  d: RD,
+  e: UD,
+  f: ND,
+  g: EmailD,
+  h: PD,
+  i: ID
 })
 export type AllDI = InputOf<typeof AllD>
 export type AllDE = ErrorOf<typeof AllD>
@@ -531,88 +512,100 @@ export type AllUDE = ErrorOf<typeof AllUD>
 export type AllUDA = TypeOf<typeof AllUD>
 
 // -------------------------------------------------------------------------------------
-// mapLeft and draw
+// mapLeft
 // -------------------------------------------------------------------------------------
 
-const EUD = struct({
-  a: IntUD
+export const MLUD = struct({
+  a: string,
+  b: number
 })
-export type EUDE = ErrorOf<typeof EUD>
+export type MLUDE = ErrorOf<typeof MLUD>
 
-pipe(
-  EUD.decode('a'),
-  E.mapLeft((e) => draw(e))
-)
-
-pipe(
-  EUD.decode('a'),
-  E.mapLeft((e) => {
-    switch (e._tag) {
+export const result1 = pipe(
+  MLUD.decode({}),
+  E.mapLeft((decodeError) => {
+    switch (decodeError._tag) {
       case 'UnknownRecordE':
-        return
+        return 'UnknownRecordE'
       case 'StructE':
-        const se = fromStructE(EUD)(e)
-        if (se.a) {
-          const a = se.a
-          switch (a._tag) {
-            case 'NumberE':
-              return 'not a number'
-            case 'RefineE':
-              return 'not a valid refinement'
-          }
-        }
+        const structErrors = decodeError.error
+        return structErrors
+          .map((e) => {
+            return `${e.key}: ${e.error}`
+          })
+          .join('\n')
     }
   })
 )
 
-pipe(
-  SUD.decode({}),
-  E.mapLeft((e) => {
-    switch (e._tag) {
+const MLD = struct({
+  a: IntUD,
+  b: EmailUD
+})
+export type MLDE = ErrorOf<typeof MLD>
+
+export const result2 = pipe(
+  MLD.decode({}),
+  E.mapLeft((decodeError) => {
+    switch (decodeError._tag) {
       case 'UnknownRecordE':
-        return 'not an object'
+        return 'UnknownRecordE'
       case 'StructE':
-        const errors = pipe(e, fromStructE(SUD))
-        let message = ''
-        if (!errors.a) {
-          message += 'missing field a'
-        }
-        if (!errors.b) {
-          message += 'missing field b'
-        }
-        return message
+        return 'StructE'
     }
   })
 )
 
-pipe(
-  SUD.decode({}),
-  E.mapLeft((e) => {
-    switch (e._tag) {
-      case 'UnknownRecordE':
-        return 'not an object'
-      case 'StructE':
-        return e.error.map((e) => e.key).join(', ')
-    }
-  })
+// -------------------------------------------------------------------------------------
+// draw
+// -------------------------------------------------------------------------------------
+
+export type DecodeError<E> =
+  | E
+  | NullableE<DecodeError<E>>
+  | RefineE<DecodeError<E>>
+  | ParseE<DecodeError<E>>
+  | StructE<DecodeError<E>>
+  | PartialE<DecodeError<E>>
+  | TupleE<DecodeError<E>>
+  | ArrayE<DecodeError<E>>
+  | RecordE<DecodeError<E>>
+  | UnionE<DecodeError<E>>
+  | IntersectionE<DecodeError<E>>
+
+export type Leaf<E> = E extends DecodeError<infer D> ? D : E
+
+type PrimitivesE = StringE | NumberE | UnknownRecordE | UnknownArrayE | LiteralE<ReadonlyNonEmptyArray<Literal>>
+
+export declare const drawWith: <E>(de: E, f: (e: Leaf<E>) => string) => string
+
+const XXX = struct({
+  a: string,
+  b: struct({ d: literal(null) }),
+  c: array(number)
+})
+
+export const result3 = pipe(
+  XXX.decode({}),
+  E.mapLeft((de) => drawWith(de, (e) => e._tag))
 )
 
-pipe(
-  TUD.decode([1, 2]),
-  E.mapLeft((e) => {
-    switch (e._tag) {
-      case 'UnknownArrayE':
-        return 'UnknownArrayE'
-      case 'TupleE':
-        const errors = pipe(e, fromTupleE(TUD))
-        let message = ''
-        if (!errors[0]) {
-          message += 'missing component 0'
-        }
-        if (!errors[1]) {
-          message += 'missing component 1'
-        }
-        return message
-    }
-  })
+export declare const defaultDraw: (p: PrimitivesE) => string
+
+export const result4 = pipe(
+  XXX.decode({}),
+  E.mapLeft((de) => drawWith(de, defaultDraw))
+)
+
+export declare const draw: (de: DecodeError<PrimitivesE>) => string
+
+export const result5 = pipe(XXX.decode({}), E.mapLeft(draw))
+
+export const drawWithEmail = (p: PrimitivesE | EmailE): string => {
+  return p._tag === 'EmailE' ? 'EmailE' : defaultDraw(p)
+}
+
+export const result6 = pipe(
+  EmailUD.decode({}),
+  E.mapLeft((de) => drawWith(de, drawWithEmail))
 )
