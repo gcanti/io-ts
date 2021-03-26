@@ -621,7 +621,7 @@ export const result6 = pipe(
 // -------------------------------------------------------------------------------------
 
 const MyForm = fromStruct({
-  name: string,
+  name: EmailUD,
   age: number
 })
 
@@ -631,7 +631,7 @@ pipe(
     const form = pipe(e, fromStructE(MyForm))
     /*
     const form: {
-        name?: StringE | undefined;
+        name?: StringE | RefineE<EmailE> | undefined;
         age?: NumberE | undefined;
     }
     */
