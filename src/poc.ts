@@ -249,11 +249,11 @@ export interface RefineD<From, E, B extends TypeOf<From>>
   readonly _tag: 'RefineD'
   readonly from: From
   readonly refinement: Refinement<TypeOf<From>, B>
-  readonly error: E
+  readonly error: (from: TypeOf<From>) => E
 }
 export declare const refine: <From extends AnyD, B extends TypeOf<From>, E>(
   refinement: Refinement<TypeOf<From>, B>,
-  error: E
+  error: (from: TypeOf<From>) => E
 ) => (from: From) => RefineD<From, E, B>
 
 export interface ParseD<From, E, B> extends Decoder<InputOf<From>, ErrorOf<From> | ParseE<E>, B> {
@@ -412,7 +412,10 @@ export interface EmailE {
 declare const emailE: EmailE
 export const EmailD = pipe(
   id<string>(),
-  refine((s): s is Email => s.length > 0, emailE)
+  refine(
+    (s): s is Email => s.length > 0,
+    () => emailE
+  )
 )
 export type EmailDI = InputOf<typeof EmailD>
 export type EmailDE = ErrorOf<typeof EmailD>
@@ -432,7 +435,10 @@ export interface IntE {
 declare const intE: IntE
 export const IntD = pipe(
   id<number>(),
-  refine((n): n is Int => Number.isInteger(n), intE)
+  refine(
+    (n): n is Int => Number.isInteger(n),
+    () => intE
+  )
 )
 const IntUD = pipe(number, compose(IntD))
 
@@ -573,11 +579,13 @@ export type DecodeError<E> =
   | UnionE<DecodeError<E>>
   | IntersectionE<DecodeError<E>>
 
-export type Leaf<E> = E extends DecodeError<infer D> ? D : E
+export type Leafs<E> = E extends DecodeError<infer D> ? D : E
 
-type PrimitivesE = StringE | NumberE | UnknownRecordE | UnknownArrayE | LiteralE<ReadonlyNonEmptyArray<Literal>>
+export declare const drawWith: <E>(de: E, f: (e: Leafs<E>) => string) => string
 
-export declare const drawWith: <E>(de: E, f: (e: Leaf<E>) => string) => string
+type BuiltInE = StringE | NumberE | UnknownRecordE | UnknownArrayE | LiteralE<ReadonlyNonEmptyArray<Literal>>
+
+export declare const defaultDraw: (p: BuiltInE) => string
 
 const XXX = struct({
   a: string,
@@ -590,18 +598,16 @@ export const result3 = pipe(
   E.mapLeft((de) => drawWith(de, (e) => e._tag))
 )
 
-export declare const defaultDraw: (p: PrimitivesE) => string
-
 export const result4 = pipe(
   XXX.decode({}),
   E.mapLeft((de) => drawWith(de, defaultDraw))
 )
 
-export declare const draw: (de: DecodeError<PrimitivesE>) => string
+export declare const draw: (de: DecodeError<BuiltInE>) => string
 
 export const result5 = pipe(XXX.decode({}), E.mapLeft(draw))
 
-export const drawWithEmail = (p: PrimitivesE | EmailE): string => {
+export const drawWithEmail = (p: BuiltInE | EmailE): string => {
   return p._tag === 'EmailE' ? 'EmailE' : defaultDraw(p)
 }
 
