@@ -615,3 +615,25 @@ export const result6 = pipe(
   EmailUD.decode({}),
   E.mapLeft((de) => drawWith(de, drawWithEmail))
 )
+
+// -------------------------------------------------------------------------------------
+// form
+// -------------------------------------------------------------------------------------
+
+const MyForm = fromStruct({
+  name: string,
+  age: number
+})
+
+pipe(
+  MyForm.decode({ name: null, age: null }),
+  E.mapLeft((e) => {
+    const form = pipe(e, fromStructE(MyForm))
+    /*
+    const form: {
+        name?: StringE | undefined;
+        age?: NumberE | undefined;
+    }
+    */
+  })
+)
