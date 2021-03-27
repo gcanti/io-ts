@@ -569,7 +569,7 @@ export type AllUDE = ErrorOf<typeof AllUD>
 export type AllUDA = TypeOf<typeof AllUD>
 
 // -------------------------------------------------------------------------------------
-// error encoding
+// draw
 // -------------------------------------------------------------------------------------
 
 export interface NullableRE<E> extends NullableE<DecodeError<E>> {}
@@ -606,25 +606,29 @@ export type BuiltInError =
   | UnknownArrayE
   | LiteralE<ReadonlyNonEmptyArray<Literal>>
 
-export declare const encode: <E, A>(f: (g: (e: E) => A) => (de: DecodeError<E>) => A) => A
-
-// -------------------------------------------------------------------------------------
-// draw
-// -------------------------------------------------------------------------------------
-
-interface Tree<A> {
+export interface Tree<A> {
   readonly value: A
   readonly forest: ReadonlyArray<Tree<A>>
 }
 
 const empty: Array<never> = []
 
-const make = <A>(value: A, forest: ReadonlyArray<Tree<A>> = empty): Tree<A> => ({
+export const make = <A>(value: A, forest: ReadonlyArray<Tree<A>> = empty): Tree<A> => ({
   value,
   forest
 })
 
-export declare const drawWith: <E>(de: DecodeError<E>, f: (e: E) => Tree<string>) => Tree<string>
+export declare const drawBy: <E>(f: (e: E) => Tree<string>) => (de: DecodeError<E>) => Tree<string>
+
+export declare const drawBuiltInError: (e: BuiltInError) => Tree<string>
+
+const BuiltInDrawable = struct({
+  a: string,
+  b: struct({ d: literal(null) }),
+  c: array(number)
+})
+
+export const result1 = pipe(BuiltInDrawable.decode({}), E.mapLeft(drawBy(drawBuiltInError)))
 
 const Drawable = struct({
   a: EmailUD,
@@ -632,9 +636,21 @@ const Drawable = struct({
   c: array(IntUD)
 })
 
-export const result = pipe(
+export const result2 = pipe(
   Drawable.decode({}),
-  E.mapLeft((de) => drawWith(de, (e) => make(e._tag)))
+  E.mapLeft((de) =>
+    pipe(
+      de,
+      drawBy((e) => {
+        switch (e._tag) {
+          case 'EmailE':
+          case 'IntE':
+            return make(e._tag)
+        }
+        return drawBuiltInError(e)
+      })
+    )
+  )
 )
 
 // -------------------------------------------------------------------------------------
