@@ -101,14 +101,16 @@ export interface LazyE<E> {
   readonly id: string
   readonly error: E
 }
-
-/*
-
-  Missing combinators:
-
-  - sum
-
-*/
+export interface TagE<A> {
+  readonly _tag: 'TagE'
+  readonly actual: unknown
+  readonly literals: ReadonlyNonEmptyArray<A>
+}
+export interface SumE<E> {
+  readonly _tag: 'SumE'
+  readonly actual: unknown
+  readonly error: ReadonlyNonEmptyArray<IndexE<E>>
+}
 
 // -------------------------------------------------------------------------------------
 // model
@@ -124,12 +126,9 @@ export interface Decoder<I, E, A> {
   readonly decode: (i: I) => Either<E, A>
 }
 
-export interface UDecoder<E, A> extends Decoder<unknown, E, A> {
-  readonly UD?: true
-}
+export interface UDecoder<E, A> extends Decoder<unknown, E, A> {}
 
 interface AnyD extends Decoder<any, any, any> {}
-
 interface AnyUD extends UDecoder<any, any> {}
 
 export type InputOf<D> = D extends Decoder<infer I, any, any> ? I : never
@@ -284,6 +283,20 @@ export interface LazyD<D> {
 }
 export declare const lazy: <I, E, A>(id: string, decoder: Lazy<Decoder<I, E, A>>) => Decoder<I, LazyE<E>, A>
 
+export interface SumD<T extends string, Members>
+  extends Decoder<
+    InputOf<Members[keyof Members]>,
+    TagE<keyof Members> | SumE<ErrorOf<Members[keyof Members]>>,
+    TypeOf<Members[keyof Members]>
+  > {
+  readonly _tag: 'SumD'
+  readonly tag: T
+  readonly members: Members
+}
+export declare const fromSum: <T extends string>(
+  tag: T
+) => <Members extends Record<string, AnyD>>(members: Members) => SumD<T, Members>
+
 // -------------------------------------------------------------------------------------
 // composition
 // -------------------------------------------------------------------------------------
@@ -347,6 +360,19 @@ export interface RecordUD<Codomain>
   readonly codomain: Codomain
 }
 export declare const record: <Codomain extends AnyUD>(codomain: Codomain) => RecordUD<Codomain>
+
+export interface SumUD<T extends string, Members>
+  extends UDecoder<
+    UnknownRecordE | TagE<keyof Members> | SumE<ErrorOf<Members[keyof Members]>>,
+    TypeOf<Members[keyof Members]>
+  > {
+  readonly _tag: 'SumUD'
+  readonly tag: T
+  readonly members: Members
+}
+export declare const sum: <T extends string>(
+  tag: T
+) => <Members extends Record<string, AnyUD>>(members: Members) => SumUD<T, Members>
 
 // -------------------------------------------------------------------------------------
 // utils
@@ -497,21 +523,37 @@ export const IUD = pipe(struct({ a: string }), intersect(struct({ b: number })))
 export type IUDE = ErrorOf<typeof IUD>
 export type IUDA = TypeOf<typeof IUD>
 
-// lazy
+// lazy (TODO: getting the error type is difficult)
 interface Category {
   name: string
   categories: ReadonlyArray<Category>
 }
-// you can use the precise type...
-// type CategoryE = LazyE<UnknownRecordE | StructE<StringE | RefineE<EmailE> | UnknownArrayE | ArrayE<CategoryE>>>
-// ..or
-type CategoryE = DecodeError<BuiltInE | EmailE>
+type CategoryE = LazyE<UnknownRecordE | StructE<StringE | RefineE<EmailE> | UnknownArrayE | ArrayE<CategoryE>>>
 export const LaUD: UDecoder<CategoryE, Category> = lazy('Category', () =>
   struct({
     name: EmailUD,
     categories: array(LaUD)
   })
 )
+export type LaUDE = ErrorOf<typeof LaUD>
+export type LaUDA = TypeOf<typeof LaUD>
+
+// sum
+export const SumD = fromSum('type')({
+  A: fromStruct({ type: literal('A'), a: string }),
+  B: fromStruct({ type: literal('B'), b: string })
+})
+export type SumDI = InputOf<typeof SumD>
+export type SumDE = ErrorOf<typeof SumD>
+export type SumDA = TypeOf<typeof SumD>
+
+const sumType = sum('type')
+export const SumUD = sumType({
+  A: struct({ type: literal('A'), a: string }),
+  B: struct({ type: literal('B'), b: string })
+})
+export type SumUDE = ErrorOf<typeof SumUD>
+export type SumUDA = TypeOf<typeof SumUD>
 
 // all
 const AllD = fromStruct({
@@ -630,6 +672,7 @@ export type DecodeError<E> =
   | UnionE<DecodeError<E>>
   | IntersectionE<DecodeError<E>>
   | LazyE<DecodeError<E>>
+  | SumE<DecodeError<E>>
 
 export type Leafs<E> = E extends DecodeError<infer D> ? D : E
 
