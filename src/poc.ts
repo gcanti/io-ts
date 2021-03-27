@@ -122,6 +122,9 @@ export interface SumE<E> {
   - `E` -> an error
 */
 
+//                       v-- input type
+//                          v-- keeps track of the leaf types (as a union)
+//                             v-- decoded type
 export interface Decoder<I, E, A> {
   readonly decode: (i: I) => Either<DecodeError<E>, A>
 }
