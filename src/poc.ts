@@ -1,5 +1,5 @@
 import * as E from 'fp-ts/lib/Either'
-import { Refinement } from 'fp-ts/lib/function'
+import { Lazy, Refinement } from 'fp-ts/lib/function'
 import { pipe } from 'fp-ts/lib/pipeable'
 import * as RNEA from 'fp-ts/lib/ReadonlyNonEmptyArray'
 
@@ -96,13 +96,17 @@ export interface IntersectionE<E> {
   readonly actual: unknown
   readonly error: E
 }
+export interface LazyE<E> {
+  readonly _tag: 'LazyE'
+  readonly id: string
+  readonly error: E
+}
 
 /*
 
   Missing combinators:
 
   - sum
-  - lazy
 
 */
 
@@ -272,6 +276,13 @@ export interface IntersectD<L, R>
   readonly right: R
 }
 export declare const intersect: <R extends AnyD>(right: R) => <L extends AnyD>(left: L) => IntersectD<L, R>
+
+export interface LazyD<D> {
+  readonly _tag: 'LazyD'
+  readonly id: string
+  readonly decoder: Lazy<D>
+}
+export declare const lazy: <I, E, A>(id: string, decoder: Lazy<Decoder<I, E, A>>) => Decoder<I, LazyE<E>, A>
 
 // -------------------------------------------------------------------------------------
 // composition
@@ -486,6 +497,22 @@ export const IUD = pipe(struct({ a: string }), intersect(struct({ b: number })))
 export type IUDE = ErrorOf<typeof IUD>
 export type IUDA = TypeOf<typeof IUD>
 
+// lazy
+interface Category {
+  name: string
+  categories: ReadonlyArray<Category>
+}
+// you can use the precise type...
+// type CategoryE = LazyE<UnknownRecordE | StructE<StringE | RefineE<EmailE> | UnknownArrayE | ArrayE<CategoryE>>>
+// ..or
+type CategoryE = DecodeError<BuiltInE | EmailE>
+export const LaUD: UDecoder<CategoryE, Category> = lazy('Category', () =>
+  struct({
+    name: EmailUD,
+    categories: array(LaUD)
+  })
+)
+
 // all
 const AllD = fromStruct({
   a: LDU,
@@ -566,6 +593,30 @@ export const result2 = pipe(
 // draw
 // -------------------------------------------------------------------------------------
 
+// export interface NullableRE<E> extends NullableE<DecodeError<E>> {}
+// export interface RefineRE<E> extends RefineE<DecodeError<E>> {}
+// export interface ParseRE<E> extends ParseE<DecodeError<E>> {}
+// export interface StructRE<E> extends StructE<DecodeError<E>> {}
+// export interface PartialRE<E> extends PartialE<DecodeError<E>> {}
+// export interface TupleRE<E> extends TupleE<DecodeError<E>> {}
+// export interface ArrayRE<E> extends ArrayE<DecodeError<E>> {}
+// export interface RecordRE<E> extends RecordE<DecodeError<E>> {}
+// export interface UnionRE<E> extends UnionE<DecodeError<E>> {}
+// export interface IntersectionRE<E> extends IntersectionE<DecodeError<E>> {}
+// export interface LazyRE<E> extends LazyE<DecodeError<E>> {}
+// export type DecodeError<E> =
+//   | E
+//   | NullableRE<E>
+//   | RefineRE<E>
+//   | ParseRE<E>
+//   | StructRE<E>
+//   | PartialRE<E>
+//   | TupleRE<E>
+//   | ArrayRE<E>
+//   | RecordRE<E>
+//   | UnionRE<E>
+//   | IntersectionRE<E>
+//   | LazyRE<E>
 export type DecodeError<E> =
   | E
   | NullableE<DecodeError<E>>
@@ -578,12 +629,17 @@ export type DecodeError<E> =
   | RecordE<DecodeError<E>>
   | UnionE<DecodeError<E>>
   | IntersectionE<DecodeError<E>>
+  | LazyE<DecodeError<E>>
 
 export type Leafs<E> = E extends DecodeError<infer D> ? D : E
 
+// export type XXXLeafs = Leafs<
+//   UnknownRecordE | StructE<StringE | UnknownRecordE | StructE<LiteralE<[null]>> | UnknownArrayE | ArrayE<NumberE>>
+// >
+
 export declare const drawWith: <E>(de: E, f: (e: Leafs<E>) => string) => string
 
-type BuiltInE = StringE | NumberE | UnknownRecordE | UnknownArrayE | LiteralE<ReadonlyNonEmptyArray<Literal>>
+type BuiltInE = StringE | NumberE | BooleanE | UnknownRecordE | UnknownArrayE | LiteralE<ReadonlyNonEmptyArray<Literal>>
 
 export declare const defaultDraw: (p: BuiltInE) => string
 
@@ -628,12 +684,13 @@ const MyForm = fromStruct({
 pipe(
   MyForm.decode({ name: null, age: null }),
   E.mapLeft((e) => {
-    const form = pipe(e, fromStructE(MyForm))
+    // const form = pipe(e, fromStructE(MyForm))
     /*
     const form: {
         name?: StringE | RefineE<EmailE> | undefined;
         age?: NumberE | undefined;
     }
     */
+    return e
   })
 )
