@@ -1,5 +1,6 @@
 import * as E from 'fp-ts/lib/Either'
 import { Lazy, Refinement } from 'fp-ts/lib/function'
+import { HKT3, Kind, Kind3, URIS, URIS3 } from 'fp-ts/lib/HKT'
 import { pipe } from 'fp-ts/lib/pipeable'
 import * as RNEA from 'fp-ts/lib/ReadonlyNonEmptyArray'
 
@@ -139,6 +140,16 @@ export type ErrorOf<D> = D extends Decoder<any, infer E, any> ? E : never
 export type TypeOf<D> = D extends Decoder<any, any, infer A> ? A : never
 
 // -------------------------------------------------------------------------------------
+// constructors
+// -------------------------------------------------------------------------------------
+
+export interface LiteralUD<A extends ReadonlyNonEmptyArray<Literal>> extends UDecoder<LiteralE<A>, A[number]> {
+  readonly literals: A
+}
+
+export declare const literal: <A extends ReadonlyNonEmptyArray<Literal>>(...values: A) => LiteralUD<A>
+
+// -------------------------------------------------------------------------------------
 // primitives
 // -------------------------------------------------------------------------------------
 
@@ -166,16 +177,6 @@ export interface UnknownRecordUD extends UDecoder<UnknownRecordE, Record<string,
   readonly _tag: 'UnknownRecordUD'
 }
 export declare const UnknownRecord: UnknownRecordUD
-
-// -------------------------------------------------------------------------------------
-// constructors
-// -------------------------------------------------------------------------------------
-
-export interface LiteralUD<A extends ReadonlyNonEmptyArray<Literal>> extends UDecoder<LiteralE<A>, A[number]> {
-  readonly literals: A
-}
-
-export declare const literal: <A extends ReadonlyNonEmptyArray<Literal>>(...values: A) => LiteralUD<A>
 
 // -------------------------------------------------------------------------------------
 // Decoder combinators
@@ -616,7 +617,7 @@ export interface Tree<A> {
 
 const empty: Array<never> = []
 
-export const make = <A>(value: A, forest: ReadonlyArray<Tree<A>> = empty): Tree<A> => ({
+export const tree = <A>(value: A, forest: ReadonlyArray<Tree<A>> = empty): Tree<A> => ({
   value,
   forest
 })
@@ -648,13 +649,64 @@ export const result2 = pipe(
         switch (e._tag) {
           case 'EmailE':
           case 'IntE':
-            return make(e._tag)
+            return tree(e._tag)
         }
         return drawBuiltInError(e)
       })
     )
   )
 )
+
+// -------------------------------------------------------------------------------------
+// Schemable
+// -------------------------------------------------------------------------------------
+
+export interface Schemable<F> {
+  readonly URI: F
+  readonly string: HKT3<F, unknown, StringE, string>
+  readonly nullable: <I, E, A>(or: HKT3<F, I, E, A>) => HKT3<F, I | null, E, null | A>
+}
+
+export interface Schemable1<F extends URIS> {
+  readonly URI: F
+  readonly string: Kind<F, string>
+  readonly nullable: <A>(or: Kind<F, A>) => Kind<F, null | A>
+}
+
+export interface Schemable3<F extends URIS3> {
+  readonly URI: F
+  readonly string: Kind3<F, unknown, StringE, string>
+  readonly nullable: <I, E, A>(or: Kind3<F, I, E, A>) => Kind3<F, I | null, E, null | A>
+}
+
+export interface Schema<I, E, A> {
+  <F>(S: Schemable<F>): HKT3<F, I, E, A>
+}
+
+export declare const make: <I, E, A>(schema: Schema<I, E, A>) => Schema<I, E, A>
+
+export function interpreter<F extends URIS3>(S: Schemable3<F>): <I, E, A>(schema: Schema<I, E, A>) => Kind3<F, I, E, A>
+export function interpreter<F extends URIS>(S: Schemable1<F>): <I, E, A>(schema: Schema<I, E, A>) => Kind<F, A>
+export function interpreter<F>(S: Schemable<F>): <I, E, A>(schema: Schema<I, E, A>) => HKT3<F, I, E, A>
+export function interpreter<F>(S: Schemable<F>): <I, E, A>(schema: Schema<I, E, A>) => HKT3<F, I, E, A> {
+  return (schema) => schema(S)
+}
+
+export const URI = 'DecoderPOC'
+
+export type URI = typeof URI
+
+declare module 'fp-ts/lib/HKT' {
+  interface URItoKind3<R, E, A> {
+    readonly [URI]: Decoder<R, E, A>
+  }
+}
+
+declare const SchemableDecoder: Schemable3<URI>
+
+const myschema = make((S) => S.nullable(S.string))
+
+export const mydecoder = interpreter(SchemableDecoder)(myschema)
 
 // -------------------------------------------------------------------------------------
 // form use case (TODO)
