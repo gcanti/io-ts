@@ -635,56 +635,45 @@ export const result2 = pipe(
 // draw
 // -------------------------------------------------------------------------------------
 
-// export interface NullableRE<E> extends NullableE<DecodeError<E>> {}
-// export interface RefineRE<E> extends RefineE<DecodeError<E>> {}
-// export interface ParseRE<E> extends ParseE<DecodeError<E>> {}
-// export interface StructRE<E> extends StructE<DecodeError<E>> {}
-// export interface PartialRE<E> extends PartialE<DecodeError<E>> {}
-// export interface TupleRE<E> extends TupleE<DecodeError<E>> {}
-// export interface ArrayRE<E> extends ArrayE<DecodeError<E>> {}
-// export interface RecordRE<E> extends RecordE<DecodeError<E>> {}
-// export interface UnionRE<E> extends UnionE<DecodeError<E>> {}
-// export interface IntersectionRE<E> extends IntersectionE<DecodeError<E>> {}
-// export interface LazyRE<E> extends LazyE<DecodeError<E>> {}
-// export type DecodeError<E> =
-//   | E
-//   | NullableRE<E>
-//   | RefineRE<E>
-//   | ParseRE<E>
-//   | StructRE<E>
-//   | PartialRE<E>
-//   | TupleRE<E>
-//   | ArrayRE<E>
-//   | RecordRE<E>
-//   | UnionRE<E>
-//   | IntersectionRE<E>
-//   | LazyRE<E>
+export interface NullableRE<E> extends NullableE<DecodeError<E>> {}
+export interface RefineRE<E> extends RefineE<DecodeError<E>> {}
+export interface ParseRE<E> extends ParseE<DecodeError<E>> {}
+export interface StructRE<E> extends StructE<DecodeError<E>> {}
+export interface PartialRE<E> extends PartialE<DecodeError<E>> {}
+export interface TupleRE<E> extends TupleE<DecodeError<E>> {}
+export interface ArrayRE<E> extends ArrayE<DecodeError<E>> {}
+export interface RecordRE<E> extends RecordE<DecodeError<E>> {}
+export interface UnionRE<E> extends UnionE<DecodeError<E>> {}
+export interface IntersectionRE<E> extends IntersectionE<DecodeError<E>> {}
+export interface LazyRE<E> extends LazyE<DecodeError<E>> {}
 export type DecodeError<E> =
   | E
-  | NullableE<DecodeError<E>>
-  | RefineE<DecodeError<E>>
-  | ParseE<DecodeError<E>>
-  | StructE<DecodeError<E>>
-  | PartialE<DecodeError<E>>
-  | TupleE<DecodeError<E>>
-  | ArrayE<DecodeError<E>>
-  | RecordE<DecodeError<E>>
-  | UnionE<DecodeError<E>>
-  | IntersectionE<DecodeError<E>>
-  | LazyE<DecodeError<E>>
-  | SumE<DecodeError<E>>
+  | NullableRE<E>
+  | RefineRE<E>
+  | ParseRE<E>
+  | StructRE<E>
+  | PartialRE<E>
+  | TupleRE<E>
+  | ArrayRE<E>
+  | RecordRE<E>
+  | UnionRE<E>
+  | IntersectionRE<E>
+  | LazyRE<E>
 
-export type Leafs<E> = E extends DecodeError<infer D> ? D : E
+export type BuiltInE =
+  | StringE
+  | NumberE
+  | BooleanE
+  | UnknownRecordE
+  | UnknownArrayE
+  | LiteralE<ReadonlyNonEmptyArray<Literal>>
 
-// export type XXXLeafs = Leafs<
-//   UnknownRecordE | StructE<StringE | UnknownRecordE | StructE<LiteralE<[null]>> | UnknownArrayE | ArrayE<NumberE>>
-// >
+export interface Tree<A> {
+  readonly value: A
+  readonly forest: ReadonlyArray<Tree<A>>
+}
 
-export declare const drawWith: <E>(de: E, f: (e: Leafs<E>) => string) => string
-
-type BuiltInE = StringE | NumberE | BooleanE | UnknownRecordE | UnknownArrayE | LiteralE<ReadonlyNonEmptyArray<Literal>>
-
-export declare const defaultDraw: (p: BuiltInE) => string
+export declare const draw: <E>(f: (e: E) => Tree<string>) => (de: DecodeError<E>) => Tree<string>
 
 const XXX = struct({
   a: string,
@@ -692,28 +681,9 @@ const XXX = struct({
   c: array(number)
 })
 
-export const result3 = pipe(
-  XXX.decode({}),
-  E.mapLeft((de) => drawWith(de, (e) => e._tag))
-)
+export declare const defaultDraw: (e: BuiltInE) => Tree<string>
 
-export const result4 = pipe(
-  XXX.decode({}),
-  E.mapLeft((de) => drawWith(de, defaultDraw))
-)
-
-export declare const draw: (de: DecodeError<BuiltInE>) => string
-
-export const result5 = pipe(XXX.decode({}), E.mapLeft(draw))
-
-export const drawWithEmail = (p: BuiltInE | EmailE): string => {
-  return p._tag === 'EmailE' ? 'EmailE' : defaultDraw(p)
-}
-
-export const result6 = pipe(
-  EmailUD.decode({}),
-  E.mapLeft((de) => drawWith(de, drawWithEmail))
-)
+export const result3 = pipe(XXX.decode({}), E.mapLeft(draw(defaultDraw)))
 
 // -------------------------------------------------------------------------------------
 // form
