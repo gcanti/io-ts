@@ -132,8 +132,8 @@ export interface Decoder<I, E, A> {
 
 export interface UDecoder<E, A> extends Decoder<unknown, E, A> {}
 
-interface AnyD extends Decoder<any, any, any> {}
-interface AnyUD extends UDecoder<any, any> {}
+export interface AnyD extends Decoder<any, any, any> {}
+export interface AnyUD extends UDecoder<any, any> {}
 
 export type InputOf<D> = D extends Decoder<infer I, any, any> ? I : never
 export type ErrorOf<D> = D extends Decoder<any, infer E, any> ? E : never
@@ -711,3 +711,37 @@ export const mydecoder = interpreter(SchemableDecoder)(myschema)
 // -------------------------------------------------------------------------------------
 // form use case (TODO)
 // -------------------------------------------------------------------------------------
+
+const formValues = pipe(
+  fromStruct({
+    email: string,
+    username: string,
+    name: string
+  }),
+  intersect(fromPartial({ nickname: string }))
+)
+type FormVals = TypeOf<typeof formValues>
+pipe(
+  formValues.decode({
+    email: undefined,
+    username: undefined,
+    name: undefined,
+    nickname: undefined
+  }),
+  E.mapLeft((e) => {
+    switch (e._tag) {
+      case 'StructE':
+        e.error.reduce((errs, err) => {
+          switch (err.error._tag) {
+            case 'StringE':
+              // since key is of type `string` we can't strictly type the fact that the
+              // return value should be Partial<Record<keyof FormVals, string>> without this
+              // assertion
+              errs[err.key as keyof FormVals] = `${err.key} is required`
+              break
+          }
+          return errs
+        }, {} as Partial<Record<keyof FormVals, string>>)
+    }
+  })
+)
