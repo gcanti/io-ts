@@ -508,6 +508,7 @@ export type HasProps =
   | HasPropsReadonly
   | HasPropsIntersection
   | InterfaceType<any, any, any, any>
+  | ExactType<any, any, any, any>
   // tslint:disable-next-line: deprecation
   | StrictType<any, any, any, any>
   | PartialType<any, any, any, any>
@@ -516,6 +517,7 @@ function getProps(codec: HasProps): Props {
   switch (codec._tag) {
     case 'RefinementType':
     case 'ReadonlyType':
+    case 'ExactType':
       return getProps(codec.type)
     case 'InterfaceType':
     case 'StrictType':

@@ -1299,6 +1299,7 @@ export type HasProps =
   | HasPropsReadonly
   | HasPropsIntersection
   | InterfaceType<any, any, any, any>
+  | ExactType<any, any, any, any>
   // tslint:disable-next-line: deprecation
   | StrictType<any, any, any, any>
   | PartialType<any, any, any, any>
