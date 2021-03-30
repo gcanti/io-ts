@@ -3,6 +3,18 @@ import { assertSuccess, assertFailure, assertStrictEqual, NumberFromString } fro
 import * as assert from 'assert'
 
 describe('exact', () => {
+  describe('HasProps', () => {
+    it('should wok on nested exact types', () => {
+      const T1 = t.type({ a: t.string })
+      const T2 = t.type({ b: t.string })
+      const T12 = t.exact(t.intersection([T1, T2]))
+      const T3 = t.type({ c: t.string })
+      const T = t.exact(t.intersection([T12, T3]))
+      const x = { a: 'a', b: 'b', c: 'c', d: 'd' }
+      assert.deepStrictEqual(T.encode(x), { a: 'a', b: 'b', c: 'c' })
+    })
+  })
+
   describe('name', () => {
     it('should assign a default name', () => {
       const T = t.exact(t.type({ foo: t.string }))
