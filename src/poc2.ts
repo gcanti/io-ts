@@ -1,5 +1,4 @@
 // import { pipe } from 'fp-ts/lib/pipeable'
-import { Decoder } from './poc'
 import * as C from 'fp-ts/lib/Const'
 import { pipe } from 'fp-ts/lib/pipeable'
 
@@ -35,14 +34,14 @@ export interface StringD {
   readonly _tag: 'StringD'
 }
 export interface StringR {
-  readonly string: DSL<StringD, unknown, StringE, string>
+  readonly StringD: DSL<StringD, unknown, StringE, string>
 }
 export const StringR: StringR = {
-  string: dsl({ _tag: 'StringD' })
+  StringD: dsl({ _tag: 'StringD' })
 }
 export interface stringS extends Schema<StringR, StringD, unknown, StringE, string> {}
 export const string: stringS = {
-  schema: (r) => r.string
+  schema: (r) => r.StringD
 }
 
 export interface NumberE {
@@ -53,14 +52,14 @@ export interface NumberD {
   readonly _tag: 'NumberD'
 }
 export interface NumberR {
-  readonly number: DSL<NumberD, unknown, NumberE, number>
+  readonly NumberD: DSL<NumberD, unknown, NumberE, number>
 }
 export const NumberR: NumberR = {
-  number: dsl({ _tag: 'NumberD' })
+  NumberD: dsl({ _tag: 'NumberD' })
 }
 export interface numberS extends Schema<NumberR, NumberD, unknown, NumberE, number> {}
 export const number: numberS = {
-  schema: (r) => r.number
+  schema: (r) => r.NumberD
 }
 
 export interface BooleanE {
@@ -71,14 +70,14 @@ export interface BooleanD {
   readonly _tag: 'BooleanD'
 }
 export interface BooleanR {
-  readonly boolean: DSL<BooleanD, unknown, BooleanE, boolean>
+  readonly BooleanD: DSL<BooleanD, unknown, BooleanE, boolean>
 }
 export const BooleanR: BooleanR = {
-  boolean: dsl({ _tag: 'BooleanD' })
+  BooleanD: dsl({ _tag: 'BooleanD' })
 }
 export interface booleanS extends Schema<BooleanR, BooleanD, unknown, BooleanE, boolean> {}
 export const boolean: booleanS = {
-  schema: (r) => r.boolean
+  schema: (r) => r.BooleanD
 }
 
 // -------------------------------------------------------------------------------------
@@ -218,51 +217,51 @@ export const field = <N extends string, R, D, I, E, A>(
 
 // nullable
 export const NullableS = nullable(string)
-const NullableD = NullableS.schema({
+export const NullableDSL = NullableS.schema({
   ...StringR
 })
-// console.log(JSON.stringify(NullableD, null, 2))
+// console.log(JSON.stringify(NullableDSL, null, 2))
 
 // or
 export const OrS = pipe(string, or(number), or(boolean))
-const OrD = OrS.schema({
+export const OrDSL = OrS.schema({
   ...StringR,
   ...NumberR,
   ...BooleanR
 })
-// console.log(JSON.stringify(OrD, null, 2))
+// console.log(JSON.stringify(OrDSL, null, 2))
 
 // and
 export const AndS = pipe(field('a', string), and(field('b', number)))
-const AndD = AndS.schema({
+export const AndDSL = AndS.schema({
   ...StringR,
   ...NumberR
 })
-console.log(JSON.stringify(AndD, null, 2))
+console.log(JSON.stringify(AndDSL, null, 2))
 
 /*
 // union
 export const UnionS = union(string, number)
-export const UnionD = UnionS.schema({
+export const UnionDSL = UnionS.schema({
   string: string.schema(StringR),
   number: number.schema(NumberR)
 })
-console.log(JSON.stringify(UnionD, null, 2))
+console.log(JSON.stringify(UnionDSL, null, 2))
 */
 
 // fromArray
 export const FromArrayS = fromArray(string)
-export const FromArrayD = FromArrayS.schema({
+export const FromArrayDSL = FromArrayS.schema({
   ...StringR
 })
-// console.log(JSON.stringify(FromArrayD, null, 2))
+// console.log(JSON.stringify(FromArrayDSL, null, 2))
 
 // array
 export const ArrayS = array(string)
-export const ArrayD = ArrayS.schema({
+export const ArrayDSL = ArrayS.schema({
   ...StringR
 })
-// console.log(JSON.stringify(ArrayD, null, 2))
+// console.log(JSON.stringify(ArrayDSL, null, 2))
 
 // // field
 // export const FieldF = pipe(field('a', string), and(field('b', number)))
@@ -285,10 +284,42 @@ export const ArrayD = ArrayS.schema({
 // toDecoder
 // -------------------------------------------------------------------------------------
 
-export declare const toDecoder: <R, C, I, E, A>(
-  schema: Schema<R, C, I, E, A>
-) => (
-  r: { [K in keyof R]: (dsl: R[K]) => R[K] extends DSL<unknown, infer I, infer E, infer A> ? Decoder<I, E, A> : never }
-) => Decoder<I, E, A>
+import * as poc from './poc'
 
-// export const NullableDecoder = toDecoder(NullableS)
+export declare const toDecoder: <R>(
+  r: { [K in keyof R]: R[K] extends DSL<infer D, infer I, infer E, infer A> ? (dsl: D) => poc.Decoder<I, E, A> : never }
+) => <D, I, E, A>(schema: Schema<R, D, I, E, A>) => poc.Decoder<I, E, A>
+
+export const decoderInterpreter = toDecoder<StringR & NumberR & BooleanR>({
+  StringD: () => poc.string,
+  NumberD: () => poc.number,
+  BooleanD: () => poc.boolean
+})
+
+export const decoder1 = decoderInterpreter(NullableS)
+export const decoder2 = decoderInterpreter(OrS)
+
+// -------------------------------------------------------------------------------------
+// toGuard
+// -------------------------------------------------------------------------------------
+
+import * as G from './Guard'
+
+export declare const toGuard: <R>(
+  r: {
+    [K in keyof R]: R[K] extends DSL<infer D, infer I, any, infer A>
+      ? [A] extends [I]
+        ? (dsl: D) => G.Guard<I, A>
+        : never
+      : never
+  }
+) => <D, I, E, A extends I>(schema: Schema<R, D, I, E, A>) => G.Guard<I, A>
+
+export const guardInterpreter = toGuard<StringR & NumberR & BooleanR>({
+  StringD: () => G.string,
+  NumberD: () => G.number,
+  BooleanD: () => G.boolean
+})
+
+export const guard1 = guardInterpreter(NullableS)
+export const guard2 = guardInterpreter(OrS)
