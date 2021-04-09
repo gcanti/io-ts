@@ -1,6 +1,5 @@
 import * as E from 'fp-ts/lib/Either'
 import { Lazy, Refinement } from 'fp-ts/lib/function'
-import { HKT3 } from 'fp-ts/lib/HKT'
 import { pipe } from 'fp-ts/lib/pipeable'
 import * as RNEA from 'fp-ts/lib/ReadonlyNonEmptyArray'
 
@@ -551,37 +550,6 @@ const myLeafEncoder = (e: DefaultLeafE | NonEmptyStringE) => {
 }
 
 export const treeOutput2 = pipe(DR2.decode({ a: '', b: null }), E.mapLeft(drawWith(myLeafEncoder))) // <= ok
-
-// -------------------------------------------------------------------------------------
-// use case: Schemable
-// -------------------------------------------------------------------------------------
-
-export interface AnyHKT3 extends HKT3<any, any, any, any> {}
-
-export type InputOfHKT3<K3> = K3 extends HKT3<any, infer I, any, any> ? I : never
-export type ErrorOfHKT3<K3> = K3 extends HKT3<any, any, infer E, any> ? E : never
-export type TypeOfHKT3<K3> = K3 extends HKT3<any, any, any, infer A> ? A : never
-
-export interface Schemable<S> {
-  readonly URI: S
-  readonly string: HKT3<S, unknown, LeafE<StringE>, string>
-  readonly nullable: <Or extends AnyHKT3>(
-    or: Or
-  ) => HKT3<S, null | InputOfHKT3<Or>, NullableE<ErrorOfHKT3<Or>>, null | TypeOfHKT3<Or>>
-}
-
-export interface Schema<I, E, A> {
-  <S>(S: Schemable<S>): HKT3<S, I, E, A>
-}
-
-export declare const make: <I, E, A>(schema: Schema<I, E, A>) => Schema<I, E, A>
-
-const schema1 = make((S) => S.nullable(S.string))
-
-export declare const toDecoder: <I, E, A>(schema: Schema<I, E, A>) => Decoder<I, E, A>
-
-// const decoder1: Decoder<unknown, NullableE<LeafE<StringE>>, string | null>
-export const decoder1 = toDecoder(schema1)
 
 // -------------------------------------------------------------------------------------
 // examples
