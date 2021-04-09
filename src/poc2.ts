@@ -36,44 +36,34 @@ export interface NullableE<E> {
   readonly error: E
 }
 
-export interface KeyE<E> {
-  readonly key: string
-  readonly error: E
-}
-
-export interface StructE<E> {
+export interface StructE<K, E> {
   readonly _tag: 'StructE'
-  readonly error: ReadonlyNonEmptyArray<KeyE<E>>
+  readonly errors: ReadonlyNonEmptyArray<readonly [K, E]>
 }
 
-export interface PartialE<E> {
+export interface PartialE<K, E> {
   readonly _tag: 'PartialE'
-  readonly error: ReadonlyNonEmptyArray<KeyE<E>>
+  readonly errors: ReadonlyNonEmptyArray<readonly [K, E]>
 }
 
-export interface IndexE<E> {
-  readonly index: number
-  readonly error: E
-}
-
-export interface TupleE<E> {
+export interface TupleE<I, E> {
   readonly _tag: 'TupleE'
-  readonly error: ReadonlyNonEmptyArray<IndexE<E>>
+  readonly errors: ReadonlyNonEmptyArray<readonly [I, E]>
 }
 
 export interface ArrayE<E> extends ActualE<ReadonlyArray<unknown>> {
   readonly _tag: 'ArrayE'
-  readonly error: ReadonlyNonEmptyArray<IndexE<E>>
+  readonly errors: ReadonlyNonEmptyArray<readonly [number, E]>
 }
 
 export interface RecordE<E> extends ActualE<Readonly<Record<string, unknown>>> {
   readonly _tag: 'RecordE'
-  readonly error: ReadonlyNonEmptyArray<KeyE<E>>
+  readonly errors: ReadonlyNonEmptyArray<readonly [string, E]>
 }
 
-export interface UnionE<E> {
+export interface UnionE<I, E> {
   readonly _tag: 'UnionE'
-  readonly error: ReadonlyNonEmptyArray<IndexE<E>>
+  readonly errors: ReadonlyNonEmptyArray<readonly [I, E]>
 }
 
 export interface RefineE<E> {
@@ -97,22 +87,22 @@ export interface LazyE<E> {
   readonly error: E
 }
 
-export interface SumE<E> {
+export interface SumE<K, E> {
   readonly _tag: 'SumE'
-  readonly error: ReadonlyNonEmptyArray<IndexE<E>>
+  readonly errors: ReadonlyNonEmptyArray<readonly [K, E]>
 }
 
 export interface NullableRE<E> extends NullableE<DecodeError<E>> {}
 export interface RefineRE<E> extends RefineE<DecodeError<E>> {}
 export interface ParseRE<E> extends ParseE<DecodeError<E>> {}
-export interface StructRE<E> extends StructE<DecodeError<E>> {}
-export interface PartialRE<E> extends PartialE<DecodeError<E>> {}
-export interface TupleRE<E> extends TupleE<DecodeError<E>> {}
+export interface StructRE<E> extends StructE<string, DecodeError<E>> {}
+export interface PartialRE<E> extends PartialE<string, DecodeError<E>> {}
+export interface TupleRE<E> extends TupleE<number, DecodeError<E>> {}
 export interface ArrayRE<E> extends ArrayE<DecodeError<E>> {}
 export interface RecordRE<E> extends RecordE<DecodeError<E>> {}
-export interface UnionRE<E> extends UnionE<DecodeError<E>> {}
+export interface UnionRE<E> extends UnionE<number, DecodeError<E>> {}
 export interface IntersectionRE<E> extends IntersectE<DecodeError<E>> {}
-export interface SumRE<E> extends SumE<DecodeError<E>> {}
+export interface SumRE<E> extends SumE<string, DecodeError<E>> {}
 export interface LazyRE<E> extends LazyE<DecodeError<E>> {}
 export type DecodeError<E> =
   | LeafE<E>
@@ -220,7 +210,7 @@ export declare const literal: <A extends ReadonlyNonEmptyArray<Literal>>(...valu
 export interface FromStructD<Properties>
   extends Decoder<
     { [K in keyof Properties]: InputOf<Properties[K]> },
-    StructE<ErrorOf<Properties[keyof Properties]>>,
+    StructE<keyof Properties, ErrorOf<Properties[keyof Properties]>>,
     { [K in keyof Properties]: TypeOf<Properties[K]> }
   > {
   readonly _tag: 'FromStructD'
@@ -233,7 +223,7 @@ export declare const fromStruct: <Properties extends Record<string, AnyD>>(
 export interface FromPartialD<Properties>
   extends Decoder<
     Partial<{ [K in keyof Properties]: InputOf<Properties[K]> }>,
-    PartialE<ErrorOf<Properties[keyof Properties]>>,
+    PartialE<keyof Properties, ErrorOf<Properties[keyof Properties]>>,
     Partial<{ [K in keyof Properties]: TypeOf<Properties[K]> }>
   > {
   readonly _tag: 'FromPartialD'
@@ -259,7 +249,7 @@ export declare const fromRecord: <Codomain extends AnyD>(codomain: Codomain) => 
 export interface FromTupleD<Components>
   extends Decoder<
     { [K in keyof Components]: InputOf<Components[K]> },
-    TupleE<ErrorOf<Components[keyof Components]>>,
+    TupleE<keyof Components, ErrorOf<Components[keyof Components]>>,
     { [K in keyof Components]: TypeOf<Components[K]> }
   > {
   readonly _tag: 'FromTupleD'
@@ -272,7 +262,7 @@ export declare const fromTuple: <Components extends ReadonlyArray<AnyD>>(
 export interface UnionD<Members>
   extends Decoder<
     InputOf<Members[keyof Members]>,
-    UnionE<ErrorOf<Members[keyof Members]>>,
+    UnionE<keyof Members, ErrorOf<Members[keyof Members]>>,
     TypeOf<Members[keyof Members]>
   > {
   readonly _tag: 'UnionD'
@@ -330,7 +320,7 @@ export interface TagE<A extends PropertyKey> {
 export interface FromSumD<T extends string, Members>
   extends Decoder<
     InputOf<Members[keyof Members]>,
-    LeafE<TagE<keyof Members>> | SumE<ErrorOf<Members[keyof Members]>>,
+    LeafE<TagE<keyof Members>> | SumE<keyof Members, ErrorOf<Members[keyof Members]>>,
     TypeOf<Members[keyof Members]>
   > {
   readonly _tag: 'FromSumD'
@@ -345,7 +335,7 @@ export declare const fromSum: <T extends string>(
 export interface StructD<Properties>
   extends Decoder<
     unknown,
-    LeafE<UnknownRecordE> | StructE<ErrorOf<Properties[keyof Properties]>>,
+    LeafE<UnknownRecordE> | StructE<keyof Properties, ErrorOf<Properties[keyof Properties]>>,
     { [K in keyof Properties]: TypeOf<Properties[K]> }
   > {
   readonly _tag: 'StructD'
@@ -356,7 +346,7 @@ export declare const struct: <Properties extends Record<string, AnyUD>>(properti
 export interface PartialD<Properties>
   extends Decoder<
     unknown,
-    LeafE<UnknownRecordE> | PartialE<ErrorOf<Properties[keyof Properties]>>,
+    LeafE<UnknownRecordE> | PartialE<keyof Properties, ErrorOf<Properties[keyof Properties]>>,
     Partial<{ [K in keyof Properties]: TypeOf<Properties[K]> }>
   > {
   readonly _tag: 'PartialD'
@@ -367,7 +357,7 @@ export declare const partial: <Properties extends Record<string, AnyUD>>(propert
 export interface TupleD<Components>
   extends Decoder<
     unknown,
-    LeafE<UnknownArrayE> | TupleE<ErrorOf<Components[keyof Components]>>,
+    LeafE<UnknownArrayE> | TupleE<keyof Components, ErrorOf<Components[keyof Components]>>,
     { [K in keyof Components]: TypeOf<Components[K]> }
   > {
   readonly _tag: 'TupleD'
@@ -393,7 +383,7 @@ export declare const record: <Codomain extends AnyUD>(codomain: Codomain) => Rec
 export interface SumD<T extends string, Members>
   extends Decoder<
     unknown,
-    LeafE<UnknownRecordE> | LeafE<TagE<keyof Members>> | SumE<ErrorOf<Members[keyof Members]>>,
+    LeafE<UnknownRecordE> | LeafE<TagE<keyof Members>> | SumE<keyof Members, ErrorOf<Members[keyof Members]>>,
     TypeOf<Members[keyof Members]>
   > {
   readonly _tag: 'SumD'
@@ -461,9 +451,9 @@ export const result1 = pipe(
         const leafE = de.error
         return `cannot decode ${leafE.actual}, should be a Record<string, unknown>`
       case 'StructE':
-        // nonEmpty: RNEA.ReadonlyNonEmptyArray<KeyE<LeafE<StringE> | LeafE<NumberE>>>
-        const nonEmpty = de.error
-        return nonEmpty.map((e) => `${e.key}: ${e.error}`).join('\n')
+        // const errors: RNEA.ReadonlyNonEmptyArray<readonly ["a" | "b", LeafE<StringE> | LeafE<NumberE>]>
+        const errors = de.errors
+        return errors.map((e) => `${e[0]}: ${e[1]}`).join('\n')
     }
   })
 )
@@ -511,7 +501,7 @@ export const drawWith = <E>(leafEncoder: (e: E) => Tree<string>) => (de: DecodeE
     case 'ArrayE':
       return tree(
         `cannot decode ${de.actual}`,
-        de.error.map((indexE) => tree(`cannot decode index ${indexE.index}`))
+        de.errors.map((e) => tree(`cannot decode index ${e[0]}`))
       )
     // etc...
     default:
@@ -704,7 +694,10 @@ interface Category {
 interface ReadonlyArrayCategoryE extends ArrayE<CategoryE> {}
 type CategoryE = LazyE<
   | LeafE<UnknownRecordE>
-  | StructE<LeafE<StringE> | RefineE<LeafE<NonEmptyStringE>> | LeafE<UnknownArrayE> | ReadonlyArrayCategoryE>
+  | StructE<
+      'name' | 'categories',
+      LeafE<StringE> | RefineE<LeafE<NonEmptyStringE>> | LeafE<UnknownArrayE> | ReadonlyArrayCategoryE
+    >
 >
 // A possible solution is using DecodeError<E>
 // type CategoryE = DecodeError<StringE | NonEmptyStringE | UnknownArrayE | UnknownRecordE>
@@ -766,12 +759,8 @@ export type AllUDE = ErrorOf<typeof AllUD>
 export type AllUDA = TypeOf<typeof AllUD>
 
 // -------------------------------------------------------------------------------------
-// form
+// use case: form
 // -------------------------------------------------------------------------------------
-
-export declare const toFormErrors: <Properties>(struct: {
-  readonly properties: Properties
-}) => (error: StructE<ErrorOf<Properties[keyof Properties]>>) => { [K in keyof Properties]?: ErrorOf<Properties[K]> }
 
 const MyForm = fromStruct({
   name: NonEmptyStringUD,
@@ -781,14 +770,9 @@ const MyForm = fromStruct({
 pipe(
   MyForm.decode({ name: null, age: null }),
   E.mapLeft((e) => {
-    const form = pipe(e, toFormErrors(MyForm))
-    /*
-    const form: {
-        name?: StringE | RefineE<NonEmptyStringE> | undefined;
-        age?: NumberE | undefined;
-    }
-    */
-    console.log(form)
+    // const errors: RNEA.ReadonlyNonEmptyArray<readonly ["name" | "age", LeafE<StringE> | LeafE<NumberE> | RefineE<LeafE<NonEmptyStringE>>]>
+    const errors = e.errors
+    console.log(errors)
     return e
   })
 )
