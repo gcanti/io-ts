@@ -1,6 +1,6 @@
 import * as E from 'fp-ts/lib/Either'
 import { Lazy, Refinement } from 'fp-ts/lib/function'
-import { HKT, Kind, Kind2, URIS, URIS2 } from 'fp-ts/lib/HKT'
+import { HKT3 } from 'fp-ts/lib/HKT'
 import { pipe } from 'fp-ts/lib/pipeable'
 import * as RNEA from 'fp-ts/lib/ReadonlyNonEmptyArray'
 
@@ -133,6 +133,7 @@ export type DecodeError<E> =
 // -------------------------------------------------------------------------------------
 // error utils
 // -------------------------------------------------------------------------------------
+
 export interface ActualE<I> {
   readonly actual: I
 }
@@ -424,6 +425,20 @@ export interface CompositionD<F, S> extends Decoder<InputOf<F>, ErrorOf<F> | Err
 export declare function compose<S extends AnyD>(second: S): <F extends AnyD>(first: F) => CompositionD<F, S>
 
 // -------------------------------------------------------------------------------------
+// instances
+// -------------------------------------------------------------------------------------
+
+export const URI = 'io-ts/Decoder2'
+
+export type URI = typeof URI
+
+declare module 'fp-ts/lib/HKT' {
+  interface URItoKind3<R, E, A> {
+    readonly [URI]: Decoder<R, E, A>
+  }
+}
+
+// -------------------------------------------------------------------------------------
 // use case: mapLeft
 // -------------------------------------------------------------------------------------
 
@@ -541,57 +556,32 @@ export const treeOutput2 = pipe(DR2.decode({ a: '', b: null }), E.mapLeft(drawWi
 // use case: Schemable
 // -------------------------------------------------------------------------------------
 
+export interface AnyHKT3 extends HKT3<any, any, any, any> {}
+
+export type InputOfHKT3<K3> = K3 extends HKT3<any, infer I, any, any> ? I : never
+export type ErrorOfHKT3<K3> = K3 extends HKT3<any, any, infer E, any> ? E : never
+export type TypeOfHKT3<K3> = K3 extends HKT3<any, any, any, infer A> ? A : never
+
 export interface Schemable<S> {
   readonly URI: S
-  readonly string: HKT<S, string>
-  readonly number: HKT<S, number>
-  readonly boolean: HKT<S, boolean>
-  readonly nullable: <A>(or: HKT<S, A>) => HKT<S, null | A>
+  readonly string: HKT3<S, unknown, LeafE<StringE>, string>
+  readonly nullable: <Or extends AnyHKT3>(
+    or: Or
+  ) => HKT3<S, null | InputOfHKT3<Or>, NullableE<ErrorOfHKT3<Or>>, null | TypeOfHKT3<Or>>
 }
 
-export interface Schemable1<S extends URIS> {
-  readonly URI: S
-  readonly string: Kind<S, string>
-  readonly number: Kind<S, number>
-  readonly boolean: Kind<S, boolean>
-  readonly nullable: <A>(or: Kind<S, A>) => Kind<S, null | A>
+export interface Schema<I, E, A> {
+  <S>(S: Schemable<S>): HKT3<S, I, E, A>
 }
 
-export interface Schemable2C<S extends URIS2, E> {
-  readonly URI: S
-  readonly string: Kind2<S, E, string>
-  readonly number: Kind2<S, E, number>
-  readonly boolean: Kind2<S, E, boolean>
-  readonly nullable: <A>(or: Kind2<S, E, A>) => Kind2<S, E, null | A>
-}
+export declare const make: <I, E, A>(schema: Schema<I, E, A>) => Schema<I, E, A>
 
-export const URI = 'io-ts/Decoder2'
+const schema1 = make((S) => S.nullable(S.string))
 
-export type URI = typeof URI
+export declare const toDecoder: <I, E, A>(schema: Schema<I, E, A>) => Decoder<I, E, A>
 
-declare module 'fp-ts/lib/HKT' {
-  interface URItoKind2<E, A> {
-    readonly [URI]: Decoder<unknown, E, A>
-  }
-}
-
-export interface Schema<A> {
-  <S>(S: Schemable<S>): HKT<S, A>
-}
-
-export declare const make: <A>(schema: Schema<A>) => Schema<A>
-
-export declare function interpreter<S extends URIS2, E>(S: Schemable2C<S, E>): <A>(schema: Schema<A>) => Kind2<S, E, A>
-export declare function interpreter<S extends URIS>(S: Schemable1<S>): <A>(schema: Schema<A>) => Kind<S, A>
-export declare function interpreter<S>(S: Schemable<S>): <A>(schema: Schema<A>) => HKT<S, A>
-
-export declare const getSchemable: <E>() => Schemable2C<URI, DecodeError<E>>
-
-const schemaS = make((S) => S.nullable(S.string))
-const toDecoder = interpreter(getSchemable<StringE | NumberE | BooleanE>())
-
-// const schemaD: Decoder<unknown, DecodeError<StringE | NumberE | BooleanE>, string | null>
-export const schemaD = toDecoder(schemaS)
+// const decoder1: Decoder<unknown, NullableE<LeafE<StringE>>, string | null>
+export const decoder1 = toDecoder(schema1)
 
 // -------------------------------------------------------------------------------------
 // examples
