@@ -470,29 +470,28 @@ export type RDA = TypeOf<typeof RD>
 export const RUD = record(number)
 
 // refine
-interface EmailBrand {
-  readonly Email: unique symbol
+interface NonEmptyStringBrand {
+  readonly NonEmptyString: unique symbol
 }
-export type Email = string & EmailBrand
-export interface EmailE {
-  readonly _tag: 'EmailE'
-  readonly toTree: () => string
+export type NonEmptyString = string & NonEmptyStringBrand
+export interface NonEmptyStringE {
+  readonly _tag: 'NonEmptyStringE'
 }
-declare const emailE: EmailE
-export const EmailD = pipe(
+declare const NonEmptyStringE: NonEmptyStringE
+export const NonEmptyStringD = pipe(
   id<string>(),
   refine(
-    (s): s is Email => s.length > 0,
-    () => leafE(emailE)
+    (s): s is NonEmptyString => s.length > 0,
+    () => leafE(NonEmptyStringE)
   )
 )
-export type EmailDI = InputOf<typeof EmailD>
-export type EmailDE = ErrorOf<typeof EmailD>
-export type EmailDA = TypeOf<typeof EmailD>
+export type NonEmptyStringDI = InputOf<typeof NonEmptyStringD>
+export type NonEmptyStringDE = ErrorOf<typeof NonEmptyStringD>
+export type NonEmptyStringDA = TypeOf<typeof NonEmptyStringD>
 
-const EmailUD = pipe(string, compose(EmailD))
-export type EmailUDE = ErrorOf<typeof EmailUD>
-export type EmailUDA = TypeOf<typeof EmailUD>
+const NonEmptyStringUD = pipe(string, compose(NonEmptyStringD))
+export type NonEmptyStringUDE = ErrorOf<typeof NonEmptyStringUD>
+export type NonEmptyStringUDA = TypeOf<typeof NonEmptyStringUD>
 
 export interface IntBrand {
   readonly Int: unique symbol
@@ -512,7 +511,7 @@ export const IntD = pipe(
 const IntUD = pipe(number, compose(IntD))
 
 // union
-export const UD = union(EmailD, IntD)
+export const UD = union(NonEmptyStringD, IntD)
 export type UDI = InputOf<typeof UD>
 export type UDE = ErrorOf<typeof UD>
 export type UDA = TypeOf<typeof UD>
@@ -522,7 +521,7 @@ export type UUDE = ErrorOf<typeof UUD>
 export type UUDA = TypeOf<typeof UUD>
 
 // nullable
-export const ND = nullable(EmailD)
+export const ND = nullable(NonEmptyStringD)
 export type NDI = InputOf<typeof ND>
 export type NDE = ErrorOf<typeof ND>
 export type NDA = TypeOf<typeof ND>
@@ -555,17 +554,22 @@ export const IUD = pipe(struct({ a: string }), intersect(struct({ b: number })))
 export type IUDE = ErrorOf<typeof IUD>
 export type IUDA = TypeOf<typeof IUD>
 
-// lazy (TODO: getting the error type is difficult)
+// lazy
 interface Category {
   name: string
   categories: ReadonlyArray<Category>
 }
+// Note: getting the error type is quite difficult.
+interface ReadonlyArrayCategoryE extends ArrayE<CategoryE> {}
 type CategoryE = LazyE<
-  LeafE<UnknownRecordE> | StructE<LeafE<StringE> | RefineE<LeafE<EmailE>> | LeafE<UnknownArrayE> | ArrayE<CategoryE>>
+  | LeafE<UnknownRecordE>
+  | StructE<LeafE<StringE> | RefineE<LeafE<NonEmptyStringE>> | LeafE<UnknownArrayE> | ReadonlyArrayCategoryE>
 >
+// A possible solution is using DecodeError<E>
+// type CategoryE = DecodeError<StringE | NonEmptyStringE | UnknownArrayE | UnknownRecordE>
 export const LaUD: Decoder<unknown, CategoryE, Category> = lazy('Category', () =>
   struct({
-    name: EmailUD,
+    name: NonEmptyStringUD,
     categories: array(LaUD)
   })
 )
@@ -597,7 +601,7 @@ const AllD = fromStruct({
   d: RD,
   e: UD,
   f: ND,
-  g: EmailD,
+  g: NonEmptyStringD,
   h: PD,
   i: ID
 })
@@ -613,7 +617,7 @@ const AllUD = struct({
   e: RUD,
   f: UUD,
   g: NUD,
-  h: EmailUD,
+  h: NonEmptyStringUD,
   i: PUD,
   l: IUD
 })
@@ -649,7 +653,7 @@ export const result1 = pipe(
 
 const MLD = struct({
   a: IntUD,
-  b: EmailUD
+  b: NonEmptyStringUD
 })
 export type MLDE = ErrorOf<typeof MLD>
 
@@ -711,7 +715,7 @@ export const drawLeafs = (e: LeafsE): string => e._tag
 export const draw = drawWith(drawLeafs)
 
 const DR = struct({
-  a: EmailUD,
+  a: NonEmptyStringUD,
   b: number,
   c: boolean
 })
@@ -735,7 +739,7 @@ export declare const toFormErrors: <Properties>(struct: {
 }) => (error: StructE<ErrorOf<Properties[keyof Properties]>>) => { [K in keyof Properties]?: ErrorOf<Properties[K]> }
 
 const MyForm = fromStruct({
-  name: EmailUD,
+  name: NonEmptyStringUD,
   age: number
 })
 
@@ -745,7 +749,7 @@ pipe(
     const form = pipe(e, toFormErrors(MyForm))
     /*
     const form: {
-        name?: StringE | RefineE<EmailE> | undefined;
+        name?: StringE | RefineE<NonEmptyStringE> | undefined;
         age?: NumberE | undefined;
     }
     */
