@@ -6,10 +6,18 @@ import * as RNEA from 'fp-ts/lib/ReadonlyNonEmptyArray'
 import ReadonlyNonEmptyArray = RNEA.ReadonlyNonEmptyArray
 
 // -------------------------------------------------------------------------------------
-// model
+// Result
 // -------------------------------------------------------------------------------------
 
 export type Result<E, A> = E.Either<E, A>
+
+// Bifunctor
+const _map: <A, B>(f: (a: A) => B) => <E>(fa: Result<E, A>) => Result<E, B> = E.map
+const _mapLeft: <E, G>(f: (e: E) => G) => <A>(fa: Result<E, A>) => Result<G, A> = E.mapLeft
+
+// -------------------------------------------------------------------------------------
+// model
+// -------------------------------------------------------------------------------------
 
 export interface Decoder<I, E, A> {
   readonly decode: (i: I) => Result<E, A>
@@ -34,7 +42,7 @@ export interface MapLeftD<D, G> extends Decoder<InputOf<D>, G, TypeOf<D>> {
 
 export const mapLeft = <D extends AnyD, G>(f: (e: ErrorOf<D>) => G) => (decoder: D): MapLeftD<D, G> => ({
   _tag: 'MapLeftD',
-  decode: flow(decoder.decode, E.mapLeft(f)),
+  decode: flow(decoder.decode, _mapLeft(f)),
   decoder,
   mapLeft: f
 })
@@ -47,7 +55,7 @@ export interface MapD<D, B> extends Decoder<InputOf<D>, ErrorOf<D>, B> {
 
 export const map = <D extends AnyD, B>(f: (a: TypeOf<D>) => B) => (decoder: D): MapD<D, B> => ({
   _tag: 'MapD',
-  decode: flow(decoder.decode, E.map(f)),
+  decode: flow(decoder.decode, _map(f)),
   decoder,
   map: f
 })
