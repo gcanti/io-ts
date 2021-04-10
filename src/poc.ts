@@ -1,31 +1,17 @@
 import * as E from 'fp-ts/lib/Either'
 import { flow, Lazy, Refinement } from 'fp-ts/lib/function'
 import { pipe } from 'fp-ts/lib/pipeable'
-import * as RNEA from 'fp-ts/lib/ReadonlyNonEmptyArray'
 import * as RA from 'fp-ts/lib/ReadonlyArray'
+import * as RNEA from 'fp-ts/lib/ReadonlyNonEmptyArray'
 
+import Either = E.Either
 import ReadonlyNonEmptyArray = RNEA.ReadonlyNonEmptyArray
-
-// -------------------------------------------------------------------------------------
-// Result
-// -------------------------------------------------------------------------------------
-
-export type Result<E, A> = E.Either<E, A>
-
-// Bifunctor
-const _map: <A, B>(f: (a: A) => B) => <E>(fa: Result<E, A>) => Result<E, B> = E.map
-const _mapLeft: <E, G>(f: (e: E) => G) => <A>(fa: Result<E, A>) => Result<G, A> = E.mapLeft
-
-// constructors
-const _right: <E = never, A = never>(a: A) => Result<E, A> = E.right
-const _left: <E = never, A = never>(e: E) => Result<E, A> = E.left
-
-// refinements
-const _isLeft: <E, A>(ma: Result<E, A>) => ma is E.Left<E> = E.isLeft
 
 // -------------------------------------------------------------------------------------
 // model
 // -------------------------------------------------------------------------------------
+
+export type Result<E, A> = Either<E, A>
 
 export interface Decoder<I, E, A> {
   readonly decode: (i: I) => Result<E, A>
@@ -39,18 +25,30 @@ export type ErrorOf<D> = D extends Decoder<any, infer E, any> ? E : never
 export type TypeOf<D> = D extends Decoder<any, any, infer A> ? A : never
 
 // -------------------------------------------------------------------------------------
+// constructors
+// -------------------------------------------------------------------------------------
+
+export const success: <E = never, A = never>(a: A) => Result<E, A> = E.right
+
+export const failure: <E = never, A = never>(e: E) => Result<E, A> = E.left
+
+// -------------------------------------------------------------------------------------
 // pipeables
 // -------------------------------------------------------------------------------------
 
-export interface MapLeftD<D, G> extends Decoder<InputOf<D>, G, TypeOf<D>> {
+export interface MapLeftD<D, E> extends Decoder<InputOf<D>, E, TypeOf<D>> {
   readonly _tag: 'MapLeftD'
   readonly decoder: D
-  readonly mapLeft: (e: ErrorOf<D>) => G
+  readonly mapLeft: (de: ErrorOf<D>, i: InputOf<D>) => E
 }
 
-export const mapLeft = <D extends AnyD, G>(f: (e: ErrorOf<D>) => G) => (decoder: D): MapLeftD<D, G> => ({
+export const mapLeft = <D extends AnyD, E>(f: (e: ErrorOf<D>, i: InputOf<D>) => E) => (decoder: D): MapLeftD<D, E> => ({
   _tag: 'MapLeftD',
-  decode: flow(decoder.decode, _mapLeft(f)),
+  decode: (i) =>
+    pipe(
+      decoder.decode(i),
+      E.mapLeft((de) => f(de, i))
+    ),
   decoder,
   mapLeft: f
 })
@@ -63,7 +61,7 @@ export interface MapD<D, B> extends Decoder<InputOf<D>, ErrorOf<D>, B> {
 
 export const map = <D extends AnyD, B>(f: (a: TypeOf<D>) => B) => (decoder: D): MapD<D, B> => ({
   _tag: 'MapD',
-  decode: flow(decoder.decode, _map(f)),
+  decode: flow(decoder.decode, E.map(f)),
   decoder,
   map: f
 })
@@ -180,6 +178,13 @@ export interface SumE<E> extends CompoundE<E> {
   readonly _tag: 'SumE'
 }
 
+export interface MessageE {
+  readonly _tag: 'MessageE'
+  readonly message: string
+}
+const messageE = (message: string): MessageE => ({ _tag: 'MessageE', message })
+export const message: (message: string) => LeafE<MessageE> = flow(messageE, leafE)
+
 // recursive helpers to please ts@3.5
 export interface NullableRE<E> extends NullableE<DecodeError<E>> {}
 export interface RefineRE<E> extends RefineE<DecodeError<E>> {}
@@ -222,7 +227,7 @@ export type DecodeError<E> =
 // error utils
 // -------------------------------------------------------------------------------------
 
-export type DefaultLeafE = StringE | NumberE | BooleanE | UnknownRecordE | UnknownArrayE | LiteralE<Literal>
+export type BuiltinE = StringE | NumberE | BooleanE | UnknownRecordE | UnknownArrayE | LiteralE<Literal> | MessageE
 
 // -------------------------------------------------------------------------------------
 // primitives
@@ -236,7 +241,7 @@ export interface stringD extends Decoder<unknown, LeafE<StringE>, string> {
 }
 export const string: stringD = {
   _tag: 'stringD',
-  decode: (u) => (typeof u === 'string' ? _right(u) : _left(leafE({ _tag: 'StringE', actual: u })))
+  decode: (u) => (typeof u === 'string' ? success(u) : failure(leafE({ _tag: 'StringE', actual: u })))
 }
 
 export interface NumberE extends ActualE<unknown> {
@@ -247,7 +252,7 @@ export interface numberD extends Decoder<unknown, LeafE<NumberE>, number> {
 }
 export const number: numberD = {
   _tag: 'numberD',
-  decode: (u) => (typeof u === 'number' ? _right(u) : _left(leafE({ _tag: 'NumberE', actual: u })))
+  decode: (u) => (typeof u === 'number' ? success(u) : failure(leafE({ _tag: 'NumberE', actual: u })))
 }
 
 export interface BooleanE extends ActualE<unknown> {
@@ -274,7 +279,7 @@ export interface UnknownArrayD extends Decoder<unknown, LeafE<UnknownArrayE>, Ar
 }
 export const UnknownArray: UnknownArrayD = {
   _tag: 'UnknownArrayD',
-  decode: (u) => (Array.isArray(u) ? _right(u) : _left(leafE(unknownArrayE(u))))
+  decode: (u) => (Array.isArray(u) ? success(u) : failure(leafE(unknownArrayE(u))))
 }
 
 export interface UnknownRecordE extends ActualE<unknown> {
@@ -348,11 +353,11 @@ export const fromArray = <Item extends AnyD>(item: Item): FromArrayD<Item> => ({
     const as: Array<TypeOf<typeof item>> = []
     for (let index = 0; index < us.length; index++) {
       const e = item.decode(us[index])
-      if (_isLeft(e)) {
+      if (E.isLeft(e)) {
         errors.push(indexE(index, e.left))
       }
     }
-    return RA.isNonEmpty(errors) ? _left(arrayE(us, errors)) : _right(as)
+    return RA.isNonEmpty(errors) ? failure(arrayE(us, errors)) : success(as)
   }
 })
 
@@ -368,7 +373,7 @@ export const array = <Item extends AnyUD>(item: Item): ArrayD<Item> => {
     item,
     decode: (u) => {
       const e = UnknownArray.decode(u)
-      return _isLeft(e) ? e : fromArrayItem.decode(e.right as any)
+      return E.isLeft(e) ? e : fromArrayItem.decode(e.right as any)
     }
   }
 }
@@ -403,11 +408,11 @@ export const fromTuple = <Components extends ReadonlyArray<AnyD>>(
     const as: Array<unknown> = []
     for (let index = 0; index < components.length; index++) {
       const e = components[index].decode(us[index])
-      if (_isLeft(e)) {
+      if (E.isLeft(e)) {
         errors.push(componentE(index, e.left))
       }
     }
-    return RA.isNonEmpty(errors) ? _left(tupleE(errors)) : _right(as as any)
+    return RA.isNonEmpty(errors) ? failure(tupleE(errors)) : success(as as any)
   }
 })
 
@@ -428,7 +433,7 @@ export const tuple = <Components extends ReadonlyArray<AnyUD>>(...components: Co
     components,
     decode: (u) => {
       const e = UnknownArray.decode(u)
-      return _isLeft(e) ? e : fromTupleComponents.decode(e.right as any)
+      return E.isLeft(e) ? e : fromTupleComponents.decode(e.right as any)
     }
   }
 }
@@ -454,20 +459,30 @@ export interface RefineD<From, E, B extends TypeOf<From>>
   extends Decoder<InputOf<From>, ErrorOf<From> | RefineE<E>, B> {
   readonly _tag: 'RefineD'
   readonly from: From
-  readonly refinement: Refinement<TypeOf<From>, B>
-  readonly error: (from: TypeOf<From>) => E
+  readonly parser: (a: TypeOf<From>) => Result<E, B>
 }
-export declare const refine: <From extends AnyD, B extends TypeOf<From>, E>(
+export const refine = <From extends AnyD, B extends TypeOf<From>, E>(parser: (a: TypeOf<From>) => Result<E, B>) => (
+  from: From
+): RefineD<From, E, B> => ({
+  _tag: 'RefineD',
+  from,
+  parser,
+  decode: (i) => {
+    const de = from.decode(i)
+    return E.isLeft(de) ? de : parser(de.right)
+  }
+})
+export const fromRefinement = <From extends AnyD, B extends TypeOf<From>, E>(
   refinement: Refinement<TypeOf<From>, B>,
   error: (from: TypeOf<From>) => E
-) => (from: From) => RefineD<From, E, B>
+): ((from: From) => RefineD<From, E, B>) => refine(E.fromPredicate(refinement, error))
 
 export interface ParseD<From, E, B> extends Decoder<InputOf<From>, ErrorOf<From> | ParseE<E>, B> {
   readonly _tag: 'ParseD'
   readonly from: From
   readonly parser: (a: TypeOf<From>) => Result<E, B>
 }
-export declare const parse: <From extends AnyD, B, E>(
+export declare const parse: <From extends AnyD, E, B>(
   parser: (a: TypeOf<From>) => Result<E, B>
 ) => (from: From) => ParseD<From, E, B>
 
@@ -591,7 +606,7 @@ declare module 'fp-ts/lib/HKT' {
 }
 
 // // -------------------------------------------------------------------------------------
-// // use case: mapLeft
+// // use case: mapLeft decode error
 // // -------------------------------------------------------------------------------------
 
 // export const MapLeftExample = struct({
@@ -630,26 +645,6 @@ declare module 'fp-ts/lib/HKT' {
 //   })
 // )
 
-// // -------------------------------------------------------------------------------------
-// // use case: custom leaf error
-// // -------------------------------------------------------------------------------------
-
-// interface NonEmptyStringBrand {
-//   readonly NonEmptyString: unique symbol
-// }
-// export type NonEmptyString = string & NonEmptyStringBrand
-// export interface NonEmptyStringE extends ActualE<string> {
-//   readonly _tag: 'NonEmptyStringE'
-// }
-// declare const nonEmptyStringE: (actual: string) => NonEmptyStringE
-// export const NonEmptyString = pipe(
-//   id<string>(),
-//   refine(
-//     (s): s is NonEmptyString => s.length > 0,
-//     (actual) => leafE(nonEmptyStringE(actual))
-//   )
-// )
-
 // -------------------------------------------------------------------------------------
 // use case: handling a generic error, for example encoding to a Tree<string>
 // -------------------------------------------------------------------------------------
@@ -666,28 +661,31 @@ const tree = <A>(value: A, forest: ReadonlyArray<Tree<A>> = empty): Tree<A> => (
   forest
 })
 
-export const toTreeWith = <E>(leafEncoder: (e: E) => Tree<string>): ((de: DecodeError<E>) => Tree<string>) => {
+export const toTreeWith = <E>(toTree: (e: E) => Tree<string>): ((de: DecodeError<E>) => Tree<string>) => {
   const go = (de: DecodeError<E>): Tree<string> => {
     switch (de._tag) {
       case 'LeafE':
-        return leafEncoder(de.error)
+        return toTree(de.error)
       case 'ComponentE':
         return tree(`required component ${de.index}`, [go(de.error)])
       case 'IndexE':
         return tree(`optional index ${de.index}`, [go(de.error)])
       case 'ArrayE':
         return tree(`cannot decode to array, ${de.errors.length} error(s) found`, de.errors.map(go))
-      // etc...
       case 'TupleE':
         return tree(`cannot decode to tuple, ${de.errors.length} error(s) found`, de.errors.map(go))
       default:
+        // etc...
         return tree('TODO')
     }
   }
   return go
 }
 
-export const defaultLeafEToTree = (de: DefaultLeafE): Tree<string> => {
+export const toTree = (de: BuiltinE): Tree<string> => {
+  if (de._tag === 'MessageE') {
+    return tree(de.message)
+  }
   const actual = JSON.stringify(de.actual)
   switch (de._tag) {
     case 'StringE':
@@ -707,9 +705,7 @@ export const defaultLeafEToTree = (de: DefaultLeafE): Tree<string> => {
   }
 }
 
-export const defaultToTree = toTreeWith(defaultLeafEToTree)
-
-export const drawTree = (tree: Tree<string>): string => tree.value + drawForest('\n', tree.forest)
+const drawTree = (tree: Tree<string>): string => tree.value + drawForest('\n', tree.forest)
 
 const drawForest = (indentation: string, forest: ReadonlyArray<Tree<string>>): string => {
   let r = ''
@@ -723,6 +719,13 @@ const drawForest = (indentation: string, forest: ReadonlyArray<Tree<string>>): s
   }
   return r
 }
+
+export const draw = E.mapLeft(flow(toTreeWith(toTree), drawTree))
+
+export const print: <A>(ma: Result<string, A>) => string = E.fold(
+  (e) => e,
+  (a) => JSON.stringify(a, null, 2)
+)
 
 // const DR1 = fromStruct({
 //   a: string,
@@ -840,15 +843,15 @@ const drawForest = (indentation: string, forest: ReadonlyArray<Tree<string>>): s
 //   readonly Int: unique symbol
 // }
 // export type Int = number & IntBrand
-// export interface IntE {
+// export interface IntE extends ActualE<number> {
 //   readonly _tag: 'IntE'
 // }
-// export declare const intE: IntE
+// export const intE = (actual: number): IntE => ({ _tag: 'IntE', actual })
 // export const IntD = pipe(
 //   id<number>(),
 //   refine(
 //     (n): n is Int => Number.isInteger(n),
-//     () => leafE(intE)
+//     (n) => leafE(intE(n))
 //   )
 // )
 // export const IntUD = pipe(number, compose(IntD))
@@ -1039,16 +1042,96 @@ const drawForest = (indentation: string, forest: ReadonlyArray<Tree<string>>): s
 // )
 
 // -------------------------------------------------------------------------------------
-// tests
+// use case: old decoder, custom error message
 // -------------------------------------------------------------------------------------
 
-console.log(
-  pipe(
-    tuple(string, number).decode([1]),
-    _mapLeft((de) => drawTree(defaultToTree(de))),
-    E.fold(
-      (e) => e,
-      () => 'no errors'
-    )
+export const customStringD = pipe(
+  string,
+  mapLeft(() => message(`please insert a string`))
+)
+
+// pipe(customStringD.decode(null), draw, print, console.log)
+
+// -------------------------------------------------------------------------------------
+// use case: new decoder, custom leaf error
+// -------------------------------------------------------------------------------------
+
+interface NonEmptyStringBrand {
+  readonly NonEmptyString: unique symbol
+}
+
+export type NonEmptyString = string & NonEmptyStringBrand
+
+export interface NonEmptyStringE extends ActualE<string> {
+  readonly _tag: 'NonEmptyStringE'
+}
+
+const nonEmptyStringE = (actual: string): NonEmptyStringE => ({ _tag: 'NonEmptyStringE', actual })
+
+export const NonEmptyString = pipe(
+  id<string>(),
+  fromRefinement(
+    (s): s is NonEmptyString => s.length > 0,
+    (actual) => leafE(nonEmptyStringE(actual))
   )
 )
+
+// -------------------------------------------------------------------------------------
+// use case: new decoder, custom error message
+// -------------------------------------------------------------------------------------
+
+export interface PositiveBrand {
+  readonly Positive: unique symbol
+}
+
+export type Positive = number & PositiveBrand
+
+const Positive = pipe(
+  number,
+  fromRefinement(
+    (n): n is Positive => n > 0,
+    (n) => message(`cannot decode ${n}, expected a positive number`)
+  )
+)
+
+// pipe(Positive.decode(-1), draw, print, console.log)
+
+// -------------------------------------------------------------------------------------
+// use case: new decoder, multiple custom messages #487
+// -------------------------------------------------------------------------------------
+
+export interface UsernameBrand {
+  readonly Username: unique symbol
+}
+
+export type Username = string & UsernameBrand
+
+const USERNAME_REGEX = /(a|b)*d/
+
+export const Username = pipe(
+  string,
+  refine((s) =>
+    s.length < 2
+      ? failure(message('too short'))
+      : s.length > 4
+      ? failure(message('too long'))
+      : USERNAME_REGEX.test(s)
+      ? failure(message('bad characters'))
+      : success(s as Username)
+  )
+)
+
+pipe(
+  fromTuple(Username, Username, Username, Username, Username).decode([null, 'a', 'bbbbb', 'abd', 'ok']),
+  draw,
+  print,
+  console.log
+)
+
+// -------------------------------------------------------------------------------------
+// use case: rename a prop
+// -------------------------------------------------------------------------------------
+
+// -------------------------------------------------------------------------------------
+// tests
+// -------------------------------------------------------------------------------------
