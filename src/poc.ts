@@ -85,8 +85,8 @@ export interface NullableE<E> extends SingleE<E> {
   readonly _tag: 'NullableE'
 }
 
-export interface KeyE<K, E> extends SingleE<E> {
-  readonly _tag: 'KeyE'
+export interface RequiredKeyE<K, E> extends SingleE<E> {
+  readonly _tag: 'RequiredKeyE'
   readonly key: K
 }
 
@@ -94,12 +94,21 @@ export interface StructE<E> extends CompoundE<E> {
   readonly _tag: 'StructE'
 }
 
+export interface OptionalKeyE<K, E> extends SingleE<E> {
+  readonly _tag: 'OptionalKeyE'
+  readonly key: K
+}
+
 export interface PartialE<E> extends CompoundE<E> {
   readonly _tag: 'PartialE'
 }
 
-export interface IndexE<I, E> extends SingleE<E> {
-  readonly _tag: 'IndexE'
+export interface RecordE<E> extends ActualE<Readonly<Record<string, unknown>>>, CompoundE<E> {
+  readonly _tag: 'RecordE'
+}
+
+export interface RequiredIndexE<I, E> extends SingleE<E> {
+  readonly _tag: 'RequiredIndexE'
   readonly index: I
 }
 
@@ -107,12 +116,13 @@ export interface TupleE<E> extends CompoundE<E> {
   readonly _tag: 'TupleE'
 }
 
-export interface ArrayE<E> extends ActualE<ReadonlyArray<unknown>>, CompoundE<E> {
-  readonly _tag: 'ArrayE'
+export interface OptionalIndexE<I, E> extends SingleE<E> {
+  readonly _tag: 'OptionalIndexE'
+  readonly index: I
 }
 
-export interface RecordE<E> extends ActualE<Readonly<Record<string, unknown>>>, CompoundE<E> {
-  readonly _tag: 'RecordE'
+export interface ArrayE<E> extends ActualE<ReadonlyArray<unknown>>, CompoundE<E> {
+  readonly _tag: 'ArrayE'
 }
 
 export interface UnionE<E> extends CompoundE<E> {
@@ -150,10 +160,12 @@ export interface NullableRE<E> extends NullableE<DecodeError<E>> {}
 export interface RefineRE<E> extends RefineE<DecodeError<E>> {}
 export interface ParseRE<E> extends ParseE<DecodeError<E>> {}
 export interface StructRE<E> extends StructE<DecodeError<E>> {}
-export interface KeyRE<E> extends KeyE<string, DecodeError<E>> {}
+export interface RequiredKeyRE<E> extends RequiredKeyE<string, DecodeError<E>> {}
+export interface OptionalKeyRE<E> extends OptionalKeyE<string, DecodeError<E>> {}
 export interface PartialRE<E> extends PartialE<DecodeError<E>> {}
 export interface TupleRE<E> extends TupleE<DecodeError<E>> {}
-export interface IndexRE<E> extends IndexE<number, DecodeError<E>> {}
+export interface RequiredIndexRE<E> extends RequiredIndexE<number, DecodeError<E>> {}
+export interface OptionalIndexRE<E> extends OptionalIndexE<number, DecodeError<E>> {}
 export interface ArrayRE<E> extends ArrayE<DecodeError<E>> {}
 export interface RecordRE<E> extends RecordE<DecodeError<E>> {}
 export interface UnionRE<E> extends UnionE<DecodeError<E>> {}
@@ -167,10 +179,12 @@ export type DecodeError<E> =
   | RefineRE<E>
   | ParseRE<E>
   | StructRE<E>
-  | KeyRE<E>
+  | RequiredKeyRE<E>
+  | OptionalKeyRE<E>
   | PartialRE<E>
   | TupleRE<E>
-  | IndexRE<E>
+  | RequiredIndexRE<E>
+  | OptionalIndexRE<E>
   | ArrayRE<E>
   | RecordRE<E>
   | UnionRE<E>
@@ -266,7 +280,7 @@ export declare const literal: <A extends ReadonlyNonEmptyArray<Literal>>(...valu
 export interface FromStructD<Properties>
   extends Decoder<
     { [K in keyof Properties]: InputOf<Properties[K]> },
-    StructE<{ readonly [K in keyof Properties]: KeyE<K, ErrorOf<Properties[K]>> }[keyof Properties]>,
+    StructE<{ readonly [K in keyof Properties]: RequiredKeyE<K, ErrorOf<Properties[K]>> }[keyof Properties]>,
     { [K in keyof Properties]: TypeOf<Properties[K]> }
   > {
   readonly _tag: 'FromStructD'
@@ -279,7 +293,7 @@ export declare const fromStruct: <Properties extends Record<string, AnyD>>(
 export interface FromPartialD<Properties>
   extends Decoder<
     Partial<{ [K in keyof Properties]: InputOf<Properties[K]> }>,
-    PartialE<{ readonly [K in keyof Properties]: KeyE<K, ErrorOf<Properties[K]>> }[keyof Properties]>,
+    PartialE<{ readonly [K in keyof Properties]: OptionalKeyE<K, ErrorOf<Properties[K]>> }[keyof Properties]>,
     Partial<{ [K in keyof Properties]: TypeOf<Properties[K]> }>
   > {
   readonly _tag: 'FromPartialD'
@@ -290,7 +304,7 @@ export declare const fromPartial: <Properties extends Record<string, AnyD>>(
 ) => FromPartialD<Properties>
 
 export interface FromArrayD<Item>
-  extends Decoder<Array<InputOf<Item>>, ArrayE<IndexE<number, ErrorOf<Item>>>, Array<TypeOf<Item>>> {
+  extends Decoder<Array<InputOf<Item>>, ArrayE<RequiredIndexE<number, ErrorOf<Item>>>, Array<TypeOf<Item>>> {
   readonly _tag: 'FromArrayD'
   readonly item: Item
 }
@@ -299,7 +313,7 @@ export declare const fromArray: <Item extends AnyD>(item: Item) => FromArrayD<It
 export interface FromRecordD<Codomain>
   extends Decoder<
     Record<string, InputOf<Codomain>>,
-    RecordE<KeyE<string, ErrorOf<Codomain>>>,
+    RecordE<OptionalKeyE<string, ErrorOf<Codomain>>>,
     Record<string, TypeOf<Codomain>>
   > {
   readonly _tag: 'FromRecordD'
@@ -310,7 +324,7 @@ export declare const fromRecord: <Codomain extends AnyD>(codomain: Codomain) => 
 export interface FromTupleD<Components extends ReadonlyArray<AnyD>>
   extends Decoder<
     { [K in keyof Components]: InputOf<Components[K]> },
-    TupleE<{ [K in keyof Components]: IndexE<K, ErrorOf<Components[K]>> }[number]>,
+    TupleE<{ [K in keyof Components]: RequiredIndexE<K, ErrorOf<Components[K]>> }[number]>,
     { [K in keyof Components]: TypeOf<Components[K]> }
   > {
   readonly _tag: 'FromTupleD'
@@ -401,7 +415,7 @@ export interface StructD<Properties>
   extends Decoder<
     unknown,
     | LeafE<UnknownRecordE>
-    | StructE<{ readonly [K in keyof Properties]: KeyE<K, ErrorOf<Properties[K]>> }[keyof Properties]>,
+    | StructE<{ readonly [K in keyof Properties]: RequiredKeyE<K, ErrorOf<Properties[K]>> }[keyof Properties]>,
     { [K in keyof Properties]: TypeOf<Properties[K]> }
   > {
   readonly _tag: 'StructD'
@@ -413,7 +427,7 @@ export interface PartialD<Properties>
   extends Decoder<
     unknown,
     | LeafE<UnknownRecordE>
-    | PartialE<{ readonly [K in keyof Properties]: KeyE<K, ErrorOf<Properties[K]>> }[keyof Properties]>,
+    | PartialE<{ readonly [K in keyof Properties]: OptionalKeyE<K, ErrorOf<Properties[K]>> }[keyof Properties]>,
     Partial<{ [K in keyof Properties]: TypeOf<Properties[K]> }>
   > {
   readonly _tag: 'PartialD'
@@ -424,7 +438,7 @@ export declare const partial: <Properties extends Record<string, AnyUD>>(propert
 export interface TupleD<Components extends ReadonlyArray<AnyUD>>
   extends Decoder<
     unknown,
-    LeafE<UnknownArrayE> | TupleE<{ [K in keyof Components]: IndexE<K, ErrorOf<Components[K]>> }[number]>,
+    LeafE<UnknownArrayE> | TupleE<{ [K in keyof Components]: RequiredIndexE<K, ErrorOf<Components[K]>> }[number]>,
     { [K in keyof Components]: TypeOf<Components[K]> }
   > {
   readonly _tag: 'TupleD'
@@ -434,7 +448,7 @@ export interface TupleD<Components extends ReadonlyArray<AnyUD>>
 export declare const tuple: <Components extends ReadonlyArray<AnyUD>>(...components: Components) => TupleD<Components>
 
 export interface ArrayD<Item>
-  extends Decoder<unknown, LeafE<UnknownArrayE> | ArrayE<IndexE<number, ErrorOf<Item>>>, Array<TypeOf<Item>>> {
+  extends Decoder<unknown, LeafE<UnknownArrayE> | ArrayE<OptionalIndexE<number, ErrorOf<Item>>>, Array<TypeOf<Item>>> {
   readonly _tag: 'ArrayD'
   readonly item: Item
 }
@@ -443,7 +457,7 @@ export declare const array: <Item extends AnyUD>(item: Item) => ArrayD<Item>
 export interface RecordD<Codomain>
   extends Decoder<
     unknown,
-    LeafE<UnknownRecordE> | RecordE<RecordE<KeyE<string, ErrorOf<Codomain>>>>,
+    LeafE<UnknownRecordE> | RecordE<OptionalKeyE<string, ErrorOf<Codomain>>>,
     Record<string, TypeOf<Codomain>>
   > {
   readonly _tag: 'RecordD'
@@ -581,8 +595,8 @@ export const drawWith = <E>(leafEncoder: (e: E) => Tree<string>): ((de: DecodeEr
     switch (de._tag) {
       case 'LeafE':
         return leafEncoder(de.error)
-      case 'IndexE':
-        return tree(`cannot decode index ${de.index}`, [go(de.error)])
+      case 'RequiredIndexE':
+        return tree(`cannot decode required index ${de.index}`, [go(de.error)])
       case 'ArrayE':
         return tree(`cannot decode ${de.actual}`, de.errors.map(go))
       // etc...
@@ -776,12 +790,12 @@ interface Category {
   categories: ReadonlyArray<Category>
 }
 // Note: getting the error type is quite difficult.
-interface ReadonlyArrayCategoryE extends ArrayE<IndexE<number, CategoryE>> {}
+interface ReadonlyArrayCategoryE extends ArrayE<OptionalIndexE<number, CategoryE>> {}
 type CategoryE = LazyE<
   | LeafE<UnknownRecordE>
   | StructE<
-      | KeyE<'name', LeafE<StringE> | RefineE<LeafE<NonEmptyStringE>>>
-      | KeyE<'categories', LeafE<UnknownArrayE> | ReadonlyArrayCategoryE>
+      | RequiredKeyE<'name', LeafE<StringE> | RefineE<LeafE<NonEmptyStringE>>>
+      | RequiredKeyE<'categories', LeafE<UnknownArrayE> | ReadonlyArrayCategoryE>
     >
 >
 // A possible solution is using DecodeError<E>
@@ -901,4 +915,12 @@ pipe(
       }
     }
   })
+)
+
+export const X = pipe(
+  partial({
+    a: string,
+    b: number
+  }),
+  mapLeft((de) => de)
 )
