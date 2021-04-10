@@ -245,7 +245,10 @@ export interface NumberE extends ActualE<unknown> {
 export interface numberD extends Decoder<unknown, LeafE<NumberE>, number> {
   readonly _tag: 'numberD'
 }
-export declare const number: numberD
+export const number: numberD = {
+  _tag: 'numberD',
+  decode: (u) => (typeof u === 'number' ? _right(u) : _left(leafE({ _tag: 'NumberE', actual: u })))
+}
 
 export interface BooleanE extends ActualE<unknown> {
   readonly _tag: 'BooleanE'
@@ -685,13 +688,23 @@ export const toTreeWith = <E>(leafEncoder: (e: E) => Tree<string>): ((de: Decode
 }
 
 export const defaultLeafEToTree = (de: DefaultLeafE): Tree<string> => {
+  const actual = JSON.stringify(de.actual)
   switch (de._tag) {
     case 'StringE':
-      return tree(`cannot decode ${JSON.stringify(de.actual)}, expected a string`)
+      return tree(`cannot decode ${actual}, expected a string`)
+    case 'NumberE':
+      return tree(`cannot decode ${actual}, expected a number`)
+    case 'BooleanE':
+      return tree(`cannot decode ${actual}, expected a boolean`)
     case 'UnknownArrayE':
-      return tree(`cannot decode ${JSON.stringify(de.actual)}, expected an array`)
+      return tree(`cannot decode ${actual}, expected an array`)
+    case 'UnknownRecordE':
+      return tree(`cannot decode ${actual}, expected an object`)
+    case 'LiteralE':
+      return tree(
+        `cannot decode ${actual}, expected one of ${de.literals.map((literal) => JSON.stringify(literal)).join(', ')}`
+      )
   }
-  return tree(de._tag)
 }
 
 export const defaultToTree = toTreeWith(defaultLeafEToTree)
@@ -1031,7 +1044,7 @@ const drawForest = (indentation: string, forest: ReadonlyArray<Tree<string>>): s
 
 console.log(
   pipe(
-    fromTuple(string).decode([1]),
+    tuple(string, number).decode([1]),
     _mapLeft((de) => drawTree(defaultToTree(de))),
     E.fold(
       (e) => e,
