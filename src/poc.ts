@@ -25,91 +25,88 @@ export type TypeOf<D> = D extends Decoder<any, any, infer A> ? A : never
 // error model
 // -------------------------------------------------------------------------------------
 
-export interface LeafE<E> {
-  readonly _tag: 'LeafE'
+export interface ActualE<I> {
+  readonly actual: I
+}
+
+export interface SingleE<E> {
   readonly error: E
+}
+
+export interface CompoundE<E> {
+  readonly errors: ReadonlyNonEmptyArray<E>
+}
+
+export interface LeafE<E> extends SingleE<E> {
+  readonly _tag: 'LeafE'
 }
 export declare const leafE: <E>(e: E) => LeafE<E>
 
-export interface NullableE<E> {
+export interface NullableE<E> extends SingleE<E> {
   readonly _tag: 'NullableE'
-  readonly error: E
 }
 
-export interface KeyE<K, E> {
+export interface KeyE<K, E> extends SingleE<E> {
   readonly _tag: 'KeyE'
   readonly key: K
-  readonly error: E
 }
 
-export interface StructE<E> {
+export interface StructE<E> extends CompoundE<E> {
   readonly _tag: 'StructE'
-  readonly errors: ReadonlyNonEmptyArray<E>
 }
 
-export interface PartialE<E> {
+export interface PartialE<E> extends CompoundE<E> {
   readonly _tag: 'PartialE'
-  readonly errors: ReadonlyNonEmptyArray<E>
 }
 
-export interface IndexE<I, E> {
+export interface IndexE<I, E> extends SingleE<E> {
   readonly _tag: 'IndexE'
   readonly index: I
-  readonly error: E
 }
 
-export interface TupleE<E> {
+export interface TupleE<E> extends CompoundE<E> {
   readonly _tag: 'TupleE'
-  readonly errors: ReadonlyNonEmptyArray<E>
 }
 
-export interface ArrayE<E> extends ActualE<ReadonlyArray<unknown>> {
+export interface ArrayE<E> extends ActualE<ReadonlyArray<unknown>>, CompoundE<E> {
   readonly _tag: 'ArrayE'
-  readonly errors: ReadonlyNonEmptyArray<E>
 }
 
-export interface RecordE<E> extends ActualE<Readonly<Record<string, unknown>>> {
+export interface RecordE<E> extends ActualE<Readonly<Record<string, unknown>>>, CompoundE<E> {
   readonly _tag: 'RecordE'
-  readonly errors: ReadonlyNonEmptyArray<E>
 }
 
-export interface UnionE<E> {
+export interface UnionE<E> extends CompoundE<E> {
   readonly _tag: 'UnionE'
-  readonly errors: ReadonlyNonEmptyArray<E>
 }
 
-export interface RefineE<E> {
+export interface RefineE<E> extends SingleE<E> {
   readonly _tag: 'RefineE'
-  readonly error: E
 }
 
-export interface ParseE<E> {
+export interface ParseE<E> extends SingleE<E> {
   readonly _tag: 'ParseE'
-  readonly error: E
 }
 
-export interface IntersectionE<E> {
+export interface IntersectionE<E> extends CompoundE<E> {
   readonly _tag: 'IntersectionE'
-  readonly errors: ReadonlyNonEmptyArray<E>
 }
 
-export interface LazyE<E> {
+export interface LazyE<E> extends SingleE<E> {
   readonly _tag: 'LazyE'
   readonly id: string
-  readonly error: E
 }
 
-export interface MemberE<M, E> {
+export interface MemberE<M, E> extends SingleE<E> {
   readonly _tag: 'MemberE'
   readonly member: M
-  readonly error: E
 }
 
-export interface SumE<E> {
+export interface SumE<E> extends CompoundE<E> {
   readonly _tag: 'SumE'
-  readonly errors: ReadonlyNonEmptyArray<E>
 }
 
+// recursive helpers to please ts@3.5
 export interface NullableRE<E> extends NullableE<DecodeError<E>> {}
 export interface RefineRE<E> extends RefineE<DecodeError<E>> {}
 export interface ParseRE<E> extends ParseE<DecodeError<E>> {}
@@ -146,10 +143,6 @@ export type DecodeError<E> =
 // -------------------------------------------------------------------------------------
 // error utils
 // -------------------------------------------------------------------------------------
-
-export interface ActualE<I> {
-  readonly actual: I
-}
 
 export type DefaultLeafE =
   | StringE
@@ -744,16 +737,16 @@ interface Category {
   categories: ReadonlyArray<Category>
 }
 // Note: getting the error type is quite difficult.
-// interface ReadonlyArrayCategoryE extends ArrayE<CategoryE> {}
-// type CategoryE = LazyE<
-//   | LeafE<UnknownRecordE>
-//   | StructE<
-//       'name' | 'categories',
-//       LeafE<StringE> | RefineE<LeafE<NonEmptyStringE>> | LeafE<UnknownArrayE> | ReadonlyArrayCategoryE
-//     >
-// >
+interface ReadonlyArrayCategoryE extends ArrayE<IndexE<number, CategoryE>> {}
+type CategoryE = LazyE<
+  | LeafE<UnknownRecordE>
+  | StructE<
+      | KeyE<'name', LeafE<StringE> | RefineE<LeafE<NonEmptyStringE>>>
+      | KeyE<'categories', LeafE<UnknownArrayE> | ReadonlyArrayCategoryE>
+    >
+>
 // A possible solution is using DecodeError<E>
-type CategoryE = DecodeError<StringE | NonEmptyStringE | UnknownArrayE | UnknownRecordE>
+// type CategoryE = DecodeError<StringE | NonEmptyStringE | UnknownArrayE | UnknownRecordE>
 export const LaUD: Decoder<unknown, CategoryE, Category> = lazy('Category', () =>
   struct({
     name: NonEmptyStringUD,
@@ -823,7 +816,7 @@ const MyForm = fromStruct({
 pipe(
   MyForm.decode({ name: null, age: null }),
   E.mapLeft((e) => {
-    // const errors: RNEA.ReadonlyNonEmptyArray<readonly ["name" | "age", LeafE<StringE> | LeafE<NumberE> | RefineE<LeafE<NonEmptyStringE>>]>
+    // const errors: RNEA.ReadonlyNonEmptyArray<KeyE<"name", LeafE<StringE> | RefineE<LeafE<NonEmptyStringE>>> | KeyE<"age", LeafE<NumberE>>>
     const errors = e.errors
     console.log(errors)
     return e
