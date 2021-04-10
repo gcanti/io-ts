@@ -36,34 +36,46 @@ export interface NullableE<E> {
   readonly error: E
 }
 
+export interface KeyE<K, E> {
+  readonly actual: unknown
+  readonly key: K
+  readonly error: E
+}
+
 export interface StructE<K, E> {
   readonly _tag: 'StructE'
-  readonly errors: ReadonlyNonEmptyArray<readonly [K, E]>
+  readonly errors: ReadonlyNonEmptyArray<KeyE<K, E>>
 }
 
 export interface PartialE<K, E> {
   readonly _tag: 'PartialE'
-  readonly errors: ReadonlyNonEmptyArray<readonly [K, E]>
+  readonly errors: ReadonlyNonEmptyArray<KeyE<K, E>>
+}
+
+export interface IndexE<I, E> {
+  readonly actual: unknown
+  readonly index: I
+  readonly error: E
 }
 
 export interface TupleE<I, E> {
   readonly _tag: 'TupleE'
-  readonly errors: ReadonlyNonEmptyArray<readonly [I, E]>
+  readonly errors: ReadonlyNonEmptyArray<IndexE<I, E>>
 }
 
 export interface ArrayE<E> extends ActualE<ReadonlyArray<unknown>> {
   readonly _tag: 'ArrayE'
-  readonly errors: ReadonlyNonEmptyArray<readonly [number, E]>
+  readonly errors: ReadonlyNonEmptyArray<IndexE<number, E>>
 }
 
 export interface RecordE<E> extends ActualE<Readonly<Record<string, unknown>>> {
   readonly _tag: 'RecordE'
-  readonly errors: ReadonlyNonEmptyArray<readonly [string, E]>
+  readonly errors: ReadonlyNonEmptyArray<KeyE<string, E>>
 }
 
 export interface UnionE<I, E> {
   readonly _tag: 'UnionE'
-  readonly errors: ReadonlyNonEmptyArray<readonly [I, E]>
+  readonly errors: ReadonlyNonEmptyArray<IndexE<I, E>>
 }
 
 export interface RefineE<E> {
@@ -89,7 +101,7 @@ export interface LazyE<E> {
 
 export interface SumE<K, E> {
   readonly _tag: 'SumE'
-  readonly errors: ReadonlyNonEmptyArray<readonly [K, E]>
+  readonly errors: ReadonlyNonEmptyArray<KeyE<K, E>>
 }
 
 export interface NullableRE<E> extends NullableE<DecodeError<E>> {}
@@ -437,7 +449,7 @@ export const MapLeftExample = struct({
 })
 
 // the decode error is fully typed...
-// type MapLeftExampleE = LeafE<UnknownRecordE> | StructE<LeafE<StringE> | LeafE<NumberE>>
+// type MapLeftExampleE = LeafE<UnknownRecordE> | StructE<"a" | "b", LeafE<StringE> | LeafE<NumberE>>
 export type MapLeftExampleE = ErrorOf<typeof MapLeftExample>
 
 // ...this means that you can pattern match on the error
@@ -447,13 +459,13 @@ export const result1 = pipe(
   E.mapLeft((de) => {
     switch (de._tag) {
       case 'LeafE':
-        // leafE: UnknownRecordE
+        // const leafE: UnknownRecordE
         const leafE = de.error
         return `cannot decode ${leafE.actual}, should be a Record<string, unknown>`
       case 'StructE':
-        // const errors: RNEA.ReadonlyNonEmptyArray<readonly ["a" | "b", LeafE<StringE> | LeafE<NumberE>]>
+        // const errors: RNEA.ReadonlyNonEmptyArray<KeyE<"a" | "b", LeafE<StringE> | LeafE<NumberE>>>
         const errors = de.errors
-        return errors.map((e) => `${e[0]}: ${e[1]}`).join('\n')
+        return errors.map((e) => `${e.key}: ${e.error}`).join('\n')
     }
   })
 )
@@ -501,7 +513,7 @@ export const drawWith = <E>(leafEncoder: (e: E) => Tree<string>) => (de: DecodeE
     case 'ArrayE':
       return tree(
         `cannot decode ${de.actual}`,
-        de.errors.map((e) => tree(`cannot decode index ${e[0]}`))
+        de.errors.map((e) => tree(`cannot decode index ${e.index}`))
       )
     // etc...
     default:

@@ -1,5 +1,5 @@
 import { HKT3 } from 'fp-ts/lib/HKT'
-import * as D from './poc2'
+import * as D from './poc-typed-keys'
 
 // -------------------------------------------------------------------------------------
 // use case: Schemable
