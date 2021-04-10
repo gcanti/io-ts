@@ -39,6 +39,19 @@ export const mapLeft = <D extends AnyD, G>(f: (e: ErrorOf<D>) => G) => (decoder:
   mapLeft: f
 })
 
+export interface MapD<D, B> extends Decoder<InputOf<D>, ErrorOf<D>, B> {
+  readonly _tag: 'MapD'
+  readonly decoder: D
+  readonly map: (a: TypeOf<D>) => B
+}
+
+export const map = <D extends AnyD, B>(f: (a: TypeOf<D>) => B) => (decoder: D): MapD<D, B> => ({
+  _tag: 'MapD',
+  decode: flow(decoder.decode, E.map(f)),
+  decoder,
+  map: f
+})
+
 // -------------------------------------------------------------------------------------
 // error model
 // -------------------------------------------------------------------------------------
