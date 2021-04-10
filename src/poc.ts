@@ -1,17 +1,18 @@
 import * as E from 'fp-ts/lib/Either'
-import { Lazy, Refinement } from 'fp-ts/lib/function'
+import { flow, Lazy, Refinement } from 'fp-ts/lib/function'
 import { pipe } from 'fp-ts/lib/pipeable'
 import * as RNEA from 'fp-ts/lib/ReadonlyNonEmptyArray'
 
-import Either = E.Either
 import ReadonlyNonEmptyArray = RNEA.ReadonlyNonEmptyArray
 
 // -------------------------------------------------------------------------------------
 // model
 // -------------------------------------------------------------------------------------
 
+export type Result<E, A> = E.Either<E, A>
+
 export interface Decoder<I, E, A> {
-  readonly decode: (i: I) => Either<E, A>
+  readonly decode: (i: I) => Result<E, A>
 }
 
 interface AnyD extends Decoder<any, any, any> {}
@@ -20,6 +21,23 @@ interface AnyUD extends Decoder<unknown, any, any> {}
 export type InputOf<D> = D extends Decoder<infer I, any, any> ? I : never
 export type ErrorOf<D> = D extends Decoder<any, infer E, any> ? E : never
 export type TypeOf<D> = D extends Decoder<any, any, infer A> ? A : never
+
+// -------------------------------------------------------------------------------------
+// pipeables
+// -------------------------------------------------------------------------------------
+
+export interface MapLeftD<D, G> extends Decoder<InputOf<D>, G, TypeOf<D>> {
+  readonly _tag: 'MapLeftD'
+  readonly decoder: D
+  readonly mapLeft: (e: ErrorOf<D>) => G
+}
+
+export const mapLeft = <D extends AnyD, G>(f: (e: ErrorOf<D>) => G) => (decoder: D): MapLeftD<D, G> => ({
+  _tag: 'MapLeftD',
+  decode: flow(decoder.decode, E.mapLeft(f)),
+  decoder,
+  mapLeft: f
+})
 
 // -------------------------------------------------------------------------------------
 // error model
@@ -313,10 +331,10 @@ export declare const refine: <From extends AnyD, B extends TypeOf<From>, E>(
 export interface ParseD<From, E, B> extends Decoder<InputOf<From>, ErrorOf<From> | ParseE<E>, B> {
   readonly _tag: 'ParseD'
   readonly from: From
-  readonly parser: (a: TypeOf<From>) => E.Either<E, B>
+  readonly parser: (a: TypeOf<From>) => Result<E, B>
 }
 export declare const parse: <From extends AnyD, B, E>(
-  parser: (a: TypeOf<From>) => E.Either<E, B>
+  parser: (a: TypeOf<From>) => Result<E, B>
 ) => (from: From) => ParseD<From, E, B>
 
 export interface IntersectD<F, S>
@@ -451,7 +469,7 @@ export declare function compose<S extends AnyD>(second: S): <F extends AnyD>(fir
 // instances
 // -------------------------------------------------------------------------------------
 
-export const URI = 'io-ts/Decoder2'
+export const URI = 'io-ts/Decoder'
 
 export type URI = typeof URI
 
@@ -477,8 +495,8 @@ export type MapLeftExampleE = ErrorOf<typeof MapLeftExample>
 // ...this means that you can pattern match on the error
 // when you are mapping
 export const result1 = pipe(
-  MapLeftExample.decode({}),
-  E.mapLeft((de) => {
+  MapLeftExample,
+  mapLeft((de) => {
     switch (de._tag) {
       case 'LeafE':
         // const leafE: UnknownRecordE
@@ -564,7 +582,7 @@ const DR1 = fromStruct({
   c: union(string, number)
 })
 
-export const treeOutput1 = pipe(DR1.decode({ a: null, b: null, c: null }), E.mapLeft(draw))
+export const treeOutput1 = pipe(DR1, mapLeft(draw))
 
 // what if the decoder contains a custom error?
 
@@ -573,7 +591,7 @@ const DR2 = fromStruct({
   b: number
 })
 
-// export const treeOutput2 = pipe(DR2.decode({ a: '', b: null }), E.mapLeft(draw)) // <= type error because `NonEmptyStringE` is not handled
+// export const treeOutput2 = pipe(DR2, mapLeft(draw)) // <= type error because `NonEmptyStringE` is not handled
 
 // I can define my own `leafEncoder`
 const myLeafEncoder = (e: DefaultLeafE | NonEmptyStringE) => {
@@ -585,7 +603,7 @@ const myLeafEncoder = (e: DefaultLeafE | NonEmptyStringE) => {
   }
 }
 
-export const treeOutput2 = pipe(DR2.decode({ a: '', b: null }), E.mapLeft(drawWith(myLeafEncoder))) // <= ok
+export const treeOutput2 = pipe(DR2, mapLeft(drawWith(myLeafEncoder))) // <= ok
 
 // -------------------------------------------------------------------------------------
 // examples
@@ -711,7 +729,7 @@ export type NUDA = TypeOf<typeof NUD>
 interface ParseNumberE {
   readonly _tag: 'ParseNumberE'
 }
-declare const parseNumber: (s: string) => E.Either<ParseNumberE, number>
+declare const parseNumber: (s: string) => Result<ParseNumberE, number>
 const PD = pipe(id<string>(), parse(parseNumber))
 export type PDI = InputOf<typeof PD>
 export type PDE = ErrorOf<typeof PD>
@@ -814,8 +832,8 @@ const MyForm = fromStruct({
 })
 
 pipe(
-  MyForm.decode({ name: null, age: null }),
-  E.mapLeft((e) => {
+  MyForm,
+  mapLeft((e) => {
     // const errors: RNEA.ReadonlyNonEmptyArray<KeyE<"name", LeafE<StringE> | RefineE<LeafE<NonEmptyStringE>>> | KeyE<"age", LeafE<NumberE>>>
     const errors = e.errors
     console.log(errors)
@@ -835,8 +853,8 @@ const d = fromSum('_tag')({
 })
 
 pipe(
-  d.decode({ _tag: null, a: null }),
-  E.mapLeft((de) => {
+  d,
+  mapLeft((de) => {
     switch (de._tag) {
       case 'LeafE': {
         break
