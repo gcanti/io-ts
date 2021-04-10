@@ -195,7 +195,7 @@ export declare const UnknownRecord: UnknownRecordD
 
 export type Literal = string | number | boolean | null
 
-export interface LiteralE {
+export interface LiteralE extends ActualE<unknown> {
   readonly _tag: 'LiteralE'
   readonly literals: ReadonlyNonEmptyArray<Literal>
 }
@@ -317,7 +317,7 @@ export interface LazyD<D> {
 }
 export declare const lazy: <I, E, A>(id: string, decoder: Lazy<Decoder<I, E, A>>) => Decoder<I, LazyE<E>, A>
 
-export interface TagE {
+export interface TagE extends ActualE<unknown> {
   readonly _tag: 'TagE'
   readonly tags: ReadonlyNonEmptyArray<string>
 }
