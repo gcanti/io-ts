@@ -282,8 +282,9 @@ export const partial = <A>(
  * @category combinators
  * @since 2.2.8
  */
-export const fromArray = <I, A>(item: Decoder<I, A>): Decoder<Array<I>, Array<A>> =>
-  K.fromArray(M)((i, e) => FS.of(DE.index(i, DE.optional, e)))(item)
+export const fromArray: <I, A>(item: Decoder<I, A>) => Decoder<Array<I>, Array<A>> =
+  /*#__PURE__*/
+  K.fromArray(M)((i, e) => FS.of(DE.index(i, DE.optional, e)))
 
 /**
  * @category combinators
@@ -296,8 +297,9 @@ export const array = <A>(item: Decoder<unknown, A>): Decoder<unknown, Array<A>> 
  * @category combinators
  * @since 2.2.8
  */
-export const fromRecord = <I, A>(codomain: Decoder<I, A>): Decoder<Record<string, I>, Record<string, A>> =>
-  K.fromRecord(M)((k, e) => FS.of(DE.key(k, DE.optional, e)))(codomain)
+export const fromRecord: <I, A>(codomain: Decoder<I, A>) => Decoder<Record<string, I>, Record<string, A>> =
+  /*#__PURE__*/
+  K.fromRecord(M)((k, e) => FS.of(DE.key(k, DE.optional, e)))
 
 /**
  * @category combinators

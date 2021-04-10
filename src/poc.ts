@@ -2,6 +2,7 @@ import * as E from 'fp-ts/lib/Either'
 import { flow, Lazy, Refinement } from 'fp-ts/lib/function'
 import { pipe } from 'fp-ts/lib/pipeable'
 import * as RNEA from 'fp-ts/lib/ReadonlyNonEmptyArray'
+import * as RA from 'fp-ts/lib/ReadonlyArray'
 
 import ReadonlyNonEmptyArray = RNEA.ReadonlyNonEmptyArray
 
@@ -14,6 +15,13 @@ export type Result<E, A> = E.Either<E, A>
 // Bifunctor
 const _map: <A, B>(f: (a: A) => B) => <E>(fa: Result<E, A>) => Result<E, B> = E.map
 const _mapLeft: <E, G>(f: (e: E) => G) => <A>(fa: Result<E, A>) => Result<G, A> = E.mapLeft
+
+// constructors
+const _right: <E = never, A = never>(a: A) => Result<E, A> = E.right
+const _left: <E = never, A = never>(e: E) => Result<E, A> = E.left
+
+// refinements
+const _isLeft: <E, A>(ma: Result<E, A>) => ma is E.Left<E> = E.isLeft
 
 // -------------------------------------------------------------------------------------
 // model
@@ -79,7 +87,7 @@ export interface CompoundE<E> {
 export interface LeafE<E> extends SingleE<E> {
   readonly _tag: 'LeafE'
 }
-export declare const leafE: <E>(e: E) => LeafE<E>
+export const leafE = <E>(error: E): LeafE<E> => ({ _tag: 'LeafE', error })
 
 export interface NullableE<E> extends SingleE<E> {
   readonly _tag: 'NullableE'
@@ -120,10 +128,20 @@ export interface OptionalIndexE<I, E> extends SingleE<E> {
   readonly _tag: 'OptionalIndexE'
   readonly index: I
 }
+export const optionalIndexE = <I, E>(index: I, error: E): OptionalIndexE<I, E> => ({
+  _tag: 'OptionalIndexE',
+  index,
+  error
+})
 
 export interface ArrayE<E> extends ActualE<ReadonlyArray<unknown>>, CompoundE<E> {
   readonly _tag: 'ArrayE'
 }
+export const arrayE = <E>(actual: ReadonlyArray<unknown>, errors: ReadonlyNonEmptyArray<E>): ArrayE<E> => ({
+  _tag: 'ArrayE',
+  actual,
+  errors
+})
 
 export interface UnionE<E> extends CompoundE<E> {
   readonly _tag: 'UnionE'
@@ -216,7 +234,10 @@ export interface StringE extends ActualE<unknown> {
 export interface stringD extends Decoder<unknown, LeafE<StringE>, string> {
   readonly _tag: 'stringD'
 }
-export declare const string: stringD
+export const string: stringD = {
+  _tag: 'stringD',
+  decode: (u) => (typeof u === 'string' ? _right(u) : _left(leafE({ _tag: 'StringE', actual: u })))
+}
 
 export interface NumberE extends ActualE<unknown> {
   readonly _tag: 'NumberE'
@@ -241,10 +262,17 @@ export declare const boolean: booleanD
 export interface UnknownArrayE extends ActualE<unknown> {
   readonly _tag: 'UnknownArrayE'
 }
+export const unknownArrayE = (actual: unknown): UnknownArrayE => ({
+  _tag: 'UnknownArrayE',
+  actual
+})
 export interface UnknownArrayD extends Decoder<unknown, LeafE<UnknownArrayE>, Array<unknown>> {
   readonly _tag: 'UnknownArrayD'
 }
-export declare const UnknownArray: UnknownArrayD
+export const UnknownArray: UnknownArrayD = {
+  _tag: 'UnknownArrayD',
+  decode: (u) => (Array.isArray(u) ? _right(u) : _left(leafE(unknownArrayE(u))))
+}
 
 export interface UnknownRecordE extends ActualE<unknown> {
   readonly _tag: 'UnknownRecordE'
@@ -304,11 +332,26 @@ export declare const fromPartial: <Properties extends Record<string, AnyD>>(
 ) => FromPartialD<Properties>
 
 export interface FromArrayD<Item>
-  extends Decoder<Array<InputOf<Item>>, ArrayE<RequiredIndexE<number, ErrorOf<Item>>>, Array<TypeOf<Item>>> {
+  extends Decoder<Array<InputOf<Item>>, ArrayE<OptionalIndexE<number, ErrorOf<Item>>>, Array<TypeOf<Item>>> {
   readonly _tag: 'FromArrayD'
   readonly item: Item
 }
-export declare const fromArray: <Item extends AnyD>(item: Item) => FromArrayD<Item>
+
+export const fromArray = <Item extends AnyD>(item: Item): FromArrayD<Item> => ({
+  _tag: 'FromArrayD',
+  item,
+  decode: (us) => {
+    const errors: Array<OptionalIndexE<number, ErrorOf<typeof item>>> = []
+    const as: Array<TypeOf<typeof item>> = []
+    for (let index = 0; index < us.length; index++) {
+      const e = item.decode(us[index])
+      if (_isLeft(e)) {
+        errors.push(optionalIndexE(index, e.left))
+      }
+    }
+    return RA.isNonEmpty(errors) ? _left(arrayE(us, errors)) : _right(as)
+  }
+})
 
 export interface FromRecordD<Codomain>
   extends Decoder<
@@ -448,7 +491,17 @@ export interface ArrayD<Item>
   readonly _tag: 'ArrayD'
   readonly item: Item
 }
-export declare const array: <Item extends AnyUD>(item: Item) => ArrayD<Item>
+export const array = <Item extends AnyUD>(item: Item): ArrayD<Item> => ({
+  _tag: 'ArrayD',
+  item,
+  decode: (u) => {
+    const e = UnknownArray.decode(u)
+    if (_isLeft(e)) {
+      return e
+    }
+    return fromArray(item).decode(e.right as any)
+  }
+})
 
 export interface RecordD<Codomain>
   extends Decoder<
@@ -592,9 +645,11 @@ export const toTreeWith = <E>(leafEncoder: (e: E) => Tree<string>): ((de: Decode
       case 'LeafE':
         return leafEncoder(de.error)
       case 'RequiredIndexE':
-        return tree(`cannot decode required index ${de.index}`, [go(de.error)])
+        return tree(`required index ${de.index}`, [go(de.error)])
+      case 'OptionalIndexE':
+        return tree(`optional index ${de.index}`, [go(de.error)])
       case 'ArrayE':
-        return tree(`cannot decode ${de.actual}`, de.errors.map(go))
+        return tree(`cannot decode to array, ${de.errors.length} error(s) found`, de.errors.map(go))
       // etc...
       default:
         return tree('TODO')
@@ -603,9 +658,32 @@ export const toTreeWith = <E>(leafEncoder: (e: E) => Tree<string>): ((de: Decode
   return go
 }
 
-export const defaultLeafEToTree = (e: DefaultLeafE): Tree<string> => tree(e._tag)
+export const defaultLeafEToTree = (de: DefaultLeafE): Tree<string> => {
+  switch (de._tag) {
+    case 'StringE':
+      return tree(`cannot decode ${JSON.stringify(de.actual)}, expected a string`)
+    case 'UnknownArrayE':
+      return tree(`cannot decode ${JSON.stringify(de.actual)}, expected an array`)
+  }
+  return tree(de._tag)
+}
 
 export const defaultToTree = toTreeWith(defaultLeafEToTree)
+
+export const drawTree = (tree: Tree<string>): string => tree.value + drawForest('\n', tree.forest)
+
+const drawForest = (indentation: string, forest: ReadonlyArray<Tree<string>>): string => {
+  let r = ''
+  const len = forest.length
+  let tree: Tree<string>
+  for (let i = 0; i < len; i++) {
+    tree = forest[i]
+    const isLast = i === len - 1
+    r += indentation + (isLast ? '└' : '├') + '─ ' + tree.value
+    r += drawForest(indentation + (len > 1 && !isLast ? '│  ' : '   '), tree.forest)
+  }
+  return r
+}
 
 const DR1 = fromStruct({
   a: string,
@@ -919,4 +997,19 @@ export const X = pipe(
     b: number
   }),
   mapLeft((de) => de)
+)
+
+// -------------------------------------------------------------------------------------
+// tests
+// -------------------------------------------------------------------------------------
+
+console.log(
+  pipe(
+    array(string).decode(null),
+    _mapLeft((de) => drawTree(defaultToTree(de))),
+    E.fold(
+      (e) => e,
+      () => 'no errors'
+    )
+  )
 )
