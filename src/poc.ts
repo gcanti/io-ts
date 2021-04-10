@@ -151,6 +151,11 @@ export interface MemberE<M, E> extends SingleE<E> {
   readonly member: M
 }
 
+export interface TagNotFoundE<T, E> extends SingleE<E> {
+  readonly _tag: 'TagNotFoundE'
+  readonly tag: T
+}
+
 export interface SumE<E> extends CompoundE<E> {
   readonly _tag: 'SumE'
 }
@@ -171,6 +176,7 @@ export interface RecordRE<E> extends RecordE<DecodeError<E>> {}
 export interface UnionRE<E> extends UnionE<DecodeError<E>> {}
 export interface MemberRE<E> extends MemberE<string | number, DecodeError<E>> {}
 export interface IntersectionRE<E> extends IntersectionE<DecodeError<E>> {}
+export interface TagNotFoundRE<E> extends TagNotFoundE<string, DecodeError<E>> {}
 export interface SumRE<E> extends SumE<DecodeError<E>> {}
 export interface LazyRE<E> extends LazyE<DecodeError<E>> {}
 export type DecodeError<E> =
@@ -190,6 +196,7 @@ export type DecodeError<E> =
   | UnionRE<E>
   | MemberRE<E>
   | IntersectionRE<E>
+  | TagNotFoundRE<E>
   | SumRE<E>
   | LazyRE<E>
 
@@ -197,14 +204,7 @@ export type DecodeError<E> =
 // error utils
 // -------------------------------------------------------------------------------------
 
-export type DefaultLeafE =
-  | StringE
-  | NumberE
-  | BooleanE
-  | UnknownRecordE
-  | UnknownArrayE
-  | LiteralE<Literal>
-  | TagE<PropertyKey>
+export type DefaultLeafE = StringE | NumberE | BooleanE | UnknownRecordE | UnknownArrayE | LiteralE<Literal>
 
 // -------------------------------------------------------------------------------------
 // primitives
@@ -258,7 +258,7 @@ export declare const UnknownRecord: UnknownRecordD
 // constructors
 // -------------------------------------------------------------------------------------
 
-export type Literal = string | number | boolean | null
+export type Literal = string | number | boolean | null | symbol
 
 export interface LiteralE<A extends Literal> extends ActualE<unknown> {
   readonly _tag: 'LiteralE'
@@ -391,15 +391,11 @@ export interface LazyD<D> {
 }
 export declare const lazy: <I, E, A>(id: string, decoder: Lazy<Decoder<I, E, A>>) => Decoder<I, LazyE<E>, A>
 
-export interface TagE<A extends PropertyKey> extends ActualE<unknown> {
-  readonly _tag: 'TagE'
-  readonly tags: ReadonlyNonEmptyArray<A>
-}
-
 export interface FromSumD<T extends string, Members>
   extends Decoder<
     InputOf<Members[keyof Members]>,
-    LeafE<TagE<keyof Members>> | SumE<{ [K in keyof Members]: MemberE<K, ErrorOf<Members[K]>> }[keyof Members]>,
+    | TagNotFoundE<T, LiteralE<keyof Members>>
+    | SumE<{ [K in keyof Members]: MemberE<K, ErrorOf<Members[K]>> }[keyof Members]>,
     TypeOf<Members[keyof Members]>
   > {
   readonly _tag: 'FromSumD'
@@ -469,7 +465,7 @@ export interface SumD<T extends string, Members>
   extends Decoder<
     unknown,
     | LeafE<UnknownRecordE>
-    | LeafE<TagE<keyof Members>>
+    | TagNotFoundE<T, LiteralE<keyof Members>>
     | SumE<{ [K in keyof Members]: MemberE<K, ErrorOf<Members[K]>> }[keyof Members]>,
     TypeOf<Members[keyof Members]>
   > {
@@ -891,8 +887,8 @@ pipe(
   d,
   mapLeft((de) => {
     switch (de._tag) {
-      case 'LeafE': {
-        break
+      case 'TagNotFoundE': {
+        return de.tag
       }
       case 'SumE': {
         pipe(
