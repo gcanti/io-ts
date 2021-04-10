@@ -86,9 +86,9 @@ export interface ParseE<E> {
   readonly error: E
 }
 
-export interface IntersectE<E> {
-  readonly _tag: 'IntersectE'
-  readonly error: E
+export interface IntersectionE<I, E> {
+  readonly _tag: 'IntersectionE'
+  readonly errors: ReadonlyNonEmptyArray<IndexE<I, E>>
 }
 
 export interface LazyE<E> {
@@ -111,7 +111,7 @@ export interface TupleRE<E> extends TupleE<number, DecodeError<E>> {}
 export interface ArrayRE<E> extends ArrayE<DecodeError<E>> {}
 export interface RecordRE<E> extends RecordE<DecodeError<E>> {}
 export interface UnionRE<E> extends UnionE<number, DecodeError<E>> {}
-export interface IntersectionRE<E> extends IntersectE<DecodeError<E>> {}
+export interface IntersectionRE<E> extends IntersectionE<number, DecodeError<E>> {}
 export interface SumRE<E> extends SumE<string, DecodeError<E>> {}
 export interface LazyRE<E> extends LazyE<DecodeError<E>> {}
 export type DecodeError<E> =
@@ -308,7 +308,7 @@ export declare const parse: <From extends AnyD, B, E>(
 ) => (from: From) => ParseD<From, E, B>
 
 export interface IntersectD<F, S>
-  extends Decoder<InputOf<F> & InputOf<S>, IntersectE<ErrorOf<F> | ErrorOf<S>>, TypeOf<F> & TypeOf<S>> {
+  extends Decoder<InputOf<F> & InputOf<S>, IntersectionE<0 | 1, ErrorOf<F> | ErrorOf<S>>, TypeOf<F> & TypeOf<S>> {
   readonly _tag: 'IntersectD'
   readonly first: F
   readonly second: S
