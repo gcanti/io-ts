@@ -571,7 +571,7 @@ export const NonEmptyString = pipe(
 )
 
 // -------------------------------------------------------------------------------------
-// use case: handling a generic error, for example drawing a tree
+// use case: handling a generic error, for example encoding to a Tree<string>
 // -------------------------------------------------------------------------------------
 
 export interface Tree<A> {
@@ -579,14 +579,14 @@ export interface Tree<A> {
   readonly forest: ReadonlyArray<Tree<A>>
 }
 
-const empty: Array<never> = []
+const empty: ReadonlyArray<never> = []
 
 const tree = <A>(value: A, forest: ReadonlyArray<Tree<A>> = empty): Tree<A> => ({
   value,
   forest
 })
 
-export const drawWith = <E>(leafEncoder: (e: E) => Tree<string>): ((de: DecodeError<E>) => Tree<string>) => {
+export const toTreeWith = <E>(leafEncoder: (e: E) => Tree<string>): ((de: DecodeError<E>) => Tree<string>) => {
   const go = (de: DecodeError<E>): Tree<string> => {
     switch (de._tag) {
       case 'LeafE':
@@ -603,9 +603,9 @@ export const drawWith = <E>(leafEncoder: (e: E) => Tree<string>): ((de: DecodeEr
   return go
 }
 
-export const defaultLeafEncoder = (e: DefaultLeafE): Tree<string> => tree(e._tag)
+export const defaultLeafEToTree = (e: DefaultLeafE): Tree<string> => tree(e._tag)
 
-export const draw = drawWith(defaultLeafEncoder)
+export const defaultToTree = toTreeWith(defaultLeafEToTree)
 
 const DR1 = fromStruct({
   a: string,
@@ -613,7 +613,7 @@ const DR1 = fromStruct({
   c: union(string, number)
 })
 
-export const treeOutput1 = pipe(DR1, mapLeft(draw))
+export const treeLeft1 = pipe(DR1, mapLeft(defaultToTree))
 
 // what if the decoder contains a custom error?
 
@@ -624,17 +624,17 @@ const DR2 = fromStruct({
 
 // export const treeOutput2 = pipe(DR2, mapLeft(draw)) // <= type error because `NonEmptyStringE` is not handled
 
-// I can define my own `leafEncoder`
-const myLeafEncoder = (e: DefaultLeafE | NonEmptyStringE) => {
+// I can define my own `leafToTree`
+const myLeafToTree = (e: DefaultLeafE | NonEmptyStringE) => {
   switch (e._tag) {
     case 'NonEmptyStringE':
       return tree(`cannot decode ${e.actual}, should be a non empty string`)
     default:
-      return defaultLeafEncoder(e)
+      return defaultLeafEToTree(e)
   }
 }
 
-export const treeOutput2 = pipe(DR2, mapLeft(drawWith(myLeafEncoder))) // <= ok
+export const treeLeft2 = pipe(DR2, mapLeft(toTreeWith(myLeafToTree))) // <= ok
 
 // -------------------------------------------------------------------------------------
 // examples
