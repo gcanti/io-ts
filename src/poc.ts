@@ -93,18 +93,14 @@ export interface NullableE<E> extends SingleE<E> {
   readonly _tag: 'NullableE'
 }
 
-export interface RequiredKeyE<K, E> extends SingleE<E> {
-  readonly _tag: 'RequiredKeyE'
+export interface KeyE<K, E> extends SingleE<E> {
+  readonly _tag: 'KeyE'
+  readonly required: boolean
   readonly key: K
 }
 
 export interface StructE<E> extends CompoundE<E> {
   readonly _tag: 'StructE'
-}
-
-export interface OptionalKeyE<K, E> extends SingleE<E> {
-  readonly _tag: 'OptionalKeyE'
-  readonly key: K
 }
 
 export interface PartialE<E> extends CompoundE<E> {
@@ -115,21 +111,27 @@ export interface RecordE<E> extends ActualE<Readonly<Record<string, unknown>>>, 
   readonly _tag: 'RecordE'
 }
 
-export interface RequiredIndexE<I, E> extends SingleE<E> {
-  readonly _tag: 'RequiredIndexE'
+export interface ComponentE<I, E> extends SingleE<E> {
+  readonly _tag: 'ComponentE'
   readonly index: I
 }
+export const componentE = <I, E>(index: I, error: E): ComponentE<I, E> => ({
+  _tag: 'ComponentE',
+  index,
+  error
+})
 
 export interface TupleE<E> extends CompoundE<E> {
   readonly _tag: 'TupleE'
 }
+export const tupleE = <E>(errors: ReadonlyNonEmptyArray<E>): TupleE<E> => ({ _tag: 'TupleE', errors })
 
-export interface OptionalIndexE<I, E> extends SingleE<E> {
-  readonly _tag: 'OptionalIndexE'
+export interface IndexE<I, E> extends SingleE<E> {
+  readonly _tag: 'IndexE'
   readonly index: I
 }
-export const optionalIndexE = <I, E>(index: I, error: E): OptionalIndexE<I, E> => ({
-  _tag: 'OptionalIndexE',
+export const indexE = <I, E>(index: I, error: E): IndexE<I, E> => ({
+  _tag: 'IndexE',
   index,
   error
 })
@@ -183,12 +185,11 @@ export interface NullableRE<E> extends NullableE<DecodeError<E>> {}
 export interface RefineRE<E> extends RefineE<DecodeError<E>> {}
 export interface ParseRE<E> extends ParseE<DecodeError<E>> {}
 export interface StructRE<E> extends StructE<DecodeError<E>> {}
-export interface RequiredKeyRE<E> extends RequiredKeyE<string, DecodeError<E>> {}
-export interface OptionalKeyRE<E> extends OptionalKeyE<string, DecodeError<E>> {}
+export interface RequiredKeyRE<E> extends KeyE<string, DecodeError<E>> {}
 export interface PartialRE<E> extends PartialE<DecodeError<E>> {}
 export interface TupleRE<E> extends TupleE<DecodeError<E>> {}
-export interface RequiredIndexRE<E> extends RequiredIndexE<number, DecodeError<E>> {}
-export interface OptionalIndexRE<E> extends OptionalIndexE<number, DecodeError<E>> {}
+export interface RequiredIndexRE<E> extends ComponentE<string, DecodeError<E>> {}
+export interface OptionalIndexRE<E> extends IndexE<number, DecodeError<E>> {}
 export interface ArrayRE<E> extends ArrayE<DecodeError<E>> {}
 export interface RecordRE<E> extends RecordE<DecodeError<E>> {}
 export interface UnionRE<E> extends UnionE<DecodeError<E>> {}
@@ -204,7 +205,6 @@ export type DecodeError<E> =
   | ParseRE<E>
   | StructRE<E>
   | RequiredKeyRE<E>
-  | OptionalKeyRE<E>
   | PartialRE<E>
   | TupleRE<E>
   | RequiredIndexRE<E>
@@ -308,7 +308,7 @@ export declare const literal: <A extends ReadonlyNonEmptyArray<Literal>>(...valu
 export interface FromStructD<Properties>
   extends Decoder<
     { [K in keyof Properties]: InputOf<Properties[K]> },
-    StructE<{ readonly [K in keyof Properties]: RequiredKeyE<K, ErrorOf<Properties[K]>> }[keyof Properties]>,
+    StructE<{ readonly [K in keyof Properties]: KeyE<K, ErrorOf<Properties[K]>> }[keyof Properties]>,
     { [K in keyof Properties]: TypeOf<Properties[K]> }
   > {
   readonly _tag: 'FromStructD'
@@ -321,7 +321,7 @@ export declare const fromStruct: <Properties extends Record<string, AnyD>>(
 export interface FromPartialD<Properties>
   extends Decoder<
     Partial<{ [K in keyof Properties]: InputOf<Properties[K]> }>,
-    PartialE<{ readonly [K in keyof Properties]: OptionalKeyE<K, ErrorOf<Properties[K]>> }[keyof Properties]>,
+    PartialE<{ readonly [K in keyof Properties]: KeyE<K, ErrorOf<Properties[K]>> }[keyof Properties]>,
     Partial<{ [K in keyof Properties]: TypeOf<Properties[K]> }>
   > {
   readonly _tag: 'FromPartialD'
@@ -332,7 +332,7 @@ export declare const fromPartial: <Properties extends Record<string, AnyD>>(
 ) => FromPartialD<Properties>
 
 export interface FromArrayD<Item>
-  extends Decoder<Array<InputOf<Item>>, ArrayE<OptionalIndexE<number, ErrorOf<Item>>>, Array<TypeOf<Item>>> {
+  extends Decoder<Array<InputOf<Item>>, ArrayE<IndexE<number, ErrorOf<Item>>>, Array<TypeOf<Item>>> {
   readonly _tag: 'FromArrayD'
   readonly item: Item
 }
@@ -341,22 +341,39 @@ export const fromArray = <Item extends AnyD>(item: Item): FromArrayD<Item> => ({
   _tag: 'FromArrayD',
   item,
   decode: (us) => {
-    const errors: Array<OptionalIndexE<number, ErrorOf<typeof item>>> = []
+    const errors: Array<IndexE<number, ErrorOf<typeof item>>> = []
     const as: Array<TypeOf<typeof item>> = []
     for (let index = 0; index < us.length; index++) {
       const e = item.decode(us[index])
       if (_isLeft(e)) {
-        errors.push(optionalIndexE(index, e.left))
+        errors.push(indexE(index, e.left))
       }
     }
     return RA.isNonEmpty(errors) ? _left(arrayE(us, errors)) : _right(as)
   }
 })
 
+export interface ArrayD<Item>
+  extends Decoder<unknown, LeafE<UnknownArrayE> | ArrayE<IndexE<number, ErrorOf<Item>>>, Array<TypeOf<Item>>> {
+  readonly _tag: 'ArrayD'
+  readonly item: Item
+}
+export const array = <Item extends AnyUD>(item: Item): ArrayD<Item> => {
+  const fromArrayItem = fromArray(item)
+  return {
+    _tag: 'ArrayD',
+    item,
+    decode: (u) => {
+      const e = UnknownArray.decode(u)
+      return _isLeft(e) ? e : fromArrayItem.decode(e.right as any)
+    }
+  }
+}
+
 export interface FromRecordD<Codomain>
   extends Decoder<
     Record<string, InputOf<Codomain>>,
-    RecordE<OptionalKeyE<string, ErrorOf<Codomain>>>,
+    RecordE<KeyE<string, ErrorOf<Codomain>>>,
     Record<string, TypeOf<Codomain>>
   > {
   readonly _tag: 'FromRecordD'
@@ -367,15 +384,51 @@ export declare const fromRecord: <Codomain extends AnyD>(codomain: Codomain) => 
 export interface FromTupleD<Components extends ReadonlyArray<AnyD>>
   extends Decoder<
     { [K in keyof Components]: InputOf<Components[K]> },
-    TupleE<{ [K in keyof Components]: RequiredIndexE<K, ErrorOf<Components[K]>> }[number]>,
+    TupleE<{ [K in keyof Components]: ComponentE<K, ErrorOf<Components[K]>> }[number]>,
     { [K in keyof Components]: TypeOf<Components[K]> }
   > {
   readonly _tag: 'FromTupleD'
   readonly components: Components
 }
-export declare const fromTuple: <Components extends ReadonlyArray<AnyD>>(
+export const fromTuple = <Components extends ReadonlyArray<AnyD>>(
   ...components: Components
-) => FromTupleD<Components>
+): FromTupleD<Components> => ({
+  _tag: 'FromTupleD',
+  components,
+  decode: (us) => {
+    const errors: Array<ComponentE<number, ErrorOf<ErrorOf<Components[number]>>>> = []
+    const as: Array<unknown> = []
+    for (let index = 0; index < components.length; index++) {
+      const e = components[index].decode(us[index])
+      if (_isLeft(e)) {
+        errors.push(componentE(index, e.left))
+      }
+    }
+    return RA.isNonEmpty(errors) ? _left(tupleE(errors)) : _right(as as any)
+  }
+})
+
+export interface TupleD<Components extends ReadonlyArray<AnyUD>>
+  extends Decoder<
+    unknown,
+    LeafE<UnknownArrayE> | TupleE<{ [K in keyof Components]: ComponentE<K, ErrorOf<Components[K]>> }[number]>,
+    { [K in keyof Components]: TypeOf<Components[K]> }
+  > {
+  readonly _tag: 'TupleD'
+  readonly components: Components
+}
+
+export const tuple = <Components extends ReadonlyArray<AnyUD>>(...components: Components): TupleD<Components> => {
+  const fromTupleComponents = fromTuple(...components)
+  return {
+    _tag: 'TupleD',
+    components,
+    decode: (u) => {
+      const e = UnknownArray.decode(u)
+      return _isLeft(e) ? e : fromTupleComponents.decode(e.right as any)
+    }
+  }
+}
 
 export interface UnionD<Members extends ReadonlyArray<AnyD>>
   extends Decoder<
@@ -454,7 +507,7 @@ export interface StructD<Properties>
   extends Decoder<
     unknown,
     | LeafE<UnknownRecordE>
-    | StructE<{ readonly [K in keyof Properties]: RequiredKeyE<K, ErrorOf<Properties[K]>> }[keyof Properties]>,
+    | StructE<{ readonly [K in keyof Properties]: KeyE<K, ErrorOf<Properties[K]>> }[keyof Properties]>,
     { [K in keyof Properties]: TypeOf<Properties[K]> }
   > {
   readonly _tag: 'StructD'
@@ -466,7 +519,7 @@ export interface PartialD<Properties>
   extends Decoder<
     unknown,
     | LeafE<UnknownRecordE>
-    | PartialE<{ readonly [K in keyof Properties]: OptionalKeyE<K, ErrorOf<Properties[K]>> }[keyof Properties]>,
+    | PartialE<{ readonly [K in keyof Properties]: KeyE<K, ErrorOf<Properties[K]>> }[keyof Properties]>,
     Partial<{ [K in keyof Properties]: TypeOf<Properties[K]> }>
   > {
   readonly _tag: 'PartialD'
@@ -474,39 +527,10 @@ export interface PartialD<Properties>
 }
 export declare const partial: <Properties extends Record<string, AnyUD>>(properties: Properties) => PartialD<Properties>
 
-export interface TupleD<Components extends ReadonlyArray<AnyUD>>
-  extends Decoder<
-    unknown,
-    LeafE<UnknownArrayE> | TupleE<{ [K in keyof Components]: RequiredIndexE<K, ErrorOf<Components[K]>> }[number]>,
-    { [K in keyof Components]: TypeOf<Components[K]> }
-  > {
-  readonly _tag: 'TupleD'
-  readonly components: Components
-}
-
-export declare const tuple: <Components extends ReadonlyArray<AnyUD>>(...components: Components) => TupleD<Components>
-
-export interface ArrayD<Item>
-  extends Decoder<unknown, LeafE<UnknownArrayE> | ArrayE<OptionalIndexE<number, ErrorOf<Item>>>, Array<TypeOf<Item>>> {
-  readonly _tag: 'ArrayD'
-  readonly item: Item
-}
-export const array = <Item extends AnyUD>(item: Item): ArrayD<Item> => ({
-  _tag: 'ArrayD',
-  item,
-  decode: (u) => {
-    const e = UnknownArray.decode(u)
-    if (_isLeft(e)) {
-      return e
-    }
-    return fromArray(item).decode(e.right as any)
-  }
-})
-
 export interface RecordD<Codomain>
   extends Decoder<
     unknown,
-    LeafE<UnknownRecordE> | RecordE<OptionalKeyE<string, ErrorOf<Codomain>>>,
+    LeafE<UnknownRecordE> | RecordE<KeyE<string, ErrorOf<Codomain>>>,
     Record<string, TypeOf<Codomain>>
   > {
   readonly _tag: 'RecordD'
@@ -539,7 +563,7 @@ export interface IdentityD<A> extends Decoder<A, never, A> {
   readonly _tag: 'IdentityD'
 }
 
-declare const id: <A>() => IdentityD<A>
+export declare const id: <A>() => IdentityD<A>
 
 export interface CompositionD<F, S> extends Decoder<InputOf<F>, ErrorOf<F> | ErrorOf<S>, TypeOf<S>> {
   readonly _tag: 'CompositionD'
@@ -563,65 +587,65 @@ declare module 'fp-ts/lib/HKT' {
   }
 }
 
-// -------------------------------------------------------------------------------------
-// use case: mapLeft
-// -------------------------------------------------------------------------------------
+// // -------------------------------------------------------------------------------------
+// // use case: mapLeft
+// // -------------------------------------------------------------------------------------
 
-export const MapLeftExample = struct({
-  a: string,
-  b: number
-})
+// export const MapLeftExample = struct({
+//   a: string,
+//   b: number
+// })
 
-// the decode error is fully typed...
-// type MapLeftExampleE = LeafE<UnknownRecordE> | StructE<KeyE<"a", LeafE<StringE>> | KeyE<"b", LeafE<NumberE>>>
-export type MapLeftExampleE = ErrorOf<typeof MapLeftExample>
+// // the decode error is fully typed...
+// // type MapLeftExampleE = LeafE<UnknownRecordE> | StructE<KeyE<"a", LeafE<StringE>> | KeyE<"b", LeafE<NumberE>>>
+// export type MapLeftExampleE = ErrorOf<typeof MapLeftExample>
 
-// ...this means that you can pattern match on the error
-// when you are mapping
-export const result1 = pipe(
-  MapLeftExample,
-  mapLeft((de) => {
-    switch (de._tag) {
-      case 'LeafE':
-        // const leafE: UnknownRecordE
-        const leafE = de.error
-        return `cannot decode ${leafE.actual}, should be a Record<string, unknown>`
-      case 'StructE':
-        // const errors: RNEA.ReadonlyNonEmptyArray<KeyE<"a", LeafE<StringE>> | KeyE<"b", LeafE<NumberE>>>
-        const errors = de.errors
-        return errors
-          .map((e): string => {
-            switch (e.key) {
-              case 'a':
-                return e.error.error._tag
-              case 'b':
-                return e.error.error._tag
-            }
-          })
-          .join('\n')
-    }
-  })
-)
+// // ...this means that you can pattern match on the error
+// // when you are mapping
+// export const result1 = pipe(
+//   MapLeftExample,
+//   mapLeft((de) => {
+//     switch (de._tag) {
+//       case 'LeafE':
+//         // const leafE: UnknownRecordE
+//         const leafE = de.error
+//         return `cannot decode ${leafE.actual}, should be a Record<string, unknown>`
+//       case 'StructE':
+//         // const errors: RNEA.ReadonlyNonEmptyArray<KeyE<"a", LeafE<StringE>> | KeyE<"b", LeafE<NumberE>>>
+//         const errors = de.errors
+//         return errors
+//           .map((e): string => {
+//             switch (e.key) {
+//               case 'a':
+//                 return e.error.error._tag
+//               case 'b':
+//                 return e.error.error._tag
+//             }
+//           })
+//           .join('\n')
+//     }
+//   })
+// )
 
-// -------------------------------------------------------------------------------------
-// use case: custom leaf error
-// -------------------------------------------------------------------------------------
+// // -------------------------------------------------------------------------------------
+// // use case: custom leaf error
+// // -------------------------------------------------------------------------------------
 
-interface NonEmptyStringBrand {
-  readonly NonEmptyString: unique symbol
-}
-export type NonEmptyString = string & NonEmptyStringBrand
-export interface NonEmptyStringE extends ActualE<string> {
-  readonly _tag: 'NonEmptyStringE'
-}
-declare const nonEmptyStringE: (actual: string) => NonEmptyStringE
-export const NonEmptyString = pipe(
-  id<string>(),
-  refine(
-    (s): s is NonEmptyString => s.length > 0,
-    (actual) => leafE(nonEmptyStringE(actual))
-  )
-)
+// interface NonEmptyStringBrand {
+//   readonly NonEmptyString: unique symbol
+// }
+// export type NonEmptyString = string & NonEmptyStringBrand
+// export interface NonEmptyStringE extends ActualE<string> {
+//   readonly _tag: 'NonEmptyStringE'
+// }
+// declare const nonEmptyStringE: (actual: string) => NonEmptyStringE
+// export const NonEmptyString = pipe(
+//   id<string>(),
+//   refine(
+//     (s): s is NonEmptyString => s.length > 0,
+//     (actual) => leafE(nonEmptyStringE(actual))
+//   )
+// )
 
 // -------------------------------------------------------------------------------------
 // use case: handling a generic error, for example encoding to a Tree<string>
@@ -644,13 +668,15 @@ export const toTreeWith = <E>(leafEncoder: (e: E) => Tree<string>): ((de: Decode
     switch (de._tag) {
       case 'LeafE':
         return leafEncoder(de.error)
-      case 'RequiredIndexE':
-        return tree(`required index ${de.index}`, [go(de.error)])
-      case 'OptionalIndexE':
+      case 'ComponentE':
+        return tree(`required component ${de.index}`, [go(de.error)])
+      case 'IndexE':
         return tree(`optional index ${de.index}`, [go(de.error)])
       case 'ArrayE':
         return tree(`cannot decode to array, ${de.errors.length} error(s) found`, de.errors.map(go))
       // etc...
+      case 'TupleE':
+        return tree(`cannot decode to tuple, ${de.errors.length} error(s) found`, de.errors.map(go))
       default:
         return tree('TODO')
     }
@@ -685,319 +711,319 @@ const drawForest = (indentation: string, forest: ReadonlyArray<Tree<string>>): s
   return r
 }
 
-const DR1 = fromStruct({
-  a: string,
-  b: number,
-  c: union(string, number)
-})
+// const DR1 = fromStruct({
+//   a: string,
+//   b: number,
+//   c: union(string, number)
+// })
 
-export const treeLeft1 = pipe(DR1, mapLeft(defaultToTree))
+// export const treeLeft1 = pipe(DR1, mapLeft(defaultToTree))
 
-// what if the decoder contains a custom error?
+// // what if the decoder contains a custom error?
 
-const DR2 = fromStruct({
-  a: NonEmptyString,
-  b: number
-})
+// const DR2 = fromStruct({
+//   a: NonEmptyString,
+//   b: number
+// })
 
-// export const treeOutput2 = pipe(DR2, mapLeft(draw)) // <= type error because `NonEmptyStringE` is not handled
+// // export const treeOutput2 = pipe(DR2, mapLeft(draw)) // <= type error because `NonEmptyStringE` is not handled
 
-// I can define my own `leafToTree`
-const myLeafToTree = (e: DefaultLeafE | NonEmptyStringE) => {
-  switch (e._tag) {
-    case 'NonEmptyStringE':
-      return tree(`cannot decode ${e.actual}, should be a non empty string`)
-    default:
-      return defaultLeafEToTree(e)
-  }
-}
+// // I can define my own `leafToTree`
+// const myLeafToTree = (e: DefaultLeafE | NonEmptyStringE) => {
+//   switch (e._tag) {
+//     case 'NonEmptyStringE':
+//       return tree(`cannot decode ${e.actual}, should be a non empty string`)
+//     default:
+//       return defaultLeafEToTree(e)
+//   }
+// }
 
-export const treeLeft2 = pipe(DR2, mapLeft(toTreeWith(myLeafToTree))) // <= ok
+// export const treeLeft2 = pipe(DR2, mapLeft(toTreeWith(myLeafToTree))) // <= ok
 
-// -------------------------------------------------------------------------------------
-// examples
-// -------------------------------------------------------------------------------------
+// // -------------------------------------------------------------------------------------
+// // examples
+// // -------------------------------------------------------------------------------------
 
-// literal
-export const LDU = literal(1, true)
-export type LDUI = InputOf<typeof LDU>
-export type LDUE = ErrorOf<typeof LDU>
-export type LDUA = TypeOf<typeof LDU>
+// // literal
+// export const LDU = literal(1, true)
+// export type LDUI = InputOf<typeof LDU>
+// export type LDUE = ErrorOf<typeof LDU>
+// export type LDUA = TypeOf<typeof LDU>
 
-// fromStruct
-export const SD = fromStruct({
-  a: string,
-  b: number
-})
-export type SDI = InputOf<typeof SD>
-export type SDE = ErrorOf<typeof SD>
-export type SDA = TypeOf<typeof SD>
+// // fromStruct
+// export const SD = fromStruct({
+//   a: string,
+//   b: number
+// })
+// export type SDI = InputOf<typeof SD>
+// export type SDE = ErrorOf<typeof SD>
+// export type SDA = TypeOf<typeof SD>
 
-// struct
-export const SUD = struct({
-  a: string,
-  b: number
-})
-export type SUDI = InputOf<typeof SUD>
-export type SUDE = ErrorOf<typeof SUD>
-export type SUDA = TypeOf<typeof SUD>
+// // struct
+// export const SUD = struct({
+//   a: string,
+//   b: number
+// })
+// export type SUDI = InputOf<typeof SUD>
+// export type SUDE = ErrorOf<typeof SUD>
+// export type SUDA = TypeOf<typeof SUD>
 
-// fromPartial
-export const PSD = fromPartial({
-  a: string,
-  b: number
-})
-export type PSDI = InputOf<typeof PSD>
-export type PSDE = ErrorOf<typeof PSD>
-export type PSDA = TypeOf<typeof PSD>
+// // fromPartial
+// export const PSD = fromPartial({
+//   a: string,
+//   b: number
+// })
+// export type PSDI = InputOf<typeof PSD>
+// export type PSDE = ErrorOf<typeof PSD>
+// export type PSDA = TypeOf<typeof PSD>
 
-// partial
-export const PSUD = partial({
-  a: string,
-  b: number
-})
-export type PSUDE = ErrorOf<typeof PSUD>
-export type PSUDA = TypeOf<typeof PSUD>
+// // partial
+// export const PSUD = partial({
+//   a: string,
+//   b: number
+// })
+// export type PSUDE = ErrorOf<typeof PSUD>
+// export type PSUDA = TypeOf<typeof PSUD>
 
-// fromTuple
-export const TD = fromTuple(string, number)
-export type TDI = InputOf<typeof TD>
-export type TDE = ErrorOf<typeof TD>
-export type TDA = TypeOf<typeof TD>
+// // fromTuple
+// export const TD = fromTuple(string, number)
+// export type TDI = InputOf<typeof TD>
+// export type TDE = ErrorOf<typeof TD>
+// export type TDA = TypeOf<typeof TD>
 
-// tuple
-export const TUD = tuple(string, number)
-export type TUDE = ErrorOf<typeof TUD>
-export type TUDA = TypeOf<typeof TUD>
+// // tuple
+// export const TUD = tuple(string, number)
+// export type TUDE = ErrorOf<typeof TUD>
+// export type TUDA = TypeOf<typeof TUD>
 
-// fromArray
-export const AD = fromArray(string)
-export type ADI = InputOf<typeof AD>
-export type ADE = ErrorOf<typeof AD>
-export type ADA = TypeOf<typeof AD>
+// // fromArray
+// export const AD = fromArray(string)
+// export type ADI = InputOf<typeof AD>
+// export type ADE = ErrorOf<typeof AD>
+// export type ADA = TypeOf<typeof AD>
 
-// array
-export const AUD = array(string)
+// // array
+// export const AUD = array(string)
 
-// fromRecord
-export const RD = fromRecord(number)
-export type RDI = InputOf<typeof RD>
-export type RDE = ErrorOf<typeof RD>
-export type RDA = TypeOf<typeof RD>
+// // fromRecord
+// export const RD = fromRecord(number)
+// export type RDI = InputOf<typeof RD>
+// export type RDE = ErrorOf<typeof RD>
+// export type RDA = TypeOf<typeof RD>
 
-// record
-export const RUD = record(number)
+// // record
+// export const RUD = record(number)
 
-// refine
-export type NonEmptyStringDI = InputOf<typeof NonEmptyString>
-export type NonEmptyStringDE = ErrorOf<typeof NonEmptyString>
-export type NonEmptyStringDA = TypeOf<typeof NonEmptyString>
+// // refine
+// export type NonEmptyStringDI = InputOf<typeof NonEmptyString>
+// export type NonEmptyStringDE = ErrorOf<typeof NonEmptyString>
+// export type NonEmptyStringDA = TypeOf<typeof NonEmptyString>
 
-const NonEmptyStringUD = pipe(string, compose(NonEmptyString))
-export type NonEmptyStringUDE = ErrorOf<typeof NonEmptyStringUD>
-export type NonEmptyStringUDA = TypeOf<typeof NonEmptyStringUD>
+// const NonEmptyStringUD = pipe(string, compose(NonEmptyString))
+// export type NonEmptyStringUDE = ErrorOf<typeof NonEmptyStringUD>
+// export type NonEmptyStringUDA = TypeOf<typeof NonEmptyStringUD>
 
-export interface IntBrand {
-  readonly Int: unique symbol
-}
-export type Int = number & IntBrand
-export interface IntE {
-  readonly _tag: 'IntE'
-}
-export declare const intE: IntE
-export const IntD = pipe(
-  id<number>(),
-  refine(
-    (n): n is Int => Number.isInteger(n),
-    () => leafE(intE)
-  )
-)
-export const IntUD = pipe(number, compose(IntD))
+// export interface IntBrand {
+//   readonly Int: unique symbol
+// }
+// export type Int = number & IntBrand
+// export interface IntE {
+//   readonly _tag: 'IntE'
+// }
+// export declare const intE: IntE
+// export const IntD = pipe(
+//   id<number>(),
+//   refine(
+//     (n): n is Int => Number.isInteger(n),
+//     () => leafE(intE)
+//   )
+// )
+// export const IntUD = pipe(number, compose(IntD))
 
-// union
-export const UD = union(NonEmptyString, IntD)
-export type UDI = InputOf<typeof UD>
-export type UDE = ErrorOf<typeof UD>
-export type UDA = TypeOf<typeof UD>
+// // union
+// export const UD = union(NonEmptyString, IntD)
+// export type UDI = InputOf<typeof UD>
+// export type UDE = ErrorOf<typeof UD>
+// export type UDA = TypeOf<typeof UD>
 
-export const UUD = union(string, number)
-export type UUDE = ErrorOf<typeof UUD>
-export type UUDA = TypeOf<typeof UUD>
+// export const UUD = union(string, number)
+// export type UUDE = ErrorOf<typeof UUD>
+// export type UUDA = TypeOf<typeof UUD>
 
-// nullable
-export const ND = nullable(NonEmptyString)
-export type NDI = InputOf<typeof ND>
-export type NDE = ErrorOf<typeof ND>
-export type NDA = TypeOf<typeof ND>
+// // nullable
+// export const ND = nullable(NonEmptyString)
+// export type NDI = InputOf<typeof ND>
+// export type NDE = ErrorOf<typeof ND>
+// export type NDA = TypeOf<typeof ND>
 
-export const NUD = nullable(string)
-export type NUDE = ErrorOf<typeof NUD>
-export type NUDA = TypeOf<typeof NUD>
+// export const NUD = nullable(string)
+// export type NUDE = ErrorOf<typeof NUD>
+// export type NUDA = TypeOf<typeof NUD>
 
-// parse
-interface ParseNumberE {
-  readonly _tag: 'ParseNumberE'
-}
-declare const parseNumber: (s: string) => Result<ParseNumberE, number>
-const PD = pipe(id<string>(), parse(parseNumber))
-export type PDI = InputOf<typeof PD>
-export type PDE = ErrorOf<typeof PD>
-export type PDA = TypeOf<typeof PD>
+// // parse
+// interface ParseNumberE {
+//   readonly _tag: 'ParseNumberE'
+// }
+// declare const parseNumber: (s: string) => Result<ParseNumberE, number>
+// const PD = pipe(id<string>(), parse(parseNumber))
+// export type PDI = InputOf<typeof PD>
+// export type PDE = ErrorOf<typeof PD>
+// export type PDA = TypeOf<typeof PD>
 
-const PUD = pipe(string, parse(parseNumber))
-export type PUDE = ErrorOf<typeof PUD>
-export type PUDA = TypeOf<typeof PUD>
+// const PUD = pipe(string, parse(parseNumber))
+// export type PUDE = ErrorOf<typeof PUD>
+// export type PUDA = TypeOf<typeof PUD>
 
-// intersect
-export const ID = pipe(fromStruct({ a: string }), intersect(fromStruct({ b: number })))
-export type IDI = InputOf<typeof ID>
-export type IDE = ErrorOf<typeof ID>
-export type IDA = TypeOf<typeof ID>
+// // intersect
+// export const ID = pipe(fromStruct({ a: string }), intersect(fromStruct({ b: number })))
+// export type IDI = InputOf<typeof ID>
+// export type IDE = ErrorOf<typeof ID>
+// export type IDA = TypeOf<typeof ID>
 
-export const IUD = pipe(struct({ a: string }), intersect(struct({ b: number })))
-export type IUDE = ErrorOf<typeof IUD>
-export type IUDA = TypeOf<typeof IUD>
+// export const IUD = pipe(struct({ a: string }), intersect(struct({ b: number })))
+// export type IUDE = ErrorOf<typeof IUD>
+// export type IUDA = TypeOf<typeof IUD>
 
-// lazy
-interface Category {
-  name: string
-  categories: ReadonlyArray<Category>
-}
-// Note: getting the error type is quite difficult.
-interface ReadonlyArrayCategoryE extends ArrayE<OptionalIndexE<number, CategoryE>> {}
-type CategoryE = LazyE<
-  | LeafE<UnknownRecordE>
-  | StructE<
-      | RequiredKeyE<'name', LeafE<StringE> | RefineE<LeafE<NonEmptyStringE>>>
-      | RequiredKeyE<'categories', LeafE<UnknownArrayE> | ReadonlyArrayCategoryE>
-    >
->
-// A possible solution is using DecodeError<E>
-// type CategoryE = DecodeError<StringE | NonEmptyStringE | UnknownArrayE | UnknownRecordE>
-export const LaUD: Decoder<unknown, CategoryE, Category> = lazy('Category', () =>
-  struct({
-    name: NonEmptyStringUD,
-    categories: array(LaUD)
-  })
-)
-export type LaUDE = ErrorOf<typeof LaUD>
-export type LaUDA = TypeOf<typeof LaUD>
+// // lazy
+// interface Category {
+//   name: string
+//   categories: ReadonlyArray<Category>
+// }
+// // Note: getting the error type is quite difficult.
+// interface ReadonlyArrayCategoryE extends ArrayE<IndexE<number, CategoryE>> {}
+// type CategoryE = LazyE<
+//   | LeafE<UnknownRecordE>
+//   | StructE<
+//       | KeyE<'name', LeafE<StringE> | RefineE<LeafE<NonEmptyStringE>>>
+//       | KeyE<'categories', LeafE<UnknownArrayE> | ReadonlyArrayCategoryE>
+//     >
+// >
+// // A possible solution is using DecodeError<E>
+// // type CategoryE = DecodeError<StringE | NonEmptyStringE | UnknownArrayE | UnknownRecordE>
+// export const LaUD: Decoder<unknown, CategoryE, Category> = lazy('Category', () =>
+//   struct({
+//     name: NonEmptyStringUD,
+//     categories: array(LaUD)
+//   })
+// )
+// export type LaUDE = ErrorOf<typeof LaUD>
+// export type LaUDA = TypeOf<typeof LaUD>
 
-// sum
-export const SumD = fromSum('type')({
-  A: fromStruct({ type: literal('A'), a: string }),
-  B: fromStruct({ type: literal('B'), b: string })
-})
-export type SumDI = InputOf<typeof SumD>
-export type SumDE = ErrorOf<typeof SumD>
-export type SumDA = TypeOf<typeof SumD>
+// // sum
+// export const SumD = fromSum('type')({
+//   A: fromStruct({ type: literal('A'), a: string }),
+//   B: fromStruct({ type: literal('B'), b: string })
+// })
+// export type SumDI = InputOf<typeof SumD>
+// export type SumDE = ErrorOf<typeof SumD>
+// export type SumDA = TypeOf<typeof SumD>
 
-const sumType = sum('type')
-export const SumUD = sumType({
-  A: struct({ type: literal('A'), a: string }),
-  B: struct({ type: literal('B'), b: string })
-})
-export type SumUDE = ErrorOf<typeof SumUD>
-export type SumUDA = TypeOf<typeof SumUD>
+// const sumType = sum('type')
+// export const SumUD = sumType({
+//   A: struct({ type: literal('A'), a: string }),
+//   B: struct({ type: literal('B'), b: string })
+// })
+// export type SumUDE = ErrorOf<typeof SumUD>
+// export type SumUDA = TypeOf<typeof SumUD>
 
-// all
-const AllD = fromStruct({
-  a: LDU,
-  b: TD,
-  c: AD,
-  d: RD,
-  e: UD,
-  f: ND,
-  g: NonEmptyString,
-  h: PD,
-  i: ID
-})
-export type AllDI = InputOf<typeof AllD>
-export type AllDE = ErrorOf<typeof AllD>
-export type AllDA = TypeOf<typeof AllD>
+// // all
+// const AllD = fromStruct({
+//   a: LDU,
+//   b: TD,
+//   c: AD,
+//   d: RD,
+//   e: UD,
+//   f: ND,
+//   g: NonEmptyString,
+//   h: PD,
+//   i: ID
+// })
+// export type AllDI = InputOf<typeof AllD>
+// export type AllDE = ErrorOf<typeof AllD>
+// export type AllDA = TypeOf<typeof AllD>
 
-const AllUD = struct({
-  a: LDU,
-  b: SUD,
-  c: TUD,
-  d: AUD,
-  e: RUD,
-  f: UUD,
-  g: NUD,
-  h: NonEmptyStringUD,
-  i: PUD,
-  l: IUD
-})
-export type AllUDE = ErrorOf<typeof AllUD>
-export type AllUDA = TypeOf<typeof AllUD>
+// const AllUD = struct({
+//   a: LDU,
+//   b: SUD,
+//   c: TUD,
+//   d: AUD,
+//   e: RUD,
+//   f: UUD,
+//   g: NUD,
+//   h: NonEmptyStringUD,
+//   i: PUD,
+//   l: IUD
+// })
+// export type AllUDE = ErrorOf<typeof AllUD>
+// export type AllUDA = TypeOf<typeof AllUD>
 
-// -------------------------------------------------------------------------------------
-// use case: form
-// -------------------------------------------------------------------------------------
+// // -------------------------------------------------------------------------------------
+// // use case: form
+// // -------------------------------------------------------------------------------------
 
-const MyForm = fromStruct({
-  name: NonEmptyStringUD,
-  age: number
-})
+// const MyForm = fromStruct({
+//   name: NonEmptyStringUD,
+//   age: number
+// })
 
-pipe(
-  MyForm,
-  mapLeft((e) => {
-    // const errors: RNEA.ReadonlyNonEmptyArray<KeyE<"name", LeafE<StringE> | RefineE<LeafE<NonEmptyStringE>>> | KeyE<"age", LeafE<NumberE>>>
-    const errors = e.errors
-    console.log(errors)
-    return e
-  })
-)
+// pipe(
+//   MyForm,
+//   mapLeft((e) => {
+//     // const errors: RNEA.ReadonlyNonEmptyArray<KeyE<"name", LeafE<StringE> | RefineE<LeafE<NonEmptyStringE>>> | KeyE<"age", LeafE<NumberE>>>
+//     const errors = e.errors
+//     console.log(errors)
+//     return e
+//   })
+// )
 
-const d = fromSum('_tag')({
-  A: fromStruct({
-    _tag: literal('A'),
-    a: string
-  }),
-  B: fromStruct({
-    _tag: literal('B'),
-    b: number
-  })
-})
+// const d = fromSum('_tag')({
+//   A: fromStruct({
+//     _tag: literal('A'),
+//     a: string
+//   }),
+//   B: fromStruct({
+//     _tag: literal('B'),
+//     b: number
+//   })
+// })
 
-pipe(
-  d,
-  mapLeft((de) => {
-    switch (de._tag) {
-      case 'TagNotFoundE': {
-        return de.tag
-      }
-      case 'SumE': {
-        pipe(
-          de.errors,
-          RNEA.map((e) => {
-            switch (e.member) {
-              case 'A':
-                return pipe(
-                  e.error.errors,
-                  RNEA.map((x) => x)
-                )
-              case 'B':
-                return pipe(
-                  e.error.errors,
-                  RNEA.map((x) => x)
-                )
-            }
-          })
-        )
-      }
-    }
-  })
-)
+// pipe(
+//   d,
+//   mapLeft((de) => {
+//     switch (de._tag) {
+//       case 'TagNotFoundE': {
+//         return de.tag
+//       }
+//       case 'SumE': {
+//         pipe(
+//           de.errors,
+//           RNEA.map((e) => {
+//             switch (e.member) {
+//               case 'A':
+//                 return pipe(
+//                   e.error.errors,
+//                   RNEA.map((x) => x)
+//                 )
+//               case 'B':
+//                 return pipe(
+//                   e.error.errors,
+//                   RNEA.map((x) => x)
+//                 )
+//             }
+//           })
+//         )
+//       }
+//     }
+//   })
+// )
 
-export const X = pipe(
-  partial({
-    a: string,
-    b: number
-  }),
-  mapLeft((de) => de)
-)
+// export const X = pipe(
+//   partial({
+//     a: string,
+//     b: number
+//   }),
+//   mapLeft((de) => de)
+// )
 
 // -------------------------------------------------------------------------------------
 // tests
@@ -1005,7 +1031,7 @@ export const X = pipe(
 
 console.log(
   pipe(
-    array(string).decode(null),
+    fromTuple(string).decode([1]),
     _mapLeft((de) => drawTree(defaultToTree(de))),
     E.fold(
       (e) => e,
