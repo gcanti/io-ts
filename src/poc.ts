@@ -776,37 +776,3 @@ pipe(
     return e
   })
 )
-
-// const d = fromSum('_tag')({
-//   A: fromStruct({
-//     _tag: literal('A'),
-//     a: string
-//   }),
-//   B: fromStruct({
-//     _tag: literal('B'),
-//     b: number
-//   })
-// })
-
-// pipe(
-//   d.decode({ _tag: null, a: null }),
-//   E.mapLeft((e) => {
-//     switch (e._tag) {
-//       case 'LeafE': {
-//         break
-//       }
-//       case 'SumE': {
-//         const errors = e.errors
-//         pipe(
-//           errors,
-//           RNEA.map(({ error }) =>
-//             pipe(
-//               error.errors, // <-- error here
-//               RNEA.map((x) => x)
-//             )
-//           )
-//         )
-//       }
-//     }
-//   })
-// )

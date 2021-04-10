@@ -256,10 +256,10 @@ export interface FromRecordD<Codomain>
 }
 export declare const fromRecord: <Codomain extends AnyD>(codomain: Codomain) => FromRecordD<Codomain>
 
-export interface FromTupleD<Components>
+export interface FromTupleD<Components extends ReadonlyArray<AnyD>>
   extends Decoder<
     { [K in keyof Components]: InputOf<Components[K]> },
-    TupleE<keyof Components, ErrorOf<Components[keyof Components]>>,
+    TupleE<{ [K in keyof Components]: K }[number], ErrorOf<Components[number]>>,
     { [K in keyof Components]: TypeOf<Components[K]> }
   > {
   readonly _tag: 'FromTupleD'
@@ -269,10 +269,10 @@ export declare const fromTuple: <Components extends ReadonlyArray<AnyD>>(
   ...components: Components
 ) => FromTupleD<Components>
 
-export interface UnionD<Members>
+export interface UnionD<Members extends ReadonlyArray<AnyD>>
   extends Decoder<
     InputOf<Members[keyof Members]>,
-    UnionE<keyof Members, ErrorOf<Members[keyof Members]>>,
+    UnionE<{ [K in keyof Members]: K }[number], ErrorOf<Members[number]>>,
     TypeOf<Members[keyof Members]>
   > {
   readonly _tag: 'UnionD'
@@ -364,10 +364,10 @@ export interface PartialD<Properties>
 }
 export declare const partial: <Properties extends Record<string, AnyUD>>(properties: Properties) => PartialD<Properties>
 
-export interface TupleD<Components>
+export interface TupleD<Components extends ReadonlyArray<AnyUD>>
   extends Decoder<
     unknown,
-    LeafE<UnknownArrayE> | TupleE<keyof Components, ErrorOf<Components[keyof Components]>>,
+    LeafE<UnknownArrayE> | TupleE<{ [K in keyof Components]: K }[number], ErrorOf<Components[number]>>,
     { [K in keyof Components]: TypeOf<Components[K]> }
   > {
   readonly _tag: 'TupleD'
@@ -786,37 +786,3 @@ pipe(
     return e
   })
 )
-
-// const d = fromSum('_tag')({
-//   A: fromStruct({
-//     _tag: literal('A'),
-//     a: string
-//   }),
-//   B: fromStruct({
-//     _tag: literal('B'),
-//     b: number
-//   })
-// })
-
-// pipe(
-//   d.decode({ _tag: null, a: null }),
-//   E.mapLeft((e) => {
-//     switch (e._tag) {
-//       case 'LeafE': {
-//         break
-//       }
-//       case 'SumE': {
-//         const errors = e.errors
-//         pipe(
-//           errors,
-//           RNEA.map(({ error }) =>
-//             pipe(
-//               error.errors, // <-- error here
-//               RNEA.map((x) => x)
-//             )
-//           )
-//         )
-//       }
-//     }
-//   })
-// )
