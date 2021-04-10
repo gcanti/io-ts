@@ -37,7 +37,6 @@ export interface NullableE<E> {
 }
 
 export interface KeyE<E> {
-  readonly actual: unknown
   readonly key: string
   readonly error: E
 }
@@ -53,7 +52,6 @@ export interface PartialE<E> {
 }
 
 export interface IndexE<E> {
-  readonly actual: unknown
   readonly index: number
   readonly error: E
 }
@@ -319,7 +317,7 @@ export declare const lazy: <I, E, A>(id: string, decoder: Lazy<Decoder<I, E, A>>
 
 export interface TagE extends ActualE<unknown> {
   readonly _tag: 'TagE'
-  readonly tags: ReadonlyNonEmptyArray<string>
+  readonly tags: ReadonlyNonEmptyArray<PropertyKey>
 }
 
 export interface FromSumD<T extends string, Members>
@@ -778,3 +776,37 @@ pipe(
     return e
   })
 )
+
+// const d = fromSum('_tag')({
+//   A: fromStruct({
+//     _tag: literal('A'),
+//     a: string
+//   }),
+//   B: fromStruct({
+//     _tag: literal('B'),
+//     b: number
+//   })
+// })
+
+// pipe(
+//   d.decode({ _tag: null, a: null }),
+//   E.mapLeft((e) => {
+//     switch (e._tag) {
+//       case 'LeafE': {
+//         break
+//       }
+//       case 'SumE': {
+//         const errors = e.errors
+//         pipe(
+//           errors,
+//           RNEA.map(({ error }) =>
+//             pipe(
+//               error.errors, // <-- error here
+//               RNEA.map((x) => x)
+//             )
+//           )
+//         )
+//       }
+//     }
+//   })
+// )

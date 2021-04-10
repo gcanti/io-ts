@@ -37,7 +37,6 @@ export interface NullableE<E> {
 }
 
 export interface KeyE<K, E> {
-  readonly actual: unknown
   readonly key: K
   readonly error: E
 }
@@ -53,7 +52,6 @@ export interface PartialE<K, E> {
 }
 
 export interface IndexE<I, E> {
-  readonly actual: unknown
   readonly index: I
   readonly error: E
 }
@@ -145,7 +143,7 @@ export type DefaultLeafE =
   | BooleanE
   | UnknownRecordE
   | UnknownArrayE
-  | LiteralE<ReadonlyNonEmptyArray<Literal>>
+  | LiteralE<Literal>
   | TagE<PropertyKey>
 
 // -------------------------------------------------------------------------------------
@@ -202,13 +200,13 @@ export declare const UnknownRecord: UnknownRecordD
 
 export type Literal = string | number | boolean | null
 
-export interface LiteralE<A extends ReadonlyNonEmptyArray<Literal>> extends ActualE<unknown> {
+export interface LiteralE<A extends Literal> extends ActualE<unknown> {
   readonly _tag: 'LiteralE'
-  readonly literals: A
+  readonly literals: ReadonlyNonEmptyArray<A>
 }
 
 export interface LiteralD<A extends ReadonlyNonEmptyArray<Literal>>
-  extends Decoder<unknown, LeafE<LiteralE<A>>, A[number]> {
+  extends Decoder<unknown, LeafE<LiteralE<A[number]>>, A[number]> {
   readonly _tag: 'LiteralD'
   readonly literals: A
 }
@@ -788,3 +786,37 @@ pipe(
     return e
   })
 )
+
+// const d = fromSum('_tag')({
+//   A: fromStruct({
+//     _tag: literal('A'),
+//     a: string
+//   }),
+//   B: fromStruct({
+//     _tag: literal('B'),
+//     b: number
+//   })
+// })
+
+// pipe(
+//   d.decode({ _tag: null, a: null }),
+//   E.mapLeft((e) => {
+//     switch (e._tag) {
+//       case 'LeafE': {
+//         break
+//       }
+//       case 'SumE': {
+//         const errors = e.errors
+//         pipe(
+//           errors,
+//           RNEA.map(({ error }) =>
+//             pipe(
+//               error.errors, // <-- error here
+//               RNEA.map((x) => x)
+//             )
+//           )
+//         )
+//       }
+//     }
+//   })
+// )
