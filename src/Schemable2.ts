@@ -13,8 +13,8 @@ export type TypeOfHKT3<K3> = K3 extends HKT3<any, any, any, infer A> ? A : never
 
 export interface Schemable<S> {
   readonly URI: S
-  readonly string: HKT3<S, unknown, D.LeafE<D.StringE>, string>
-  readonly number: HKT3<S, unknown, D.LeafE<D.NumberE>, number>
+  readonly string: HKT3<S, unknown, D.StringLE, string>
+  readonly number: HKT3<S, unknown, D.NumberLE, number>
   readonly nullable: <Or extends AnyHKT3>(
     or: Or
   ) => HKT3<S, null | InputOfHKT3<Or>, D.NullableE<ErrorOfHKT3<Or>>, null | TypeOfHKT3<Or>>
@@ -46,7 +46,7 @@ const schema1 = make((S) => S.nullable(S.string))
 const schema2 = nullableS(stringS)
 
 type ToDecoder<S> = S extends stringS
-  ? D.stringD
+  ? D.stringUD
   : S extends NullableS<infer Or>
   ? D.NullableD<ToDecoder<Or>>
   : D.Decoder<InputOfS<S>, ErrorOfS<S>, TypeOfS<S>>
