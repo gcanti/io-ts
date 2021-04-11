@@ -3,7 +3,6 @@ import { flow, Lazy, Refinement } from 'fp-ts/lib/function'
 import { pipe } from 'fp-ts/lib/pipeable'
 import * as RA from 'fp-ts/lib/ReadonlyArray'
 import * as RNEA from 'fp-ts/lib/ReadonlyNonEmptyArray'
-import { Semigroup } from 'fp-ts/lib/Semigroup'
 
 import ReadonlyNonEmptyArray = RNEA.ReadonlyNonEmptyArray
 
@@ -17,14 +16,46 @@ import ReadonlyNonEmptyArray = RNEA.ReadonlyNonEmptyArray
   UD = "Decoder with `unknown` input"
   E = "Error"
   LE = "Error wrapped in `LeafE`"
+  W = "Warning"
 
 */
 
-export interface Warnings extends Forest<string> {}
-
-const S: Semigroup<Warnings> = {
-  concat: (w1, w2) => [...w1, ...w2]
+export interface KeyW {
+  readonly _tag: 'KeyW'
+  readonly key: string
 }
+export const keyW = (key: string): KeyW => ({ _tag: 'KeyW', key })
+
+export interface UnexpectedKeyW {
+  readonly _tag: 'UnexpectedKeyW'
+  readonly key: string
+}
+export const unexpectedKeyW = (key: string): UnexpectedKeyW => ({ _tag: 'UnexpectedKeyW', key })
+
+export interface ComponentW {
+  readonly _tag: 'ComponentW'
+  readonly component: number
+}
+export const componentW = (component: number): ComponentW => ({ _tag: 'ComponentW', component })
+
+export interface UnexpectedComponentW {
+  readonly _tag: 'UnexpectedComponentW'
+  readonly component: number
+}
+export const unexpectedComponentW = (component: number): UnexpectedComponentW => ({
+  _tag: 'UnexpectedComponentW',
+  component
+})
+
+export interface IndexW {
+  readonly _tag: 'IndexW'
+  readonly index: number
+}
+export const indexW = (index: number): IndexW => ({ _tag: 'IndexW', index })
+
+export type Warning = KeyW | UnexpectedKeyW | ComponentW | UnexpectedComponentW | IndexW
+
+export interface Warnings extends Forest<Warning> {}
 
 export type Result<E, A> = readonly [E.Either<E, A>, Warnings]
 
@@ -39,7 +70,7 @@ export const rchainW = <E2, A, B>(f: (a: A) => Result<E2, B>) => <E1>(ma: Result
     return result(e1, w1)
   }
   const [e2, w2] = f(e1.right)
-  return result(e2, S.concat(w1, w2))
+  return result(e2, [...w1, ...w2])
 }
 
 export const rmapLeft = <E, G>(f: (e: E) => G) => <A>(fa: Result<E, A>): Result<G, A> =>
@@ -392,17 +423,17 @@ export const fromStruct = <Properties extends Record<string, AnyD>>(
   properties,
   decode: (ur) => {
     const es: Array<{ readonly [K in keyof Properties]: KeyE<K, ErrorOf<Properties[K]>> }[keyof Properties]> = []
-    const ws: Array<Tree<string>> = []
+    const ws: Array<Tree<Warning>> = []
     for (const k in ur) {
       if (!properties.hasOwnProperty(k)) {
-        ws.push(tree(`unexpected key ${JSON.stringify(k)}`))
+        ws.push(tree(unexpectedKeyW(k)))
       }
     }
     const ar: Record<string, unknown> = {}
     for (const k in properties) {
       const [e, w] = properties[k].decode(ur[k])
       if (RA.isNonEmpty(w)) {
-        ws.push(tree(`required key ${JSON.stringify(k)}`, w))
+        ws.push(tree(keyW(k), w))
       }
       if (E.isLeft(e)) {
         es.push(keyE(k, true, e.left))
@@ -438,12 +469,12 @@ export const fromArray = <Item extends AnyD>(item: Item): FromArrayD<Item> => ({
   item,
   decode: (us) => {
     const es: Array<IndexE<number, ErrorOf<typeof item>>> = []
-    const ws: Array<Tree<string>> = []
+    const ws: Array<Tree<Warning>> = []
     const as: Array<TypeOf<typeof item>> = []
     for (let index = 0; index < us.length; index++) {
       const [e, w] = item.decode(us[index])
       if (RA.isNonEmpty(w)) {
-        ws.push(tree(`optional index ${JSON.stringify(index)}`, w))
+        ws.push(tree(indexW(index), w))
       }
       if (E.isLeft(e)) {
         es.push(indexE(index, e.left))
@@ -500,16 +531,16 @@ export const fromTuple = <Components extends ReadonlyArray<AnyD>>(
   components,
   decode: (us) => {
     const es: Array<ComponentE<number, ErrorOf<ErrorOf<Components[number]>>>> = []
-    const ws: Array<Tree<string>> = []
-    const len = us.length - components.length
-    if (len > 0) {
-      ws.push(tree(`unexpected additional ${len} index(es)`))
+    const ws: Array<Tree<Warning>> = []
+    let index: number
+    for (index = components.length; index < us.length; index++) {
+      ws.push(tree(unexpectedComponentW(index)))
     }
     const as: Array<unknown> = []
-    for (let index = 0; index < components.length; index++) {
+    for (index = 0; index < components.length; index++) {
       const [e, w] = components[index].decode(us[index])
       if (RA.isNonEmpty(w)) {
-        ws.push(tree(`required component ${JSON.stringify(index)}`, w))
+        ws.push(tree(componentW(index), w))
       }
       if (E.isLeft(e)) {
         es.push(componentE(index, e.left))
@@ -847,9 +878,27 @@ const toTree = toTreeWith(toTreeBuiltin)
 
 export const draw = rmapLeft(flow(toTree, drawTree))
 
+const toForestW = (w: Warnings): Forest<string> => {
+  const gow = (w: Warning): string => {
+    switch (w._tag) {
+      case 'ComponentW':
+        return `component ${JSON.stringify(w.component)}`
+      case 'IndexW':
+        return `index ${JSON.stringify(w.index)}`
+      case 'KeyW':
+        return `key ${JSON.stringify(w.key)}`
+      case 'UnexpectedKeyW':
+        return `unexpected key ${JSON.stringify(w.key)}`
+      case 'UnexpectedComponentW':
+        return `unexpected component ${JSON.stringify(w.component)}`
+    }
+  }
+  const go = (w: Tree<Warning>): Tree<string> => tree(gow(w.value), w.forest.map(go))
+  return w.map(go)
+}
 const printValue = <A>(a: A): string => 'Value:\n' + JSON.stringify(a, null, 2)
 const printErrors = (s: string): string => (s === '' ? s : 'Errors:\n' + s)
-const printWarnings = (w: Warnings): string => (w.length === 0 ? '' : '\nWarnings:\n' + drawTree(tree('top', w)))
+const printWarnings = (w: Warnings): string => (w.length === 0 ? '' : '\n' + drawTree(tree('Warnings:', toForestW(w))))
 
 export const print = <A>(ma: Result<string, A>): string => {
   const [e, w] = ma
@@ -996,7 +1045,7 @@ export const Username = pipe(
 // use case: fail on additional props #322
 // -------------------------------------------------------------------------------------
 
-export const warningsDecoder = struct({
+export const warningsStruct = struct({
   a: string,
   b: struct({
     c: number
@@ -1004,7 +1053,7 @@ export const warningsDecoder = struct({
 })
 
 pipe(
-  warningsDecoder.decode({
+  warningsStruct.decode({
     a: 'a',
     b: {
       c: 1,
@@ -1014,11 +1063,25 @@ pipe(
       }
     },
     d: 1
-  } as any),
+  }),
   draw,
   print,
   console.log
 )
+/*
+Value:
+{
+  "a": "a",
+  "b": {
+    "c": 1
+  }
+}
+Warnings:
+├─ unexpected key "d"
+└─ key "b"
+   ├─ unexpected key "e"
+   └─ unexpected key "f"
+*/
 
 // -------------------------------------------------------------------------------------
 // use case: omit, pick #553
