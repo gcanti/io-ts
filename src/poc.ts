@@ -3,6 +3,7 @@ import { flow, Lazy, Refinement } from 'fp-ts/lib/function'
 import { pipe } from 'fp-ts/lib/pipeable'
 import * as RA from 'fp-ts/lib/ReadonlyArray'
 import * as RNEA from 'fp-ts/lib/ReadonlyNonEmptyArray'
+import { Semigroup } from 'fp-ts/lib/Semigroup'
 
 import ReadonlyNonEmptyArray = RNEA.ReadonlyNonEmptyArray
 
@@ -21,32 +22,28 @@ import ReadonlyNonEmptyArray = RNEA.ReadonlyNonEmptyArray
 
 export interface Warnings extends Forest<string> {}
 
-export type Result<E, A> = E.Either<[E, Warnings], [A, Warnings]>
-
-export const rmap = <A, B>(f: (a: A) => B) => <E>(fa: Result<E, A>): Result<E, B> => {
-  if (E.isLeft(fa)) {
-    return fa
-  }
-  const [a, w] = fa.right
-  return E.right([f(a), w])
+const S: Semigroup<Warnings> = {
+  concat: (w1, w2) => [...w1, ...w2]
 }
+
+export type Result<E, A> = readonly [E.Either<E, A>, Warnings]
+
+export const result = <E, A>(e: E.Either<E, A>, w: Warnings): Result<E, A> => [e, w]
+
+export const rmap = <A, B>(f: (a: A) => B) => <E>(fa: Result<E, A>): Result<E, B> =>
+  result(pipe(fa[0], E.map(f)), fa[1])
 
 export const rchainW = <E2, A, B>(f: (a: A) => Result<E2, B>) => <E1>(ma: Result<E1, A>): Result<E1 | E2, B> => {
-  if (E.isLeft(ma)) {
-    return ma
+  const [e1, w1] = ma
+  if (E.isLeft(e1)) {
+    return result(e1, w1)
   }
-  const [a, w1] = ma.right
-  const r = f(a)
-  if (E.isLeft(r)) {
-    const [e2, w2] = r.left
-    return E.left([e2, [...w1, ...w2]])
-  }
-  const [b, w2] = r.right
-  return E.right([b, [...w1, ...w2]])
+  const [e2, w2] = f(e1.right)
+  return result(e2, S.concat(w1, w2))
 }
 
-export const rmapLeft = <E, G>(f: (e: E) => G): (<A>(fa: Result<E, A>) => Result<G, A>) =>
-  E.mapLeft(([e, w]) => [f(e), w])
+export const rmapLeft = <E, G>(f: (e: E) => G) => <A>(fa: Result<E, A>): Result<G, A> =>
+  result(pipe(fa[0], E.mapLeft(f)), fa[1])
 
 export interface Decoder<I, E, A> {
   readonly decode: (i: I) => Result<E, A>
@@ -63,9 +60,9 @@ export type TypeOf<D> = D extends Decoder<any, any, infer A> ? A : never
 // constructors
 // -------------------------------------------------------------------------------------
 
-export const success = <E = never, A = never>(a: A, w: Warnings = RA.empty): Result<E, A> => E.right([a, w])
+export const success = <E = never, A = never>(a: A, w: Warnings = RA.empty): Result<E, A> => result(E.right(a), w)
 
-export const failure = <E = never, A = never>(e: E, w: Warnings = RA.empty): Result<E, A> => E.left([e, w])
+export const failure = <E = never, A = never>(e: E, w: Warnings = RA.empty): Result<E, A> => result(E.left(e), w)
 
 // -------------------------------------------------------------------------------------
 // pipeables
@@ -96,10 +93,7 @@ export interface MapD<D, B> extends Decoder<InputOf<D>, ErrorOf<D>, B> {
 
 export const map = <D extends AnyD, B>(f: (a: TypeOf<D>) => B) => (decoder: D): MapD<D, B> => ({
   _tag: 'MapD',
-  decode: flow(
-    decoder.decode,
-    E.map(([a, w]) => [f(a), w])
-  ),
+  decode: flow(decoder.decode, rmap(f)),
   decoder,
   map: f
 })
@@ -397,31 +391,26 @@ export const fromStruct = <Properties extends Record<string, AnyD>>(
   _tag: 'FromStructD',
   properties,
   decode: (ur) => {
-    const errors: Array<{ readonly [K in keyof Properties]: KeyE<K, ErrorOf<Properties[K]>> }[keyof Properties]> = []
-    const warnings: Array<Tree<string>> = []
+    const es: Array<{ readonly [K in keyof Properties]: KeyE<K, ErrorOf<Properties[K]>> }[keyof Properties]> = []
+    const ws: Array<Tree<string>> = []
     for (const k in ur) {
       if (!properties.hasOwnProperty(k)) {
-        warnings.push(tree(`unexpected key ${JSON.stringify(k)}`))
+        ws.push(tree(`unexpected key ${JSON.stringify(k)}`))
       }
     }
     const ar: Record<string, unknown> = {}
     for (const k in properties) {
-      const de = properties[k].decode(ur[k])
-      if (E.isLeft(de)) {
-        const [e, w] = de.left
-        errors.push(keyE(k, true, e))
-        if (RA.isNonEmpty(w)) {
-          warnings.push(tree(`required key ${JSON.stringify(k)}`, w))
-        }
+      const [e, w] = properties[k].decode(ur[k])
+      if (RA.isNonEmpty(w)) {
+        ws.push(tree(`required key ${JSON.stringify(k)}`, w))
+      }
+      if (E.isLeft(e)) {
+        es.push(keyE(k, true, e.left))
       } else {
-        const [a, w] = de.right
-        if (RA.isNonEmpty(w)) {
-          warnings.push(tree(`required key ${JSON.stringify(k)}`, w))
-        }
-        ar[k] = a
+        ar[k] = e.right
       }
     }
-    return RA.isNonEmpty(errors) ? failure(structE(errors), warnings) : success(ar as any, warnings)
+    return RA.isNonEmpty(es) ? failure(structE(es), ws) : success(ar as any, ws)
   }
 })
 
@@ -448,26 +437,21 @@ export const fromArray = <Item extends AnyD>(item: Item): FromArrayD<Item> => ({
   _tag: 'FromArrayD',
   item,
   decode: (us) => {
-    const errors: Array<IndexE<number, ErrorOf<typeof item>>> = []
-    const warnings: Array<Tree<string>> = []
+    const es: Array<IndexE<number, ErrorOf<typeof item>>> = []
+    const ws: Array<Tree<string>> = []
     const as: Array<TypeOf<typeof item>> = []
     for (let index = 0; index < us.length; index++) {
-      const de = item.decode(us[index])
-      if (E.isLeft(de)) {
-        const [e, w] = de.left
-        errors.push(indexE(index, e))
-        if (RA.isNonEmpty(w)) {
-          warnings.push(tree(`optional index ${JSON.stringify(index)}`, w))
-        }
+      const [e, w] = item.decode(us[index])
+      if (RA.isNonEmpty(w)) {
+        ws.push(tree(`optional index ${JSON.stringify(index)}`, w))
+      }
+      if (E.isLeft(e)) {
+        es.push(indexE(index, e.left))
       } else {
-        const [a, w] = de.right
-        if (RA.isNonEmpty(w)) {
-          warnings.push(tree(`optional index ${JSON.stringify(index)}`, w))
-        }
-        as[index] = a
+        as[index] = e.right
       }
     }
-    return RA.isNonEmpty(errors) ? failure(arrayE(us, errors), warnings) : success(as, warnings)
+    return RA.isNonEmpty(es) ? failure(arrayE(us, es), ws) : success(as, ws)
   }
 })
 
@@ -515,30 +499,25 @@ export const fromTuple = <Components extends ReadonlyArray<AnyD>>(
   _tag: 'FromTupleD',
   components,
   decode: (us) => {
-    const errors: Array<ComponentE<number, ErrorOf<ErrorOf<Components[number]>>>> = []
-    const warnings: Array<Tree<string>> = []
+    const es: Array<ComponentE<number, ErrorOf<ErrorOf<Components[number]>>>> = []
+    const ws: Array<Tree<string>> = []
     const len = us.length - components.length
     if (len > 0) {
-      warnings.push(tree(`unexpected additional ${len} index(es)`))
+      ws.push(tree(`unexpected additional ${len} index(es)`))
     }
     const as: Array<unknown> = []
     for (let index = 0; index < components.length; index++) {
-      const de = components[index].decode(us[index])
-      if (E.isLeft(de)) {
-        const [e, w] = de.left
-        errors.push(componentE(index, e))
-        if (RA.isNonEmpty(w)) {
-          warnings.push(tree(`required component ${JSON.stringify(index)}`, w))
-        }
+      const [e, w] = components[index].decode(us[index])
+      if (RA.isNonEmpty(w)) {
+        ws.push(tree(`required component ${JSON.stringify(index)}`, w))
+      }
+      if (E.isLeft(e)) {
+        es.push(componentE(index, e.left))
       } else {
-        const [a, w] = de.right
-        if (RA.isNonEmpty(w)) {
-          warnings.push(tree(`required component ${JSON.stringify(index)}`, w))
-        }
-        as[index] = a
+        as[index] = e.right
       }
     }
-    return RA.isNonEmpty(errors) ? failure(tupleE(errors), warnings) : success(as as any, warnings)
+    return RA.isNonEmpty(es) ? failure(tupleE(es), ws) : success(as as any, ws)
   }
 })
 
@@ -599,7 +578,7 @@ export const refine = <From extends AnyD, B extends TypeOf<From>, E>(parser: (a:
 export const fromRefinement = <From extends AnyD, B extends TypeOf<From>, E>(
   refinement: Refinement<TypeOf<From>, B>,
   error: (from: TypeOf<From>) => E
-): ((from: From) => RefineD<From, E, B>) => refine((a) => (refinement(a) ? E.right(a) : failure(error(a))))
+): ((from: From) => RefineD<From, E, B>) => refine((a) => (refinement(a) ? success(a) : failure(error(a))))
 
 export interface ParseD<From, E, B> extends Decoder<InputOf<From>, ErrorOf<From> | ParseE<E>, B> {
   readonly _tag: 'ParseD'
@@ -729,10 +708,7 @@ export const compose = <S extends AnyD>(second: S) => <F extends AnyD>(first: F)
   _tag: 'CompositionD',
   first,
   second,
-  decode: (i) => {
-    const de = first.decode(i)
-    return E.isLeft(de) ? de : second.decode(de.right)
-  }
+  decode: flow(first.decode, rchainW(second.decode))
 })
 
 // -------------------------------------------------------------------------------------
@@ -875,10 +851,10 @@ const printValue = <A>(a: A): string => 'Value:\n' + JSON.stringify(a, null, 2)
 const printErrors = (s: string): string => (s === '' ? s : 'Errors:\n' + s)
 const printWarnings = (w: Warnings): string => (w.length === 0 ? '' : '\nWarnings:\n' + drawTree(tree('top', w)))
 
-export const print: <A>(ma: Result<string, A>) => string = E.fold(
-  ([s, w]) => printErrors(s) + printWarnings(w),
-  ([a, w]) => printValue(a) + printWarnings(w)
-)
+export const print = <A>(ma: Result<string, A>): string => {
+  const [e, w] = ma
+  return pipe(e, E.fold(printErrors, printValue)) + printWarnings(w)
+}
 
 const DR1 = tuple(string, number)
 
@@ -1038,7 +1014,7 @@ pipe(
       }
     },
     d: 1
-  }),
+  } as any),
   draw,
   print,
   console.log
