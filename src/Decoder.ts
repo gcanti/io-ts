@@ -87,6 +87,7 @@ export interface Decoder<I, A> extends K.Kleisli<E.URI, I, DecodeError, A> {}
  */
 export type DecodeError = FS.FreeSemigroup<DE.DecodeError<string>>
 
+// TODO: rename to message
 /**
  * @category DecodeError
  * @since 2.2.7

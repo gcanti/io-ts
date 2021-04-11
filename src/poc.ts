@@ -178,12 +178,13 @@ export interface SumE<E> extends CompoundE<E> {
   readonly _tag: 'SumE'
 }
 
-export interface MessageE {
+export interface MessageE<I> extends ActualE<I> {
   readonly _tag: 'MessageE'
   readonly message: string
 }
-const messageE = (message: string): MessageE => ({ _tag: 'MessageE', message })
-export const message: (message: string) => LeafE<MessageE> = flow(messageE, leafE)
+
+export const message = <I>(actual: I, message: string): LeafE<MessageE<I>> =>
+  leafE({ _tag: 'MessageE', message, actual })
 
 // recursive helpers to please ts@3.5
 export interface NullableRE<E> extends NullableE<DecodeError<E>> {}
@@ -227,7 +228,14 @@ export type DecodeError<E> =
 // error utils
 // -------------------------------------------------------------------------------------
 
-export type BuiltinE = StringE | NumberE | BooleanE | UnknownRecordE | UnknownArrayE | LiteralE<Literal> | MessageE
+export type BuiltinE =
+  | StringE
+  | NumberE
+  | BooleanE
+  | UnknownRecordE
+  | UnknownArrayE
+  | LiteralE<Literal>
+  | MessageE<unknown>
 
 // -------------------------------------------------------------------------------------
 // primitives
@@ -581,7 +589,10 @@ export interface IdentityD<A> extends Decoder<A, never, A> {
   readonly _tag: 'IdentityD'
 }
 
-export declare const id: <A>() => IdentityD<A>
+export const id = <A>(): IdentityD<A> => ({
+  _tag: 'IdentityD',
+  decode: success
+})
 
 export interface CompositionD<F, S> extends Decoder<InputOf<F>, ErrorOf<F> | ErrorOf<S>, TypeOf<S>> {
   readonly _tag: 'CompositionD'
@@ -589,7 +600,15 @@ export interface CompositionD<F, S> extends Decoder<InputOf<F>, ErrorOf<F> | Err
   readonly second: S
 }
 
-export declare function compose<S extends AnyD>(second: S): <F extends AnyD>(first: F) => CompositionD<F, S>
+export const compose = <S extends AnyD>(second: S) => <F extends AnyD>(first: F): CompositionD<F, S> => ({
+  _tag: 'CompositionD',
+  first,
+  second,
+  decode: (i) => {
+    const de = first.decode(i)
+    return E.isLeft(de) ? de : second.decode(de.right)
+  }
+})
 
 // -------------------------------------------------------------------------------------
 // instances
@@ -605,45 +624,42 @@ declare module 'fp-ts/lib/HKT' {
   }
 }
 
-// // -------------------------------------------------------------------------------------
-// // use case: mapLeft decode error
-// // -------------------------------------------------------------------------------------
+// -------------------------------------------------------------------------------------
+// use case: mapLeft decode error
+// -------------------------------------------------------------------------------------
 
-// export const MapLeftExample = struct({
-//   a: string,
-//   b: number
-// })
+export const MapLeftExample = tuple(string, number)
 
-// // the decode error is fully typed...
-// // type MapLeftExampleE = LeafE<UnknownRecordE> | StructE<KeyE<"a", LeafE<StringE>> | KeyE<"b", LeafE<NumberE>>>
-// export type MapLeftExampleE = ErrorOf<typeof MapLeftExample>
+// the decode error is fully typed...
+// type MapLeftExampleE = LeafE<UnknownArrayE> | TupleE<ComponentE<"0", LeafE<StringE>> | ComponentE<"1", LeafE<NumberE>>>
+export type MapLeftExampleE = ErrorOf<typeof MapLeftExample>
 
-// // ...this means that you can pattern match on the error
-// // when you are mapping
-// export const result1 = pipe(
-//   MapLeftExample,
-//   mapLeft((de) => {
-//     switch (de._tag) {
-//       case 'LeafE':
-//         // const leafE: UnknownRecordE
-//         const leafE = de.error
-//         return `cannot decode ${leafE.actual}, should be a Record<string, unknown>`
-//       case 'StructE':
-//         // const errors: RNEA.ReadonlyNonEmptyArray<KeyE<"a", LeafE<StringE>> | KeyE<"b", LeafE<NumberE>>>
-//         const errors = de.errors
-//         return errors
-//           .map((e): string => {
-//             switch (e.key) {
-//               case 'a':
-//                 return e.error.error._tag
-//               case 'b':
-//                 return e.error.error._tag
-//             }
-//           })
-//           .join('\n')
-//     }
-//   })
-// )
+// ...this means that you can pattern match on the error
+// when you are mapping
+export const result1 = pipe(
+  MapLeftExample,
+  mapLeft((de) => {
+    switch (de._tag) {
+      case 'LeafE':
+        // const leafE: UnknownArrayE
+        const leafE = de.error
+        return `cannot decode ${leafE.actual}, should be a Record<string, unknown>`
+      case 'TupleE':
+        // const errors: RNEA.ReadonlyNonEmptyArray<ComponentE<"0", LeafE<StringE>> | ComponentE<"1", LeafE<NumberE>>>
+        const errors = de.errors
+        return errors
+          .map((e): string => {
+            switch (e.index) {
+              case '0':
+                return e.error.error._tag
+              case '1':
+                return e.error.error._tag
+            }
+          })
+          .join('\n')
+    }
+  })
+)
 
 // -------------------------------------------------------------------------------------
 // use case: handling a generic error, for example encoding to a Tree<string>
@@ -682,7 +698,7 @@ export const toTreeWith = <E>(toTree: (e: E) => Tree<string>): ((de: DecodeError
   return go
 }
 
-export const toTree = (de: BuiltinE): Tree<string> => {
+export const toTreeBuiltin = (de: BuiltinE): Tree<string> => {
   if (de._tag === 'MessageE') {
     return tree(de.message)
   }
@@ -720,45 +736,222 @@ const drawForest = (indentation: string, forest: ReadonlyArray<Tree<string>>): s
   return r
 }
 
-export const draw = E.mapLeft(flow(toTreeWith(toTree), drawTree))
+const toTree = toTreeWith(toTreeBuiltin)
+
+export const draw = E.mapLeft(flow(toTree, drawTree))
 
 export const print: <A>(ma: Result<string, A>) => string = E.fold(
   (e) => e,
   (a) => JSON.stringify(a, null, 2)
 )
 
-// const DR1 = fromStruct({
-//   a: string,
-//   b: number,
-//   c: union(string, number)
+const DR1 = tuple(string, number)
+
+export const treeLeft1 = pipe(DR1, mapLeft(toTree))
+
+// what if the decoder contains a custom error?
+
+export interface IntBrand {
+  readonly Int: unique symbol
+}
+export type Int = number & IntBrand
+export interface IntE extends ActualE<number> {
+  readonly _tag: 'IntE'
+}
+export const intE = (actual: number): IntE => ({ _tag: 'IntE', actual })
+export const IntD = pipe(
+  id<number>(),
+  fromRefinement(
+    (n): n is Int => Number.isInteger(n),
+    (n) => leafE(intE(n))
+  )
+)
+export const IntUD = pipe(number, compose(IntD))
+
+const DR2 = tuple(string, IntUD)
+
+// export const treeOutput2 = pipe(DR2, mapLeft(draw)) // <= type error because `IntE` is not handled
+
+// I can define my own `toTree`
+const myToTree = (e: BuiltinE | IntE) => {
+  switch (e._tag) {
+    case 'IntE':
+      return tree(`cannot decode ${e.actual}, should be an integer`)
+    default:
+      return toTreeBuiltin(e)
+  }
+}
+
+export const treeLeft2 = pipe(DR2, mapLeft(toTreeWith(myToTree))) // <= ok
+
+// -------------------------------------------------------------------------------------
+// use case: old decoder, custom error message
+// -------------------------------------------------------------------------------------
+
+export const customStringUD = pipe(
+  string,
+  mapLeft((s) => message(s, `please insert a string`))
+)
+
+// pipe(customStringD.decode(null), draw, print, console.log)
+
+// -------------------------------------------------------------------------------------
+// use case: new decoder, custom leaf error
+// -------------------------------------------------------------------------------------
+
+interface NonEmptyStringBrand {
+  readonly NonEmptyString: unique symbol
+}
+
+export type NonEmptyString = string & NonEmptyStringBrand
+
+export interface NonEmptyStringE extends ActualE<string> {
+  readonly _tag: 'NonEmptyStringE'
+}
+
+const nonEmptyStringE = (actual: string): NonEmptyStringE => ({ _tag: 'NonEmptyStringE', actual })
+
+export const NonEmptyStringD = pipe(
+  id<string>(),
+  fromRefinement(
+    (s): s is NonEmptyString => s.length > 0,
+    (actual) => leafE(nonEmptyStringE(actual))
+  )
+)
+
+export const NonEmptyStringUD = pipe(string, compose(NonEmptyStringD))
+
+// -------------------------------------------------------------------------------------
+// use case: new decoder, custom error message
+// -------------------------------------------------------------------------------------
+
+export interface PositiveBrand {
+  readonly Positive: unique symbol
+}
+
+export type Positive = number & PositiveBrand
+
+const Positive = pipe(
+  number,
+  fromRefinement(
+    (n): n is Positive => n > 0,
+    (n) => message(n, `cannot decode ${n}, expected a positive number`)
+  )
+)
+
+// pipe(Positive.decode(-1), draw, print, console.log)
+
+// -------------------------------------------------------------------------------------
+// use case: new decoder, multiple custom messages #487
+// -------------------------------------------------------------------------------------
+
+export interface UsernameBrand {
+  readonly Username: unique symbol
+}
+
+export type Username = string & UsernameBrand
+
+const USERNAME_REGEX = /(a|b)*d/
+
+export const Username = pipe(
+  customStringUD,
+  refine((s) =>
+    s.length < 2
+      ? failure(message(s, 'too short'))
+      : s.length > 4
+      ? failure(message(s, 'too long'))
+      : USERNAME_REGEX.test(s)
+      ? failure(message(s, 'bad characters'))
+      : success(s as Username)
+  )
+)
+
+pipe(
+  fromTuple(Username, Username, Username, Username, Username).decode([null, 'a', 'bbbbb', 'abd', 'ok']),
+  draw,
+  print,
+  console.log
+)
+
+// -------------------------------------------------------------------------------------
+// use case: rename a prop
+// -------------------------------------------------------------------------------------
+
+// -------------------------------------------------------------------------------------
+// tests
+// -------------------------------------------------------------------------------------
+
+// -------------------------------------------------------------------------------------
+// use case: form
+// -------------------------------------------------------------------------------------
+
+// const MyForm = fromStruct({
+//   name: NonEmptyStringD,
+//   age: number
 // })
 
-// export const treeLeft1 = pipe(DR1, mapLeft(defaultToTree))
+// pipe(
+//   MyForm,
+//   mapLeft((e) => {
+//     // const errors: RNEA.ReadonlyNonEmptyArray<KeyE<"name", LeafE<StringE> | RefineE<LeafE<NonEmptyStringE>>> | KeyE<"age", LeafE<NumberE>>>
+//     const errors = e.errors
+//     console.log(errors)
+//     return e
+//   })
+// )
 
-// // what if the decoder contains a custom error?
-
-// const DR2 = fromStruct({
-//   a: NonEmptyString,
-//   b: number
+// const d = fromSum('_tag')({
+//   A: fromStruct({
+//     _tag: literal('A'),
+//     a: string
+//   }),
+//   B: fromStruct({
+//     _tag: literal('B'),
+//     b: number
+//   })
 // })
 
-// // export const treeOutput2 = pipe(DR2, mapLeft(draw)) // <= type error because `NonEmptyStringE` is not handled
+// pipe(
+//   d,
+//   mapLeft((de) => {
+//     switch (de._tag) {
+//       case 'TagNotFoundE': {
+//         return de.tag
+//       }
+//       case 'SumE': {
+//         pipe(
+//           de.errors,
+//           RNEA.map((e) => {
+//             switch (e.member) {
+//               case 'A':
+//                 return pipe(
+//                   e.error.errors,
+//                   RNEA.map((x) => x)
+//                 )
+//               case 'B':
+//                 return pipe(
+//                   e.error.errors,
+//                   RNEA.map((x) => x)
+//                 )
+//             }
+//           })
+//         )
+//       }
+//     }
+//   })
+// )
 
-// // I can define my own `leafToTree`
-// const myLeafToTree = (e: DefaultLeafE | NonEmptyStringE) => {
-//   switch (e._tag) {
-//     case 'NonEmptyStringE':
-//       return tree(`cannot decode ${e.actual}, should be a non empty string`)
-//     default:
-//       return defaultLeafEToTree(e)
-//   }
-// }
+// export const X = pipe(
+//   partial({
+//     a: string,
+//     b: number
+//   }),
+//   mapLeft((de) => de)
+// )
 
-// export const treeLeft2 = pipe(DR2, mapLeft(toTreeWith(myLeafToTree))) // <= ok
-
-// // -------------------------------------------------------------------------------------
-// // examples
-// // -------------------------------------------------------------------------------------
+// -------------------------------------------------------------------------------------
+// examples
+// -------------------------------------------------------------------------------------
 
 // // literal
 // export const LDU = literal(1, true)
@@ -831,33 +1024,16 @@ export const print: <A>(ma: Result<string, A>) => string = E.fold(
 // export const RUD = record(number)
 
 // // refine
-// export type NonEmptyStringDI = InputOf<typeof NonEmptyString>
-// export type NonEmptyStringDE = ErrorOf<typeof NonEmptyString>
-// export type NonEmptyStringDA = TypeOf<typeof NonEmptyString>
+// export type IntDI = InputOf<typeof IntD>
+// export type IntDE = ErrorOf<typeof IntD>
+// export type IntDA = TypeOf<typeof IntD>
 
-// const NonEmptyStringUD = pipe(string, compose(NonEmptyString))
-// export type NonEmptyStringUDE = ErrorOf<typeof NonEmptyStringUD>
-// export type NonEmptyStringUDA = TypeOf<typeof NonEmptyStringUD>
-
-// export interface IntBrand {
-//   readonly Int: unique symbol
-// }
-// export type Int = number & IntBrand
-// export interface IntE extends ActualE<number> {
-//   readonly _tag: 'IntE'
-// }
-// export const intE = (actual: number): IntE => ({ _tag: 'IntE', actual })
-// export const IntD = pipe(
-//   id<number>(),
-//   refine(
-//     (n): n is Int => Number.isInteger(n),
-//     (n) => leafE(intE(n))
-//   )
-// )
 // export const IntUD = pipe(number, compose(IntD))
+// export type IntUDE = ErrorOf<typeof IntUD>
+// export type IntUDA = TypeOf<typeof IntUD>
 
 // // union
-// export const UD = union(NonEmptyString, IntD)
+// export const UD = union(NonEmptyStringD, IntD)
 // export type UDI = InputOf<typeof UD>
 // export type UDE = ErrorOf<typeof UD>
 // export type UDA = TypeOf<typeof UD>
@@ -867,7 +1043,7 @@ export const print: <A>(ma: Result<string, A>) => string = E.fold(
 // export type UUDA = TypeOf<typeof UUD>
 
 // // nullable
-// export const ND = nullable(NonEmptyString)
+// export const ND = nullable(NonEmptyStringD)
 // export type NDI = InputOf<typeof ND>
 // export type NDE = ErrorOf<typeof ND>
 // export type NDA = TypeOf<typeof ND>
@@ -950,7 +1126,7 @@ export const print: <A>(ma: Result<string, A>) => string = E.fold(
 //   d: RD,
 //   e: UD,
 //   f: ND,
-//   g: NonEmptyString,
+//   g: NonEmptyStringD,
 //   h: PD,
 //   i: ID
 // })
@@ -972,166 +1148,3 @@ export const print: <A>(ma: Result<string, A>) => string = E.fold(
 // })
 // export type AllUDE = ErrorOf<typeof AllUD>
 // export type AllUDA = TypeOf<typeof AllUD>
-
-// // -------------------------------------------------------------------------------------
-// // use case: form
-// // -------------------------------------------------------------------------------------
-
-// const MyForm = fromStruct({
-//   name: NonEmptyStringUD,
-//   age: number
-// })
-
-// pipe(
-//   MyForm,
-//   mapLeft((e) => {
-//     // const errors: RNEA.ReadonlyNonEmptyArray<KeyE<"name", LeafE<StringE> | RefineE<LeafE<NonEmptyStringE>>> | KeyE<"age", LeafE<NumberE>>>
-//     const errors = e.errors
-//     console.log(errors)
-//     return e
-//   })
-// )
-
-// const d = fromSum('_tag')({
-//   A: fromStruct({
-//     _tag: literal('A'),
-//     a: string
-//   }),
-//   B: fromStruct({
-//     _tag: literal('B'),
-//     b: number
-//   })
-// })
-
-// pipe(
-//   d,
-//   mapLeft((de) => {
-//     switch (de._tag) {
-//       case 'TagNotFoundE': {
-//         return de.tag
-//       }
-//       case 'SumE': {
-//         pipe(
-//           de.errors,
-//           RNEA.map((e) => {
-//             switch (e.member) {
-//               case 'A':
-//                 return pipe(
-//                   e.error.errors,
-//                   RNEA.map((x) => x)
-//                 )
-//               case 'B':
-//                 return pipe(
-//                   e.error.errors,
-//                   RNEA.map((x) => x)
-//                 )
-//             }
-//           })
-//         )
-//       }
-//     }
-//   })
-// )
-
-// export const X = pipe(
-//   partial({
-//     a: string,
-//     b: number
-//   }),
-//   mapLeft((de) => de)
-// )
-
-// -------------------------------------------------------------------------------------
-// use case: old decoder, custom error message
-// -------------------------------------------------------------------------------------
-
-export const customStringD = pipe(
-  string,
-  mapLeft(() => message(`please insert a string`))
-)
-
-// pipe(customStringD.decode(null), draw, print, console.log)
-
-// -------------------------------------------------------------------------------------
-// use case: new decoder, custom leaf error
-// -------------------------------------------------------------------------------------
-
-interface NonEmptyStringBrand {
-  readonly NonEmptyString: unique symbol
-}
-
-export type NonEmptyString = string & NonEmptyStringBrand
-
-export interface NonEmptyStringE extends ActualE<string> {
-  readonly _tag: 'NonEmptyStringE'
-}
-
-const nonEmptyStringE = (actual: string): NonEmptyStringE => ({ _tag: 'NonEmptyStringE', actual })
-
-export const NonEmptyString = pipe(
-  id<string>(),
-  fromRefinement(
-    (s): s is NonEmptyString => s.length > 0,
-    (actual) => leafE(nonEmptyStringE(actual))
-  )
-)
-
-// -------------------------------------------------------------------------------------
-// use case: new decoder, custom error message
-// -------------------------------------------------------------------------------------
-
-export interface PositiveBrand {
-  readonly Positive: unique symbol
-}
-
-export type Positive = number & PositiveBrand
-
-const Positive = pipe(
-  number,
-  fromRefinement(
-    (n): n is Positive => n > 0,
-    (n) => message(`cannot decode ${n}, expected a positive number`)
-  )
-)
-
-// pipe(Positive.decode(-1), draw, print, console.log)
-
-// -------------------------------------------------------------------------------------
-// use case: new decoder, multiple custom messages #487
-// -------------------------------------------------------------------------------------
-
-export interface UsernameBrand {
-  readonly Username: unique symbol
-}
-
-export type Username = string & UsernameBrand
-
-const USERNAME_REGEX = /(a|b)*d/
-
-export const Username = pipe(
-  string,
-  refine((s) =>
-    s.length < 2
-      ? failure(message('too short'))
-      : s.length > 4
-      ? failure(message('too long'))
-      : USERNAME_REGEX.test(s)
-      ? failure(message('bad characters'))
-      : success(s as Username)
-  )
-)
-
-pipe(
-  fromTuple(Username, Username, Username, Username, Username).decode([null, 'a', 'bbbbb', 'abd', 'ok']),
-  draw,
-  print,
-  console.log
-)
-
-// -------------------------------------------------------------------------------------
-// use case: rename a prop
-// -------------------------------------------------------------------------------------
-
-// -------------------------------------------------------------------------------------
-// tests
-// -------------------------------------------------------------------------------------
