@@ -98,6 +98,23 @@ export interface KeyE<K, E> extends SingleE<E> {
 }
 export const keyE = <K, E>(key: K, required: boolean, error: E): KeyE<K, E> => ({ _tag: 'KeyE', key, required, error })
 
+export interface UnexpectedE<E> extends CompoundE<E> {
+  readonly _tag: 'UnexpectedE'
+}
+export const unexpectedE = <E>(errors: ReadonlyNonEmptyArray<E>): UnexpectedE<E> => ({ _tag: 'UnexpectedE', errors })
+
+export interface UnexpectedKeyE extends ActualE<unknown> {
+  readonly _tag: 'UnexpectedKeyE'
+  readonly key: string
+}
+export const unexpectedKeyE = (key: string, actual: unknown): UnexpectedKeyE => ({
+  _tag: 'UnexpectedKeyE',
+  key,
+  actual
+})
+export interface UnexpectedKeyLE extends LeafE<UnexpectedKeyE> {}
+export const unexpectedKey: (key: string, actual: unknown) => UnexpectedKeyLE = flow(unexpectedKeyE, leafE)
+
 export interface StructE<E> extends CompoundE<E> {
   readonly _tag: 'StructE'
 }
@@ -185,18 +202,24 @@ export interface MessageE<I> extends ActualE<I> {
   readonly message: string
 }
 export interface MessageLE<I> extends LeafE<MessageE<I>> {}
-export const message = <I>(actual: I, message: string): MessageLE<I> => leafE({ _tag: 'MessageE', message, actual })
+export const messageE = <I>(actual: I, message: string): MessageE<I> => ({
+  _tag: 'MessageE',
+  message,
+  actual
+})
+export const message: <I>(actual: I, message: string) => MessageLE<I> = flow(messageE, leafE)
 
 // recursive helpers to please ts@3.5
 export interface NullableRE<E> extends NullableE<DecodeError<E>> {}
 export interface RefineRE<E> extends RefineE<DecodeError<E>> {}
 export interface ParseRE<E> extends ParseE<DecodeError<E>> {}
+export interface UnknownRE<E> extends UnexpectedE<DecodeError<E>> {}
 export interface StructRE<E> extends StructE<DecodeError<E>> {}
-export interface RequiredKeyRE<E> extends KeyE<string, DecodeError<E>> {}
+export interface KeyRE<E> extends KeyE<string, DecodeError<E>> {}
 export interface PartialRE<E> extends PartialE<DecodeError<E>> {}
 export interface TupleRE<E> extends TupleE<DecodeError<E>> {}
-export interface RequiredIndexRE<E> extends ComponentE<string, DecodeError<E>> {}
-export interface OptionalIndexRE<E> extends IndexE<number, DecodeError<E>> {}
+export interface ComponentRE<E> extends ComponentE<string, DecodeError<E>> {}
+export interface IndexRE<E> extends IndexE<number, DecodeError<E>> {}
 export interface ArrayRE<E> extends ArrayE<DecodeError<E>> {}
 export interface RecordRE<E> extends RecordE<DecodeError<E>> {}
 export interface UnionRE<E> extends UnionE<DecodeError<E>> {}
@@ -210,12 +233,13 @@ export type DecodeError<E> =
   | NullableRE<E>
   | RefineRE<E>
   | ParseRE<E>
+  | UnknownRE<E>
   | StructRE<E>
-  | RequiredKeyRE<E>
+  | KeyRE<E>
   | PartialRE<E>
   | TupleRE<E>
-  | RequiredIndexRE<E>
-  | OptionalIndexRE<E>
+  | ComponentRE<E>
+  | IndexRE<E>
   | ArrayRE<E>
   | RecordRE<E>
   | UnionRE<E>
@@ -237,6 +261,7 @@ export type BuiltinE =
   | UnknownArrayE
   | LiteralE<Literal>
   | MessageE<unknown>
+  | UnexpectedKeyE
 
 // -------------------------------------------------------------------------------------
 // primitives
@@ -733,6 +758,8 @@ export const toTreeWith = <E>(toTree: (e: E) => Tree<string>): ((de: DecodeError
         return tree(`cannot decode to tuple, ${de.errors.length} error(s) found`, de.errors.map(go))
       case 'StructE':
         return tree(`cannot decode to struct, ${de.errors.length} error(s) found`, de.errors.map(go))
+      case 'UnexpectedE':
+        return tree(`${de.errors.length} unexpected item(s) found`, de.errors.map(go))
       default:
         // etc...
         return tree('TODO')
@@ -761,6 +788,8 @@ export const toTreeBuiltin = (de: BuiltinE): Tree<string> => {
       return tree(
         `cannot decode ${actual}, expected one of ${de.literals.map((literal) => JSON.stringify(literal)).join(', ')}`
       )
+    case 'UnexpectedKeyE':
+      return tree(`cannot decode ${actual}, unexpected key ${JSON.stringify(de.key)}`)
   }
 }
 
@@ -920,13 +949,6 @@ export const Username = pipe(
 // tests
 // -------------------------------------------------------------------------------------
 
-const decoder = struct({
-  a: string,
-  b: number
-})
-
-pipe(decoder.decode({}), draw, print, console.log)
-
 // -------------------------------------------------------------------------------------
 // use case: rename a prop #369
 // -------------------------------------------------------------------------------------
@@ -934,6 +956,48 @@ pipe(decoder.decode({}), draw, print, console.log)
 // -------------------------------------------------------------------------------------
 // use case: fail on additional props #322
 // -------------------------------------------------------------------------------------
+
+export interface StrictD<Properties>
+  extends Decoder<
+    unknown,
+    | UnexpectedE<UnexpectedKeyLE>
+    | UnknownRecordLE
+    | StructE<{ readonly [K in keyof Properties]: KeyE<K, ErrorOf<Properties[K]>> }[keyof Properties]>,
+    { [K in keyof Properties]: TypeOf<Properties[K]> }
+  > {
+  readonly _tag: 'StrictD'
+  readonly properties: Properties
+}
+export const strict = <Properties extends Record<string, AnyUD>>(properties: Properties): StrictD<Properties> => {
+  const fromStructProperties = fromStruct(properties)
+  return {
+    _tag: 'StrictD',
+    properties,
+    decode: (u) => {
+      const e = UnknownRecord.decode(u)
+      if (E.isLeft(e)) {
+        return e
+      }
+      const ur = e.right
+      const errors: Array<UnexpectedKeyLE> = []
+      for (const k in ur) {
+        if (!properties.hasOwnProperty(k)) {
+          errors.push(unexpectedKey(k, ur[k]))
+        }
+      }
+      return RA.isNonEmpty(errors) ? failure(unexpectedE(errors)) : fromStructProperties.decode(ur as any)
+    }
+  }
+}
+
+const strictDecoder = strict({
+  a: string,
+  b: strict({
+    c: number
+  })
+})
+
+pipe(strictDecoder.decode({ a: 'a', b: { d: new Date() }, c: true }), draw, print, console.log)
 
 // -------------------------------------------------------------------------------------
 // use case: omit, pick #553
