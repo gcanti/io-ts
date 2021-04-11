@@ -799,7 +799,7 @@ export const customStringUD = pipe(
 // pipe(customStringD.decode(null), draw, print, console.log)
 
 // -------------------------------------------------------------------------------------
-// use case: new decoder, custom leaf error
+// use case: new decoder, custom leaf error #578
 // -------------------------------------------------------------------------------------
 
 interface NonEmptyStringBrand {
@@ -877,72 +877,106 @@ pipe(
 )
 
 // -------------------------------------------------------------------------------------
-// use case: rename a prop
+// tests
 // -------------------------------------------------------------------------------------
 
 // -------------------------------------------------------------------------------------
-// tests
+// use case: rename a prop #369
 // -------------------------------------------------------------------------------------
+
+// -------------------------------------------------------------------------------------
+// use case: fail on additional props #322
+// -------------------------------------------------------------------------------------
+
+// -------------------------------------------------------------------------------------
+// use case: omit, pick #553
+// -------------------------------------------------------------------------------------
+
+// -------------------------------------------------------------------------------------
+// use case: readonly by default #525
+// -------------------------------------------------------------------------------------
+
+// -------------------------------------------------------------------------------------
+// use case: more user friendly #542
+// -------------------------------------------------------------------------------------
+
+// -------------------------------------------------------------------------------------
+// use case: reflection, for example generating a match function from a sum
+// -------------------------------------------------------------------------------------
+
+// export declare const getMatch: <T extends string, Members extends Record<string, AnyD>>(decoder: {
+//   readonly tag: T
+//   readonly members: Members
+// }) => <B>(
+//   patterns: { [K in keyof Members]: (member: TypeOf<Members[K]>) => B }
+// ) => (a: TypeOf<Members[keyof Members]>) => B
+
+// const matchDecoder = sum('_tag')({
+//   A: struct({ _tag: literal('A'), a: string }),
+//   B: struct({ _tag: literal('B'), b: number })
+// })
+
+// export const match = getMatch(matchDecoder)
 
 // -------------------------------------------------------------------------------------
 // use case: form
 // -------------------------------------------------------------------------------------
 
-const MyForm = fromStruct({
-  name: NonEmptyStringD,
-  age: number
-})
+// const MyForm = fromStruct({
+//   name: NonEmptyStringD,
+//   age: number
+// })
 
-pipe(
-  MyForm,
-  mapLeft((e) => {
-    // const errors: RNEA.ReadonlyNonEmptyArray<KeyE<"name", RefineE<LeafE<NonEmptyStringE>>> | KeyE<"age", NumberLE>>
-    const errors = e.errors
-    console.log(errors)
-    return e
-  })
-)
+// pipe(
+//   MyForm,
+//   mapLeft((e) => {
+//     // const errors: RNEA.ReadonlyNonEmptyArray<KeyE<"name", RefineE<LeafE<NonEmptyStringE>>> | KeyE<"age", NumberLE>>
+//     const errors = e.errors
+//     console.log(errors)
+//     return e
+//   })
+// )
 
-const d = fromSum('_tag')({
-  A: fromStruct({
-    _tag: literal('A'),
-    a: string
-  }),
-  B: fromStruct({
-    _tag: literal('B'),
-    b: number
-  })
-})
+// const d = fromSum('_tag')({
+//   A: fromStruct({
+//     _tag: literal('A'),
+//     a: string
+//   }),
+//   B: fromStruct({
+//     _tag: literal('B'),
+//     b: number
+//   })
+// })
 
-pipe(
-  d,
-  mapLeft((de) => {
-    switch (de._tag) {
-      case 'TagNotFoundE': {
-        return de.tag
-      }
-      case 'SumE': {
-        pipe(
-          de.errors,
-          RNEA.map((e) => {
-            switch (e.member) {
-              case 'A':
-                return pipe(
-                  e.error.errors,
-                  RNEA.map((x) => x)
-                )
-              case 'B':
-                return pipe(
-                  e.error.errors,
-                  RNEA.map((x) => x)
-                )
-            }
-          })
-        )
-      }
-    }
-  })
-)
+// pipe(
+//   d,
+//   mapLeft((de) => {
+//     switch (de._tag) {
+//       case 'TagNotFoundE': {
+//         return de.tag
+//       }
+//       case 'SumE': {
+//         pipe(
+//           de.errors,
+//           RNEA.map((e) => {
+//             switch (e.member) {
+//               case 'A':
+//                 return pipe(
+//                   e.error.errors,
+//                   RNEA.map((x) => x)
+//                 )
+//               case 'B':
+//                 return pipe(
+//                   e.error.errors,
+//                   RNEA.map((x) => x)
+//                 )
+//             }
+//           })
+//         )
+//       }
+//     }
+//   })
+// )
 
 // -------------------------------------------------------------------------------------
 // examples
