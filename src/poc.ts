@@ -93,13 +93,15 @@ export interface NullableE<E> extends SingleE<E> {
 
 export interface KeyE<K, E> extends SingleE<E> {
   readonly _tag: 'KeyE'
-  readonly required: boolean
   readonly key: K
+  readonly required: boolean
 }
+export const keyE = <K, E>(key: K, required: boolean, error: E): KeyE<K, E> => ({ _tag: 'KeyE', key, required, error })
 
 export interface StructE<E> extends CompoundE<E> {
   readonly _tag: 'StructE'
 }
+export const structE = <E>(errors: ReadonlyNonEmptyArray<E>): StructE<E> => ({ _tag: 'StructE', errors })
 
 export interface PartialE<E> extends CompoundE<E> {
   readonly _tag: 'PartialE'
@@ -298,10 +300,20 @@ export interface UnknownRecordE extends ActualE<unknown> {
   readonly _tag: 'UnknownRecordE'
 }
 export interface UnknownRecordLE extends LeafE<UnknownRecordE> {}
+export const unknownRecordE = (actual: unknown): UnknownRecordLE =>
+  leafE({
+    _tag: 'UnknownRecordE',
+    actual
+  })
 export interface UnknownRecordUD extends Decoder<unknown, UnknownRecordLE, Record<string, unknown>> {
   readonly _tag: 'UnknownRecordUD'
 }
-export declare const UnknownRecord: UnknownRecordUD
+const isUnknownRecord = (u: unknown): u is Record<string, unknown> =>
+  u !== null && typeof u === 'object' && !Array.isArray(u)
+export const UnknownRecord: UnknownRecordUD = {
+  _tag: 'UnknownRecordUD',
+  decode: (u) => (isUnknownRecord(u) ? success(u) : failure(unknownRecordE(u)))
+}
 
 // -------------------------------------------------------------------------------------
 // constructors
@@ -335,9 +347,23 @@ export interface FromStructD<Properties>
   readonly _tag: 'FromStructD'
   readonly properties: Properties
 }
-export declare const fromStruct: <Properties extends Record<string, AnyD>>(
+export const fromStruct = <Properties extends Record<string, AnyD>>(
   properties: Properties
-) => FromStructD<Properties>
+): FromStructD<Properties> => ({
+  _tag: 'FromStructD',
+  properties,
+  decode: (ur) => {
+    const errors: Array<{ readonly [K in keyof Properties]: KeyE<K, ErrorOf<Properties[K]>> }[keyof Properties]> = []
+    const ar: Record<string, unknown> = {}
+    for (const k in properties) {
+      const e = properties[k].decode(ur[k])
+      if (E.isLeft(e)) {
+        errors.push(keyE(k, true, e.left))
+      }
+    }
+    return RA.isNonEmpty(errors) ? failure(structE(errors)) : success(ar as any)
+  }
+})
 
 export interface FromPartialD<Properties>
   extends Decoder<
@@ -543,7 +569,17 @@ export interface StructD<Properties>
   readonly _tag: 'StructD'
   readonly properties: Properties
 }
-export declare const struct: <Properties extends Record<string, AnyUD>>(properties: Properties) => StructD<Properties>
+export const struct = <Properties extends Record<string, AnyUD>>(properties: Properties): StructD<Properties> => {
+  const fromStructProperties = fromStruct(properties)
+  return {
+    _tag: 'StructD',
+    properties,
+    decode: (u) => {
+      const e = UnknownRecord.decode(u)
+      return E.isLeft(e) ? e : fromStructProperties.decode(e.right as any)
+    }
+  }
+}
 
 export interface PartialD<Properties>
   extends Decoder<
@@ -689,10 +725,14 @@ export const toTreeWith = <E>(toTree: (e: E) => Tree<string>): ((de: DecodeError
         return tree(`required component ${de.index}`, [go(de.error)])
       case 'IndexE':
         return tree(`optional index ${de.index}`, [go(de.error)])
+      case 'KeyE':
+        return tree(`${de.required ? 'required' : 'optional'} key ${JSON.stringify(de.key)}`, [go(de.error)])
       case 'ArrayE':
         return tree(`cannot decode to array, ${de.errors.length} error(s) found`, de.errors.map(go))
       case 'TupleE':
         return tree(`cannot decode to tuple, ${de.errors.length} error(s) found`, de.errors.map(go))
+      case 'StructE':
+        return tree(`cannot decode to struct, ${de.errors.length} error(s) found`, de.errors.map(go))
       default:
         // etc...
         return tree('TODO')
@@ -869,16 +909,23 @@ export const Username = pipe(
   )
 )
 
-pipe(
-  fromTuple(Username, Username, Username, Username, Username).decode([null, 'a', 'bbbbb', 'abd', 'ok']),
-  draw,
-  print,
-  console.log
-)
+// pipe(
+//   fromTuple(Username, Username, Username, Username, Username).decode([null, 'a', 'bbbbb', 'abd', 'ok']),
+//   draw,
+//   print,
+//   console.log
+// )
 
 // -------------------------------------------------------------------------------------
 // tests
 // -------------------------------------------------------------------------------------
+
+const decoder = struct({
+  a: string,
+  b: number
+})
+
+pipe(decoder.decode({}), draw, print, console.log)
 
 // -------------------------------------------------------------------------------------
 // use case: rename a prop #369
