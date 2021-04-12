@@ -22,9 +22,36 @@ import ReadonlyNonEmptyArray = RNEA.ReadonlyNonEmptyArray
 
 export type Result<E, A> = TH.These<E, A>
 
-export const chain = <E1, A, E2, B>(ma: Result<E1, A>, f: (a: A) => Result<E2, B>): Result<E1 | E2, B> => {
-  return TH.isLeft(ma) ? ma : f(ma.right)
+const composeWith = <A, E1, B, E2, C, E3>(
+  f: (a: A) => Result<E1, B>,
+  g: (b: B) => Result<E2, C>,
+  h: (errors: ReadonlyNonEmptyArray<E1 | E2>) => E3
+): ((a: A) => Result<E3, C>) => {
+  return (a) =>
+    pipe(
+      f(a),
+      TH.fold(
+        (e) => TH.left(h([e])),
+        (a) =>
+          pipe(
+            g(a),
+            TH.mapLeft((e) => h([e]))
+          ),
+        (w1, a) =>
+          pipe(
+            g(a),
+            TH.fold(
+              (e) => TH.left(h([e])),
+              (a) => TH.both(h([w1]), a),
+              (w2, b) => TH.both(h([w1, w2]), b)
+            )
+          )
+      )
+    )
 }
+
+const chain = <E1, A, E2, B>(ma: Result<E1, A>, f: (a: A) => Result<E2, B>): Result<E1 | E2, B> =>
+  TH.isLeft(ma) ? ma : f(ma.right)
 
 export interface Decoder<I, E, A> {
   readonly decode: (i: I) => Result<E, A>
@@ -161,6 +188,7 @@ export const refineE = <E>(errors: ReadonlyNonEmptyArray<E>): RefineE<E> => ({ _
 export interface ParseE<E> extends CompoundE<E> {
   readonly _tag: 'ParseE'
 }
+export const parseE = <E>(errors: ReadonlyNonEmptyArray<E>): ParseE<E> => ({ _tag: 'ParseE', errors })
 
 export interface CompositionE<E> extends CompoundE<E> {
   readonly _tag: 'CompositionE'
@@ -589,27 +617,7 @@ export const refine = <From extends AnyD, B extends TypeOf<From>, E>(parser: (a:
   _tag: 'RefineD',
   from,
   parser,
-  decode: (i) =>
-    pipe(
-      from.decode(i),
-      TH.fold(
-        (e) => TH.left(refineE([e])),
-        (a) =>
-          pipe(
-            parser(a),
-            TH.mapLeft((e) => refineE([e]))
-          ),
-        (w1, a) =>
-          pipe(
-            parser(a),
-            TH.fold(
-              (e) => TH.left(refineE([e])),
-              (a) => TH.both(refineE([w1]), a),
-              (w2, b) => TH.both(refineE([w1, w2]), b)
-            )
-          )
-      )
-    )
+  decode: composeWith(from.decode, parser, refineE)
 })
 export const fromRefinement = <From extends AnyD, B extends TypeOf<From>, E>(
   refinement: Refinement<TypeOf<From>, B>,
@@ -621,9 +629,14 @@ export interface ParseD<From, E, B> extends Decoder<InputOf<From>, ParseE<ErrorO
   readonly from: From
   readonly parser: (a: TypeOf<From>) => Result<E, B>
 }
-export declare const parse: <From extends AnyD, E, B>(
-  parser: (a: TypeOf<From>) => Result<E, B>
-) => (from: From) => ParseD<From, E, B>
+export const parse = <From extends AnyD, E, B>(parser: (a: TypeOf<From>) => Result<E, B>) => (
+  from: From
+): ParseD<From, E, B> => ({
+  _tag: 'ParseD',
+  from,
+  parser,
+  decode: composeWith(from.decode, parser, parseE)
+})
 
 export interface IntersectD<F, S>
   extends Decoder<
@@ -746,27 +759,7 @@ export const compose = <S extends AnyD>(second: S) => <F extends AnyD>(first: F)
   _tag: 'CompositionD',
   first,
   second,
-  decode: (i) =>
-    pipe(
-      first.decode(i),
-      TH.fold(
-        (e) => TH.left(compositionE([e])),
-        (a) =>
-          pipe(
-            second.decode(a),
-            TH.mapLeft((e) => compositionE([e]))
-          ),
-        (w1, a) =>
-          pipe(
-            second.decode(a),
-            TH.fold(
-              (e) => TH.left(compositionE([e])),
-              (a) => TH.both(compositionE([w1]), a),
-              (w2, b) => TH.both(compositionE([w1, w2]), b)
-            )
-          )
-      )
-    )
+  decode: composeWith(first.decode, second.decode, compositionE)
 })
 
 // -------------------------------------------------------------------------------------
