@@ -16,10 +16,70 @@ import ReadonlyNonEmptyArray = RNEA.ReadonlyNonEmptyArray
   UD = "Decoder with `unknown` input"
   E = "Error"
   LE = "Error wrapped in `LeafE`"
+  W = "Warning"
 
 */
 
-export type Result<E, A> = E.Either<E, A>
+export interface KeyW {
+  readonly _tag: 'KeyW'
+  readonly key: string
+}
+export const keyW = (key: string): KeyW => ({ _tag: 'KeyW', key })
+
+export interface UnexpectedKeyW {
+  readonly _tag: 'UnexpectedKeyW'
+  readonly key: string
+}
+export const unexpectedKeyW = (key: string): UnexpectedKeyW => ({ _tag: 'UnexpectedKeyW', key })
+
+export interface ComponentW {
+  readonly _tag: 'ComponentW'
+  readonly component: number
+}
+export const componentW = (component: number): ComponentW => ({ _tag: 'ComponentW', component })
+
+export interface UnexpectedComponentW {
+  readonly _tag: 'UnexpectedComponentW'
+  readonly component: number
+}
+export const unexpectedComponentW = (component: number): UnexpectedComponentW => ({
+  _tag: 'UnexpectedComponentW',
+  component
+})
+
+export interface IndexW {
+  readonly _tag: 'IndexW'
+  readonly index: number
+}
+export const indexW = (index: number): IndexW => ({ _tag: 'IndexW', index })
+
+export interface NaNW {
+  readonly _tag: 'NaNW'
+}
+export const naNW: NaNW = { _tag: 'NaNW' }
+
+export type Warning = KeyW | UnexpectedKeyW | ComponentW | UnexpectedComponentW | IndexW | NaNW
+
+export interface Warnings extends Forest<Warning> {}
+
+export type Result<E, A> = readonly [E.Either<E, A>, Warnings]
+
+export const result = <E, A>(e: E.Either<E, A>, w: Warnings): Result<E, A> => [e, w]
+
+export const rmap = <A, B>(f: (a: A) => B) => <E>(fa: Result<E, A>): Result<E, B> =>
+  result(pipe(fa[0], E.map(f)), fa[1])
+
+export const rchainW = <E2, A, B>(f: (a: A) => Result<E2, B>) => <E1>(ma: Result<E1, A>): Result<E1 | E2, B> => {
+  const [e1, w1] = ma
+  if (E.isLeft(e1)) {
+    return result(e1, w1)
+  }
+  const [e2, w2] = f(e1.right)
+  return result(e2, [...w1, ...w2])
+}
+
+export const rmapLeft = <E, G>(f: (e: E) => G) => <A>(fa: Result<E, A>): Result<G, A> =>
+  result(pipe(fa[0], E.mapLeft(f)), fa[1])
 
 export interface Decoder<I, E, A> {
   readonly decode: (i: I) => Result<E, A>
@@ -36,9 +96,9 @@ export type TypeOf<D> = D extends Decoder<any, any, infer A> ? A : never
 // constructors
 // -------------------------------------------------------------------------------------
 
-export const success: <E = never, A = never>(a: A) => Result<E, A> = E.right
+export const success = <E = never, A = never>(a: A, w: Warnings = RA.empty): Result<E, A> => result(E.right(a), w)
 
-export const failure: <E = never, A = never>(e: E) => Result<E, A> = E.left
+export const failure = <E = never, A = never>(e: E, w: Warnings = RA.empty): Result<E, A> => result(E.left(e), w)
 
 // -------------------------------------------------------------------------------------
 // pipeables
@@ -55,7 +115,7 @@ export const mapLeft = <D extends AnyD, E>(f: (e: ErrorOf<D>, i: InputOf<D>) => 
   decode: (i) =>
     pipe(
       decoder.decode(i),
-      E.mapLeft((de) => f(de, i))
+      rmapLeft((de) => f(de, i))
     ),
   decoder,
   mapLeft: f
@@ -69,7 +129,7 @@ export interface MapD<D, B> extends Decoder<InputOf<D>, ErrorOf<D>, B> {
 
 export const map = <D extends AnyD, B>(f: (a: TypeOf<D>) => B) => (decoder: D): MapD<D, B> => ({
   _tag: 'MapD',
-  decode: flow(decoder.decode, E.map(f)),
+  decode: flow(decoder.decode, rmap(f)),
   decoder,
   map: f
 })
@@ -277,7 +337,12 @@ export interface numberUD extends Decoder<unknown, NumberLE, number> {
 }
 export const number: numberUD = {
   _tag: 'numberUD',
-  decode: (u) => (typeof u === 'number' ? success(u) : failure(leafE({ _tag: 'NumberE', actual: u })))
+  decode: (u) =>
+    typeof u === 'number'
+      ? isNaN(u)
+        ? success(u, [tree(naNW)])
+        : success(u)
+      : failure(leafE({ _tag: 'NumberE', actual: u }))
 }
 
 export interface BooleanE extends ActualE<unknown> {
@@ -367,17 +432,26 @@ export const fromStruct = <Properties extends Record<string, AnyD>>(
   _tag: 'FromStructD',
   properties,
   decode: (ur) => {
-    const errors: Array<{ readonly [K in keyof Properties]: KeyE<K, ErrorOf<Properties[K]>> }[keyof Properties]> = []
-    const ar: Record<string, unknown> = {}
-    for (const k in properties) {
-      const de = properties[k].decode(ur[k])
-      if (E.isLeft(de)) {
-        errors.push(keyE(k, true, de.left))
-      } else {
-        ar[k] = de.right
+    const es: Array<{ readonly [K in keyof Properties]: KeyE<K, ErrorOf<Properties[K]>> }[keyof Properties]> = []
+    const ws: Array<Tree<Warning>> = []
+    for (const k in ur) {
+      if (!properties.hasOwnProperty(k)) {
+        ws.push(tree(unexpectedKeyW(k)))
       }
     }
-    return RA.isNonEmpty(errors) ? failure(structE(errors)) : success(ar as any)
+    const ar: Record<string, unknown> = {}
+    for (const k in properties) {
+      const [e, w] = properties[k].decode(ur[k])
+      if (RA.isNonEmpty(w)) {
+        ws.push(tree(keyW(k), w))
+      }
+      if (E.isLeft(e)) {
+        es.push(keyE(k, true, e.left))
+      } else {
+        ar[k] = e.right
+      }
+    }
+    return RA.isNonEmpty(es) ? failure(structE(es), ws) : success(ar as any, ws)
   }
 })
 
@@ -404,17 +478,21 @@ export const fromArray = <Item extends AnyD>(item: Item): FromArrayD<Item> => ({
   _tag: 'FromArrayD',
   item,
   decode: (us) => {
-    const errors: Array<IndexE<number, ErrorOf<typeof item>>> = []
+    const es: Array<IndexE<number, ErrorOf<typeof item>>> = []
+    const ws: Array<Tree<Warning>> = []
     const as: Array<TypeOf<typeof item>> = []
     for (let index = 0; index < us.length; index++) {
-      const de = item.decode(us[index])
-      if (E.isLeft(de)) {
-        errors.push(indexE(index, de.left))
+      const [e, w] = item.decode(us[index])
+      if (RA.isNonEmpty(w)) {
+        ws.push(tree(indexW(index), w))
+      }
+      if (E.isLeft(e)) {
+        es.push(indexE(index, e.left))
       } else {
-        as[index] = de.right
+        as[index] = e.right
       }
     }
-    return RA.isNonEmpty(errors) ? failure(arrayE(us, errors)) : success(as)
+    return RA.isNonEmpty(es) ? failure(arrayE(us, es), ws) : success(as, ws)
   }
 })
 
@@ -428,10 +506,11 @@ export const array = <Item extends AnyUD>(item: Item): ArrayD<Item> => {
   return {
     _tag: 'ArrayD',
     item,
-    decode: (u) => {
-      const e = UnknownArray.decode(u)
-      return E.isLeft(e) ? e : fromArrayItem.decode(e.right as any)
-    }
+    decode: (u) =>
+      pipe(
+        UnknownArray.decode(u),
+        rchainW((us) => fromArrayItem.decode(us as any))
+      )
   }
 }
 
@@ -461,17 +540,25 @@ export const fromTuple = <Components extends ReadonlyArray<AnyD>>(
   _tag: 'FromTupleD',
   components,
   decode: (us) => {
-    const errors: Array<ComponentE<number, ErrorOf<ErrorOf<Components[number]>>>> = []
+    const es: Array<ComponentE<number, ErrorOf<ErrorOf<Components[number]>>>> = []
+    const ws: Array<Tree<Warning>> = []
+    let index: number
+    for (index = components.length; index < us.length; index++) {
+      ws.push(tree(unexpectedComponentW(index)))
+    }
     const as: Array<unknown> = []
-    for (let index = 0; index < components.length; index++) {
-      const de = components[index].decode(us[index])
-      if (E.isLeft(de)) {
-        errors.push(componentE(index, de.left))
+    for (index = 0; index < components.length; index++) {
+      const [e, w] = components[index].decode(us[index])
+      if (RA.isNonEmpty(w)) {
+        ws.push(tree(componentW(index), w))
+      }
+      if (E.isLeft(e)) {
+        es.push(componentE(index, e.left))
       } else {
-        as[index] = de.right
+        as[index] = e.right
       }
     }
-    return RA.isNonEmpty(errors) ? failure(tupleE(errors)) : success(as as any)
+    return RA.isNonEmpty(es) ? failure(tupleE(es), ws) : success(as as any, ws)
   }
 })
 
@@ -490,10 +577,11 @@ export const tuple = <Components extends ReadonlyArray<AnyUD>>(...components: Co
   return {
     _tag: 'TupleD',
     components,
-    decode: (u) => {
-      const e = UnknownArray.decode(u)
-      return E.isLeft(e) ? e : fromTupleComponents.decode(e.right as any)
-    }
+    decode: (u) =>
+      pipe(
+        UnknownArray.decode(u),
+        rchainW((us) => fromTupleComponents.decode(us as any))
+      )
   }
 }
 
@@ -526,18 +614,12 @@ export const refine = <From extends AnyD, B extends TypeOf<From>, E>(parser: (a:
   _tag: 'RefineD',
   from,
   parser,
-  decode: (i) => {
-    const de: Result<ErrorOf<From>, TypeOf<From>> = from.decode(i)
-    if (E.isLeft(de)) {
-      return de
-    }
-    return pipe(parser(de.right), E.mapLeft(refineE))
-  }
+  decode: (i) => pipe(from.decode(i), rchainW(parser), rmapLeft(refineE))
 })
 export const fromRefinement = <From extends AnyD, B extends TypeOf<From>, E>(
   refinement: Refinement<TypeOf<From>, B>,
   error: (from: TypeOf<From>) => E
-): ((from: From) => RefineD<From, E, B>) => refine((a) => (refinement(a) ? E.right(a) : E.left(error(a))))
+): ((from: From) => RefineD<From, E, B>) => refine((a) => (refinement(a) ? success(a) : failure(error(a))))
 
 export interface ParseD<From, E, B> extends Decoder<InputOf<From>, ErrorOf<From> | ParseE<E>, B> {
   readonly _tag: 'ParseD'
@@ -597,10 +679,11 @@ export const struct = <Properties extends Record<string, AnyUD>>(properties: Pro
   return {
     _tag: 'StructD',
     properties,
-    decode: (u) => {
-      const e = UnknownRecord.decode(u)
-      return E.isLeft(e) ? e : fromStructProperties.decode(e.right as any)
-    }
+    decode: (u) =>
+      pipe(
+        UnknownRecord.decode(u),
+        rchainW((ur) => fromStructProperties.decode(ur as any))
+      )
   }
 }
 
@@ -666,17 +749,14 @@ export const compose = <S extends AnyD>(second: S) => <F extends AnyD>(first: F)
   _tag: 'CompositionD',
   first,
   second,
-  decode: (i) => {
-    const de = first.decode(i)
-    return E.isLeft(de) ? de : second.decode(de.right)
-  }
+  decode: flow(first.decode, rchainW(second.decode))
 })
 
 // -------------------------------------------------------------------------------------
 // instances
 // -------------------------------------------------------------------------------------
 
-export const URI = 'io-ts/Decoder2'
+export const URI = 'io-ts/Decoder2-tuple'
 
 export type URI = typeof URI
 
@@ -810,12 +890,36 @@ const drawForest = (indentation: string, forest: ReadonlyArray<Tree<string>>): s
 
 const toTree = toTreeWith(toTreeBuiltin)
 
-export const draw = E.mapLeft(flow(toTree, drawTree))
+export const draw = rmapLeft(flow(toTree, drawTree))
 
-export const print: <A>(ma: Result<string, A>) => string = E.fold(
-  (s) => s,
-  (a) => JSON.stringify(a, null, 2)
-)
+const toForestW = (w: Warnings): Forest<string> => {
+  const gow = (w: Warning): string => {
+    switch (w._tag) {
+      case 'ComponentW':
+        return `component ${JSON.stringify(w.component)}`
+      case 'IndexW':
+        return `index ${JSON.stringify(w.index)}`
+      case 'KeyW':
+        return `key ${JSON.stringify(w.key)}`
+      case 'UnexpectedKeyW':
+        return `unexpected key ${JSON.stringify(w.key)}`
+      case 'UnexpectedComponentW':
+        return `unexpected component ${JSON.stringify(w.component)}`
+      case 'NaNW':
+        return 'value is NaN'
+    }
+  }
+  const go = (w: Tree<Warning>): Tree<string> => tree(gow(w.value), w.forest.map(go))
+  return w.map(go)
+}
+const printValue = <A>(a: A): string => 'Value:\n' + JSON.stringify(a, null, 2)
+const printErrors = (s: string): string => (s === '' ? s : 'Errors:\n' + s)
+const printWarnings = (w: Warnings): string => (w.length === 0 ? '' : '\n' + drawTree(tree('Warnings:', toForestW(w))))
+
+export const print = <A>(ma: Result<string, A>): string => {
+  const [e, w] = ma
+  return pipe(e, E.fold(printErrors, printValue)) + printWarnings(w)
+}
 
 const DR1 = tuple(string, number)
 
@@ -956,6 +1060,44 @@ export const Username = pipe(
 // -------------------------------------------------------------------------------------
 // use case: fail on additional props #322
 // -------------------------------------------------------------------------------------
+
+export const warningsStruct = struct({
+  a: string,
+  b: struct({
+    c: number
+  })
+})
+
+pipe(
+  warningsStruct.decode({
+    a: 'a',
+    b: {
+      c: 1,
+      e: 2,
+      f: {
+        h: 3
+      }
+    },
+    d: 1
+  }),
+  draw,
+  print,
+  console.log
+)
+/*
+Value:
+{
+  "a": "a",
+  "b": {
+    "c": 1
+  }
+}
+Warnings:
+├─ unexpected key "d"
+└─ key "b"
+   ├─ unexpected key "e"
+   └─ unexpected key "f"
+*/
 
 // -------------------------------------------------------------------------------------
 // use case: omit, pick #553
