@@ -756,7 +756,7 @@ export const compose = <S extends AnyD>(second: S) => <F extends AnyD>(first: F)
 // instances
 // -------------------------------------------------------------------------------------
 
-export const URI = 'io-ts/Decoder2-tuple'
+export const URI = 'io-ts/Decoder-Tuple2'
 
 export type URI = typeof URI
 
