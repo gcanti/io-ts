@@ -303,7 +303,7 @@ export type BuiltinE =
   | MessageE<unknown>
   | UnexpectedKeyE
   | UnexpectedComponentE
-  | NaNW
+  | NaNE
 
 // -------------------------------------------------------------------------------------
 // primitives
@@ -325,12 +325,12 @@ export interface NumberE extends ActualE<unknown> {
   readonly _tag: 'NumberE'
 }
 export interface NumberLE extends LeafE<NumberE> {}
-export interface NaNW {
-  readonly _tag: 'NaNW'
+export interface NaNE {
+  readonly _tag: 'NaNE'
 }
-export interface NaNLW extends LeafE<NaNW> {}
-export const naNLW: NaNLW = leafE({ _tag: 'NaNW' })
-export interface numberUD extends Decoder<unknown, NumberLE | NaNLW, number> {
+export interface NaNLE extends LeafE<NaNE> {}
+export const naNLE: NaNLE = leafE({ _tag: 'NaNE' })
+export interface numberUD extends Decoder<unknown, NumberLE | NaNLE, number> {
   readonly _tag: 'numberUD'
 }
 export const number: numberUD = {
@@ -338,7 +338,7 @@ export const number: numberUD = {
   decode: (u) =>
     typeof u === 'number'
       ? isNaN(u)
-        ? TH.both(naNLW, u)
+        ? TH.both(naNLE, u)
         : TH.right(u)
       : TH.left(leafE({ _tag: 'NumberE', actual: u }))
 }
@@ -888,8 +888,8 @@ export const toTreeBuiltin = (de: BuiltinE): Tree<string> => {
       return tree(`unexpected key ${JSON.stringify(de.key)}`)
     case 'UnexpectedComponentE':
       return tree(`unexpected component ${JSON.stringify(de.component)}`)
-    case 'NaNW':
-      return tree('value is NaN')
+    case 'NaNE':
+      return tree('the input is NaN')
   }
 }
 
@@ -1016,7 +1016,56 @@ export const Positive = pipe(
 )
 export type PositiveE = ErrorOf<typeof Positive>
 
-pipe(Positive.decode(NaN), draw, print, console.log)
+// pipe(Positive.decode(NaN), draw, print, console.log)
+
+// -------------------------------------------------------------------------------------
+// use case: condemn
+// -------------------------------------------------------------------------------------
+
+export const condemnWith = (
+  tags: ReadonlyNonEmptyArray<string>
+): ((de: DecodeError<Record<string, unknown>>) => boolean) => {
+  const go = (de: DecodeError<Record<string, unknown>>): boolean => {
+    switch (de._tag) {
+      case 'StructE':
+      case 'RefineE':
+        return de.errors.some(go)
+      case 'KeyE':
+        return go(de.error)
+      case 'LeafE':
+        const _tag = de.error['_tag']
+        return typeof _tag === 'string' && tags.includes(_tag)
+    }
+    return false
+  }
+  return go
+}
+
+export const condemn = <D extends AnyD>(decoder: D, tags: ReadonlyNonEmptyArray<string>): D => {
+  const predicate = condemnWith(tags)
+  return {
+    ...decoder,
+    decode: (i) => {
+      const de = decoder.decode(i)
+      if (TH.isBoth(de)) {
+        const e = de.left
+        if (predicate(e)) {
+          return TH.left(e)
+        }
+      }
+      return de
+    }
+  }
+}
+
+pipe(
+  condemn(struct({ a: Positive }), ['NaNE']).decode({
+    a: NaN
+  }),
+  draw,
+  print,
+  console.log
+)
 
 // -------------------------------------------------------------------------------------
 // use case: new decoder, multiple custom messages #487
