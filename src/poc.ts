@@ -526,6 +526,8 @@ export const fromStruct = <Properties extends Record<string, AnyD>>(
   }
 })
 
+const hasOwnProperty = Object.prototype.hasOwnProperty
+
 export interface StripKeysD<P>
   extends Decoder<Record<string, unknown>, StripKeysE<UnexpectedKeyLE>, { [K in keyof P]: unknown }> {
   readonly _tag: 'StripKeysD'
@@ -539,13 +541,15 @@ export const stripKeys = <Properties extends Record<string, unknown>>(
     properties,
     decode: (ur) => {
       const es: Array<UnexpectedKeyLE> = []
+      const out: Record<string, unknown> = {}
       for (const k in ur) {
-        if (!properties.hasOwnProperty(k)) {
+        if (hasOwnProperty.call(properties, k)) {
+          out[k] = ur[k]
+        } else {
           es.push(unexpectedKey(k))
         }
       }
-      const out: { [K in keyof Properties]: unknown } = ur as any
-      return RA.isNonEmpty(es) ? TH.both(stripKeysE(es), out) : TH.right(out)
+      return RA.isNonEmpty(es) ? TH.both(stripKeysE(es), out as any) : TH.right(out)
     }
   }
 }
@@ -1508,6 +1512,13 @@ export type SUDA = TypeOf<typeof SUD>
 // })
 // export type SumUDE = ErrorOf<typeof SumUD>
 // export type SumUDA = TypeOf<typeof SumUD>
+
+// strip keys
+const SK = stripKeys({
+  a: null,
+  b: null
+})
+console.log(SK.decode({ a: 1, b: 2, c: 3 }))
 
 // // all
 // const AllD = fromStruct({
