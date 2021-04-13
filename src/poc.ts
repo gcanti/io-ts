@@ -130,21 +130,6 @@ export interface SingleE<E> {
   readonly error: E
 }
 
-export interface CompoundE<E> {
-  readonly errors: ReadonlyNonEmptyArray<E>
-}
-
-// Single error
-
-export interface LeafE<E> extends SingleE<E> {
-  readonly _tag: 'LeafE'
-}
-export const leafE = <E>(error: E): LeafE<E> => ({ _tag: 'LeafE', error })
-
-export interface NullableE<E> extends SingleE<E> {
-  readonly _tag: 'NullableE'
-}
-
 export interface KeyE<K, E> extends SingleE<E> {
   readonly _tag: 'KeyE'
   readonly key: K
@@ -172,16 +157,6 @@ export const indexE = <I, E>(index: I, error: E): IndexE<I, E> => ({
   error
 })
 
-export interface RefinementE<E> extends SingleE<E> {
-  readonly _tag: 'RefinementE'
-}
-export const refinementE = <E>(error: E): RefinementE<E> => ({ _tag: 'RefinementE', error })
-
-export interface ParserE<E> extends SingleE<E> {
-  readonly _tag: 'ParserE'
-}
-export const parserE = <E>(error: E): ParserE<E> => ({ _tag: 'ParserE', error })
-
 export interface LazyE<E> extends SingleE<E> {
   readonly _tag: 'LazyE'
   readonly id: string
@@ -197,7 +172,32 @@ export interface TagE<T, E> extends SingleE<E> {
   readonly tag: T
 }
 
+// Single errors
+
+export interface LeafE<E> extends SingleE<E> {
+  readonly _tag: 'LeafE'
+}
+export const leafE = <E>(error: E): LeafE<E> => ({ _tag: 'LeafE', error })
+
+export interface NullableE<E> extends SingleE<E> {
+  readonly _tag: 'NullableE'
+}
+
+export interface RefinementE<E> extends SingleE<E> {
+  readonly _tag: 'RefinementE'
+}
+export const refinementE = <E>(error: E): RefinementE<E> => ({ _tag: 'RefinementE', error })
+
+export interface ParserE<E> extends SingleE<E> {
+  readonly _tag: 'ParserE'
+}
+export const parserE = <E>(error: E): ParserE<E> => ({ _tag: 'ParserE', error })
+
 // Compound errors
+
+export interface CompoundE<E> {
+  readonly errors: ReadonlyNonEmptyArray<E>
+}
 
 export interface StructE<E> extends CompoundE<E> {
   readonly _tag: 'StructE'
@@ -293,34 +293,38 @@ export const unexpectedKeyE = (key: string): UnexpectedKeyE => ({ _tag: 'Unexpec
 export const unexpectedKey: (key: string) => UnexpectedKeyLE = flow(unexpectedKeyE, leafE)
 
 // recursive helpers to please ts@3.5
+// simple single
 export interface NullableRE<E> extends NullableE<DecodeError<E>> {}
 export interface RefinementRE<E> extends RefinementE<DecodeError<E>> {}
 export interface ParserRE<E> extends ParserE<DecodeError<E>> {}
+// customized single
+export interface KeyRE<E> extends KeyE<string, DecodeError<E>> {}
+export interface ComponentRE<E> extends ComponentE<string, DecodeError<E>> {}
+export interface IndexRE<E> extends IndexE<number, DecodeError<E>> {}
+export interface MemberRE<E> extends MemberE<string | number, DecodeError<E>> {}
+export interface TagRE<E> extends TagE<string, DecodeError<E>> {}
+export interface LazyRE<E> extends LazyE<DecodeError<E>> {}
+// compound
 export interface CompositionRE<E> extends CompositionE<DecodeError<E>> {}
 export interface StripKeysRE<E> extends StripKeysE<DecodeError<E>> {}
 export interface StructRE<E> extends StructE<DecodeError<E>> {}
-export interface KeyRE<E> extends KeyE<string, DecodeError<E>> {}
 export interface PartialRE<E> extends PartialE<DecodeError<E>> {}
 export interface StripComponentsRE<E> extends StripComponentsE<DecodeError<E>> {}
 export interface TupleRE<E> extends TupleE<DecodeError<E>> {}
-export interface ComponentRE<E> extends ComponentE<string, DecodeError<E>> {}
-export interface IndexRE<E> extends IndexE<number, DecodeError<E>> {}
 export interface ArrayRE<E> extends ArrayE<DecodeError<E>> {}
 export interface RecordRE<E> extends RecordE<DecodeError<E>> {}
 export interface UnionRE<E> extends UnionE<DecodeError<E>> {}
-export interface MemberRE<E> extends MemberE<string | number, DecodeError<E>> {}
 export interface IntersectionRE<E> extends IntersectionE<DecodeError<E>> {}
-export interface TagRE<E> extends TagE<string, DecodeError<E>> {}
 export interface SumRE<E> extends SumE<DecodeError<E>> {}
-export interface LazyRE<E> extends LazyE<DecodeError<E>> {}
 
 export type DecodeError<E> =
-  // single
+  // simple single
   | LeafE<E>
   | NullableRE<E>
-  | KeyRE<E>
   | RefinementRE<E>
   | ParserRE<E>
+  // customized single
+  | KeyRE<E>
   | ComponentRE<E>
   | IndexRE<E>
   | MemberRE<E>
@@ -337,7 +341,6 @@ export type DecodeError<E> =
   | UnionRE<E>
   | IntersectionRE<E>
   | SumRE<E>
-  // alone
   | CompositionRE<E>
 
 export type BuiltinE =
@@ -887,14 +890,34 @@ const tree = <A>(value: A, forest: Forest<A> = empty): Tree<A> => ({
 export const toTreeWith = <E>(toTree: (e: E) => Tree<string>): ((de: DecodeError<E>) => Tree<string>) => {
   const go = (de: DecodeError<E>): Tree<string> => {
     switch (de._tag) {
+      // simple singles
       case 'LeafE':
         return toTree(de.error)
+      case 'RefinementE':
+        return tree(`1 error(s) found while decoding a refinement`, [go(de.error)])
+      case 'ParserE':
+        return tree(`1 error(s) found while decoding a parser`, [go(de.error)])
+      case 'NullableE':
+        return tree(`1 error(s) found while decoding a nullable`, [go(de.error)])
+
+      // customized singles
       case 'ComponentE':
-        return tree(`required component ${de.index}`, [go(de.error)])
+        return tree(`1 error(s) found while decoding the required component ${de.index}`, [go(de.error)])
       case 'IndexE':
-        return tree(`optional index ${de.index}`, [go(de.error)])
+        return tree(`1 error(s) found while decoding the optional index ${de.index}`, [go(de.error)])
       case 'KeyE':
-        return tree(`${de.required ? 'required' : 'optional'} key ${JSON.stringify(de.key)}`, [go(de.error)])
+        return tree(
+          `1 error(s) found while decoding the ${de.required ? 'required' : 'optional'} key ${JSON.stringify(de.key)}`,
+          [go(de.error)]
+        )
+      case 'MemberE':
+        return tree(`1 error(s) found while decoding the member ${JSON.stringify(de.member)}`, [go(de.error)])
+      case 'TagE':
+        return tree(`1 error(s) found while decoding the sum tag ${de.tag}`, [go(de.error)])
+      case 'LazyE':
+        return tree(`1 error(s) found while decoding the lazy decoder ${de.id}`, [go(de.error)])
+
+      // compounds
       case 'ArrayE':
         return tree(`${de.errors.length} error(s) found while decoding an array`, de.errors.map(go))
       case 'RecordE':
@@ -903,19 +926,22 @@ export const toTreeWith = <E>(toTree: (e: E) => Tree<string>): ((de: DecodeError
         return tree(`${de.errors.length} error(s) found while decoding a tuple`, de.errors.map(go))
       case 'StructE':
         return tree(`${de.errors.length} error(s) found while decoding a struct`, de.errors.map(go))
-      case 'RefinementE':
-        return tree(`error found while decoding a refinement`, [go(de.error)])
-      case 'CompositionE':
-        return de.errors.length === 1
-          ? go(de.errors[0]) // less noise in the output if there's only one error
-          : tree(`${de.errors.length} error(s) found while decoding a composition`, de.errors.map(go))
+      case 'PartialE':
+        return tree(`${de.errors.length} error(s) found while decoding a partial`, de.errors.map(go))
+      case 'UnionE':
+        return tree(`${de.errors.length} error(s) found while decoding a union`, de.errors.map(go))
+      case 'IntersectionE':
+        return tree(`${de.errors.length} error(s) found while decoding an intersection`, de.errors.map(go))
+      case 'SumE':
+        return tree(`${de.errors.length} error(s) found while decoding a sum`, de.errors.map(go))
       case 'StripComponentsE':
         return tree(`${de.errors.length} error(s) found while stripping components`, de.errors.map(go))
       case 'StripKeysE':
         return tree(`${de.errors.length} error(s) found while stripping keys`, de.errors.map(go))
-      default:
-        // etc...
-        return tree(`TODO ${de._tag}`)
+      case 'CompositionE':
+        return de.errors.length === 1
+          ? go(de.errors[0]) // less noise in the output if there's only one error
+          : tree(`${de.errors.length} error(s) found while decoding a composition`, de.errors.map(go))
     }
   }
   return go
@@ -1213,7 +1239,7 @@ export const Username = pipe(
 
 export const warningsTuple = tuple(struct({ a: string }))
 
-// pipe(warningsTuple.decode([{ a: 'a', b: 2 }, 1, true]), draw, print, console.log)
+pipe(warningsTuple.decode([{ a: 'a', b: 2 }, 1, true]), draw, print, console.log)
 /*
 Value:
 [
@@ -1323,7 +1349,7 @@ Warnings:
 //   d,
 //   mapLeft((de) => {
 //     switch (de._tag) {
-//       case 'TagNotFoundE': {
+//       case 'TagE': {
 //         return de.tag
 //       }
 //       case 'SumE': {
@@ -1369,13 +1395,13 @@ Warnings:
 // export type SDA = TypeOf<typeof SD>
 
 // // struct
-export const SUD = struct({
-  a: string,
-  b: number
-})
-export type SUDI = InputOf<typeof SUD>
-export type SUDE = ErrorOf<typeof SUD>
-export type SUDA = TypeOf<typeof SUD>
+// export const SUD = struct({
+//   a: string,
+//   b: number
+// })
+// export type SUDI = InputOf<typeof SUD>
+// export type SUDE = ErrorOf<typeof SUD>
+// export type SUDA = TypeOf<typeof SUD>
 
 // // fromPartial
 // export const PSD = fromPartial({
