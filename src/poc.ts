@@ -22,9 +22,6 @@ import ReadonlyNonEmptyArray = RNEA.ReadonlyNonEmptyArray
 
 export type Result<E, A> = TH.These<E, A>
 
-const chain = <E1, A, E2, B>(ma: Result<E1, A>, f: (a: A) => Result<E2, B>): Result<E1 | E2, B> =>
-  TH.isLeft(ma) ? ma : f(ma.right)
-
 export interface Decoder<I, E, A> {
   readonly decode: (i: I) => Result<E, A>
 }
@@ -225,6 +222,14 @@ export const messageE = <I>(actual: I, message: string): MessageE<I> => ({
 })
 export const message: <I>(actual: I, message: string) => MessageLE<I> = flow(messageE, leafE)
 
+export interface StripKeysE<E> extends CompoundE<E> {
+  readonly _tag: 'StripKeysE'
+}
+export const stripKeysE = <E>(errors: ReadonlyNonEmptyArray<E>): StripKeysE<E> => ({
+  _tag: 'StripKeysE',
+  errors
+})
+
 export interface UnexpectedKeyE {
   readonly _tag: 'UnexpectedKeyE'
   readonly key: string
@@ -238,6 +243,7 @@ export interface NullableRE<E> extends NullableE<DecodeError<E>> {}
 export interface RefinementRE<E> extends RefinementE<DecodeError<E>> {}
 export interface ParserRE<E> extends ParserE<DecodeError<E>> {}
 export interface CompositionRE<E> extends CompositionE<DecodeError<E>, DecodeError<E>> {}
+export interface StripKeysRE<E> extends StripKeysE<DecodeError<E>> {}
 export interface StructRE<E> extends StructE<DecodeError<E>> {}
 export interface KeyRE<E> extends KeyE<string, DecodeError<E>> {}
 export interface PartialRE<E> extends PartialE<DecodeError<E>> {}
@@ -259,6 +265,7 @@ export type DecodeError<E> =
   | RefinementRE<E>
   | ParserRE<E>
   | CompositionRE<E>
+  | StripKeysRE<E>
   | StructRE<E>
   | KeyRE<E>
   | PartialRE<E>
@@ -431,7 +438,7 @@ export const parser = <A, E, B>(parser: (a: A) => Result<E, B>): ParserD<A, E, B
 export interface FromStructD<Properties>
   extends Decoder<
     { [K in keyof Properties]: InputOf<Properties[K]> },
-    StructE<UnexpectedKeyLE | { readonly [K in keyof Properties]: KeyE<K, ErrorOf<Properties[K]>> }[keyof Properties]>,
+    StructE<{ readonly [K in keyof Properties]: KeyE<K, ErrorOf<Properties[K]>> }[keyof Properties]>,
     { [K in keyof Properties]: TypeOf<Properties[K]> }
   > {
   readonly _tag: 'FromStructD'
@@ -443,7 +450,7 @@ export const fromStruct = <Properties extends Record<string, AnyD>>(
   _tag: 'FromStructD',
   properties,
   decode: (ur) => {
-    const es: Array<UnexpectedKeyLE | KeyE<string, ErrorOf<Properties[keyof Properties]>>> = []
+    const es: Array<KeyE<string, ErrorOf<Properties[keyof Properties]>>> = []
     const ar: any = {}
     let isBoth = true
     for (const k in properties) {
@@ -458,11 +465,6 @@ export const fromStruct = <Properties extends Record<string, AnyD>>(
         ar[k] = de.right
       }
     }
-    for (const k in ur) {
-      if (!properties.hasOwnProperty(k)) {
-        es.push(unexpectedKey(k))
-      }
-    }
     if (RA.isNonEmpty(es)) {
       return isBoth ? TH.both(structE(es), ar) : TH.left(structE(es))
     }
@@ -470,10 +472,44 @@ export const fromStruct = <Properties extends Record<string, AnyD>>(
   }
 })
 
+export interface StripKeysD<P>
+  extends Decoder<Record<string, unknown>, StripKeysE<UnexpectedKeyLE>, { [K in keyof P]: unknown }> {
+  readonly _tag: 'StripKeysD'
+  readonly properties: P
+}
+export const stripKeys = <Properties extends Record<string, unknown>>(
+  properties: Properties
+): StripKeysD<Properties> => {
+  return {
+    _tag: 'StripKeysD',
+    properties,
+    decode: (ur) => {
+      const es: Array<UnexpectedKeyLE> = []
+      for (const k in ur) {
+        if (!properties.hasOwnProperty(k)) {
+          es.push(unexpectedKey(k))
+        }
+      }
+      if (RA.isNonEmpty(es)) {
+        return TH.both(stripKeysE(es), ur as any)
+      }
+      return TH.right(ur as any)
+    }
+  }
+}
+
+export interface StructD<Properties>
+  extends CompositionD<CompositionD<UnknownRecordUD, StripKeysD<Properties>>, FromStructD<Properties>> {}
+
+export function struct<Properties extends Record<string, AnyUD>>(properties: Properties): StructD<Properties>
+export function struct(properties: Record<string, AnyUD>): StructD<typeof properties> {
+  return pipe(UnknownRecord, compose(stripKeys(properties)), compose(fromStruct(properties)))
+}
+
 export interface FromPartialD<Properties>
   extends Decoder<
     Partial<{ [K in keyof Properties]: InputOf<Properties[K]> }>,
-    PartialE<UnexpectedKeyLE | { readonly [K in keyof Properties]: KeyE<K, ErrorOf<Properties[K]>> }[keyof Properties]>,
+    PartialE<{ readonly [K in keyof Properties]: KeyE<K, ErrorOf<Properties[K]>> }[keyof Properties]>,
     Partial<{ [K in keyof Properties]: TypeOf<Properties[K]> }>
   > {
   readonly _tag: 'FromPartialD'
@@ -683,34 +719,10 @@ export declare const fromSum: <T extends string>(
   tag: T
 ) => <Members extends Record<string, AnyD>>(members: Members) => FromSumD<T, Members>
 
-export interface StructD<Properties>
-  extends Decoder<
-    unknown,
-    | UnknownRecordLE
-    | StructE<
-        UnexpectedKeyLE | { readonly [K in keyof Properties]: KeyE<K, ErrorOf<Properties[K]>> }[keyof Properties]
-      >,
-    { [K in keyof Properties]: TypeOf<Properties[K]> }
-  > {
-  readonly _tag: 'StructD'
-  readonly properties: Properties
-}
-export const struct = <Properties extends Record<string, AnyUD>>(properties: Properties): StructD<Properties> => {
-  const fromStructProperties = fromStruct(properties)
-  return {
-    _tag: 'StructD',
-    properties,
-    decode: (u) => chain(UnknownRecord.decode(u), (ru: any) => fromStructProperties.decode(ru))
-  }
-}
-
 export interface PartialD<Properties>
   extends Decoder<
     unknown,
-    | UnknownRecordLE
-    | PartialE<
-        UnexpectedKeyLE | { readonly [K in keyof Properties]: KeyE<K, ErrorOf<Properties[K]>> }[keyof Properties]
-      >,
+    UnknownRecordLE | PartialE<{ readonly [K in keyof Properties]: KeyE<K, ErrorOf<Properties[K]>> }[keyof Properties]>,
     Partial<{ [K in keyof Properties]: TypeOf<Properties[K]> }>
   > {
   readonly _tag: 'PartialD'
@@ -875,6 +887,8 @@ export const toTreeWith = <E>(toTree: (e: E) => Tree<string>): ((de: DecodeError
       }
       case 'StripComponentsE':
         return tree(`${de.errors.length} error(s) found while stripping components`, de.errors.map(go))
+      case 'StripKeysE':
+        return tree(`${de.errors.length} error(s) found while stripping keys`, de.errors.map(go))
       default:
         // etc...
         return tree(`TODO ${de._tag}`)
@@ -1139,7 +1153,7 @@ export const Username = pipe(
 
 export const warningsTuple = tuple(struct({ a: string }))
 
-pipe(warningsTuple.decode([{ a: 'a', b: 2 }, 1, true]), draw, print, console.log)
+// pipe(warningsTuple.decode([{ a: 'a', b: 2 }, 1, true]), draw, print, console.log)
 /*
 Value:
 [
@@ -1154,7 +1168,7 @@ Warnings:
 │  └─ unexpected component 2
 └─ 1 error(s) found while decoding a tuple
    └─ required component 0
-      └─ 1 error(s) found while decoding a struct
+      └─ 1 error(s) found while stripping keys
          └─ unexpected key "b"
 */
 
@@ -1174,13 +1188,15 @@ Value:
     "c": 1
   }
 }
-Errors:
-2 error(s) found while decoding a struct
-├─ required key "b"
-│  └─ 2 error(s) found while decoding a struct
-│     ├─ unexpected key "e"
-│     └─ unexpected key "f"
-└─ unexpected key "d"
+Warnings:
+2 error(s) found while decoding a composition
+├─ 1 error(s) found while stripping keys
+│  └─ unexpected key "d"
+└─ 1 error(s) found while decoding a struct
+   └─ required key "b"
+      └─ 2 error(s) found while stripping keys
+         ├─ unexpected key "e"
+         └─ unexpected key "f"
 */
 
 // -------------------------------------------------------------------------------------
