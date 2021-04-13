@@ -33,7 +33,7 @@ export type ErrorOf<D> = D extends Decoder<any, infer E, any> ? E : never
 export type TypeOf<D> = D extends Decoder<any, any, infer A> ? A : never
 
 // -------------------------------------------------------------------------------------
-// pipeables
+// Bifunctor
 // -------------------------------------------------------------------------------------
 
 export interface MapLeftD<D, E> extends Decoder<InputOf<D>, E, TypeOf<D>> {
@@ -67,6 +67,58 @@ export const map = <D extends AnyD, B>(f: (a: TypeOf<D>) => B) => (decoder: D): 
 })
 
 // -------------------------------------------------------------------------------------
+// Category
+// -------------------------------------------------------------------------------------
+
+export interface IdentityD<A> extends Decoder<A, never, A> {
+  readonly _tag: 'IdentityD'
+}
+
+export const id = <A>(): IdentityD<A> => ({
+  _tag: 'IdentityD',
+  decode: TH.right
+})
+
+export interface CompositionD<F, S> extends Decoder<InputOf<F>, CompositionE<ErrorOf<F>, ErrorOf<S>>, TypeOf<S>> {
+  readonly _tag: 'CompositionD'
+  readonly first: F
+  readonly second: S
+}
+
+export function compose<F extends AnyD, S extends Decoder<TypeOf<F>, any, any>>(
+  second: S
+): (first: F) => CompositionD<F, S>
+export function compose<A, E2, B>(
+  second: Decoder<A, E2, B>
+): <I, E1>(first: Decoder<I, E1, A>) => CompositionD<typeof first, typeof second> {
+  return (first) => ({
+    _tag: 'CompositionD',
+    first,
+    second,
+    decode: flow(
+      first.decode,
+      TH.fold(
+        (e1) => TH.left(compositionE(TH.left(e1))),
+        (a) =>
+          pipe(
+            second.decode(a),
+            TH.mapLeft((e) => compositionE(TH.right(e)))
+          ),
+        (w1, a) =>
+          pipe(
+            second.decode(a),
+            TH.fold(
+              (e2) => TH.left(compositionE(TH.right(e2))),
+              (b) => TH.both(compositionE(TH.left(w1)), b),
+              (w2, b) => TH.both(compositionE(TH.both(w1, w2)), b)
+            )
+          )
+      )
+    )
+  })
+}
+
+// -------------------------------------------------------------------------------------
 // error model
 // -------------------------------------------------------------------------------------
 
@@ -82,7 +134,7 @@ export interface CompoundE<E> {
   readonly errors: ReadonlyNonEmptyArray<E>
 }
 
-// Single
+// Single error
 
 export interface LeafE<E> extends SingleE<E> {
   readonly _tag: 'LeafE'
@@ -145,7 +197,7 @@ export interface TagE<T, E> extends SingleE<E> {
   readonly tag: T
 }
 
-// Compound
+// Compound errors
 
 export interface StructE<E> extends CompoundE<E> {
   readonly _tag: 'StructE'
@@ -263,8 +315,6 @@ export interface TagRE<E> extends TagE<string, DecodeError<E>> {}
 export interface SumRE<E> extends SumE<DecodeError<E>> {}
 export interface LazyRE<E> extends LazyE<DecodeError<E>> {}
 
-export type Single<E> = LeafE<E> | NullableRE<E> | KeyRE<E> | RefinementRE<E> | ParserRE<E>
-
 export type DecodeError<E> =
   // single
   | LeafE<E>
@@ -279,9 +329,9 @@ export type DecodeError<E> =
   | LazyRE<E>
   // compound
   | StripKeysRE<E>
+  | StripComponentsRE<E>
   | StructRE<E>
   | PartialRE<E>
-  | StripComponentsRE<E>
   | TupleRE<E>
   | ArrayRE<E>
   | RecordRE<E>
@@ -290,10 +340,6 @@ export type DecodeError<E> =
   | SumRE<E>
   // alone
   | CompositionRE<E>
-
-// -------------------------------------------------------------------------------------
-// error utils
-// -------------------------------------------------------------------------------------
 
 export type BuiltinE =
   | StringE
@@ -499,10 +545,8 @@ export const stripKeys = <Properties extends Record<string, unknown>>(
           es.push(unexpectedKey(k))
         }
       }
-      if (RA.isNonEmpty(es)) {
-        return TH.both(stripKeysE(es), ur as any)
-      }
-      return TH.right(ur as any)
+      const out: { [K in keyof Properties]: unknown } = ur as any
+      return RA.isNonEmpty(es) ? TH.both(stripKeysE(es), out) : TH.right(out)
     }
   }
 }
@@ -661,10 +705,8 @@ export const stripComponents = <Components extends ReadonlyArray<unknown>>(
       for (let index = components.length; index < us.length; index++) {
         es.push(unexpectedComponent(index))
       }
-      if (RA.isNonEmpty(es)) {
-        return TH.both(stripComponentsE(es), us as any)
-      }
-      return TH.right(us as any)
+      const out: { [K in keyof Components]: unknown } = us as any
+      return RA.isNonEmpty(es) ? TH.both(stripComponentsE(es), out) : TH.right(out)
     }
   }
 }
@@ -755,59 +797,6 @@ export interface SumD<T extends string, Members>
 export declare const sum: <T extends string>(
   tag: T
 ) => <Members extends Record<string, AnyUD>>(members: Members) => SumD<T, Members>
-
-// -------------------------------------------------------------------------------------
-// composition
-// -------------------------------------------------------------------------------------
-
-export interface IdentityD<A> extends Decoder<A, never, A> {
-  readonly _tag: 'IdentityD'
-}
-
-export const id = <A>(): IdentityD<A> => ({
-  _tag: 'IdentityD',
-  decode: TH.right
-})
-
-export interface CompositionD<F, S> extends Decoder<InputOf<F>, CompositionE<ErrorOf<F>, ErrorOf<S>>, TypeOf<S>> {
-  readonly _tag: 'CompositionD'
-  readonly first: F
-  readonly second: S
-}
-
-export function compose<F extends AnyD, S extends Decoder<TypeOf<F>, any, any>>(
-  second: S
-): (first: F) => CompositionD<F, S>
-export function compose<A, E2, B>(
-  second: Decoder<A, E2, B>
-): <I, E1>(first: Decoder<I, E1, A>) => CompositionD<typeof first, typeof second> {
-  return (first) => ({
-    _tag: 'CompositionD',
-    first,
-    second,
-    decode: (a) =>
-      pipe(
-        first.decode(a),
-        TH.fold(
-          (e) => TH.left(compositionE(TH.left(e))),
-          (a) =>
-            pipe(
-              second.decode(a),
-              TH.mapLeft((e) => compositionE(TH.right(e)))
-            ),
-          (w1, a) =>
-            pipe(
-              second.decode(a),
-              TH.fold(
-                (e) => TH.left(compositionE(TH.right(e))),
-                (a) => TH.both(compositionE(TH.left(w1)), a),
-                (w2, b) => TH.both(compositionE(TH.both(w1, w2)), b)
-              )
-            )
-        )
-      )
-  })
-}
 
 // -------------------------------------------------------------------------------------
 // instances
