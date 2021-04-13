@@ -16,7 +16,6 @@ import ReadonlyNonEmptyArray = RNEA.ReadonlyNonEmptyArray
   UD = "Decoder with `unknown` input"
   E = "Error"
   LE = "Error wrapped in `LeafE`"
-  W = "Warning"
 
 */
 
