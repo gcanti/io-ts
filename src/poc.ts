@@ -216,8 +216,8 @@ export interface MemberE<M, E> extends SingleE<E> {
   readonly member: M
 }
 
-export interface TagNotFoundE<T, E> extends SingleE<E> {
-  readonly _tag: 'TagNotFoundE'
+export interface TagE<T, E> extends SingleE<E> {
+  readonly _tag: 'TagE'
   readonly tag: T
 }
 
@@ -272,7 +272,7 @@ export interface FromRecordRE<E> extends FromRecordE<DecodeError<E>> {}
 export interface UnionRE<E> extends UnionE<DecodeError<E>> {}
 export interface MemberRE<E> extends MemberE<string | number, DecodeError<E>> {}
 export interface IntersectionRE<E> extends IntersectionE<DecodeError<E>> {}
-export interface TagNotFoundRE<E> extends TagNotFoundE<string, DecodeError<E>> {}
+export interface TagNotFoundRE<E> extends TagE<string, DecodeError<E>> {}
 export interface SumRE<E> extends SumE<DecodeError<E>> {}
 export interface LazyRE<E> extends LazyE<DecodeError<E>> {}
 export type DecodeError<E> =
@@ -684,8 +684,7 @@ export declare const lazy: <I, E, A>(id: string, decoder: Lazy<Decoder<I, E, A>>
 export interface FromSumD<T extends string, Members>
   extends Decoder<
     InputOf<Members[keyof Members]>,
-    | TagNotFoundE<T, LiteralE<keyof Members>>
-    | SumE<{ [K in keyof Members]: MemberE<K, ErrorOf<Members[K]>> }[keyof Members]>,
+    TagE<T, LiteralE<keyof Members>> | SumE<{ [K in keyof Members]: MemberE<K, ErrorOf<Members[K]>> }[keyof Members]>,
     TypeOf<Members[keyof Members]>
   > {
   readonly _tag: 'FromSumD'
@@ -736,7 +735,7 @@ export interface SumD<T extends string, Members>
   extends Decoder<
     unknown,
     | UnknownRecordLE
-    | TagNotFoundE<T, LiteralE<keyof Members>>
+    | TagE<T, LiteralE<keyof Members>>
     | SumE<{ [K in keyof Members]: MemberE<K, ErrorOf<Members[K]>> }[keyof Members]>,
     TypeOf<Members[keyof Members]>
   > {
@@ -1434,13 +1433,13 @@ Errors:
 // export type LaUDA = TypeOf<typeof LaUD>
 
 // // sum
-// export const SumD = fromSum('type')({
-//   A: fromStruct({ type: literal('A'), a: string }),
-//   B: fromStruct({ type: literal('B'), b: string })
-// })
-// export type SumDI = InputOf<typeof SumD>
-// export type SumDE = ErrorOf<typeof SumD>
-// export type SumDA = TypeOf<typeof SumD>
+export const SumD = fromSum('type')({
+  A: fromStruct({ type: literal('A'), a: string }),
+  B: fromStruct({ type: literal('B'), b: string })
+})
+export type SumDI = InputOf<typeof SumD>
+export type SumDE = ErrorOf<typeof SumD>
+export type SumDA = TypeOf<typeof SumD>
 
 // const sumType = sum('type')
 // export const SumUD = sumType({
