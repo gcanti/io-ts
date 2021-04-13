@@ -139,8 +139,8 @@ export interface PartialE<E> extends CompoundE<E> {
   readonly _tag: 'PartialE'
 }
 
-export interface RecordE<E> extends CompoundE<E> {
-  readonly _tag: 'RecordE'
+export interface FromRecordE<E> extends CompoundE<E> {
+  readonly _tag: 'FromRecordE'
 }
 
 export interface ComponentE<I, E> extends SingleE<E> {
@@ -168,11 +168,11 @@ export const indexE = <I, E>(index: I, error: E): IndexE<I, E> => ({
   error
 })
 
-export interface ArrayE<E> extends CompoundE<E> {
-  readonly _tag: 'ArrayE'
+export interface FromArrayE<E> extends CompoundE<E> {
+  readonly _tag: 'FromArrayE'
 }
-export const arrayE = <E>(errors: ReadonlyNonEmptyArray<E>): ArrayE<E> => ({
-  _tag: 'ArrayE',
+export const fromArrayE = <E>(errors: ReadonlyNonEmptyArray<E>): FromArrayE<E> => ({
+  _tag: 'FromArrayE',
   errors
 })
 
@@ -260,8 +260,8 @@ export interface PartialRE<E> extends PartialE<DecodeError<E>> {}
 export interface TupleRE<E> extends TupleE<DecodeError<E>> {}
 export interface ComponentRE<E> extends ComponentE<string, DecodeError<E>> {}
 export interface IndexRE<E> extends IndexE<number, DecodeError<E>> {}
-export interface ArrayRE<E> extends ArrayE<DecodeError<E>> {}
-export interface RecordRE<E> extends RecordE<DecodeError<E>> {}
+export interface FromArrayRE<E> extends FromArrayE<DecodeError<E>> {}
+export interface FromRecordRE<E> extends FromRecordE<DecodeError<E>> {}
 export interface UnionRE<E> extends UnionE<DecodeError<E>> {}
 export interface MemberRE<E> extends MemberE<string | number, DecodeError<E>> {}
 export interface IntersectionRE<E> extends IntersectionE<DecodeError<E>> {}
@@ -280,8 +280,8 @@ export type DecodeError<E> =
   | TupleRE<E>
   | ComponentRE<E>
   | IndexRE<E>
-  | ArrayRE<E>
-  | RecordRE<E>
+  | FromArrayRE<E>
+  | FromRecordRE<E>
   | UnionRE<E>
   | MemberRE<E>
   | IntersectionRE<E>
@@ -471,61 +471,64 @@ export declare const fromPartial: <Properties extends Record<string, AnyD>>(
 ) => FromPartialD<Properties>
 
 export interface FromArrayD<Item>
-  extends Decoder<Array<InputOf<Item>>, ArrayE<IndexE<number, ErrorOf<Item>>>, Array<TypeOf<Item>>> {
+  extends Decoder<Array<InputOf<Item>>, FromArrayE<IndexE<number, ErrorOf<Item>>>, Array<TypeOf<Item>>> {
   readonly _tag: 'FromArrayD'
   readonly item: Item
 }
 
-export const fromArray = <Item extends AnyD>(item: Item): FromArrayD<Item> => ({
-  _tag: 'FromArrayD',
-  item,
-  decode: (us) => {
-    const es: Array<IndexE<number, ErrorOf<typeof item>>> = []
-    const as: any = []
-    let isBoth = true
-    for (let index = 0; index < us.length; index++) {
-      const de = item.decode(us[index])
-      if (TH.isLeft(de)) {
-        isBoth = false
-        es.push(indexE(index, de.left))
-      } else if (TH.isRight(de)) {
-        as[index] = de.right
-      } else {
-        es.push(indexE(index, de.left))
-        as[index] = de.right
-      }
-    }
-    if (RA.isNonEmpty(es)) {
-      return isBoth ? TH.both(arrayE(es), us) : TH.left(arrayE(es))
-    }
-    return TH.right(as)
-  }
-})
-
-export interface ArrayD<Item>
-  extends Decoder<unknown, UnknownArrayLE | ArrayE<IndexE<number, ErrorOf<Item>>>, Array<TypeOf<Item>>> {
-  readonly _tag: 'ArrayD'
-  readonly item: Item
-}
-export const array = <Item extends AnyUD>(item: Item): ArrayD<Item> => {
-  const fromArrayItem = fromArray(item)
+export function fromArray<Item extends AnyD>(item: Item): FromArrayD<Item>
+export function fromArray<I, E, A>(item: Decoder<I, E, A>): FromArrayD<typeof item> {
   return {
-    _tag: 'ArrayD',
+    _tag: 'FromArrayD',
     item,
-    decode: (u) => chain(UnknownArray.decode(u), (us: any) => fromArrayItem.decode(us))
+    decode: (us) => {
+      const es: Array<IndexE<number, ErrorOf<typeof item>>> = []
+      const as: Array<A> = []
+      let isBoth = true
+      for (let index = 0; index < us.length; index++) {
+        const de = item.decode(us[index])
+        if (TH.isLeft(de)) {
+          isBoth = false
+          es.push(indexE(index, de.left))
+        } else if (TH.isRight(de)) {
+          as[index] = de.right
+        } else {
+          es.push(indexE(index, de.left))
+          as[index] = de.right
+        }
+      }
+      if (RA.isNonEmpty(es)) {
+        return isBoth ? TH.both(fromArrayE(es), as) : TH.left(fromArrayE(es))
+      }
+      return TH.right(as)
+    }
   }
+}
+
+export interface ArrayD<Item> extends CompositionD<UnknownArrayUD, FromArrayD<Item>> {}
+export function array<Item extends AnyUD>(item: Item): CompositionD<UnknownArrayUD, FromArrayD<Item>>
+export function array<E, A>(item: Decoder<unknown, E, A>): CompositionD<UnknownArrayUD, FromArrayD<typeof item>> {
+  return pipe(UnknownArray, compose(fromArray(item)))
 }
 
 export interface FromRecordD<Codomain>
   extends Decoder<
     Record<string, InputOf<Codomain>>,
-    RecordE<KeyE<string, ErrorOf<Codomain>>>,
+    FromRecordE<KeyE<string, ErrorOf<Codomain>>>,
     Record<string, TypeOf<Codomain>>
   > {
   readonly _tag: 'FromRecordD'
   readonly codomain: Codomain
 }
 export declare const fromRecord: <Codomain extends AnyD>(codomain: Codomain) => FromRecordD<Codomain>
+
+export interface RecordD<Codomain> extends CompositionD<UnknownRecordUD, FromRecordD<Codomain>> {}
+export function record<Codomain extends AnyUD>(codomain: Codomain): CompositionD<UnknownRecordUD, FromRecordD<Codomain>>
+export function record<E, A>(
+  codomain: Decoder<unknown, E, A>
+): CompositionD<UnknownRecordUD, FromRecordD<typeof codomain>> {
+  return pipe(UnknownRecord, compose(fromRecord(codomain)))
+}
 
 export interface FromTupleD<Components extends ReadonlyArray<AnyD>>
   extends Decoder<
@@ -611,14 +614,20 @@ export interface RefineD<From, E, B extends TypeOf<From>>
   readonly from: From
   readonly parser: (a: TypeOf<From>) => Result<E, B>
 }
-export const refine = <From extends AnyD, B extends TypeOf<From>, E>(parser: (a: TypeOf<From>) => Result<E, B>) => (
-  from: From
-): RefineD<From, E, B> => ({
-  _tag: 'RefineD',
-  from,
-  parser,
-  decode: composeWith(from.decode, parser, refineE)
-})
+export function refine<From extends AnyD, E, B extends TypeOf<From>>(
+  parser: (a: TypeOf<From>) => Result<E, B>
+): (from: From) => RefineD<From, E, B>
+export function refine<A, E2, B extends A>(
+  parser: (a: A) => Result<E2, B>
+): <I, E1>(from: Decoder<I, E1, A>) => RefineD<typeof from, E2, B> {
+  return (from) => ({
+    _tag: 'RefineD',
+    from,
+    parser,
+    decode: composeWith(from.decode, parser, refineE)
+  })
+}
+
 export const fromRefinement = <From extends AnyD, B extends TypeOf<From>, E>(
   refinement: Refinement<TypeOf<From>, B>,
   error: (from: TypeOf<From>) => E
@@ -629,14 +638,19 @@ export interface ParseD<From, E, B> extends Decoder<InputOf<From>, ParseE<ErrorO
   readonly from: From
   readonly parser: (a: TypeOf<From>) => Result<E, B>
 }
-export const parse = <From extends AnyD, E, B>(parser: (a: TypeOf<From>) => Result<E, B>) => (
-  from: From
-): ParseD<From, E, B> => ({
-  _tag: 'ParseD',
-  from,
-  parser,
-  decode: composeWith(from.decode, parser, parseE)
-})
+export function parse<From extends AnyD, E, B>(
+  parser: (a: TypeOf<From>) => Result<E, B>
+): (from: From) => ParseD<From, E, B>
+export function parse<A, E, B>(
+  parser: (a: A) => Result<E, B>
+): <I, E1>(from: Decoder<I, E1, A>) => ParseD<typeof from, E, B> {
+  return (from) => ({
+    _tag: 'ParseD',
+    from,
+    parser,
+    decode: composeWith(from.decode, parser, parseE)
+  })
+}
 
 export interface IntersectD<F, S>
   extends Decoder<
@@ -708,17 +722,6 @@ export interface PartialD<Properties>
 }
 export declare const partial: <Properties extends Record<string, AnyUD>>(properties: Properties) => PartialD<Properties>
 
-export interface RecordD<Codomain>
-  extends Decoder<
-    unknown,
-    UnknownRecordLE | RecordE<KeyE<string, ErrorOf<Codomain>>>,
-    Record<string, TypeOf<Codomain>>
-  > {
-  readonly _tag: 'RecordD'
-  readonly codomain: Codomain
-}
-export declare const record: <Codomain extends AnyUD>(codomain: Codomain) => RecordD<Codomain>
-
 export interface SumD<T extends string, Members>
   extends Decoder<
     unknown,
@@ -755,12 +758,19 @@ export interface CompositionD<F, S> extends Decoder<InputOf<F>, CompositionE<Err
   readonly second: S
 }
 
-export const compose = <S extends AnyD>(second: S) => <F extends AnyD>(first: F): CompositionD<F, S> => ({
-  _tag: 'CompositionD',
-  first,
-  second,
-  decode: composeWith(first.decode, second.decode, compositionE)
-})
+export function compose<F extends AnyD, S extends Decoder<TypeOf<F>, any, any>>(
+  second: S
+): (first: F) => CompositionD<F, S>
+export function compose<A, E2, B>(
+  second: Decoder<A, E2, B>
+): <I, E1>(first: Decoder<I, E1, A>) => CompositionD<typeof first, typeof second> {
+  return (first) => ({
+    _tag: 'CompositionD',
+    first,
+    second,
+    decode: composeWith(first.decode, second.decode, compositionE)
+  })
+}
 
 // -------------------------------------------------------------------------------------
 // instances
@@ -846,9 +856,9 @@ export const toTreeWith = <E>(toTree: (e: E) => Tree<string>): ((de: DecodeError
         return tree(`optional index ${de.index}`, [go(de.error)])
       case 'KeyE':
         return tree(`${de.required ? 'required' : 'optional'} key ${JSON.stringify(de.key)}`, [go(de.error)])
-      case 'ArrayE':
+      case 'FromArrayE':
         return tree(`${de.errors.length} error(s) found while decoding an array`, de.errors.map(go))
-      case 'RecordE':
+      case 'FromRecordE':
         return tree(`${de.errors.length} error(s) found while decoding a record`, de.errors.map(go))
       case 'TupleE':
         return tree(`${de.errors.length} error(s) found while decoding a tuple`, de.errors.map(go))
