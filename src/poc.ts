@@ -819,20 +819,27 @@ declare module 'fp-ts/lib/HKT' {
 export const MapLeftExample = tuple(string, number)
 
 // the decode error is fully typed...
-// type MapLeftExampleE = UnknownArrayLE | TupleE<ComponentE<"0", StringLE> | ComponentE<"1", NumberLE>>
+// type MapLeftExampleE = CompositionE<CompositionE<UnknownArrayLE, StripComponentsE<UnexpectedComponentLE>>, TupleE<ComponentE<"0", StringLE> | ComponentE<...>>>
 export type MapLeftExampleE = ErrorOf<typeof MapLeftExample>
 
 // ...this means that you can pattern match on the error
-// when you are mapping
 export const result1 = pipe(
   MapLeftExample,
   mapLeft((de) =>
     pipe(
       de.error,
       TH.fold(
-        (f) => f._tag,
-        (s) => s._tag,
-        (f, s) => f._tag + s._tag
+        (CompositionE) =>
+          pipe(
+            CompositionE.error,
+            TH.fold(
+              (UnknownArrayLE) => UnknownArrayLE._tag,
+              (StripComponentsE) => StripComponentsE._tag,
+              (UnknownArrayLE, StripComponentsE) => UnknownArrayLE._tag + StripComponentsE._tag
+            )
+          ),
+        (TupleE) => TupleE._tag,
+        (CompositionE, TupleE) => CompositionE._tag + TupleE._tag
       )
     )
   )
@@ -953,12 +960,14 @@ export const print: <A>(ma: TH.These<string, A>) => string = TH.fold(
   (e, a) => printValue(a) + '\n' + printWarnings(e)
 )
 
+// example 1
 const DR1 = tuple(string, number)
 
 export const treeLeft1 = pipe(DR1, mapLeft(toTree))
 
 // what if the decoder contains a custom error?
 
+// example 2
 export interface IntBrand {
   readonly Int: unique symbol
 }
@@ -979,6 +988,7 @@ export type IntUDE = ErrorOf<typeof IntUD>
 
 const DR2 = tuple(string, IntUD)
 
+// TODO: the error message is cryptic
 // export const treeOutput2 = pipe(DR2, mapLeft(draw)) // <= type error because `IntE` is not handled
 
 // I can define my own `toTree`
@@ -1087,6 +1097,7 @@ Errors:
 └─ unexpected key "b"
 */
 
+// TODO
 // export const condemnWith = (
 //   tags: ReadonlyNonEmptyArray<string>
 // ): ((de: DecodeError<Record<string, unknown>>) => boolean) => {
