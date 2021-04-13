@@ -22,34 +22,6 @@ import ReadonlyNonEmptyArray = RNEA.ReadonlyNonEmptyArray
 
 export type Result<E, A> = TH.These<E, A>
 
-const composeWith = <A, E1, B, E2, C, E3>(
-  f: (a: A) => Result<E1, B>,
-  g: (b: B) => Result<E2, C>,
-  h: (head: E1 | E2, first: ReadonlyArray<E1>, second: ReadonlyArray<E2>) => E3
-): ((a: A) => Result<E3, C>) => {
-  return (a) =>
-    pipe(
-      f(a),
-      TH.fold(
-        (e) => TH.left(h(e, empty, empty)),
-        (a) =>
-          pipe(
-            g(a),
-            TH.mapLeft((e) => h(e, empty, empty))
-          ),
-        (w1, a) =>
-          pipe(
-            g(a),
-            TH.fold(
-              (e) => TH.left(h(e, empty, empty)),
-              (a) => TH.both(h(w1, empty, empty), a),
-              (w2, b) => TH.both(h(w1, [], [w2]), b)
-            )
-          )
-      )
-    )
-}
-
 const chain = <E1, A, E2, B>(ma: Result<E1, A>, f: (a: A) => Result<E2, B>): Result<E1 | E2, B> =>
   TH.isLeft(ma) ? ma : f(ma.right)
 
@@ -190,16 +162,13 @@ export interface ParserE<E> extends SingleE<E> {
 }
 export const parserE = <E>(error: E): ParserE<E> => ({ _tag: 'ParserE', error })
 
-export interface CompositionE<F, S> extends CompoundE<F | S> {
+export interface CompositionE<F, S> {
   readonly _tag: 'CompositionE'
+  readonly error: TH.These<F, S>
 }
-export const compositionE = <F, S>(
-  head: F | S,
-  first: ReadonlyArray<F>,
-  second: ReadonlyArray<S>
-): CompositionE<F, S> => ({
+export const compositionE = <F, S>(error: TH.These<F, S>): CompositionE<F, S> => ({
   _tag: 'CompositionE',
-  errors: [head, ...first, ...second]
+  error
 })
 
 export interface IntersectionE<E> extends CompoundE<E> {
@@ -777,7 +746,27 @@ export function compose<A, E2, B>(
     _tag: 'CompositionD',
     first,
     second,
-    decode: composeWith(first.decode, second.decode, (head, first, second) => compositionE(head, first, second))
+    decode: (a) =>
+      pipe(
+        first.decode(a),
+        TH.fold(
+          (e) => TH.left(compositionE(TH.left(e))),
+          (a) =>
+            pipe(
+              second.decode(a),
+              TH.mapLeft((e) => compositionE(TH.right(e)))
+            ),
+          (w1, a) =>
+            pipe(
+              second.decode(a),
+              TH.fold(
+                (e) => TH.left(compositionE(TH.right(e))),
+                (a) => TH.both(compositionE(TH.left(w1)), a),
+                (w2, b) => TH.both(compositionE(TH.both(w1, w2)), b)
+              )
+            )
+        )
+      )
   })
 }
 
@@ -875,6 +864,17 @@ export const toTreeWith = <E>(toTree: (e: E) => Tree<string>): ((de: DecodeError
         return tree(`${de.errors.length} error(s) found while decoding a struct`, de.errors.map(go))
       case 'RefinementE':
         return tree(`error found while decoding a refinement`, [go(de.error)])
+      case 'CompositionE': {
+        const forest = pipe(
+          de.error,
+          TH.fold(
+            (e) => [go(e)],
+            (a) => [go(a)],
+            (e, a) => [go(e), go(a)]
+          )
+        )
+        return tree(`${forest.length} error(s) found while decoding a composition`, forest)
+      }
       default:
         // etc...
         return tree('TODO')
@@ -908,7 +908,7 @@ export const toTreeBuiltin = (de: BuiltinE): Tree<string> => {
     case 'UnexpectedComponentE':
       return tree(`unexpected component ${JSON.stringify(de.component)}`)
     case 'NaNE':
-      return tree('the input is NaN')
+      return tree('value is NaN')
   }
 }
 
@@ -1055,6 +1055,11 @@ export const condemnWith = (
       case 'LeafE':
         const _tag = de.error['_tag']
         return typeof _tag === 'string' && tags.includes(_tag)
+      case 'CompositionE':
+        return pipe(
+          de.error,
+          TH.fold(go, go, (e, a) => go(e) || go(a))
+        )
     }
     return false
   }
@@ -1433,13 +1438,13 @@ Errors:
 // export type LaUDA = TypeOf<typeof LaUD>
 
 // // sum
-export const SumD = fromSum('type')({
-  A: fromStruct({ type: literal('A'), a: string }),
-  B: fromStruct({ type: literal('B'), b: string })
-})
-export type SumDI = InputOf<typeof SumD>
-export type SumDE = ErrorOf<typeof SumD>
-export type SumDA = TypeOf<typeof SumD>
+// export const SumD = fromSum('type')({
+//   A: fromStruct({ type: literal('A'), a: string }),
+//   B: fromStruct({ type: literal('B'), b: string })
+// })
+// export type SumDI = InputOf<typeof SumD>
+// export type SumDE = ErrorOf<typeof SumD>
+// export type SumDA = TypeOf<typeof SumD>
 
 // const sumType = sum('type')
 // export const SumUD = sumType({
