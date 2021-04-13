@@ -82,6 +82,8 @@ export interface CompoundE<E> {
   readonly errors: ReadonlyNonEmptyArray<E>
 }
 
+// Single
+
 export interface LeafE<E> extends SingleE<E> {
   readonly _tag: 'LeafE'
 }
@@ -98,19 +100,6 @@ export interface KeyE<K, E> extends SingleE<E> {
 }
 export const keyE = <K, E>(key: K, required: boolean, error: E): KeyE<K, E> => ({ _tag: 'KeyE', key, required, error })
 
-export interface StructE<E> extends CompoundE<E> {
-  readonly _tag: 'StructE'
-}
-export const structE = <E>(errors: ReadonlyNonEmptyArray<E>): StructE<E> => ({ _tag: 'StructE', errors })
-
-export interface PartialE<E> extends CompoundE<E> {
-  readonly _tag: 'PartialE'
-}
-
-export interface FromRecordE<E> extends CompoundE<E> {
-  readonly _tag: 'FromRecordE'
-}
-
 export interface ComponentE<I, E> extends SingleE<E> {
   readonly _tag: 'ComponentE'
   readonly index: I
@@ -120,6 +109,56 @@ export const componentE = <I, E>(index: I, error: E): ComponentE<I, E> => ({
   index,
   error
 })
+
+export interface IndexE<I, E> extends SingleE<E> {
+  readonly _tag: 'IndexE'
+  readonly index: I
+}
+export const indexE = <I, E>(index: I, error: E): IndexE<I, E> => ({
+  _tag: 'IndexE',
+  index,
+  error
+})
+
+export interface RefinementE<E> extends SingleE<E> {
+  readonly _tag: 'RefinementE'
+}
+export const refinementE = <E>(error: E): RefinementE<E> => ({ _tag: 'RefinementE', error })
+
+export interface ParserE<E> extends SingleE<E> {
+  readonly _tag: 'ParserE'
+}
+export const parserE = <E>(error: E): ParserE<E> => ({ _tag: 'ParserE', error })
+
+export interface LazyE<E> extends SingleE<E> {
+  readonly _tag: 'LazyE'
+  readonly id: string
+}
+
+export interface MemberE<M, E> extends SingleE<E> {
+  readonly _tag: 'MemberE'
+  readonly member: M
+}
+
+export interface TagE<T, E> extends SingleE<E> {
+  readonly _tag: 'TagE'
+  readonly tag: T
+}
+
+// Compound
+
+export interface StructE<E> extends CompoundE<E> {
+  readonly _tag: 'StructE'
+}
+export const structE = <E>(errors: ReadonlyNonEmptyArray<E>): StructE<E> => ({ _tag: 'StructE', errors })
+
+export interface PartialE<E> extends CompoundE<E> {
+  readonly _tag: 'PartialE'
+}
+
+export interface RecordE<E> extends CompoundE<E> {
+  readonly _tag: 'RecordE'
+}
 
 export interface StripComponentsE<E> extends CompoundE<E> {
   readonly _tag: 'StripComponentsE'
@@ -145,37 +184,17 @@ export interface TupleE<E> extends CompoundE<E> {
 }
 export const tupleE = <E>(errors: ReadonlyNonEmptyArray<E>): TupleE<E> => ({ _tag: 'TupleE', errors })
 
-export interface IndexE<I, E> extends SingleE<E> {
-  readonly _tag: 'IndexE'
-  readonly index: I
+export interface ArrayE<E> extends CompoundE<E> {
+  readonly _tag: 'ArrayE'
 }
-export const indexE = <I, E>(index: I, error: E): IndexE<I, E> => ({
-  _tag: 'IndexE',
-  index,
-  error
-})
-
-export interface FromArrayE<E> extends CompoundE<E> {
-  readonly _tag: 'FromArrayE'
-}
-export const fromArrayE = <E>(errors: ReadonlyNonEmptyArray<E>): FromArrayE<E> => ({
-  _tag: 'FromArrayE',
+export const arrayE = <E>(errors: ReadonlyNonEmptyArray<E>): ArrayE<E> => ({
+  _tag: 'ArrayE',
   errors
 })
 
 export interface UnionE<E> extends CompoundE<E> {
   readonly _tag: 'UnionE'
 }
-
-export interface RefinementE<E> extends SingleE<E> {
-  readonly _tag: 'RefinementE'
-}
-export const refinementE = <E>(error: E): RefinementE<E> => ({ _tag: 'RefinementE', error })
-
-export interface ParserE<E> extends SingleE<E> {
-  readonly _tag: 'ParserE'
-}
-export const parserE = <E>(error: E): ParserE<E> => ({ _tag: 'ParserE', error })
 
 export interface CompositionE<F, S> {
   readonly _tag: 'CompositionE'
@@ -188,21 +207,6 @@ export const compositionE = <F, S>(error: TH.These<F, S>): CompositionE<F, S> =>
 
 export interface IntersectionE<E> extends CompoundE<E> {
   readonly _tag: 'IntersectionE'
-}
-
-export interface LazyE<E> extends SingleE<E> {
-  readonly _tag: 'LazyE'
-  readonly id: string
-}
-
-export interface MemberE<M, E> extends SingleE<E> {
-  readonly _tag: 'MemberE'
-  readonly member: M
-}
-
-export interface TagE<T, E> extends SingleE<E> {
-  readonly _tag: 'TagE'
-  readonly tag: T
 }
 
 export interface SumE<E> extends CompoundE<E> {
@@ -250,36 +254,42 @@ export interface StripComponentsRE<E> extends StripComponentsE<DecodeError<E>> {
 export interface TupleRE<E> extends TupleE<DecodeError<E>> {}
 export interface ComponentRE<E> extends ComponentE<string, DecodeError<E>> {}
 export interface IndexRE<E> extends IndexE<number, DecodeError<E>> {}
-export interface FromArrayRE<E> extends FromArrayE<DecodeError<E>> {}
-export interface FromRecordRE<E> extends FromRecordE<DecodeError<E>> {}
+export interface ArrayRE<E> extends ArrayE<DecodeError<E>> {}
+export interface RecordRE<E> extends RecordE<DecodeError<E>> {}
 export interface UnionRE<E> extends UnionE<DecodeError<E>> {}
 export interface MemberRE<E> extends MemberE<string | number, DecodeError<E>> {}
 export interface IntersectionRE<E> extends IntersectionE<DecodeError<E>> {}
-export interface TagNotFoundRE<E> extends TagE<string, DecodeError<E>> {}
+export interface TagRE<E> extends TagE<string, DecodeError<E>> {}
 export interface SumRE<E> extends SumE<DecodeError<E>> {}
 export interface LazyRE<E> extends LazyE<DecodeError<E>> {}
+
+export type Single<E> = LeafE<E> | NullableRE<E> | KeyRE<E> | RefinementRE<E> | ParserRE<E>
+
 export type DecodeError<E> =
+  // single
   | LeafE<E>
   | NullableRE<E>
+  | KeyRE<E>
   | RefinementRE<E>
   | ParserRE<E>
-  | CompositionRE<E>
+  | ComponentRE<E>
+  | IndexRE<E>
+  | MemberRE<E>
+  | TagRE<E>
+  | LazyRE<E>
+  // compound
   | StripKeysRE<E>
   | StructRE<E>
-  | KeyRE<E>
   | PartialRE<E>
   | StripComponentsRE<E>
   | TupleRE<E>
-  | ComponentRE<E>
-  | IndexRE<E>
-  | FromArrayRE<E>
-  | FromRecordRE<E>
+  | ArrayRE<E>
+  | RecordRE<E>
   | UnionRE<E>
-  | MemberRE<E>
   | IntersectionRE<E>
-  | TagNotFoundRE<E>
   | SumRE<E>
-  | LazyRE<E>
+  // alone
+  | CompositionRE<E>
 
 // -------------------------------------------------------------------------------------
 // error utils
@@ -519,7 +529,7 @@ export declare const fromPartial: <Properties extends Record<string, AnyD>>(
 ) => FromPartialD<Properties>
 
 export interface FromArrayD<Item>
-  extends Decoder<Array<InputOf<Item>>, FromArrayE<IndexE<number, ErrorOf<Item>>>, Array<TypeOf<Item>>> {
+  extends Decoder<Array<InputOf<Item>>, ArrayE<IndexE<number, ErrorOf<Item>>>, Array<TypeOf<Item>>> {
   readonly _tag: 'FromArrayD'
   readonly item: Item
 }
@@ -546,7 +556,7 @@ export function fromArray<I, E, A>(item: Decoder<I, E, A>): FromArrayD<typeof it
         }
       }
       if (RA.isNonEmpty(es)) {
-        return isBoth ? TH.both(fromArrayE(es), as) : TH.left(fromArrayE(es))
+        return isBoth ? TH.both(arrayE(es), as) : TH.left(arrayE(es))
       }
       return TH.right(as)
     }
@@ -562,7 +572,7 @@ export function array<E, A>(item: Decoder<unknown, E, A>): ArrayD<typeof item> {
 export interface FromRecordD<Codomain>
   extends Decoder<
     Record<string, InputOf<Codomain>>,
-    FromRecordE<KeyE<string, ErrorOf<Codomain>>>,
+    RecordE<KeyE<string, ErrorOf<Codomain>>>,
     Record<string, TypeOf<Codomain>>
   > {
   readonly _tag: 'FromRecordD'
@@ -868,9 +878,9 @@ export const toTreeWith = <E>(toTree: (e: E) => Tree<string>): ((de: DecodeError
         return tree(`optional index ${de.index}`, [go(de.error)])
       case 'KeyE':
         return tree(`${de.required ? 'required' : 'optional'} key ${JSON.stringify(de.key)}`, [go(de.error)])
-      case 'FromArrayE':
+      case 'ArrayE':
         return tree(`${de.errors.length} error(s) found while decoding an array`, de.errors.map(go))
-      case 'FromRecordE':
+      case 'RecordE':
         return tree(`${de.errors.length} error(s) found while decoding a record`, de.errors.map(go))
       case 'TupleE':
         return tree(`${de.errors.length} error(s) found while decoding a tuple`, de.errors.map(go))
