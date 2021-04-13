@@ -700,16 +700,21 @@ export interface StripComponentsD<I>
 export const stripComponents = <Components extends ReadonlyArray<unknown>>(
   ...components: Components
 ): StripComponentsD<Components> => {
+  const len = components.length
   return {
     _tag: 'StripComponentsD',
     components,
     decode: (us) => {
       const es: Array<UnexpectedComponentLE> = []
-      for (let index = components.length; index < us.length; index++) {
-        es.push(unexpectedComponent(index))
+      const out: Array<unknown> = []
+      for (let index = 0; index < us.length; index++) {
+        if (index < len) {
+          out[index] = us[index]
+        } else {
+          es.push(unexpectedComponent(index))
+        }
       }
-      const out: { [K in keyof Components]: unknown } = us as any
-      return RA.isNonEmpty(es) ? TH.both(stripComponentsE(es), out) : TH.right(out)
+      return RA.isNonEmpty(es) ? TH.both(stripComponentsE(es), out as any) : TH.right(out)
     }
   }
 }
@@ -1513,12 +1518,20 @@ export type SUDA = TypeOf<typeof SUD>
 // export type SumUDE = ErrorOf<typeof SumUD>
 // export type SumUDA = TypeOf<typeof SumUD>
 
-// strip keys
-const SK = stripKeys({
-  a: null,
-  b: null
-})
-console.log(SK.decode({ a: 1, b: 2, c: 3 }))
+// // strip keys
+// const SK = stripKeys({
+//   a: null,
+//   b: null
+// })
+// export type SKI = InputOf<typeof SK>
+// export type SKE = ErrorOf<typeof SK>
+// export type SKA = TypeOf<typeof SK>
+
+// // strip components
+// const SC = stripComponents(null, null)
+// export type SCI = InputOf<typeof SC>
+// export type SCE = ErrorOf<typeof SC>
+// export type SCA = TypeOf<typeof SC>
 
 // // all
 // const AllD = fromStruct({
