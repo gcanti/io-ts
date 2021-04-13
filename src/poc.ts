@@ -933,11 +933,12 @@ export const draw = TH.mapLeft(flow(toTree, drawTree))
 
 const printValue = <A>(a: A): string => 'Value:\n' + JSON.stringify(a, null, 2)
 const printErrors = (s: string): string => (s === '' ? s : 'Errors:\n' + s)
+const printWarnings = (s: string): string => (s === '' ? s : 'Warnings:\n' + s)
 
 export const print: <A>(ma: TH.These<string, A>) => string = TH.fold(
   printErrors,
   printValue,
-  (e, a) => printValue(a) + '\n' + printErrors(e)
+  (e, a) => printValue(a) + '\n' + printWarnings(e)
 )
 
 const DR1 = tuple(string, number)
@@ -1083,14 +1084,14 @@ export const condemn = <D extends AnyD>(decoder: D, tags: ReadonlyNonEmptyArray<
   }
 }
 
-pipe(
-  condemn(struct({ a: Positive }), ['NaNE']).decode({
-    a: NaN
-  }),
-  draw,
-  print,
-  console.log
-)
+// pipe(
+//   condemn(struct({ a: Positive }), ['NaNE']).decode({
+//     a: NaN
+//   }),
+//   draw,
+//   print,
+//   console.log
+// )
 
 // -------------------------------------------------------------------------------------
 // use case: new decoder, multiple custom messages #487
@@ -1146,7 +1147,7 @@ Value:
     "a": "a"
   }
 ]
-Errors:
+Warnings:
 3 error(s) found while decoding a tuple
 ├─ required component 0
 │  └─ 1 error(s) found while decoding a struct
@@ -1162,22 +1163,7 @@ export const warningsStruct = struct({
   })
 })
 
-// pipe(
-//   warningsStruct.decode({
-//     a: 'a',
-//     b: {
-//       c: 1,
-//       e: 2,
-//       f: {
-//         h: 3
-//       }
-//     },
-//     d: 1
-//   }),
-//   draw,
-//   print,
-//   console.log
-// )
+// pipe(warningsStruct.decode({ a: 'a', b: { c: 1, e: 2, f: { h: 3 } }, d: 1 }), draw, print, console.log)
 /*
 Value:
 {
@@ -1188,11 +1174,11 @@ Value:
 }
 Errors:
 2 error(s) found while decoding a struct
-├─ unexpected key "d"
-└─ required key "b"
-   └─ 2 error(s) found while decoding a struct
-      ├─ unexpected key "e"
-      └─ unexpected key "f"
+├─ required key "b"
+│  └─ 2 error(s) found while decoding a struct
+│     ├─ unexpected key "e"
+│     └─ unexpected key "f"
+└─ unexpected key "d"
 */
 
 // -------------------------------------------------------------------------------------
