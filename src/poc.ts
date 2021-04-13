@@ -79,7 +79,7 @@ export const id = <A>(): IdentityD<A> => ({
   decode: TH.right
 })
 
-export interface CompositionD<F, S> extends Decoder<InputOf<F>, CompositionE<ErrorOf<F>, ErrorOf<S>>, TypeOf<S>> {
+export interface CompositionD<F, S> extends Decoder<InputOf<F>, CompositionE<ErrorOf<F> | ErrorOf<S>>, TypeOf<S>> {
   readonly _tag: 'CompositionD'
   readonly first: F
   readonly second: S
@@ -98,19 +98,19 @@ export function compose<A, E2, B>(
     decode: flow(
       first.decode,
       TH.fold(
-        (e1) => TH.left(compositionE(TH.left(e1))),
+        (e1) => TH.left(compositionE([e1])),
         (a) =>
           pipe(
             second.decode(a),
-            TH.mapLeft((e) => compositionE(TH.right(e)))
+            TH.mapLeft((e) => compositionE([e]))
           ),
         (w1, a) =>
           pipe(
             second.decode(a),
             TH.fold(
-              (e2) => TH.left(compositionE(TH.right(e2))),
-              (b) => TH.both(compositionE(TH.left(w1)), b),
-              (w2, b) => TH.both(compositionE(TH.both(w1, w2)), b)
+              (e2) => TH.left(compositionE([e2])),
+              (b) => TH.both(compositionE([w1]), b),
+              (w2, b) => TH.both(compositionE([w1, w2]), b)
             )
           )
       )
@@ -248,13 +248,12 @@ export interface UnionE<E> extends CompoundE<E> {
   readonly _tag: 'UnionE'
 }
 
-export interface CompositionE<F, S> {
+export interface CompositionE<E> extends CompoundE<E> {
   readonly _tag: 'CompositionE'
-  readonly error: TH.These<F, S>
 }
-export const compositionE = <F, S>(error: TH.These<F, S>): CompositionE<F, S> => ({
+export const compositionE = <E>(errors: ReadonlyNonEmptyArray<E>): CompositionE<E> => ({
   _tag: 'CompositionE',
-  error
+  errors
 })
 
 export interface IntersectionE<E> extends CompoundE<E> {
@@ -297,7 +296,7 @@ export const unexpectedKey: (key: string) => UnexpectedKeyLE = flow(unexpectedKe
 export interface NullableRE<E> extends NullableE<DecodeError<E>> {}
 export interface RefinementRE<E> extends RefinementE<DecodeError<E>> {}
 export interface ParserRE<E> extends ParserE<DecodeError<E>> {}
-export interface CompositionRE<E> extends CompositionE<DecodeError<E>, DecodeError<E>> {}
+export interface CompositionRE<E> extends CompositionE<DecodeError<E>> {}
 export interface StripKeysRE<E> extends StripKeysE<DecodeError<E>> {}
 export interface StructRE<E> extends StructE<DecodeError<E>> {}
 export interface KeyRE<E> extends KeyE<string, DecodeError<E>> {}
@@ -826,22 +825,35 @@ export type MapLeftExampleE = ErrorOf<typeof MapLeftExample>
 export const result1 = pipe(
   MapLeftExample,
   mapLeft((de) =>
-    pipe(
-      de.error,
-      TH.fold(
-        (CompositionE) =>
-          pipe(
-            CompositionE.error,
-            TH.fold(
-              (UnknownArrayLE) => UnknownArrayLE._tag,
-              (StripComponentsE) => StripComponentsE._tag,
-              (UnknownArrayLE, StripComponentsE) => UnknownArrayLE._tag + StripComponentsE._tag
-            )
-          ),
-        (TupleE) => TupleE._tag,
-        (CompositionE, TupleE) => CompositionE._tag + TupleE._tag
-      )
-    )
+    de.errors.map((e) => {
+      switch (e._tag) {
+        case 'CompositionE':
+          return e.errors.map((e) => {
+            switch (e._tag) {
+              case 'LeafE':
+                return 'UnknownArrayLE'
+              case 'StripComponentsE':
+                return e._tag
+            }
+          })
+        case 'TupleE':
+          return e.errors.map((e) => {
+            switch (e.index) {
+              case '0':
+                return 'StringE'
+              case '1': {
+                const e1 = e.error.error
+                switch (e1._tag) {
+                  case 'NaNE':
+                    return 'NaNE'
+                  case 'NumberE':
+                    return 'NumberE'
+                }
+              }
+            }
+          })
+      }
+    })
   )
 )
 
@@ -884,12 +896,10 @@ export const toTreeWith = <E>(toTree: (e: E) => Tree<string>): ((de: DecodeError
         return tree(`${de.errors.length} error(s) found while decoding a struct`, de.errors.map(go))
       case 'RefinementE':
         return tree(`error found while decoding a refinement`, [go(de.error)])
-      case 'CompositionE': {
-        return pipe(
-          de.error,
-          TH.fold(go, go, (e, a) => tree(`2 error(s) found while decoding a composition`, [go(e), go(a)]))
-        )
-      }
+      case 'CompositionE':
+        return de.errors.length === 1
+          ? go(de.errors[0]) // less noise in the output if there's only one error
+          : tree(`${de.errors.length} error(s) found while decoding a composition`, de.errors.map(go))
       case 'StripComponentsE':
         return tree(`${de.errors.length} error(s) found while stripping components`, de.errors.map(go))
       case 'StripKeysE':
@@ -1080,7 +1090,7 @@ export function strict(properties: Record<string, AnyUD>): StructD<typeof proper
   return pipe(UnknownRecord, compose(condemn(stripKeys(properties))), compose(fromStruct(properties)))
 }
 
-pipe(struct({ a: string }).decode({ a: 'a', b: 1 }), draw, print, console.log)
+// pipe(struct({ a: string }).decode({ a: 'a', b: 1 }), draw, print, console.log)
 /*
 Value:
 {
@@ -1090,7 +1100,7 @@ Warnings:
 1 error(s) found while stripping keys
 └─ unexpected key "b"
 */
-pipe(strict({ a: string }).decode({ a: 'a', b: 1 }), draw, print, console.log)
+// pipe(strict({ a: string }).decode({ a: 'a', b: 1 }), draw, print, console.log)
 /*
 Errors:
 1 error(s) found while stripping keys
@@ -1350,13 +1360,13 @@ Warnings:
 // export type SDA = TypeOf<typeof SD>
 
 // // struct
-// export const SUD = struct({
-//   a: string,
-//   b: number
-// })
-// export type SUDI = InputOf<typeof SUD>
-// export type SUDE = ErrorOf<typeof SUD>
-// export type SUDA = TypeOf<typeof SUD>
+export const SUD = struct({
+  a: string,
+  b: number
+})
+export type SUDI = InputOf<typeof SUD>
+export type SUDE = ErrorOf<typeof SUD>
+export type SUDA = TypeOf<typeof SUD>
 
 // // fromPartial
 // export const PSD = fromPartial({
