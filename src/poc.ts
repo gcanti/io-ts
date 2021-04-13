@@ -1066,46 +1066,78 @@ export type PositiveE = ErrorOf<typeof Positive>
 // use case: condemn
 // -------------------------------------------------------------------------------------
 
-export const condemnWith = (
-  tags: ReadonlyNonEmptyArray<string>
-): ((de: DecodeError<Record<string, unknown>>) => boolean) => {
-  const go = (de: DecodeError<Record<string, unknown>>): boolean => {
-    switch (de._tag) {
-      case 'StructE':
-        return de.errors.some(go)
-      case 'RefinementE':
-      case 'KeyE':
-        return go(de.error)
-      case 'LeafE':
-        const _tag = de.error['_tag']
-        return typeof _tag === 'string' && tags.includes(_tag)
-      case 'CompositionE':
-        return pipe(
-          de.error,
-          TH.fold(go, go, (e, a) => go(e) || go(a))
-        )
-    }
-    return false
-  }
-  return go
-}
-
-export const condemn = <D extends AnyD>(decoder: D, tags: ReadonlyNonEmptyArray<string>): D => {
-  const predicate = condemnWith(tags)
+export const condemn = <D extends AnyD>(decoder: D): D => {
   return {
     ...decoder,
     decode: (i) => {
       const de = decoder.decode(i)
-      if (TH.isBoth(de)) {
-        const e = de.left
-        if (predicate(e)) {
-          return TH.left(e)
-        }
-      }
-      return de
+      return TH.isBoth(de) ? TH.left(de.left) : de
     }
   }
 }
+
+export function strict<Properties extends Record<string, AnyUD>>(properties: Properties): StructD<Properties>
+export function strict(properties: Record<string, AnyUD>): StructD<typeof properties> {
+  return pipe(UnknownRecord, compose(condemn(stripKeys(properties))), compose(fromStruct(properties)))
+}
+
+pipe(struct({ a: string }).decode({ a: 'a', b: 1 }), draw, print, console.log)
+/*
+Value:
+{
+  "a": "a"
+}
+Warnings:
+1 error(s) found while stripping keys
+└─ unexpected key "b"
+*/
+pipe(strict({ a: string }).decode({ a: 'a', b: 1 }), draw, print, console.log)
+/*
+Errors:
+1 error(s) found while stripping keys
+└─ unexpected key "b"
+*/
+
+// export const condemnWith = (
+//   tags: ReadonlyNonEmptyArray<string>
+// ): ((de: DecodeError<Record<string, unknown>>) => boolean) => {
+//   const go = (de: DecodeError<Record<string, unknown>>): boolean => {
+//     switch (de._tag) {
+//       case 'StructE':
+//         return de.errors.some(go)
+//       case 'RefinementE':
+//       case 'KeyE':
+//         return go(de.error)
+//       case 'LeafE':
+//         const _tag = de.error['_tag']
+//         return typeof _tag === 'string' && tags.includes(_tag)
+//       case 'CompositionE':
+//         return pipe(
+//           de.error,
+//           TH.fold(go, go, (e, a) => go(e) || go(a))
+//         )
+//     }
+//     return false
+//   }
+//   return go
+// }
+
+// export const condemn = <D extends AnyD>(decoder: D, tags: ReadonlyNonEmptyArray<string>): D => {
+//   const predicate = condemnWith(tags)
+//   return {
+//     ...decoder,
+//     decode: (i) => {
+//       const de = decoder.decode(i)
+//       if (TH.isBoth(de)) {
+//         const e = de.left
+//         if (predicate(e)) {
+//           return TH.left(e)
+//         }
+//       }
+//       return de
+//     }
+//   }
+// }
 
 // pipe(
 //   condemn(struct({ a: Positive }), ['NaNE']).decode({
