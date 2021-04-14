@@ -514,18 +514,6 @@ export const parser = <A, E, B>(parser: (a: A) => Result<E, B>): ParserD<A, E, B
   decode: flow(parser, TH.mapLeft(parserE))
 })
 
-export interface KeyD<K extends PropertyKey>
-  extends Decoder<Record<PropertyKey, unknown>, MissingKeyLE, Record<K, unknown>> {
-  readonly _tag: 'KeyD'
-  readonly key: K
-}
-
-export const key = <K extends PropertyKey>(key: K): KeyD<K> => ({
-  _tag: 'KeyD',
-  key,
-  decode: (ru) => (hasOwnProperty.call(ru, key) ? TH.right({ [key]: ru[key] } as any) : TH.left(missingKey(key)))
-})
-
 // -------------------------------------------------------------------------------------
 // combinators
 // -------------------------------------------------------------------------------------
