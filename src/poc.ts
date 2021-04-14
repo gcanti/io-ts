@@ -225,6 +225,17 @@ export const componentsE = <E>(errors: ReadonlyNonEmptyArray<E>): ComponentsE<E>
   errors
 })
 
+export interface MissingComponentE {
+  readonly _tag: 'MissingComponentE'
+  readonly component: number
+}
+export interface MissingComponentLE extends LeafE<MissingComponentE> {}
+export const missingComponentE = (component: number): MissingComponentE => ({
+  _tag: 'MissingComponentE',
+  component
+})
+export const missingComponent: (component: number) => MissingComponentLE = flow(missingComponentE, leafE)
+
 export interface UnexpectedComponentE {
   readonly _tag: 'UnexpectedComponentE'
   readonly component: number
@@ -319,10 +330,10 @@ export interface TagRE<E> extends TagE<string, DecodeError<E>> {}
 export interface LazyRE<E> extends LazyE<DecodeError<E>> {}
 // compound
 export interface CompositionRE<E> extends CompositionE<DecodeError<E>> {}
-export interface StripKeysRE<E> extends KeysE<DecodeError<E>> {}
+export interface KeysRE<E> extends KeysE<DecodeError<E>> {}
 export interface StructRE<E> extends StructE<DecodeError<E>> {}
 export interface PartialRE<E> extends PartialE<DecodeError<E>> {}
-export interface StripComponentsRE<E> extends ComponentsE<DecodeError<E>> {}
+export interface ComponentsRE<E> extends ComponentsE<DecodeError<E>> {}
 export interface TupleRE<E> extends TupleE<DecodeError<E>> {}
 export interface ArrayRE<E> extends ArrayE<DecodeError<E>> {}
 export interface RecordRE<E> extends RecordE<DecodeError<E>> {}
@@ -344,8 +355,8 @@ export type DecodeError<E> =
   | TagRE<E>
   | LazyRE<E>
   // compound
-  | StripKeysRE<E>
-  | StripComponentsRE<E>
+  | KeysRE<E>
+  | ComponentsRE<E>
   | StructRE<E>
   | PartialRE<E>
   | TupleRE<E>
@@ -366,6 +377,7 @@ export type BuiltinE =
   | MessageE<unknown>
   | MissingKeyE
   | UnexpectedKeyE
+  | MissingComponentE
   | UnexpectedComponentE
   | NaNE
 
@@ -596,6 +608,48 @@ export const keys = <Properties extends Record<string, unknown>>(properties: Pro
   }
 }
 
+export interface ComponentsD<I>
+  extends Decoder<
+    Array<unknown>,
+    ComponentsE<MissingComponentLE | UnexpectedComponentLE>,
+    { [K in keyof I]: unknown }
+  > {
+  readonly _tag: 'ComponentsD'
+  readonly components: I
+}
+export const components = <Components extends ReadonlyArray<unknown>>(
+  ...components: Components
+): ComponentsD<Components> => {
+  const len = components.length
+  return {
+    _tag: 'ComponentsD',
+    components,
+    decode: (us) => {
+      const es: Array<MissingComponentLE> = []
+      const ws: Array<UnexpectedComponentLE> = []
+      const out: any = []
+      const uslen = us.length
+      const max = Math.max(len, uslen)
+      for (let index = 0; index < max; index++) {
+        if (index < len) {
+          if (index < uslen) {
+            out[index] = us[index]
+          } else {
+            es.push(missingComponent(index))
+          }
+        } else {
+          ws.push(unexpectedComponent(index))
+        }
+      }
+      return RA.isNonEmpty(es)
+        ? TH.left(componentsE(concatW(es, ws)))
+        : RA.isNonEmpty(ws)
+        ? TH.both(componentsE(ws), out)
+        : TH.right(out)
+    }
+  }
+}
+
 export interface StructD<Properties>
   extends CompositionD<CompositionD<UnknownRecordUD, KeysD<Properties>>, FromStructD<Properties>> {}
 
@@ -734,39 +788,12 @@ export const fromTuple = <Components extends ReadonlyArray<AnyD>>(
   }
 })
 
-export interface StripComponentsD<I>
-  extends Decoder<Array<unknown>, ComponentsE<UnexpectedComponentLE>, { [K in keyof I]: unknown }> {
-  readonly _tag: 'StripComponentsD'
-  readonly components: I
-}
-export const stripComponents = <Components extends ReadonlyArray<unknown>>(
-  ...components: Components
-): StripComponentsD<Components> => {
-  const len = components.length
-  return {
-    _tag: 'StripComponentsD',
-    components,
-    decode: (us) => {
-      const es: Array<UnexpectedComponentLE> = []
-      const out: Array<unknown> = []
-      for (let index = 0; index < us.length; index++) {
-        if (index < len) {
-          out[index] = us[index]
-        } else {
-          es.push(unexpectedComponent(index))
-        }
-      }
-      return RA.isNonEmpty(es) ? TH.both(componentsE(es), out as any) : TH.right(out)
-    }
-  }
-}
-
 export interface TupleD<Components extends ReadonlyArray<AnyUD>>
-  extends CompositionD<CompositionD<UnknownArrayUD, StripComponentsD<Components>>, FromTupleD<Components>> {}
+  extends CompositionD<CompositionD<UnknownArrayUD, ComponentsD<Components>>, FromTupleD<Components>> {}
 
-export function tuple<Components extends ReadonlyArray<AnyUD>>(...components: Components): TupleD<Components>
-export function tuple(...components: ReadonlyArray<AnyUD>): TupleD<typeof components> {
-  return pipe(UnknownArray, compose(stripComponents(...components)), compose(fromTuple(...components)))
+export function tuple<Components extends ReadonlyArray<AnyUD>>(...cs: Components): TupleD<Components>
+export function tuple(...cs: ReadonlyArray<AnyUD>): TupleD<typeof cs> {
+  return pipe(UnknownArray, compose(components(...cs)), compose(fromTuple(...cs)))
 }
 
 export interface UnionD<Members extends ReadonlyArray<AnyD>>
@@ -870,7 +897,7 @@ declare module 'fp-ts/lib/HKT' {
 export const MapLeftExample = tuple(string, number)
 
 // the decode error is fully typed...
-// type MapLeftExampleE = CompositionE<CompositionE<UnknownArrayLE, StripComponentsE<UnexpectedComponentLE>>, TupleE<ComponentE<"0", StringLE> | ComponentE<...>>>
+// type MapLeftExampleE = CompositionE<CompositionE<UnknownArrayLE, ComponentsE<UnexpectedComponentLE>>, TupleE<ComponentE<"0", StringLE> | ComponentE<...>>>
 export type MapLeftExampleE = ErrorOf<typeof MapLeftExample>
 
 // ...this means that you can pattern match on the error
@@ -1011,6 +1038,8 @@ export const toTreeBuiltin = (de: BuiltinE): Tree<string> => {
       return tree(`missing key ${JSON.stringify(de.key)}`)
     case 'UnexpectedKeyE':
       return tree(`unexpected key ${JSON.stringify(de.key)}`)
+    case 'MissingComponentE':
+      return tree(`missing component ${JSON.stringify(de.component)}`)
     case 'UnexpectedComponentE':
       return tree(`unexpected component ${JSON.stringify(de.component)}`)
     case 'NaNE':
@@ -1307,7 +1336,7 @@ export const warningsStruct = struct({
   })
 })
 
-// pipe(warningsStruct.decode({ b: { c: 1, e: 2, f: { h: 3 } }, d: 1 }), draw, print, console.log)
+// pipe(warningsStruct.decode({ a: 'a', b: { c: 1, e: 2, f: { h: 3 } }, d: 1 }), draw, print, console.log)
 /*
 Value:
 {
