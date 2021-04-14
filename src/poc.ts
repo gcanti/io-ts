@@ -458,10 +458,10 @@ export const unknownRecordE = (actual: unknown): UnknownRecordLE =>
     _tag: 'UnknownRecordE',
     actual
   })
-export interface UnknownRecordUD extends Decoder<unknown, UnknownRecordLE, Record<string, unknown>> {
+export interface UnknownRecordUD extends Decoder<unknown, UnknownRecordLE, Record<PropertyKey, unknown>> {
   readonly _tag: 'UnknownRecordUD'
 }
-const isUnknownRecord = (u: unknown): u is Record<string, unknown> =>
+const isUnknownRecord = (u: unknown): u is Record<PropertyKey, unknown> =>
   u !== null && typeof u === 'object' && !Array.isArray(u)
 export const UnknownRecord: UnknownRecordUD = {
   _tag: 'UnknownRecordUD',
@@ -527,7 +527,7 @@ export interface FromStructD<Properties>
   readonly _tag: 'FromStructD'
   readonly properties: Properties
 }
-export const fromStruct = <Properties extends Record<string, AnyD>>(
+export const fromStruct = <Properties extends Record<PropertyKey, AnyD>>(
   properties: Properties
 ): FromStructD<Properties> => ({
   _tag: 'FromStructD',
@@ -616,7 +616,7 @@ export interface FromPartialD<Properties>
   readonly _tag: 'FromPartialD'
   readonly properties: Properties
 }
-export declare const fromPartial: <Properties extends Record<string, AnyD>>(
+export declare const fromPartial: <Properties extends Record<PropertyKey, AnyD>>(
   properties: Properties
 ) => FromPartialD<Properties>
 
@@ -663,9 +663,9 @@ export function array<E, A>(item: Decoder<unknown, E, A>): ArrayD<typeof item> {
 
 export interface FromRecordD<Codomain>
   extends Decoder<
-    Record<string, InputOf<Codomain>>,
+    Record<PropertyKey, InputOf<Codomain>>,
     RecordE<KeyValueE<string, ErrorOf<Codomain>>>,
-    Record<string, TypeOf<Codomain>>
+    Record<PropertyKey, TypeOf<Codomain>>
   > {
   readonly _tag: 'FromRecordD'
   readonly codomain: Codomain
@@ -836,7 +836,7 @@ export interface FromSumD<T extends string, Members>
 // TODO: every `Members` should own a tag field
 export declare const fromSum: <T extends string>(
   tag: T
-) => <Members extends Record<string, AnyD>>(members: Members) => FromSumD<T, Members>
+) => <Members extends Record<PropertyKey, AnyD>>(members: Members) => FromSumD<T, Members>
 
 export interface PartialD<Properties>
   extends Decoder<
@@ -848,7 +848,9 @@ export interface PartialD<Properties>
   readonly _tag: 'PartialD'
   readonly properties: Properties
 }
-export declare const partial: <Properties extends Record<string, AnyUD>>(properties: Properties) => PartialD<Properties>
+export declare const partial: <Properties extends Record<PropertyKey, AnyUD>>(
+  properties: Properties
+) => PartialD<Properties>
 
 export interface SumD<T extends string, Members>
   extends Decoder<
@@ -865,7 +867,7 @@ export interface SumD<T extends string, Members>
 // TODO: every `Members` should own a tag field
 export declare const sum: <T extends string>(
   tag: T
-) => <Members extends Record<string, AnyUD>>(members: Members) => SumD<T, Members>
+) => <Members extends Record<PropertyKey, AnyUD>>(members: Members) => SumD<T, Members>
 
 // -------------------------------------------------------------------------------------
 // instances
@@ -1207,8 +1209,8 @@ Errors:
 // TODO
 // export const condemnWith = (
 //   tags: ReadonlyNonEmptyArray<string>
-// ): ((de: DecodeError<Record<string, unknown>>) => boolean) => {
-//   const go = (de: DecodeError<Record<string, unknown>>): boolean => {
+// ): ((de: DecodeError<Record<PropertyKey, unknown>>) => boolean) => {
+//   const go = (de: DecodeError<Record<PropertyKey, unknown>>): boolean => {
 //     switch (de._tag) {
 //       case 'StructE':
 //         return de.errors.some(go)
@@ -1363,7 +1365,7 @@ Warnings:
 // use case: reflection, for example generating a match function from a sum
 // -------------------------------------------------------------------------------------
 
-// export declare const getMatch: <T extends string, Members extends Record<string, AnyD>>(decoder: {
+// export declare const getMatch: <T extends string, Members extends Record<PropertyKey, AnyD>>(decoder: {
 //   readonly tag: T
 //   readonly members: Members
 // }) => <B>(
