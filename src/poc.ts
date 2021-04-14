@@ -519,19 +519,19 @@ export const parser = <A, E, B>(parser: (a: A) => Result<E, B>): ParserD<A, E, B
 // combinators
 // -------------------------------------------------------------------------------------
 
-export interface FromStructD<Properties>
+export interface FromExactStructD<Properties>
   extends Decoder<
     { [K in keyof Properties]: InputOf<Properties[K]> },
     StructE<{ readonly [K in keyof Properties]: KeyValueE<K, ErrorOf<Properties[K]>> }[keyof Properties]>,
     { [K in keyof Properties]: TypeOf<Properties[K]> }
   > {
-  readonly _tag: 'FromStructD'
+  readonly _tag: 'FromExactStructD'
   readonly properties: Properties
 }
-export const fromStruct = <Properties extends Record<PropertyKey, AnyD>>(
+export const fromExactStruct = <Properties extends Record<PropertyKey, AnyD>>(
   properties: Properties
-): FromStructD<Properties> => ({
-  _tag: 'FromStructD',
+): FromExactStructD<Properties> => ({
+  _tag: 'FromExactStructD',
   properties,
   decode: (ur) => {
     const es: Array<KeyValueE<string, ErrorOf<Properties[keyof Properties]>>> = []
@@ -556,16 +556,20 @@ export const fromStruct = <Properties extends Record<PropertyKey, AnyD>>(
   }
 })
 
-const hasOwnProperty = Object.prototype.hasOwnProperty
+export interface FromStructD<Properties>
+  extends CompositionD<UnexpectedKeysD<keyof Properties>, FromExactStructD<Properties>> {}
 
-function concatW<A, B>(first: ReadonlyArray<A>, second: ReadonlyNonEmptyArray<B>): ReadonlyNonEmptyArray<A | B>
-function concatW<A, B>(first: ReadonlyNonEmptyArray<A>, second: ReadonlyArray<B>): ReadonlyNonEmptyArray<A | B>
-function concatW<A, B>(first: ReadonlyArray<A>, second: ReadonlyArray<B>): ReadonlyArray<A | B> {
-  return first === RA.empty ? second : second === RA.empty ? first : (first as ReadonlyArray<A | B>).concat(second)
+export function fromStruct<Properties extends Record<PropertyKey, AnyUD>>(
+  properties: Properties
+): FromStructD<Properties>
+export function fromStruct(properties: Record<PropertyKey, AnyUD>): FromStructD<typeof properties> {
+  return pipe(unexpectedKeys(...keysOf(properties)), compose(fromExactStruct(properties)))
 }
 
+const hasOwnProperty = Object.prototype.hasOwnProperty
+
 export interface MissingKeysD<K extends PropertyKey>
-  extends Decoder<Record<PropertyKey, unknown>, KeysE<MissingKeyLE | UnexpectedKeyLE>, { [_ in K]: unknown }> {
+  extends Decoder<Record<PropertyKey, unknown>, KeysE<MissingKeyLE>, Record<K, unknown>> {
   readonly _tag: 'MissingKeysD'
   readonly keys: ReadonlyArray<K>
 }
@@ -575,25 +579,12 @@ export const missingKeys = <K extends PropertyKey>(...keys: ReadonlyArray<K>): M
     keys,
     decode: (ur) => {
       const es: Array<MissingKeyLE> = []
-      const ws: Array<UnexpectedKeyLE> = []
-      const out: any = {}
       for (const k of keys) {
-        if (hasOwnProperty.call(ur, k)) {
-          out[k] = ur[k]
-        } else {
+        if (!hasOwnProperty.call(ur, k)) {
           es.push(missingKey(k))
         }
       }
-      for (const k in ur) {
-        if (!hasOwnProperty.call(out, k)) {
-          ws.push(unexpectedKey(k))
-        }
-      }
-      return RA.isNonEmpty(es)
-        ? TH.left(keysE(concatW(es, ws)))
-        : RA.isNonEmpty(ws)
-        ? TH.both(keysE(ws), out)
-        : TH.right(out)
+      return RA.isNonEmpty(es) ? TH.left(keysE(es)) : TH.right(ur)
     }
   }
 }
@@ -675,7 +666,7 @@ export const unexpectedKeys = <K extends PropertyKey>(...keys: ReadonlyArray<K>)
           ws.push(unexpectedKey(k))
         }
       }
-      return RA.isNonEmpty(ws) ? TH.both(keysE(ws), out) : TH.right(out)
+      return RA.isNonEmpty(ws) ? TH.both(keysE(ws), out) : TH.right(ur)
     }
   }
 }
@@ -814,6 +805,13 @@ export interface ComponentsD<I>
   readonly _tag: 'ComponentsD'
   readonly components: I
 }
+
+function concatW<A, B>(first: ReadonlyArray<A>, second: ReadonlyNonEmptyArray<B>): ReadonlyNonEmptyArray<A | B>
+function concatW<A, B>(first: ReadonlyNonEmptyArray<A>, second: ReadonlyArray<B>): ReadonlyNonEmptyArray<A | B>
+function concatW<A, B>(first: ReadonlyArray<A>, second: ReadonlyArray<B>): ReadonlyArray<A | B> {
+  return first === RA.empty ? second : second === RA.empty ? first : (first as ReadonlyArray<A | B>).concat(second)
+}
+
 export const components = <Components extends ReadonlyArray<unknown>>(
   ...components: Components
 ): ComponentsD<Components> => {
@@ -1240,7 +1238,11 @@ export const condemn = <D extends AnyD>(decoder: D): D => {
 
 export function strict<Properties extends Record<PropertyKey, AnyUD>>(properties: Properties): StructD<Properties>
 export function strict(properties: Record<PropertyKey, AnyUD>): StructD<typeof properties> {
-  return pipe(UnknownRecord, compose(condemn(missingKeys(...keysOf(properties)))), compose(fromStruct(properties)))
+  return pipe(
+    UnknownRecord,
+    compose(missingKeys(...keysOf(properties))),
+    compose(pipe(condemn(unexpectedKeys(...keysOf(properties))), compose(fromExactStruct(properties))))
+  )
 }
 
 // pipe(struct({ a: string }).decode({ a: 'a', b: 1 }), draw, print, console.log)
@@ -1527,6 +1529,8 @@ export const SD = fromStruct({
 export type SDI = InputOf<typeof SD>
 export type SDE = ErrorOf<typeof SD>
 export type SDA = TypeOf<typeof SD>
+// const input: SDI = { a: 'a', b: 1, c: true } as any
+// pipe(SD.decode(input), draw, print, console.log)
 
 // struct
 export const SUD = struct({
@@ -1536,6 +1540,7 @@ export const SUD = struct({
 export type SUDI = InputOf<typeof SUD>
 export type SUDE = ErrorOf<typeof SUD>
 export type SUDA = TypeOf<typeof SUD>
+// pipe(SUD.decode({ a: 'a', b: 1, c: true }), draw, print, console.log)
 
 // fromPartial
 export const PSD = fromPartial({
@@ -1554,7 +1559,7 @@ export const PSUD = partial({
 })
 export type PSUDE = ErrorOf<typeof PSUD>
 export type PSUDA = TypeOf<typeof PSUD>
-pipe(PSUD.decode({ a: 'a' }), draw, print, console.log)
+// pipe(PSUD.decode({ a: 'a' }), draw, print, console.log)
 
 // // fromTuple
 // export const TD = fromTuple(string, number)
