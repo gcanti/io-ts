@@ -519,19 +519,19 @@ export const parser = <A, E, B>(parser: (a: A) => Result<E, B>): ParserD<A, E, B
 // combinators
 // -------------------------------------------------------------------------------------
 
-export interface FromExactStructD<Properties>
+export interface ExactStructD<Properties>
   extends Decoder<
     { [K in keyof Properties]: InputOf<Properties[K]> },
     StructE<{ readonly [K in keyof Properties]: KeyValueE<K, ErrorOf<Properties[K]>> }[keyof Properties]>,
     { [K in keyof Properties]: TypeOf<Properties[K]> }
   > {
-  readonly _tag: 'FromExactStructD'
+  readonly _tag: 'ExactStructD'
   readonly properties: Properties
 }
 export const fromExactStruct = <Properties extends Record<PropertyKey, AnyD>>(
   properties: Properties
-): FromExactStructD<Properties> => ({
-  _tag: 'FromExactStructD',
+): ExactStructD<Properties> => ({
+  _tag: 'ExactStructD',
   properties,
   decode: (ur) => {
     const es: Array<KeyValueE<string, ErrorOf<Properties[keyof Properties]>>> = []
@@ -557,7 +557,7 @@ export const fromExactStruct = <Properties extends Record<PropertyKey, AnyD>>(
 })
 
 export interface FromStructD<Properties>
-  extends CompositionD<UnexpectedKeysD<keyof Properties>, FromExactStructD<Properties>> {}
+  extends CompositionD<UnexpectedKeysD<keyof Properties>, ExactStructD<Properties>> {}
 
 export function fromStruct<Properties extends Record<PropertyKey, AnyUD>>(
   properties: Properties
