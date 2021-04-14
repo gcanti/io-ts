@@ -310,11 +310,11 @@ export const unexpectedKey: (key: string) => UnexpectedKeyLE = flow(unexpectedKe
 
 export interface MissingKeyE {
   readonly _tag: 'MissingKeyE'
-  readonly key: string
+  readonly key: PropertyKey
 }
 export interface MissingKeyLE extends LeafE<MissingKeyE> {}
-export const missingKeyE = (key: string): MissingKeyE => ({ _tag: 'MissingKeyE', key })
-export const missingKey: (key: string) => MissingKeyLE = flow(missingKeyE, leafE)
+export const missingKeyE = (key: PropertyKey): MissingKeyE => ({ _tag: 'MissingKeyE', key })
+export const missingKey: (key: PropertyKey) => MissingKeyLE = flow(missingKeyE, leafE)
 
 // recursive helpers to please ts@3.5
 // simple single
@@ -514,12 +514,13 @@ export const parser = <A, E, B>(parser: (a: A) => Result<E, B>): ParserD<A, E, B
   decode: flow(parser, TH.mapLeft(parserE))
 })
 
-export interface KeyD<K extends string> extends Decoder<Record<string, unknown>, MissingKeyLE, Record<K, unknown>> {
+export interface KeyD<K extends PropertyKey>
+  extends Decoder<Record<PropertyKey, unknown>, MissingKeyLE, Record<K, unknown>> {
   readonly _tag: 'KeyD'
   readonly key: K
 }
 
-export const key = <K extends string>(key: K): KeyD<K> => ({
+export const key = <K extends PropertyKey>(key: K): KeyD<K> => ({
   _tag: 'KeyD',
   key,
   decode: (ru) => (hasOwnProperty.call(ru, key) ? TH.right({ [key]: ru[key] } as any) : TH.left(missingKey(key)))
@@ -574,28 +575,28 @@ function concatW<A, B>(first: ReadonlyArray<A>, second: ReadonlyArray<B>): Reado
   return first === RA.empty ? second : second === RA.empty ? first : (first as ReadonlyArray<A | B>).concat(second)
 }
 
-export interface KeysD<P>
-  extends Decoder<Record<string, unknown>, KeysE<MissingKeyLE | UnexpectedKeyLE>, { [K in keyof P]: unknown }> {
+export interface KeysD<K extends PropertyKey>
+  extends Decoder<Record<PropertyKey, unknown>, KeysE<MissingKeyLE | UnexpectedKeyLE>, { [_ in K]: unknown }> {
   readonly _tag: 'KeysD'
-  readonly properties: P
+  readonly keys: ReadonlyArray<K>
 }
-export const keys = <Properties extends Record<string, unknown>>(properties: Properties): KeysD<Properties> => {
+export const keys = <K extends PropertyKey>(...keys: ReadonlyArray<K>): KeysD<K> => {
   return {
     _tag: 'KeysD',
-    properties,
+    keys,
     decode: (ur) => {
       const es: Array<MissingKeyLE> = []
       const ws: Array<UnexpectedKeyLE> = []
       const out: any = {}
-      for (const k in properties) {
-        if (!hasOwnProperty.call(ur, k)) {
+      for (const k of keys) {
+        if (hasOwnProperty.call(ur, k)) {
+          out[k] = ur[k]
+        } else {
           es.push(missingKey(k))
         }
       }
       for (const k in ur) {
-        if (hasOwnProperty.call(properties, k)) {
-          out[k] = ur[k]
-        } else {
+        if (!hasOwnProperty.call(out, k)) {
           ws.push(unexpectedKey(k))
         }
       }
@@ -608,54 +609,14 @@ export const keys = <Properties extends Record<string, unknown>>(properties: Pro
   }
 }
 
-export interface ComponentsD<I>
-  extends Decoder<
-    Array<unknown>,
-    ComponentsE<MissingComponentLE | UnexpectedComponentLE>,
-    { [K in keyof I]: unknown }
-  > {
-  readonly _tag: 'ComponentsD'
-  readonly components: I
-}
-export const components = <Components extends ReadonlyArray<unknown>>(
-  ...components: Components
-): ComponentsD<Components> => {
-  const len = components.length
-  return {
-    _tag: 'ComponentsD',
-    components,
-    decode: (us) => {
-      const es: Array<MissingComponentLE> = []
-      const ws: Array<UnexpectedComponentLE> = []
-      const out: any = []
-      const uslen = us.length
-      const max = Math.max(len, uslen)
-      for (let index = 0; index < max; index++) {
-        if (index < len) {
-          if (index < uslen) {
-            out[index] = us[index]
-          } else {
-            es.push(missingComponent(index))
-          }
-        } else {
-          ws.push(unexpectedComponent(index))
-        }
-      }
-      return RA.isNonEmpty(es)
-        ? TH.left(componentsE(concatW(es, ws)))
-        : RA.isNonEmpty(ws)
-        ? TH.both(componentsE(ws), out)
-        : TH.right(out)
-    }
-  }
-}
+const keysOf = <O>(o: O): ReadonlyArray<keyof O> => Object.keys(o) as any
 
 export interface StructD<Properties>
-  extends CompositionD<CompositionD<UnknownRecordUD, KeysD<Properties>>, FromStructD<Properties>> {}
+  extends CompositionD<CompositionD<UnknownRecordUD, KeysD<keyof Properties>>, FromStructD<Properties>> {}
 
-export function struct<Properties extends Record<string, AnyUD>>(properties: Properties): StructD<Properties>
-export function struct(properties: Record<string, AnyUD>): StructD<typeof properties> {
-  return pipe(UnknownRecord, compose(keys(properties)), compose(fromStruct(properties)))
+export function struct<Properties extends Record<PropertyKey, AnyUD>>(properties: Properties): StructD<Properties>
+export function struct(properties: Record<PropertyKey, AnyUD>): StructD<typeof properties> {
+  return pipe(UnknownRecord, compose(keys(...keysOf(properties))), compose(fromStruct(properties)))
 }
 
 export interface FromPartialD<Properties>
@@ -787,6 +748,48 @@ export const fromTuple = <Components extends ReadonlyArray<AnyD>>(
     return TH.right(as)
   }
 })
+
+export interface ComponentsD<I>
+  extends Decoder<
+    Array<unknown>,
+    ComponentsE<MissingComponentLE | UnexpectedComponentLE>,
+    { [K in keyof I]: unknown }
+  > {
+  readonly _tag: 'ComponentsD'
+  readonly components: I
+}
+export const components = <Components extends ReadonlyArray<unknown>>(
+  ...components: Components
+): ComponentsD<Components> => {
+  const len = components.length
+  return {
+    _tag: 'ComponentsD',
+    components,
+    decode: (us) => {
+      const es: Array<MissingComponentLE> = []
+      const ws: Array<UnexpectedComponentLE> = []
+      const out: any = []
+      const uslen = us.length
+      const max = Math.max(len, uslen)
+      for (let index = 0; index < max; index++) {
+        if (index < len) {
+          if (index < uslen) {
+            out[index] = us[index]
+          } else {
+            es.push(missingComponent(index))
+          }
+        } else {
+          ws.push(unexpectedComponent(index))
+        }
+      }
+      return RA.isNonEmpty(es)
+        ? TH.left(componentsE(concatW(es, ws)))
+        : RA.isNonEmpty(ws)
+        ? TH.both(componentsE(ws), out)
+        : TH.right(out)
+    }
+  }
+}
 
 export interface TupleD<Components extends ReadonlyArray<AnyUD>>
   extends CompositionD<CompositionD<UnknownArrayUD, ComponentsD<Components>>, FromTupleD<Components>> {}
@@ -1191,9 +1194,9 @@ export const condemn = <D extends AnyD>(decoder: D): D => {
   }
 }
 
-export function strict<Properties extends Record<string, AnyUD>>(properties: Properties): StructD<Properties>
-export function strict(properties: Record<string, AnyUD>): StructD<typeof properties> {
-  return pipe(UnknownRecord, compose(condemn(keys(properties))), compose(fromStruct(properties)))
+export function strict<Properties extends Record<PropertyKey, AnyUD>>(properties: Properties): StructD<Properties>
+export function strict(properties: Record<PropertyKey, AnyUD>): StructD<typeof properties> {
+  return pipe(UnknownRecord, compose(condemn(keys(...keysOf(properties)))), compose(fromStruct(properties)))
 }
 
 // pipe(struct({ a: string }).decode({ a: 'a', b: 1 }), draw, print, console.log)
@@ -1632,13 +1635,11 @@ Warnings:
 // export type SumUDA = TypeOf<typeof SumUD>
 
 // // keys
-// const SK = keys({
-//   a: null,
-//   b: null
-// })
-// export type SKI = InputOf<typeof SK>
-// export type SKE = ErrorOf<typeof SK>
-// export type SKA = TypeOf<typeof SK>
+// const K = keys('a', 'b')
+// export type KI = InputOf<typeof K>
+// export type KE = ErrorOf<typeof K>
+// export type KA = TypeOf<typeof K>
+// pipe(K.decode({ a: 'a', b: 1, c: true }), draw, print, console.log)
 
 // // components
 // const SC = components(null, null)
