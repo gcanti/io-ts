@@ -212,6 +212,7 @@ export const structE = <E>(errors: ReadonlyNonEmptyArray<E>): StructE<E> => ({ _
 export interface PartialE<E> extends CompoundE<E> {
   readonly _tag: 'PartialE'
 }
+export const partialE = <E>(errors: ReadonlyNonEmptyArray<E>): PartialE<E> => ({ _tag: 'PartialE', errors })
 
 export interface RecordE<E> extends CompoundE<E> {
   readonly _tag: 'RecordE'
@@ -563,14 +564,14 @@ function concatW<A, B>(first: ReadonlyArray<A>, second: ReadonlyArray<B>): Reado
   return first === RA.empty ? second : second === RA.empty ? first : (first as ReadonlyArray<A | B>).concat(second)
 }
 
-export interface KeysD<K extends PropertyKey>
+export interface MissingKeysD<K extends PropertyKey>
   extends Decoder<Record<PropertyKey, unknown>, KeysE<MissingKeyLE | UnexpectedKeyLE>, { [_ in K]: unknown }> {
-  readonly _tag: 'KeysD'
+  readonly _tag: 'MissingKeysD'
   readonly keys: ReadonlyArray<K>
 }
-export const keys = <K extends PropertyKey>(...keys: ReadonlyArray<K>): KeysD<K> => {
+export const missingKeys = <K extends PropertyKey>(...keys: ReadonlyArray<K>): MissingKeysD<K> => {
   return {
-    _tag: 'KeysD',
+    _tag: 'MissingKeysD',
     keys,
     decode: (ur) => {
       const es: Array<MissingKeyLE> = []
@@ -600,11 +601,11 @@ export const keys = <K extends PropertyKey>(...keys: ReadonlyArray<K>): KeysD<K>
 const keysOf = <O>(o: O): ReadonlyArray<keyof O> => Object.keys(o) as any
 
 export interface StructD<Properties>
-  extends CompositionD<CompositionD<UnknownRecordUD, KeysD<keyof Properties>>, FromStructD<Properties>> {}
+  extends CompositionD<CompositionD<UnknownRecordUD, MissingKeysD<keyof Properties>>, FromStructD<Properties>> {}
 
 export function struct<Properties extends Record<PropertyKey, AnyUD>>(properties: Properties): StructD<Properties>
 export function struct(properties: Record<PropertyKey, AnyUD>): StructD<typeof properties> {
-  return pipe(UnknownRecord, compose(keys(...keysOf(properties))), compose(fromStruct(properties)))
+  return pipe(UnknownRecord, compose(missingKeys(...keysOf(properties))), compose(fromStruct(properties)))
 }
 
 export interface FromPartialD<Properties>
@@ -616,9 +617,76 @@ export interface FromPartialD<Properties>
   readonly _tag: 'FromPartialD'
   readonly properties: Properties
 }
-export declare const fromPartial: <Properties extends Record<PropertyKey, AnyD>>(
+// TODO: reuse fromStruct code?
+export const fromPartial = <Properties extends Record<PropertyKey, AnyD>>(
   properties: Properties
-) => FromPartialD<Properties>
+): FromPartialD<Properties> => ({
+  _tag: 'FromPartialD',
+  properties,
+  decode: (ur) => {
+    const es: Array<KeyValueE<string, ErrorOf<Properties[keyof Properties]>>> = []
+    const ar: any = {}
+    let isBoth = true
+    for (const k in properties) {
+      if (!hasOwnProperty.call(ur, k)) {
+        continue
+      }
+      if (ur[k] === undefined) {
+        ar[k] = undefined
+        continue
+      }
+      const de = properties[k].decode(ur[k])
+      if (TH.isLeft(de)) {
+        isBoth = false
+        es.push(keyValueE(k, true, de.left))
+      } else if (TH.isRight(de)) {
+        ar[k] = de.right
+      } else {
+        es.push(keyValueE(k, true, de.left))
+        ar[k] = de.right
+      }
+    }
+    if (RA.isNonEmpty(es)) {
+      return isBoth ? TH.both(partialE(es), ar) : TH.left(partialE(es))
+    }
+    return TH.right(ar)
+  }
+})
+
+export interface UnexpectedKeysD<K extends PropertyKey>
+  extends Decoder<Record<PropertyKey, unknown>, KeysE<UnexpectedKeyLE>, { [_ in K]: unknown }> {
+  readonly _tag: 'UnexpectedKeysD'
+  readonly keys: ReadonlyArray<K>
+}
+export const unexpectedKeys = <K extends PropertyKey>(...keys: ReadonlyArray<K>): UnexpectedKeysD<K> => {
+  return {
+    _tag: 'UnexpectedKeysD',
+    keys,
+    decode: (ur) => {
+      const ws: Array<UnexpectedKeyLE> = []
+      const out: any = {}
+      for (const k of keys) {
+        if (hasOwnProperty.call(ur, k)) {
+          out[k] = ur[k]
+        }
+      }
+      for (const k in ur) {
+        if (!hasOwnProperty.call(out, k)) {
+          ws.push(unexpectedKey(k))
+        }
+      }
+      return RA.isNonEmpty(ws) ? TH.both(keysE(ws), out) : TH.right(out)
+    }
+  }
+}
+
+export interface PartialD<Properties>
+  extends CompositionD<CompositionD<UnknownRecordUD, UnexpectedKeysD<keyof Properties>>, FromPartialD<Properties>> {}
+
+export function partial<Properties extends Record<PropertyKey, AnyUD>>(properties: Properties): PartialD<Properties>
+export function partial(properties: Record<PropertyKey, AnyUD>): PartialD<typeof properties> {
+  return pipe(UnknownRecord, compose(unexpectedKeys(...keysOf(properties))), compose(fromPartial(properties)))
+}
 
 export interface FromArrayD<Item>
   extends Decoder<Array<InputOf<Item>>, ArrayE<IndexValueE<number, ErrorOf<Item>>>, Array<TypeOf<Item>>> {
@@ -837,20 +905,6 @@ export interface FromSumD<T extends string, Members>
 export declare const fromSum: <T extends string>(
   tag: T
 ) => <Members extends Record<PropertyKey, AnyD>>(members: Members) => FromSumD<T, Members>
-
-export interface PartialD<Properties>
-  extends Decoder<
-    unknown,
-    | UnknownRecordLE
-    | PartialE<{ readonly [K in keyof Properties]: KeyValueE<K, ErrorOf<Properties[K]>> }[keyof Properties]>,
-    Partial<{ [K in keyof Properties]: TypeOf<Properties[K]> }>
-  > {
-  readonly _tag: 'PartialD'
-  readonly properties: Properties
-}
-export declare const partial: <Properties extends Record<PropertyKey, AnyUD>>(
-  properties: Properties
-) => PartialD<Properties>
 
 export interface SumD<T extends string, Members>
   extends Decoder<
@@ -1186,7 +1240,7 @@ export const condemn = <D extends AnyD>(decoder: D): D => {
 
 export function strict<Properties extends Record<PropertyKey, AnyUD>>(properties: Properties): StructD<Properties>
 export function strict(properties: Record<PropertyKey, AnyUD>): StructD<typeof properties> {
-  return pipe(UnknownRecord, compose(condemn(keys(...keysOf(properties)))), compose(fromStruct(properties)))
+  return pipe(UnknownRecord, compose(condemn(missingKeys(...keysOf(properties)))), compose(fromStruct(properties)))
 }
 
 // pipe(struct({ a: string }).decode({ a: 'a', b: 1 }), draw, print, console.log)
@@ -1465,40 +1519,42 @@ Warnings:
 // export type LDUE = ErrorOf<typeof LDU>
 // export type LDUA = TypeOf<typeof LDU>
 
-// // fromStruct
-// export const SD = fromStruct({
-//   a: string,
-//   b: number
-// })
-// export type SDI = InputOf<typeof SD>
-// export type SDE = ErrorOf<typeof SD>
-// export type SDA = TypeOf<typeof SD>
+// fromStruct
+export const SD = fromStruct({
+  a: string,
+  b: number
+})
+export type SDI = InputOf<typeof SD>
+export type SDE = ErrorOf<typeof SD>
+export type SDA = TypeOf<typeof SD>
 
-// // struct
-// export const SUD = struct({
-//   a: string,
-//   b: number
-// })
-// export type SUDI = InputOf<typeof SUD>
-// export type SUDE = ErrorOf<typeof SUD>
-// export type SUDA = TypeOf<typeof SUD>
+// struct
+export const SUD = struct({
+  a: string,
+  b: number
+})
+export type SUDI = InputOf<typeof SUD>
+export type SUDE = ErrorOf<typeof SUD>
+export type SUDA = TypeOf<typeof SUD>
 
-// // fromPartial
-// export const PSD = fromPartial({
-//   a: string,
-//   b: number
-// })
-// export type PSDI = InputOf<typeof PSD>
-// export type PSDE = ErrorOf<typeof PSD>
-// export type PSDA = TypeOf<typeof PSD>
+// fromPartial
+export const PSD = fromPartial({
+  a: string,
+  b: number
+})
+export type PSDI = InputOf<typeof PSD>
+export type PSDE = ErrorOf<typeof PSD>
+export type PSDA = TypeOf<typeof PSD>
+// pipe(PSD.decode({ a: 'a' }), draw, print, console.log)
 
-// // partial
-// export const PSUD = partial({
-//   a: string,
-//   b: number
-// })
-// export type PSUDE = ErrorOf<typeof PSUD>
-// export type PSUDA = TypeOf<typeof PSUD>
+// partial
+export const PSUD = partial({
+  a: string,
+  b: number
+})
+export type PSUDE = ErrorOf<typeof PSUD>
+export type PSUDA = TypeOf<typeof PSUD>
+pipe(PSUD.decode({ a: 'a' }), draw, print, console.log)
 
 // // fromTuple
 // export const TD = fromTuple(string, number)
@@ -1511,14 +1567,14 @@ Warnings:
 // export type TUDE = ErrorOf<typeof TUD>
 // export type TUDA = TypeOf<typeof TUD>
 
-// // fromArray
-// export const AD = fromArray(string)
-// export type ADI = InputOf<typeof AD>
-// export type ADE = ErrorOf<typeof AD>
-// export type ADA = TypeOf<typeof AD>
+// fromArray
+export const AD = fromArray(string)
+export type ADI = InputOf<typeof AD>
+export type ADE = ErrorOf<typeof AD>
+export type ADA = TypeOf<typeof AD>
 
-// // array
-// export const AUD = array(string)
+// array
+export const AUD = array(string)
 
 // // fromRecord
 // export const RD = fromRecord(number)
@@ -1529,14 +1585,12 @@ Warnings:
 // // record
 // export const RUD = record(number)
 
-// // refine
-// export type IntDI = InputOf<typeof IntD>
-// export type IntDE = ErrorOf<typeof IntD>
-// export type IntDA = TypeOf<typeof IntD>
+// refine
+export type IntDI = InputOf<typeof IntD>
+export type IntDE = ErrorOf<typeof IntD>
+export type IntDA = TypeOf<typeof IntD>
 
-// export const IntUD = pipe(number, compose(IntD))
-// export type IntUDE = ErrorOf<typeof IntUD>
-// export type IntUDA = TypeOf<typeof IntUD>
+export type IntUDA = TypeOf<typeof IntUD>
 
 // // union
 // export const UD = union(NonEmptyStringD, IntD)
