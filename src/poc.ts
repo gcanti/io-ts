@@ -1418,10 +1418,6 @@ export const Username = pipe(
 // )
 
 // -------------------------------------------------------------------------------------
-// tests
-// -------------------------------------------------------------------------------------
-
-// -------------------------------------------------------------------------------------
 // use case: rename a prop #369
 // -------------------------------------------------------------------------------------
 
@@ -1442,10 +1438,10 @@ Value:
 Warnings:
 2 error(s) found while decoding a composition
 ├─ 2 error(s) found while checking components
-│  ├─ unexpected component 1
-│  └─ unexpected component 2
+│  ├─ unexpected index 1
+│  └─ unexpected index 2
 └─ 1 error(s) found while decoding a tuple
-   └─ required component 0
+   └─ 1 error(s) found while decoding the required component 0
       └─ 1 error(s) found while checking keys
          └─ unexpected key "b"
 */
@@ -1471,7 +1467,7 @@ Warnings:
 ├─ 1 error(s) found while checking keys
 │  └─ unexpected key "d"
 └─ 1 error(s) found while decoding a struct
-   └─ required key "b"
+   └─ 1 error(s) found while decoding the required key "b"
       └─ 2 error(s) found while checking keys
          ├─ unexpected key "e"
          └─ unexpected key "f"
