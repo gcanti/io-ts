@@ -556,30 +556,31 @@ export const fromExactStruct = <Properties extends Record<PropertyKey, AnyD>>(
   }
 })
 
-export interface FromStructD<Properties>
-  extends CompositionD<UnexpectedKeysD<keyof Properties>, ExactStructD<Properties>> {}
+export interface FromStructD<Properties> extends CompositionD<UnexpectedKeysD<Properties>, ExactStructD<Properties>> {}
 
 export function fromStruct<Properties extends Record<PropertyKey, AnyUD>>(
   properties: Properties
 ): FromStructD<Properties>
 export function fromStruct(properties: Record<PropertyKey, AnyUD>): FromStructD<typeof properties> {
-  return pipe(unexpectedKeys(...keysOf(properties)), compose(fromExactStruct(properties)))
+  return pipe(unexpectedKeys(properties), compose(fromExactStruct(properties)))
 }
 
 const hasOwnProperty = Object.prototype.hasOwnProperty
 
-export interface MissingKeysD<K extends PropertyKey>
-  extends Decoder<Record<PropertyKey, unknown>, KeysE<MissingKeyLE>, Record<K, unknown>> {
+export interface MissingKeysD<Properties>
+  extends Decoder<Record<PropertyKey, unknown>, KeysE<MissingKeyLE>, Record<keyof Properties, unknown>> {
   readonly _tag: 'MissingKeysD'
-  readonly keys: ReadonlyArray<K>
+  readonly properties: Properties
 }
-export const missingKeys = <K extends PropertyKey>(...keys: ReadonlyArray<K>): MissingKeysD<K> => {
+export const missingKeys = <Properties extends Record<string, unknown>>(
+  properties: Properties
+): MissingKeysD<Properties> => {
   return {
     _tag: 'MissingKeysD',
-    keys,
+    properties,
     decode: (ur) => {
       const es: Array<MissingKeyLE> = []
-      for (const k of keys) {
+      for (const k in properties) {
         if (!hasOwnProperty.call(ur, k)) {
           es.push(missingKey(k))
         }
@@ -589,14 +590,12 @@ export const missingKeys = <K extends PropertyKey>(...keys: ReadonlyArray<K>): M
   }
 }
 
-const keysOf = <O>(o: O): ReadonlyArray<keyof O> => Object.keys(o) as any
-
 export interface StructD<Properties>
-  extends CompositionD<CompositionD<UnknownRecordUD, MissingKeysD<keyof Properties>>, FromStructD<Properties>> {}
+  extends CompositionD<CompositionD<UnknownRecordUD, MissingKeysD<Properties>>, FromStructD<Properties>> {}
 
 export function struct<Properties extends Record<PropertyKey, AnyUD>>(properties: Properties): StructD<Properties>
 export function struct(properties: Record<PropertyKey, AnyUD>): StructD<typeof properties> {
-  return pipe(UnknownRecord, compose(missingKeys(...keysOf(properties))), compose(fromStruct(properties)))
+  return pipe(UnknownRecord, compose(missingKeys(properties)), compose(fromStruct(properties)))
 }
 
 export interface FromPartialD<Properties>
@@ -644,19 +643,21 @@ export const fromPartial = <Properties extends Record<PropertyKey, AnyD>>(
   }
 })
 
-export interface UnexpectedKeysD<K extends PropertyKey>
-  extends Decoder<Record<PropertyKey, unknown>, KeysE<UnexpectedKeyLE>, { [_ in K]: unknown }> {
+export interface UnexpectedKeysD<Properties>
+  extends Decoder<Record<PropertyKey, unknown>, KeysE<UnexpectedKeyLE>, Record<keyof Properties, unknown>> {
   readonly _tag: 'UnexpectedKeysD'
-  readonly keys: ReadonlyArray<K>
+  readonly properties: Properties
 }
-export const unexpectedKeys = <K extends PropertyKey>(...keys: ReadonlyArray<K>): UnexpectedKeysD<K> => {
+export const unexpectedKeys = <Properties extends Record<string, unknown>>(
+  properties: Properties
+): UnexpectedKeysD<Properties> => {
   return {
     _tag: 'UnexpectedKeysD',
-    keys,
+    properties,
     decode: (ur) => {
       const ws: Array<UnexpectedKeyLE> = []
       const out: any = {}
-      for (const k of keys) {
+      for (const k in properties) {
         if (hasOwnProperty.call(ur, k)) {
           out[k] = ur[k]
         }
@@ -672,11 +673,11 @@ export const unexpectedKeys = <K extends PropertyKey>(...keys: ReadonlyArray<K>)
 }
 
 export interface PartialD<Properties>
-  extends CompositionD<CompositionD<UnknownRecordUD, UnexpectedKeysD<keyof Properties>>, FromPartialD<Properties>> {}
+  extends CompositionD<CompositionD<UnknownRecordUD, UnexpectedKeysD<Properties>>, FromPartialD<Properties>> {}
 
 export function partial<Properties extends Record<PropertyKey, AnyUD>>(properties: Properties): PartialD<Properties>
 export function partial(properties: Record<PropertyKey, AnyUD>): PartialD<typeof properties> {
-  return pipe(UnknownRecord, compose(unexpectedKeys(...keysOf(properties))), compose(fromPartial(properties)))
+  return pipe(UnknownRecord, compose(unexpectedKeys(properties)), compose(fromPartial(properties)))
 }
 
 export interface FromArrayD<Item>
@@ -1115,11 +1116,12 @@ const printValue = <A>(a: A): string => 'Value:\n' + JSON.stringify(a, null, 2)
 const printErrors = (s: string): string => (s === '' ? s : 'Errors:\n' + s)
 const printWarnings = (s: string): string => (s === '' ? s : 'Warnings:\n' + s)
 
-export const print: <A>(ma: TH.These<string, A>) => string = TH.fold(
-  printErrors,
-  printValue,
-  (e, a) => printValue(a) + '\n' + printWarnings(e)
+export const print = flow(
+  draw,
+  TH.fold(printErrors, printValue, (e, a) => printValue(a) + '\n' + printWarnings(e))
 )
+
+export const debug = flow(print, console.log)
 
 // example 1
 const DR1 = tuple(string, number)
@@ -1173,7 +1175,7 @@ export const customStringUD = pipe(
   mapLeft((s) => message(s, `please insert a string`))
 )
 
-// pipe(customStringD.decode(null), draw, print, console.log)
+// pipe(customStringD.decode(null), debug)
 
 // -------------------------------------------------------------------------------------
 // use case: new decoder, custom leaf error #578
@@ -1220,7 +1222,7 @@ export const Positive = pipe(
 )
 export type PositiveE = ErrorOf<typeof Positive>
 
-// pipe(Positive.decode(NaN), draw, print, console.log)
+// pipe(Positive.decode(NaN), debug)
 
 // -------------------------------------------------------------------------------------
 // use case: condemn
@@ -1240,12 +1242,12 @@ export function strict<Properties extends Record<PropertyKey, AnyUD>>(properties
 export function strict(properties: Record<PropertyKey, AnyUD>): StructD<typeof properties> {
   return pipe(
     UnknownRecord,
-    compose(missingKeys(...keysOf(properties))),
-    compose(pipe(condemn(unexpectedKeys(...keysOf(properties))), compose(fromExactStruct(properties))))
+    compose(missingKeys(properties)),
+    compose(pipe(condemn(unexpectedKeys(properties)), compose(fromExactStruct(properties))))
   )
 }
 
-// pipe(struct({ a: string }).decode({ a: 'a', b: 1 }), draw, print, console.log)
+// pipe(struct({ a: string }).decode({ a: 'a', b: 1 }), debug)
 /*
 Value:
 {
@@ -1255,7 +1257,7 @@ Warnings:
 1 error(s) found while checking keys
 └─ unexpected key "b"
 */
-// pipe(strict({ a: string }).decode({ a: 'a', b: 1 }), draw, print, console.log)
+// pipe(strict({ a: string }).decode({ a: 'a', b: 1 }), debug)
 /*
 Errors:
 1 error(s) found while checking keys
@@ -1359,7 +1361,7 @@ export const Username = pipe(
 
 export const warningsTuple = tuple(struct({ a: string }))
 
-// pipe(warningsTuple.decode([{ a: 'a', b: 2 }, 1, true]), draw, print, console.log)
+// pipe(warningsTuple.decode([{ a: 'a', b: 2 }, 1, true]), debug)
 /*
 Value:
 [
@@ -1385,7 +1387,7 @@ export const warningsStruct = struct({
   })
 })
 
-// pipe(warningsStruct.decode({ a: 'a', b: { c: 1, e: 2, f: { h: 3 } }, d: 1 }), draw, print, console.log)
+// pipe(warningsStruct.decode({ a: 'a', b: { c: 1, e: 2, f: { h: 3 } }, d: 1 }), debug)
 /*
 Value:
 {
@@ -1530,7 +1532,7 @@ export type SDI = InputOf<typeof SD>
 export type SDE = ErrorOf<typeof SD>
 export type SDA = TypeOf<typeof SD>
 // const input: SDI = { a: 'a', b: 1, c: true } as any
-// pipe(SD.decode(input), draw, print, console.log)
+// pipe(SD.decode(input), debug)
 
 // struct
 export const SUD = struct({
@@ -1540,7 +1542,7 @@ export const SUD = struct({
 export type SUDI = InputOf<typeof SUD>
 export type SUDE = ErrorOf<typeof SUD>
 export type SUDA = TypeOf<typeof SUD>
-// pipe(SUD.decode({ a: 'a', b: 1, c: true }), draw, print, console.log)
+// pipe(SUD.decode({ a: 'a', b: 1, c: true }), debug)
 
 // fromPartial
 export const PSD = fromPartial({
@@ -1550,7 +1552,7 @@ export const PSD = fromPartial({
 export type PSDI = InputOf<typeof PSD>
 export type PSDE = ErrorOf<typeof PSD>
 export type PSDA = TypeOf<typeof PSD>
-// pipe(PSD.decode({ a: 'a' }), draw, print, console.log)
+// pipe(PSD.decode({ a: 'a' }), debug)
 
 // partial
 export const PSUD = partial({
@@ -1559,7 +1561,7 @@ export const PSUD = partial({
 })
 export type PSUDE = ErrorOf<typeof PSUD>
 export type PSUDA = TypeOf<typeof PSUD>
-// pipe(PSUD.decode({ a: 'a' }), draw, print, console.log)
+// pipe(PSUD.decode({ a: 'a' }), debug)
 
 // // fromTuple
 // export const TD = fromTuple(string, number)
@@ -1688,7 +1690,7 @@ export type IntUDA = TypeOf<typeof IntUD>
 // export type KI = InputOf<typeof K>
 // export type KE = ErrorOf<typeof K>
 // export type KA = TypeOf<typeof K>
-// pipe(K.decode({ a: 'a', b: 1, c: true }), draw, print, console.log)
+// pipe(K.decode({ a: 'a', b: 1, c: true }), debug)
 
 // // components
 // const SC = components(null, null)
