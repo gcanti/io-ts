@@ -516,7 +516,11 @@ export interface LiteralD<A extends ReadonlyNonEmptyArray<Literal>>
   readonly literals: A
 }
 
-export declare const literal: <A extends ReadonlyNonEmptyArray<Literal>>(...values: A) => LiteralD<A>
+export const literal = <A extends ReadonlyNonEmptyArray<Literal>>(...literals: A): LiteralD<A> => ({
+  _tag: 'LiteralD',
+  literals,
+  decode: (u) => right(u as any) // TODO
+})
 
 export interface RefinementD<A, E, B extends A> extends Decoder<A, RefinementE<E>, B> {
   readonly _tag: 'RefinementD'
@@ -972,9 +976,14 @@ export interface SumD<T extends string, Members>
   readonly members: Members
 }
 // TODO: every `Members` should own a tag field
-export declare const sum: <T extends string>(
-  tag: T
-) => <Members extends Record<PropertyKey, AnyUD>>(members: Members) => SumD<T, Members>
+export const sum = <T extends string>(tag: T) => <Members extends Record<PropertyKey, AnyUD>>(
+  members: Members
+): SumD<T, Members> => ({
+  _tag: 'SumD',
+  tag,
+  members,
+  decode: (u) => right(u as any) // TODO
+})
 
 // -------------------------------------------------------------------------------------
 // instances
@@ -1489,19 +1498,29 @@ Warnings:
 // use case: reflection, for example generating a match function from a sum
 // -------------------------------------------------------------------------------------
 
-// export declare const getMatch: <T extends string, Members extends Record<PropertyKey, AnyD>>(decoder: {
-//   readonly tag: T
-//   readonly members: Members
-// }) => <B>(
-//   patterns: { [K in keyof Members]: (member: TypeOf<Members[K]>) => B }
-// ) => (a: TypeOf<Members[keyof Members]>) => B
+export const getMatch = <T extends string, Members extends Record<PropertyKey, AnyD>>(decoder: {
+  readonly tag: T
+  readonly members: Members
+}) => <B>(patterns: { [K in keyof Members]: (member: TypeOf<Members[K]>) => B }) => (
+  a: TypeOf<Members[keyof Members]>
+): B => patterns[a[decoder.tag]](a)
 
-// const matchDecoder = sum('_tag')({
-//   A: struct({ _tag: literal('A'), a: string }),
-//   B: struct({ _tag: literal('B'), b: number })
-// })
+export const matchDecoder = sum('type')({
+  A: struct({ type: literal('A'), a: string }),
+  B: struct({ type: literal('B'), b: number })
+})
 
-// export const match = getMatch(matchDecoder)
+export const match = getMatch(matchDecoder)
+
+// pipe(
+//   { type: 'A', a: 'a' },
+//   match({
+//     A: ({ a }) => `A: ${a}`,
+//     B: ({ b }) => `B: ${b}`
+//   }),
+//   console.log
+// )
+// A: a
 
 // -------------------------------------------------------------------------------------
 // use case: how to encode `Record<'a' | 'b', number>`
