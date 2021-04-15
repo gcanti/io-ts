@@ -1016,7 +1016,7 @@ export const formatErroMessages = (de: FormE): string =>
     })
     .join(', ')
 
-pipe(Form.decode({ name: null, age: null }), TH.mapLeft(formatErroMessages), console.log)
+// pipe(Form.decode({ name: null, age: null }), TH.mapLeft(formatErroMessages), console.log)
 // => left('invalid name, invalid age')
 
 // -------------------------------------------------------------------------------------
@@ -1326,56 +1326,63 @@ Errors:
 └─ unexpected key "b"
 */
 
-// TODO
-// export const condemnWith = (
-//   tags: ReadonlyNonEmptyArray<string>
-// ): ((de: DecodeError<Record<PropertyKey, unknown>>) => boolean) => {
-//   const go = (de: DecodeError<Record<PropertyKey, unknown>>): boolean => {
-//     switch (de._tag) {
-//       case 'StructE':
-//         return de.errors.some(go)
-//       case 'RefinementE':
-//       case 'KeyE':
-//         return go(de.error)
-//       case 'LeafE':
-//         const _tag = de.error['_tag']
-//         return typeof _tag === 'string' && tags.includes(_tag)
-//       case 'CompositionE':
-//         return pipe(
-//           de.error,
-//           TH.fold(go, go, (e, a) => go(e) || go(a))
-//         )
-//     }
-//     return false
-//   }
-//   return go
-// }
+export const shouldCondemn = <E>(predicate: (e: E) => boolean): ((de: DecodeError<E>) => boolean) => {
+  const go = (de: DecodeError<E>): boolean => {
+    switch (de._tag) {
+      case 'KeysE':
+      case 'CompositionE':
+      case 'StructE':
+        return de.errors.some(go)
+      case 'PrevE':
+      case 'NextE':
+      case 'RequiredKeyE':
+        return go(de.error)
+      case 'LeafE':
+        return predicate(de.error)
+    }
+    return false
+  }
+  return go
+}
 
-// export const condemn = <D extends AnyD>(decoder: D, tags: ReadonlyNonEmptyArray<string>): D => {
-//   const predicate = condemnWith(tags)
-//   return {
-//     ...decoder,
-//     decode: (i) => {
-//       const de = decoder.decode(i)
-//       if (TH.isBoth(de)) {
-//         const e = de.left
-//         if (predicate(e)) {
-//           return left(e)
-//         }
-//       }
-//       return de
-//     }
-//   }
-// }
+export const condemnWith = <E>(predicate: (e: E) => boolean) => <D extends Decoder<any, DecodeError<E>, any>>(
+  decoder: D
+): D => {
+  const should = shouldCondemn(predicate)
+  return {
+    ...decoder,
+    decode: (i) => {
+      const de = decoder.decode(i)
+      if (TH.isBoth(de)) {
+        const e = de.left
+        if (should(e)) {
+          return left(e)
+        }
+      }
+      return de
+    }
+  }
+}
 
-// pipe(
-//   condemn(struct({ a: Positive }), ['NaNE']).decode({
-//     a: NaN
-//   }),
-//   draw,
-//   print,
-//   console.log
-// )
+export const nan = condemnWith((e: BuiltinE) => e._tag === 'NaNE')
+
+export const condemned1 = nan(struct({ a: number }))
+export const condemned2 = struct({ a: nan(number) })
+
+// pipe(condemned1.decode({ a: NaN }), debug)
+/*
+Errors:
+1 error(s) found while decoding a struct
+└─ 1 error(s) found while decoding the required key "a"
+   └─ value is NaN
+*/
+// pipe(condemned2.decode({ a: NaN }), debug)
+/*
+Errors:
+1 error(s) found while decoding a struct
+└─ 1 error(s) found while decoding the required key "a"
+   └─ value is NaN
+*/
 
 // -------------------------------------------------------------------------------------
 // use case: new decoder, multiple custom messages #487
