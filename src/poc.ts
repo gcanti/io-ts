@@ -1004,23 +1004,19 @@ export const Form = exactStruct({
 export type FormE = ErrorOf<typeof Form>
 
 // ...this means that you can pattern match on the error
-export const formErroMessages = pipe(
-  Form,
-  mapLeft((de): string =>
-    de.errors
-      .map((e) => {
-        switch (e.key) {
-          case 'name':
-            return 'invalid name'
-          case 'age':
-            return 'invalid age'
-        }
-      })
-      .join(', ')
-  )
-)
+export const formatErroMessages = (de: FormE): string =>
+  de.errors
+    .map((e) => {
+      switch (e.key) {
+        case 'name':
+          return 'invalid name'
+        case 'age':
+          return 'invalid age'
+      }
+    })
+    .join(', ')
 
-// pipe(formErroMessages.decode({ name: null, age: null }), console.log)
+pipe(Form.decode({ name: null, age: null }), TH.mapLeft(formatErroMessages), console.log)
 // => left('invalid name, invalid age')
 
 // -------------------------------------------------------------------------------------
@@ -1197,7 +1193,7 @@ export const IntD = pipe(
 export const IntUD = pipe(number, compose(IntD))
 export type IntUDE = ErrorOf<typeof IntUD>
 
-const Form2 = exactStruct({
+export const Form2 = exactStruct({
   name: string,
   age: IntD
 })
@@ -1205,7 +1201,7 @@ const Form2 = exactStruct({
 // pipe(Form2.decode({ name: null, age: 1.2 }), draw, print, console.log) // <= type error because `IntE` is not handled
 
 // I can define my own `draw` function
-const myDraw = TH.mapLeft(
+export const myDraw = TH.mapLeft(
   flow(
     toTreeWith((e: BuiltinE | IntE) => {
       switch (e._tag) {
@@ -1219,7 +1215,7 @@ const myDraw = TH.mapLeft(
   )
 )
 
-pipe(Form2.decode({ name: null, age: 1.2 }), myDraw, print, console.log) // <= ok
+// pipe(Form2.decode({ name: null, age: 1.2 }), myDraw, print, console.log) // <= ok
 /*
 Errors:
 2 error(s) found while decoding a struct
