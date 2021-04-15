@@ -633,19 +633,19 @@ export function struct(properties: Record<PropertyKey, AnyUD>): StructD<typeof p
   )
 }
 
-export interface FromPartialD<Properties>
+export interface ExactPartialD<Properties>
   extends Decoder<
     Partial<{ [K in keyof Properties]: InputOf<Properties[K]> }>,
     PartialE<{ readonly [K in keyof Properties]: KeyValueE<K, ErrorOf<Properties[K]>> }[keyof Properties]>,
     Partial<{ [K in keyof Properties]: TypeOf<Properties[K]> }>
   > {
-  readonly _tag: 'FromPartialD'
+  readonly _tag: 'ExactPartialD'
   readonly properties: Properties
 }
-export const fromPartial = <Properties extends Record<PropertyKey, AnyD>>(
+export const exactPartial = <Properties extends Record<PropertyKey, AnyD>>(
   properties: Properties
-): FromPartialD<Properties> => ({
-  _tag: 'FromPartialD',
+): ExactPartialD<Properties> => ({
+  _tag: 'ExactPartialD',
   properties,
   decode: (ur) => {
     const es: Array<KeyValueE<string, ErrorOf<Properties[keyof Properties]>>> = []
@@ -674,12 +674,21 @@ export const fromPartial = <Properties extends Record<PropertyKey, AnyD>>(
   }
 })
 
-export interface PartialD<Properties>
-  extends CompositionD<CompositionD<UnknownRecordUD, UnexpectedKeysD<Properties>>, FromPartialD<Properties>> {}
+export interface FromPartialD<Properties>
+  extends CompositionD<UnexpectedKeysD<Properties>, ExactPartialD<Properties>> {}
+
+export function fromPartial<Properties extends Record<PropertyKey, AnyUD>>(
+  properties: Properties
+): FromPartialD<Properties>
+export function fromPartial(properties: Record<PropertyKey, AnyUD>): FromPartialD<typeof properties> {
+  return pipe(unexpectedKeys(properties), compose(exactPartial(properties)))
+}
+
+export interface PartialD<Properties> extends CompositionD<UnknownRecordUD, FromPartialD<Properties>> {}
 
 export function partial<Properties extends Record<PropertyKey, AnyUD>>(properties: Properties): PartialD<Properties>
 export function partial(properties: Record<PropertyKey, AnyUD>): PartialD<typeof properties> {
-  return pipe(UnknownRecord, compose(unexpectedKeys(properties)), compose(fromPartial(properties)))
+  return pipe(UnknownRecord, compose(fromPartial(properties)))
 }
 
 export interface FromArrayD<Item>
@@ -1547,7 +1556,7 @@ export type SUDA = TypeOf<typeof SUD>
 // pipe(SUD.decode({ a: 'a', b: 1, c: true }), debug)
 
 // fromPartial
-export const PSD = fromPartial({
+export const PSD = exactPartial({
   a: string,
   b: number
 })
