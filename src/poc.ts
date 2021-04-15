@@ -980,56 +980,33 @@ declare module 'fp-ts/lib/HKT' {
 }
 
 // -------------------------------------------------------------------------------------
-// use case: mapLeft decode error
+// use case: form
 // -------------------------------------------------------------------------------------
 
-export const MapLeftExample = tuple(string, number)
+export const Form = exactStruct({
+  name: string,
+  age: number
+})
 
 // the decode error is fully typed...
-// type MapLeftExampleE = CompositionE<CompositionE<UnknownArrayLE | ComponentsE<MissingComponentLE>> | CompositionE<ComponentsE<UnexpectedComponentLE> | TupleE<...>>>
-export type MapLeftExampleE = ErrorOf<typeof MapLeftExample>
+// type FormE = StructE<KeyValueE<"name", StringLE> | KeyValueE<"age", NumberLE | NaNLE>>
+export type FormE = ErrorOf<typeof Form>
 
 // ...this means that you can pattern match on the error
-export const result1 = pipe(
-  MapLeftExample,
-  mapLeft((de): string => {
-    const es = de.errors
-    return es
+export const formErroMessages = pipe(
+  Form,
+  mapLeft((de): string =>
+    de.errors
       .map((e) => {
-        switch (e._tag) {
-          case 'PrevE':
-            return e.error.errors
-              .map((e) => {
-                switch (e._tag) {
-                  case 'PrevE':
-                    return 'not a valid array'
-                  case 'NextE':
-                    return e.error.errors.map((e) => `missing component ${e.error.component}`).join(', ')
-                }
-              })
-              .join(', ')
-          case 'NextE':
-            return e.error.errors
-              .map((e) => {
-                switch (e._tag) {
-                  case 'PrevE':
-                    return e.error.errors.map((e) => `unexpected component ${e.error.component}`).join(', ')
-                  case 'NextE':
-                    return e.error.errors.map((e) => {
-                      switch (e.index) {
-                        case '0':
-                          return `not a valid string`
-                        case '1':
-                          return `not a valid number`
-                      }
-                    })
-                }
-              })
-              .join(', ')
+        switch (e.key) {
+          case 'name':
+            return 'invalid name'
+          case 'age':
+            return 'invalid age'
         }
       })
       .join(', ')
-  })
+  )
 )
 
 // -------------------------------------------------------------------------------------
@@ -1506,66 +1483,6 @@ Warnings:
 // -------------------------------------------------------------------------------------
 // use case: how to encode [A, B?]
 // -------------------------------------------------------------------------------------
-
-// -------------------------------------------------------------------------------------
-// use case: form
-// -------------------------------------------------------------------------------------
-
-// const MyForm = fromStruct({
-//   name: NonEmptyStringD,
-//   age: number
-// })
-
-// pipe(
-//   MyForm,
-//   mapLeft((e) => {
-//     // const errors: RNEA.ReadonlyNonEmptyArray<KeyE<"name", RefineE<LeafE<NonEmptyStringE>>> | KeyE<"age", NumberLE>>
-//     const errors = e.errors
-//     console.log(errors)
-//     return e
-//   })
-// )
-
-// const d = fromSum('_tag')({
-//   A: fromStruct({
-//     _tag: literal('A'),
-//     a: string
-//   }),
-//   B: fromStruct({
-//     _tag: literal('B'),
-//     b: number
-//   })
-// })
-
-// pipe(
-//   d,
-//   mapLeft((de) => {
-//     switch (de._tag) {
-//       case 'TagE': {
-//         return de.tag
-//       }
-//       case 'SumE': {
-//         pipe(
-//           de.errors,
-//           RNEA.map((e) => {
-//             switch (e.member) {
-//               case 'A':
-//                 return pipe(
-//                   e.error.errors,
-//                   RNEA.map((x) => x)
-//                 )
-//               case 'B':
-//                 return pipe(
-//                   e.error.errors,
-//                   RNEA.map((x) => x)
-//                 )
-//             }
-//           })
-//         )
-//       }
-//     }
-//   })
-// )
 
 // -------------------------------------------------------------------------------------
 // examples
