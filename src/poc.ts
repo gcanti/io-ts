@@ -532,7 +532,7 @@ export interface ExactStructD<Properties>
   readonly _tag: 'ExactStructD'
   readonly properties: Properties
 }
-export const fromExactStruct = <Properties extends Record<PropertyKey, AnyD>>(
+export const exactStruct = <Properties extends Record<PropertyKey, AnyD>>(
   properties: Properties
 ): ExactStructD<Properties> => ({
   _tag: 'ExactStructD',
@@ -557,6 +557,35 @@ export const fromExactStruct = <Properties extends Record<PropertyKey, AnyD>>(
   }
 })
 
+export interface UnexpectedKeysD<Properties>
+  extends Decoder<Record<PropertyKey, unknown>, KeysE<UnexpectedKeyLE>, Record<keyof Properties, unknown>> {
+  readonly _tag: 'UnexpectedKeysD'
+  readonly properties: Properties
+}
+export const unexpectedKeys = <Properties extends Record<string, unknown>>(
+  properties: Properties
+): UnexpectedKeysD<Properties> => {
+  return {
+    _tag: 'UnexpectedKeysD',
+    properties,
+    decode: (ur) => {
+      const ws: Array<UnexpectedKeyLE> = []
+      const out: any = {}
+      for (const k in properties) {
+        if (k in ur) {
+          out[k] = ur[k]
+        }
+      }
+      for (const k in ur) {
+        if (!(k in out)) {
+          ws.push(unexpectedKey(k))
+        }
+      }
+      return RA.isNonEmpty(ws) ? both(keysE(ws), out) : right(ur)
+    }
+  }
+}
+
 export interface FromStructD<Properties> extends CompositionD<UnexpectedKeysD<Properties>, ExactStructD<Properties>> {}
 
 export function fromStruct<Properties extends Record<PropertyKey, AnyUD>>(
@@ -565,11 +594,9 @@ export function fromStruct<Properties extends Record<PropertyKey, AnyUD>>(
 export function fromStruct(properties: Record<PropertyKey, AnyUD>): FromStructD<typeof properties> {
   return pipe(
     unexpectedKeys(properties), // { a: unknown, b: unknown, ..., unexpected: unknown } -> { a: unknown, b: unknown, ... }
-    compose(fromExactStruct(properties)) // { a: unknown, b: unknown, ... } -> { a: string, b: number, ... }
+    compose(exactStruct(properties)) // { a: unknown, b: unknown, ... } -> { a: string, b: number, ... }
   )
 }
-
-const hasOwnProperty = Object.prototype.hasOwnProperty
 
 export interface MissingKeysD<Properties>
   extends Decoder<Record<PropertyKey, unknown>, KeysE<MissingKeyLE>, Record<keyof Properties, unknown>> {
@@ -585,7 +612,7 @@ export const missingKeys = <Properties extends Record<string, unknown>>(
     decode: (ur) => {
       const es: Array<MissingKeyLE> = []
       for (const k in properties) {
-        if (!hasOwnProperty.call(ur, k)) {
+        if (!(k in ur)) {
           es.push(missingKey(k))
         }
       }
@@ -625,7 +652,7 @@ export const fromPartial = <Properties extends Record<PropertyKey, AnyD>>(
     const ar: any = {}
     let isBoth = true
     for (const k in properties) {
-      if (!hasOwnProperty.call(ur, k)) {
+      if (!(k in ur)) {
         continue
       }
       if (ur[k] === undefined) {
@@ -646,35 +673,6 @@ export const fromPartial = <Properties extends Record<PropertyKey, AnyD>>(
     return RA.isNonEmpty(es) ? (isBoth ? both(partialE(es), ar) : left(partialE(es))) : right(ar)
   }
 })
-
-export interface UnexpectedKeysD<Properties>
-  extends Decoder<Record<PropertyKey, unknown>, KeysE<UnexpectedKeyLE>, Record<keyof Properties, unknown>> {
-  readonly _tag: 'UnexpectedKeysD'
-  readonly properties: Properties
-}
-export const unexpectedKeys = <Properties extends Record<string, unknown>>(
-  properties: Properties
-): UnexpectedKeysD<Properties> => {
-  return {
-    _tag: 'UnexpectedKeysD',
-    properties,
-    decode: (ur) => {
-      const ws: Array<UnexpectedKeyLE> = []
-      const out: any = {}
-      for (const k in properties) {
-        if (hasOwnProperty.call(ur, k)) {
-          out[k] = ur[k]
-        }
-      }
-      for (const k in ur) {
-        if (!hasOwnProperty.call(out, k)) {
-          ws.push(unexpectedKey(k))
-        }
-      }
-      return RA.isNonEmpty(ws) ? both(keysE(ws), out) : right(ur)
-    }
-  }
-}
 
 export interface PartialD<Properties>
   extends CompositionD<CompositionD<UnknownRecordUD, UnexpectedKeysD<Properties>>, FromPartialD<Properties>> {}
@@ -1247,7 +1245,7 @@ export function strict(properties: Record<PropertyKey, AnyUD>): StructD<typeof p
   return pipe(
     UnknownRecord,
     compose(missingKeys(properties)),
-    compose(pipe(condemn(unexpectedKeys(properties)), compose(fromExactStruct(properties))))
+    compose(pipe(condemn(unexpectedKeys(properties)), compose(exactStruct(properties))))
   )
 }
 
