@@ -1013,9 +1013,9 @@ export const Form = exactStruct({
 export type FormE = ErrorOf<typeof Form>
 
 // ...this means that you can pattern match on the error
-export const formatErroMessages = (de: FormE): string =>
+export const formatFormMessages = (de: FormE): string =>
   de.errors
-    .map((e) => {
+    .map((e): string => {
       switch (e.key) {
         case 'name':
           return 'invalid name'
@@ -1027,6 +1027,38 @@ export const formatErroMessages = (de: FormE): string =>
 
 // pipe(Form.decode({ name: null, age: null }), TH.mapLeft(formatErroMessages), console.log)
 // => left('invalid name, invalid age')
+
+export const NestedForm = exactStruct({
+  a: string,
+  b: number,
+  c: exactStruct({
+    d: boolean
+  })
+})
+
+// type NestedFormE = StructE<RequiredKeyE<"a", StringLE> | RequiredKeyE<"b", NaNLE | NumberLE> | RequiredKeyE<"c", StructE<RequiredKeyE<"d", BooleanLE>>>>
+export type NestedFormE = ErrorOf<typeof NestedForm>
+
+export const formatNestedFormMessages = (de: NestedFormE): string =>
+  de.errors
+    .map((e): string => {
+      switch (e.key) {
+        case 'a':
+          return 'invalid a'
+        case 'b':
+          return 'invalid b'
+        case 'c':
+          return e.error.errors
+            .map((e): string => {
+              switch (e.key) {
+                case 'd':
+                  return 'invalid d'
+              }
+            })
+            .join(', ')
+      }
+    })
+    .join(', ')
 
 // -------------------------------------------------------------------------------------
 // use case: handling a generic error, for example encoding to a Tree<string>
