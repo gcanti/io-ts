@@ -1305,6 +1305,7 @@ export function strict(properties: Record<PropertyKey, AnyUD>): StructD<typeof p
   return pipe(
     UnknownRecord,
     compose(missingKeys(properties)),
+    //             v-- here's the difference
     compose(pipe(condemn(unexpectedKeys(properties)), compose(exactStruct(properties))))
   )
 }
