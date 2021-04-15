@@ -435,6 +435,7 @@ export const string: stringUD = {
   decode: (u) => (typeof u === 'string' ? right(u) : left(leafE({ _tag: 'StringE', actual: u })))
 }
 
+// TODO: handle Infinity
 export interface NumberE extends ActualE<unknown> {
   readonly _tag: 'NumberE'
 }
@@ -1019,7 +1020,7 @@ export const formErroMessages = pipe(
   )
 )
 
-pipe(formErroMessages.decode({ name: null, age: null }), console.log)
+// pipe(formErroMessages.decode({ name: null, age: null }), console.log)
 // => left('invalid name, invalid age')
 
 // -------------------------------------------------------------------------------------
@@ -1053,7 +1054,6 @@ export const toTreeWith = <E>(toTree: (e: E) => Tree<string>): ((de: DecodeError
       case 'NullableE':
         return tree(`1 error(s) found while decoding a nullable`, [go(de.error)])
       case 'PrevE':
-        return go(de.error)
       case 'NextE':
         return go(de.error)
 
@@ -1155,21 +1155,26 @@ const toTree = toTreeWith(toTreeBuiltin)
 
 export const draw = TH.mapLeft(flow(toTree, drawTree))
 
+// -------------------------------------------------------------------------------------
+// draw utils
+// -------------------------------------------------------------------------------------
+
 const printValue = <A>(a: A): string => 'Value:\n' + JSON.stringify(a, null, 2)
 const printErrors = (s: string): string => (s === '' ? s : 'Errors:\n' + s)
 const printWarnings = (s: string): string => (s === '' ? s : 'Warnings:\n' + s)
 
-export const print = flow(
-  draw,
-  TH.fold(printErrors, printValue, (e, a) => printValue(a) + '\n' + printWarnings(e))
-)
-
-export const debug = flow(print, console.log)
+export const print = TH.fold(printErrors, printValue, (e, a) => printValue(a) + '\n' + printWarnings(e))
 
 // example 1
-const DR1 = tuple(string, number)
-
-export const treeLeft1 = pipe(DR1, mapLeft(toTree))
+// pipe(Form.decode({ name: null, age: null }), draw, print, console.log)
+/*
+Errors:
+2 error(s) found while decoding a struct
+├─ 1 error(s) found while decoding the required key "name"
+│  └─ cannot decode null, expected a string
+└─ 1 error(s) found while decoding the required key "age"
+   └─ cannot decode null, expected a number
+*/
 
 // what if the decoder contains a custom error?
 
@@ -1192,26 +1197,44 @@ export const IntD = pipe(
 export const IntUD = pipe(number, compose(IntD))
 export type IntUDE = ErrorOf<typeof IntUD>
 
-const DR2 = tuple(string, IntUD)
+const Form2 = exactStruct({
+  name: string,
+  age: IntD
+})
 
-// TODO: the error message is cryptic
-// export const treeOutput2 = pipe(DR2, mapLeft(draw)) // <= type error because `IntE` is not handled
+// pipe(Form2.decode({ name: null, age: 1.2 }), draw, print, console.log) // <= type error because `IntE` is not handled
 
-// I can define my own `toTree`
-const myToTree = (e: BuiltinE | IntE) => {
-  switch (e._tag) {
-    case 'IntE':
-      return tree(`cannot decode ${e.actual}, should be an integer`)
-    default:
-      return toTreeBuiltin(e)
-  }
-}
+// I can define my own `draw` function
+const myDraw = TH.mapLeft(
+  flow(
+    toTreeWith((e: BuiltinE | IntE) => {
+      switch (e._tag) {
+        case 'IntE':
+          return tree(`cannot decode ${e.actual}, should be an integer`)
+        default:
+          return toTreeBuiltin(e)
+      }
+    }),
+    drawTree
+  )
+)
 
-export const treeLeft2 = pipe(DR2, mapLeft(toTreeWith(myToTree))) // <= ok
+pipe(Form2.decode({ name: null, age: 1.2 }), myDraw, print, console.log) // <= ok
+/*
+Errors:
+2 error(s) found while decoding a struct
+├─ 1 error(s) found while decoding the required key "name"
+│  └─ cannot decode null, expected a string
+└─ 1 error(s) found while decoding the required key "age"
+   └─ 1 error(s) found while decoding a refinement
+      └─ cannot decode 1.2, should be an integer
+*/
 
 // -------------------------------------------------------------------------------------
 // use case: old decoder, custom error message
 // -------------------------------------------------------------------------------------
+
+export const debug = flow(draw, print, console.log)
 
 export const customStringUD = pipe(
   string,
