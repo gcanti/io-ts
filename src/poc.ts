@@ -192,6 +192,7 @@ export interface MemberE<M, E> extends SingleE<E> {
   readonly _tag: 'MemberE'
   readonly member: M
 }
+export const memberE = <M, E>(member: M, error: E): MemberE<M, E> => ({ _tag: 'MemberE', member, error })
 
 export interface TagE<T, E> extends SingleE<E> {
   readonly _tag: 'TagE'
@@ -307,6 +308,10 @@ export const compositionE = <E>(errors: ReadonlyNonEmptyArray<E>): CompositionE<
 export interface IntersectionE<E> extends CompoundE<E> {
   readonly _tag: 'IntersectionE'
 }
+export const intersectionE = <E>(errors: ReadonlyNonEmptyArray<E>): IntersectionE<E> => ({
+  _tag: 'IntersectionE',
+  errors
+})
 
 export interface SumE<E> extends CompoundE<E> {
   readonly _tag: 'SumE'
@@ -939,7 +944,63 @@ export interface IntersectD<F, S>
   readonly first: F
   readonly second: S
 }
-export declare const intersect: <S extends AnyD>(second: S) => <F extends AnyD>(first: F) => IntersectD<F, S>
+const typeOf = (x: unknown): string => (x === null ? 'null' : typeof x)
+const intersect_ = <A, B>(a: A, b: B): A & B => {
+  if (a !== undefined && b !== undefined) {
+    const tx = typeOf(a)
+    const ty = typeOf(b)
+    if (tx === 'object' || ty === 'object') {
+      return Object.assign({}, a, b)
+    }
+  }
+  return b as any
+}
+export function intersect<S extends AnyD>(second: S): <F extends AnyD>(first: F) => IntersectD<F, S>
+export function intersect<I2, E2, A2>(
+  second: Decoder<I2, E2, A2>
+): <I1, E1, A1>(first: Decoder<I1, E1, A1>) => IntersectD<typeof first, typeof second> {
+  return <I1, E1, A1>(first: Decoder<I1, E1, A1>): IntersectD<typeof first, typeof second> => ({
+    _tag: 'IntersectD',
+    first,
+    second,
+    decode: (i) => {
+      const out: These<IntersectionE<MemberE<0, E1> | MemberE<1, E2>>, A1 & A2> = pipe(
+        first.decode(i),
+        TH.fold(
+          (e1) => {
+            const de = second.decode(i)
+            return TH.isRight(de)
+              ? left(intersectionE([memberE(0, e1)]))
+              : left(intersectionE([memberE(0, e1), memberE(1, de.left)]))
+          },
+          (a1) =>
+            pipe(
+              second.decode(i),
+              TH.fold(
+                (e2) => left(intersectionE([memberE(1, e2)])),
+                (a2) => right(intersect_(a1, a2)),
+                (e2, a2) => both(intersectionE([memberE(1, e2)]), intersect_(a1, a2))
+              )
+            ),
+          (e1, a1) =>
+            pipe(
+              second.decode(i),
+              TH.fold(
+                (e2) => left(intersectionE([memberE(0, e1), memberE(1, e2)])),
+                (a2) => right(intersect_(a1, a2)),
+                (e2, a2) => both(intersectionE([memberE(0, e1), memberE(1, e2)]), intersect_(a1, a2))
+              )
+            )
+        )
+      )
+      if (TH.isBoth(out)) {
+        const ws = out.left.errors.filter(() => true) // TODO: prune unexpected errors?
+        return RA.isNonEmpty(ws) ? both(intersectionE(ws), out.right) : right(out.right)
+      }
+      return out
+    }
+  })
+}
 
 export interface LazyD<D> {
   readonly _tag: 'LazyD'
@@ -1691,15 +1752,16 @@ export type IntUDA = TypeOf<typeof IntUD>
 // export type PUDE = ErrorOf<typeof PUD>
 // export type PUDA = TypeOf<typeof PUD>
 
-// // intersect
-// export const ID = pipe(fromStruct({ a: string }), intersect(fromStruct({ b: number })))
-// export type IDI = InputOf<typeof ID>
-// export type IDE = ErrorOf<typeof ID>
-// export type IDA = TypeOf<typeof ID>
+// intersect
+export const ID = pipe(fromStruct({ a: string }), intersect(fromStruct({ b: number })))
+export type IDI = InputOf<typeof ID>
+export type IDE = ErrorOf<typeof ID>
+export type IDA = TypeOf<typeof ID>
 
-// export const IUD = pipe(struct({ a: string }), intersect(struct({ b: number })))
-// export type IUDE = ErrorOf<typeof IUD>
-// export type IUDA = TypeOf<typeof IUD>
+export const IUD = pipe(struct({ a: string }), intersect(struct({ b: number })))
+export type IUDE = ErrorOf<typeof IUD>
+export type IUDA = TypeOf<typeof IUD>
+pipe(IUD.decode({ a: 'a', b: 1 }), debug)
 
 // // lazy
 // interface Category {
