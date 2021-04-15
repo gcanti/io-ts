@@ -987,16 +987,12 @@ export function intersect<I2, E2, A2>(
               second.decode(i),
               TH.fold(
                 (e2) => left(intersectionE([memberE(0, e1), memberE(1, e2)])),
-                (a2) => right(intersect_(a1, a2)),
+                (a2) => both(intersectionE([memberE(0, e1)]), intersect_(a1, a2)),
                 (e2, a2) => both(intersectionE([memberE(0, e1), memberE(1, e2)]), intersect_(a1, a2))
               )
             )
         )
       )
-      if (TH.isBoth(out)) {
-        const ws = out.left.errors.filter(() => true) // TODO: prune unexpected errors?
-        return RA.isNonEmpty(ws) ? both(intersectionE(ws), out.right) : right(out.right)
-      }
       return out
     }
   })
@@ -1632,6 +1628,33 @@ export const match = getMatch(matchDecoder)
 // -------------------------------------------------------------------------------------
 
 // -------------------------------------------------------------------------------------
+// intersection issue
+// -------------------------------------------------------------------------------------
+
+export const decoder1 = pipe(
+  fromStruct({ a: string, b: string }),
+  map(({ a, b }) => ({ b: a + b }))
+)
+export const decoder2 = pipe(
+  fromStruct({ a: string }),
+  map(({ a }) => ({ c: a.length }))
+)
+export const decoder1decoder2 = pipe(decoder1, intersect(decoder2))
+pipe(decoder1decoder2.decode({ a: 'aaa', b: 'bbb' }), debug)
+/*
+Value:
+{
+  "b": "aaabbb",
+  "c": 3
+}
+Warnings:
+1 error(s) found while decoding an intersection
+└─ 1 error(s) found while decoding the member 1
+   └─ 1 error(s) found while checking keys
+      └─ unexpected key "b"
+*/
+
+// -------------------------------------------------------------------------------------
 // examples
 // -------------------------------------------------------------------------------------
 
@@ -1761,7 +1784,7 @@ export type IDA = TypeOf<typeof ID>
 export const IUD = pipe(struct({ a: string }), intersect(struct({ b: number })))
 export type IUDE = ErrorOf<typeof IUD>
 export type IUDA = TypeOf<typeof IUD>
-pipe(IUD.decode({ a: 'a', b: 1 }), debug)
+// pipe(IUD.decode({ a: 'a', b: 1 }), debug)
 
 // // lazy
 // interface Category {
