@@ -91,38 +91,39 @@ export const id = <A>(): IdentityD<A> => ({
   decode: TH.right
 })
 
-export interface CompositionD<F, S> extends Decoder<InputOf<F>, CompositionE<ErrorOf<F> | ErrorOf<S>>, TypeOf<S>> {
+export interface CompositionD<P, N>
+  extends Decoder<InputOf<P>, CompositionE<PrevE<ErrorOf<P>> | NextE<ErrorOf<N>>>, TypeOf<N>> {
   readonly _tag: 'CompositionD'
-  readonly first: F
-  readonly second: S
+  readonly prev: P
+  readonly next: N
 }
 
-export function compose<F extends AnyD, S extends Decoder<TypeOf<F>, any, any>>(
-  second: S
-): (first: F) => CompositionD<F, S>
+export function compose<P extends AnyD, N extends Decoder<TypeOf<P>, any, any>>(
+  next: N
+): (prev: P) => CompositionD<P, N>
 export function compose<A, E2, B>(
-  second: Decoder<A, E2, B>
-): <I, E1>(first: Decoder<I, E1, A>) => CompositionD<typeof first, typeof second> {
-  return (first) => ({
+  next: Decoder<A, E2, B>
+): <I, E1>(prev: Decoder<I, E1, A>) => CompositionD<typeof prev, typeof next> {
+  return (prev) => ({
     _tag: 'CompositionD',
-    first,
-    second,
+    prev,
+    next,
     decode: flow(
-      first.decode,
+      prev.decode,
       TH.fold(
-        (e1) => left(compositionE([e1])),
+        (e1) => left(compositionE([prevE(e1)])),
         (a) =>
           pipe(
-            second.decode(a),
-            TH.mapLeft((e) => compositionE([e]))
+            next.decode(a),
+            TH.mapLeft((e) => compositionE([nextE(e)]))
           ),
         (w1, a) =>
           pipe(
-            second.decode(a),
+            next.decode(a),
             TH.fold(
-              (e2) => left(compositionE([e2])),
-              (b) => both(compositionE([w1]), b),
-              (w2, b) => both(compositionE([w1, w2]), b)
+              (e2) => left(compositionE([nextE(e2)])),
+              (b) => both(compositionE([prevE(w1)]), b),
+              (w2, b) => both(compositionE([prevE(w1), nextE(w2)]), b)
             )
           )
       )
@@ -209,6 +210,16 @@ export interface ParserE<E> extends SingleE<E> {
   readonly _tag: 'ParserE'
 }
 export const parserE = <E>(error: E): ParserE<E> => ({ _tag: 'ParserE', error })
+
+export interface PrevE<E> extends SingleE<E> {
+  readonly _tag: 'PrevE'
+}
+export const prevE = <E>(error: E): PrevE<E> => ({ _tag: 'PrevE', error })
+
+export interface NextE<E> extends SingleE<E> {
+  readonly _tag: 'NextE'
+}
+export const nextE = <E>(error: E): NextE<E> => ({ _tag: 'NextE', error })
 
 // Compound errors
 
@@ -334,6 +345,8 @@ export const missingKey: (key: PropertyKey) => MissingKeyLE = flow(missingKeyE, 
 export interface NullableRE<E> extends NullableE<DecodeError<E>> {}
 export interface RefinementRE<E> extends RefinementE<DecodeError<E>> {}
 export interface ParserRE<E> extends ParserE<DecodeError<E>> {}
+export interface PrevRE<E> extends PrevE<DecodeError<E>> {}
+export interface NextRE<E> extends NextE<DecodeError<E>> {}
 // customized single
 export interface KeyValueRE<E> extends KeyValueE<string, DecodeError<E>> {}
 export interface ComponentValueRE<E> extends ComponentValueE<string, DecodeError<E>> {}
@@ -360,6 +373,8 @@ export type DecodeError<E> =
   | NullableRE<E>
   | RefinementRE<E>
   | ParserRE<E>
+  | PrevRE<E>
+  | NextRE<E>
   // customized single
   | KeyValueRE<E>
   | ComponentValueRE<E>
@@ -558,7 +573,11 @@ export const exactStruct = <Properties extends Record<PropertyKey, AnyD>>(
 })
 
 export interface UnexpectedKeysD<Properties>
-  extends Decoder<Record<PropertyKey, unknown>, KeysE<UnexpectedKeyLE>, Record<keyof Properties, unknown>> {
+  extends Decoder<
+    { [K in keyof Properties]: InputOf<Properties[K]> },
+    KeysE<UnexpectedKeyLE>,
+    { [K in keyof Properties]: InputOf<Properties[K]> }
+  > {
   readonly _tag: 'UnexpectedKeysD'
   readonly properties: Properties
 }
@@ -593,8 +612,8 @@ export function fromStruct<Properties extends Record<PropertyKey, AnyUD>>(
 ): FromStructD<Properties>
 export function fromStruct(properties: Record<PropertyKey, AnyUD>): FromStructD<typeof properties> {
   return pipe(
-    unexpectedKeys(properties), // { a: unknown, b: unknown, ..., unexpected: unknown } -> { a: unknown, b: unknown, ... }
-    compose(exactStruct(properties)) // { a: unknown, b: unknown, ... } -> { a: string, b: number, ... }
+    unexpectedKeys(properties), // { a: I1, b: I2, ..., unexpected: unknown } -> { a: I1, b: I2, ... }
+    compose(exactStruct(properties)) // { a: I1, b: I2, ... } -> { a: string, b: number, ... }
   )
 }
 
@@ -628,8 +647,8 @@ export function struct<Properties extends Record<PropertyKey, AnyUD>>(properties
 export function struct(properties: Record<PropertyKey, AnyUD>): StructD<typeof properties> {
   return pipe(
     UnknownRecord, // unknown -> Record<PropertyKey, unknown>
-    compose(missingKeys(properties)), // Record<PropertyKey, unknown> -> { a: unknown, b: unknown, ... }
-    compose(fromStruct(properties)) // { a: unknown, b: unknown, ... } -> { a: string, b: number, ... }
+    compose(missingKeys(properties)), // Record<PropertyKey, unknown> -> { a: unknown, b: unknown, ..., unexpected: unknown }
+    compose(fromStruct(properties)) // { a: unknown, b: unknown, ..., unexpected: unknown } -> { a: string, b: number, ... }
   )
 }
 
@@ -689,6 +708,113 @@ export interface PartialD<Properties> extends CompositionD<UnknownRecordUD, From
 export function partial<Properties extends Record<PropertyKey, AnyUD>>(properties: Properties): PartialD<Properties>
 export function partial(properties: Record<PropertyKey, AnyUD>): PartialD<typeof properties> {
   return pipe(UnknownRecord, compose(fromPartial(properties)))
+}
+
+export interface ExactTupleD<Components extends ReadonlyArray<AnyD>>
+  extends Decoder<
+    { readonly [K in keyof Components]: InputOf<Components[K]> },
+    TupleE<{ [K in keyof Components]: ComponentValueE<K, ErrorOf<Components[K]>> }[number]>,
+    { [K in keyof Components]: TypeOf<Components[K]> }
+  > {
+  readonly _tag: 'ExactTupleD'
+  readonly components: Components
+}
+export const exactTuple = <Components extends ReadonlyArray<AnyD>>(
+  ...components: Components
+): ExactTupleD<Components> => ({
+  _tag: 'ExactTupleD',
+  components,
+  decode: (us) => {
+    const es: Array<ComponentValueE<number, ErrorOf<Components[number]>>> = []
+    const as: any = []
+    let isBoth = true
+    for (let index = 0; index < components.length; index++) {
+      const de = components[index].decode(us[index])
+      if (TH.isLeft(de)) {
+        isBoth = false
+        es.push(componentValueE(index, de.left))
+      } else if (TH.isRight(de)) {
+        as[index] = de.right
+      } else {
+        es.push(componentValueE(index, de.left))
+        as[index] = de.right
+      }
+    }
+    return RA.isNonEmpty(es) ? (isBoth ? both(tupleE(es), as) : left(tupleE(es))) : right(as)
+  }
+})
+
+export interface UnexpectedComponentsD<Components>
+  extends Decoder<
+    { readonly [K in keyof Components]: InputOf<Components[K]> },
+    ComponentsE<UnexpectedComponentLE>,
+    { [K in keyof Components]: InputOf<Components[K]> }
+  > {
+  readonly _tag: 'UnexpectedComponentsD'
+  readonly components: Components
+}
+
+const unexpectedComponents = <Components extends ReadonlyArray<unknown>>(
+  ...components: Components
+): UnexpectedComponentsD<Components> => {
+  return {
+    _tag: 'UnexpectedComponentsD',
+    components,
+    decode: (us) => {
+      const ws: Array<UnexpectedComponentLE> = []
+      for (let index = components.length; index < us.length; index++) {
+        ws.push(unexpectedComponent(index))
+      }
+      return RA.isNonEmpty(ws) ? both(componentsE(ws), us.slice(0, components.length) as any) : right(us)
+    }
+  }
+}
+
+export interface FromTupleD<Components extends ReadonlyArray<AnyD>>
+  extends CompositionD<UnexpectedComponentsD<Components>, ExactTupleD<Components>> {}
+
+export function fromTuple<Components extends ReadonlyArray<AnyD>>(...components: Components): FromTupleD<Components>
+export function fromTuple(...components: ReadonlyArray<AnyD>): FromTupleD<typeof components> {
+  return pipe(
+    unexpectedComponents(...components), // [I0, I1, ..., unexpected: unknown] -> [I0, I1, ...]
+    compose(exactTuple(...components)) // [I0, I1, ...] -> [string, number, ...]
+  )
+}
+
+export interface MissingComponentsD<Components>
+  extends Decoder<Array<unknown>, ComponentsE<MissingComponentLE>, { [K in keyof Components]: unknown }> {
+  readonly _tag: 'MissingComponentsD'
+  readonly components: Components
+}
+export const missingComponents = <Components extends ReadonlyArray<unknown>>(
+  ...components: Components
+): MissingComponentsD<Components> => {
+  return {
+    _tag: 'MissingComponentsD',
+    components,
+    decode: (us) => {
+      const es: Array<MissingComponentLE> = []
+      const len = us.length
+      for (let index = 0; index < components.length; index++) {
+        if (len < index) {
+          es.push(missingComponent(index))
+        }
+      }
+      return RA.isNonEmpty(es) ? left(componentsE(es)) : right(us as any)
+    }
+  }
+}
+
+export interface TupleD<Components extends ReadonlyArray<AnyUD>>
+  extends CompositionD<CompositionD<UnknownArrayUD, MissingComponentsD<Components>>, FromTupleD<Components>> {}
+
+export function tuple<Components extends ReadonlyArray<AnyUD>>(...cs: Components): TupleD<Components>
+export function tuple(...cs: ReadonlyArray<AnyUD>): TupleD<typeof cs> {
+  return pipe(
+    UnknownArray, // unknown -> Array<unknown>
+    compose(missingComponents(...cs)), // Array<unknown> -> [unknown, unknown, ..., unexpected: unknown]
+    compose(fromTuple(...cs)) // [unknown, unknown, ..., unexpected: unknown] -> [string, number, ...]
+  )
 }
 
 export interface FromArrayD<Item>
@@ -769,100 +895,6 @@ export function parse<A, E, B>(
   p: (a: A) => These<E, B>
 ): <I, E1>(from: Decoder<I, E1, A>) => ParseD<typeof from, E, B> {
   return compose(parser(p))
-}
-
-export interface FromTupleD<Components extends ReadonlyArray<AnyD>>
-  extends Decoder<
-    { -readonly [K in keyof Components]: InputOf<Components[K]> },
-    TupleE<{ [K in keyof Components]: ComponentValueE<K, ErrorOf<Components[K]>> }[number]>,
-    { [K in keyof Components]: TypeOf<Components[K]> }
-  > {
-  readonly _tag: 'FromTupleD'
-  readonly components: Components
-}
-export const fromTuple = <Components extends ReadonlyArray<AnyD>>(
-  ...components: Components
-): FromTupleD<Components> => ({
-  _tag: 'FromTupleD',
-  components,
-  decode: (us) => {
-    const es: Array<ComponentValueE<number, ErrorOf<Components[number]>>> = []
-    const as: any = []
-    let isBoth = true
-    for (let index = 0; index < components.length; index++) {
-      const de = components[index].decode(us[index])
-      if (TH.isLeft(de)) {
-        isBoth = false
-        es.push(componentValueE(index, de.left))
-      } else if (TH.isRight(de)) {
-        as[index] = de.right
-      } else {
-        es.push(componentValueE(index, de.left))
-        as[index] = de.right
-      }
-    }
-    if (RA.isNonEmpty(es)) {
-      return isBoth ? both(tupleE(es), as) : left(tupleE(es))
-    }
-    return right(as)
-  }
-})
-
-export interface ComponentsD<I>
-  extends Decoder<
-    Array<unknown>,
-    ComponentsE<MissingComponentLE | UnexpectedComponentLE>,
-    { [K in keyof I]: unknown }
-  > {
-  readonly _tag: 'ComponentsD'
-  readonly components: I
-}
-
-function concatW<A, B>(first: ReadonlyArray<A>, second: ReadonlyNonEmptyArray<B>): ReadonlyNonEmptyArray<A | B>
-function concatW<A, B>(first: ReadonlyNonEmptyArray<A>, second: ReadonlyArray<B>): ReadonlyNonEmptyArray<A | B>
-function concatW<A, B>(first: ReadonlyArray<A>, second: ReadonlyArray<B>): ReadonlyArray<A | B> {
-  return first === RA.empty ? second : second === RA.empty ? first : (first as ReadonlyArray<A | B>).concat(second)
-}
-
-export const components = <Components extends ReadonlyArray<unknown>>(
-  ...components: Components
-): ComponentsD<Components> => {
-  const len = components.length
-  return {
-    _tag: 'ComponentsD',
-    components,
-    decode: (us) => {
-      const es: Array<MissingComponentLE> = []
-      const ws: Array<UnexpectedComponentLE> = []
-      const out: any = []
-      const uslen = us.length
-      const max = Math.max(len, uslen)
-      for (let index = 0; index < max; index++) {
-        if (index < len) {
-          if (index < uslen) {
-            out[index] = us[index]
-          } else {
-            es.push(missingComponent(index))
-          }
-        } else {
-          ws.push(unexpectedComponent(index))
-        }
-      }
-      return RA.isNonEmpty(es)
-        ? left(componentsE(concatW(es, ws)))
-        : RA.isNonEmpty(ws)
-        ? both(componentsE(ws), out)
-        : right(out)
-    }
-  }
-}
-
-export interface TupleD<Components extends ReadonlyArray<AnyUD>>
-  extends CompositionD<CompositionD<UnknownArrayUD, ComponentsD<Components>>, FromTupleD<Components>> {}
-
-export function tuple<Components extends ReadonlyArray<AnyUD>>(...cs: Components): TupleD<Components>
-export function tuple(...cs: ReadonlyArray<AnyUD>): TupleD<typeof cs> {
-  return pipe(UnknownArray, compose(components(...cs)), compose(fromTuple(...cs)))
 }
 
 export interface UnionD<Members extends ReadonlyArray<AnyD>>
@@ -954,43 +986,50 @@ declare module 'fp-ts/lib/HKT' {
 export const MapLeftExample = tuple(string, number)
 
 // the decode error is fully typed...
-// type MapLeftExampleE = CompositionE<CompositionE<UnknownArrayLE, ComponentsE<UnexpectedComponentLE>>, TupleE<ComponentE<"0", StringLE> | ComponentE<...>>>
+// type MapLeftExampleE = CompositionE<CompositionE<UnknownArrayLE | ComponentsE<MissingComponentLE>> | CompositionE<ComponentsE<UnexpectedComponentLE> | TupleE<...>>>
 export type MapLeftExampleE = ErrorOf<typeof MapLeftExample>
 
 // ...this means that you can pattern match on the error
 export const result1 = pipe(
   MapLeftExample,
-  mapLeft((de) =>
-    de.errors.map((e) => {
-      switch (e._tag) {
-        case 'CompositionE':
-          return e.errors.map((e) => {
-            switch (e._tag) {
-              case 'LeafE':
-                return 'UnknownArrayLE'
-              case 'ComponentsE':
-                return e._tag
-            }
-          })
-        case 'TupleE':
-          return e.errors.map((e) => {
-            switch (e.index) {
-              case '0':
-                return 'StringE'
-              case '1': {
-                const e1 = e.error.error
-                switch (e1._tag) {
-                  case 'NaNE':
-                    return 'NaNE'
-                  case 'NumberE':
-                    return 'NumberE'
+  mapLeft((de): string => {
+    const es = de.errors
+    return es
+      .map((e) => {
+        switch (e._tag) {
+          case 'PrevE':
+            return e.error.errors
+              .map((e) => {
+                switch (e._tag) {
+                  case 'PrevE':
+                    return 'not a valid array'
+                  case 'NextE':
+                    return e.error.errors.map((e) => `missing component ${e.error.component}`).join(', ')
                 }
-              }
-            }
-          })
-      }
-    })
-  )
+              })
+              .join(', ')
+          case 'NextE':
+            return e.error.errors
+              .map((e) => {
+                switch (e._tag) {
+                  case 'PrevE':
+                    return e.error.errors.map((e) => `unexpected component ${e.error.component}`).join(', ')
+                  case 'NextE':
+                    return e.error.errors.map((e) => {
+                      switch (e.index) {
+                        case '0':
+                          return `not a valid string`
+                        case '1':
+                          return `not a valid number`
+                      }
+                    })
+                }
+              })
+              .join(', ')
+        }
+      })
+      .join(', ')
+  })
 )
 
 // -------------------------------------------------------------------------------------
@@ -1023,6 +1062,10 @@ export const toTreeWith = <E>(toTree: (e: E) => Tree<string>): ((de: DecodeError
         return tree(`1 error(s) found while decoding a parser`, [go(de.error)])
       case 'NullableE':
         return tree(`1 error(s) found while decoding a nullable`, [go(de.error)])
+      case 'PrevE':
+        return go(de.error)
+      case 'NextE':
+        return go(de.error)
 
       // customized singles
       case 'ComponentValueE':
@@ -1542,8 +1585,7 @@ export const SD = fromStruct({
 export type SDI = InputOf<typeof SD>
 export type SDE = ErrorOf<typeof SD>
 export type SDA = TypeOf<typeof SD>
-// const input: SDI = { a: 'a', b: 1, c: true } as any
-// pipe(SD.decode(input), debug)
+// pipe(SD.decode({ a: 'a', b: 1, c: true } as any), debug)
 
 // struct
 export const SUD = struct({
@@ -1574,16 +1616,18 @@ export type PSUDE = ErrorOf<typeof PSUD>
 export type PSUDA = TypeOf<typeof PSUD>
 // pipe(PSUD.decode({ a: 'a' }), debug)
 
-// // fromTuple
-// export const TD = fromTuple(string, number)
-// export type TDI = InputOf<typeof TD>
-// export type TDE = ErrorOf<typeof TD>
-// export type TDA = TypeOf<typeof TD>
+// fromTuple
+export const TD = fromTuple(string, number)
+export type TDI = InputOf<typeof TD>
+export type TDE = ErrorOf<typeof TD>
+export type TDA = TypeOf<typeof TD>
+// pipe(TD.decode(['a', 1, true] as any), debug)
 
-// // tuple
-// export const TUD = tuple(string, number)
-// export type TUDE = ErrorOf<typeof TUD>
-// export type TUDA = TypeOf<typeof TUD>
+// tuple
+export const TUD = tuple(string, number)
+export type TUDE = ErrorOf<typeof TUD>
+export type TUDA = TypeOf<typeof TUD>
+pipe(TUD.decode(['a', 1, true]), debug)
 
 // fromArray
 export const AD = fromArray(string)
