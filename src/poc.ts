@@ -592,11 +592,38 @@ export const fromStruct = <Properties extends Record<PropertyKey, AnyD>>(
   }
 })
 
+export interface MissingKeysD<Properties>
+  extends Decoder<
+    Record<PropertyKey, unknown>,
+    KeysE<MissingKeyLE>,
+    { [K in keyof Properties]: unknown } & Record<PropertyKey, unknown>
+  > {
+  readonly _tag: 'MissingKeysD'
+  readonly properties: Properties
+}
+export const missingKeys = <Properties extends Record<string, unknown>>(
+  properties: Properties
+): MissingKeysD<Properties> => {
+  return {
+    _tag: 'MissingKeysD',
+    properties,
+    decode: (ur) => {
+      const es: Array<MissingKeyLE> = []
+      for (const k in properties) {
+        if (!(k in ur)) {
+          es.push(missingKey(k))
+        }
+      }
+      return RA.isNonEmpty(es) ? left(keysE(es)) : right(ur as any)
+    }
+  }
+}
+
 export interface UnexpectedKeysD<Properties>
   extends Decoder<
-    { [K in keyof Properties]: InputOf<Properties[K]> },
+    { [K in keyof Properties]: unknown } & Record<PropertyKey, unknown>,
     KeysE<UnexpectedKeyLE>,
-    { [K in keyof Properties]: InputOf<Properties[K]> }
+    { [K in keyof Properties]: unknown }
   > {
   readonly _tag: 'UnexpectedKeysD'
   readonly properties: Properties
@@ -625,29 +652,6 @@ export const unexpectedKeys = <Properties extends Record<string, unknown>>(
   }
 }
 
-export interface MissingKeysD<Properties>
-  extends Decoder<Record<PropertyKey, unknown>, KeysE<MissingKeyLE>, Record<keyof Properties, unknown>> {
-  readonly _tag: 'MissingKeysD'
-  readonly properties: Properties
-}
-export const missingKeys = <Properties extends Record<string, unknown>>(
-  properties: Properties
-): MissingKeysD<Properties> => {
-  return {
-    _tag: 'MissingKeysD',
-    properties,
-    decode: (ur) => {
-      const es: Array<MissingKeyLE> = []
-      for (const k in properties) {
-        if (!(k in ur)) {
-          es.push(missingKey(k))
-        }
-      }
-      return RA.isNonEmpty(es) ? left(keysE(es)) : right(ur)
-    }
-  }
-}
-
 export interface StructD<Properties>
   extends CompositionD<
     CompositionD<CompositionD<UnknownRecordUD, MissingKeysD<Properties>>, UnexpectedKeysD<Properties>>,
@@ -664,19 +668,19 @@ export function struct(properties: Record<PropertyKey, AnyUD>): StructD<typeof p
   )
 }
 
-export interface ExactPartialD<Properties>
+export interface FromPartialD<Properties>
   extends Decoder<
     Partial<{ [K in keyof Properties]: InputOf<Properties[K]> }>,
     PartialE<{ readonly [K in keyof Properties]: OptionalKeyE<K, ErrorOf<Properties[K]>> }[keyof Properties]>,
     Partial<{ [K in keyof Properties]: TypeOf<Properties[K]> }>
   > {
-  readonly _tag: 'ExactPartialD'
+  readonly _tag: 'FromPartialD'
   readonly properties: Properties
 }
-export const exactPartial = <Properties extends Record<PropertyKey, AnyD>>(
+export const fromPartial = <Properties extends Record<PropertyKey, AnyD>>(
   properties: Properties
-): ExactPartialD<Properties> => ({
-  _tag: 'ExactPartialD',
+): FromPartialD<Properties> => ({
+  _tag: 'FromPartialD',
   properties,
   decode: (ur) => {
     const es: Array<OptionalKeyE<string, ErrorOf<Properties[keyof Properties]>>> = []
@@ -705,21 +709,12 @@ export const exactPartial = <Properties extends Record<PropertyKey, AnyD>>(
   }
 })
 
-export interface FromPartialD<Properties>
-  extends CompositionD<UnexpectedKeysD<Properties>, ExactPartialD<Properties>> {}
-
-export function fromPartial<Properties extends Record<PropertyKey, AnyUD>>(
-  properties: Properties
-): FromPartialD<Properties>
-export function fromPartial(properties: Record<PropertyKey, AnyUD>): FromPartialD<typeof properties> {
-  return pipe(unexpectedKeys(properties), compose(exactPartial(properties)))
-}
-
-export interface PartialD<Properties> extends CompositionD<UnknownRecordUD, FromPartialD<Properties>> {}
+export interface PartialD<Properties>
+  extends CompositionD<CompositionD<UnknownRecordUD, UnexpectedKeysD<Properties>>, FromPartialD<Properties>> {}
 
 export function partial<Properties extends Record<PropertyKey, AnyUD>>(properties: Properties): PartialD<Properties>
 export function partial(properties: Record<PropertyKey, AnyUD>): PartialD<typeof properties> {
-  return pipe(UnknownRecord, compose(fromPartial(properties)))
+  return pipe(UnknownRecord, compose(unexpectedKeys(properties)), compose(fromPartial(properties)))
 }
 
 export interface FromTupleD<Components extends ReadonlyArray<AnyD>>
@@ -756,34 +751,8 @@ export const fromTuple = <Components extends ReadonlyArray<AnyD>>(
   }
 })
 
-export interface UnexpectedIndexesD<Components>
-  extends Decoder<
-    { readonly [K in keyof Components]: InputOf<Components[K]> },
-    IndexesE<UnexpectedIndexLE>,
-    { [K in keyof Components]: InputOf<Components[K]> }
-  > {
-  readonly _tag: 'UnexpectedIndexesD'
-  readonly components: Components
-}
-
-const unexpectedIndexes = <Components extends ReadonlyArray<unknown>>(
-  ...components: Components
-): UnexpectedIndexesD<Components> => {
-  return {
-    _tag: 'UnexpectedIndexesD',
-    components,
-    decode: (us) => {
-      const ws: Array<UnexpectedIndexLE> = []
-      for (let index = components.length; index < us.length; index++) {
-        ws.push(unexpectedIndex(index))
-      }
-      return RA.isNonEmpty(ws) ? both(indexesE(ws), us.slice(0, components.length) as any) : right(us)
-    }
-  }
-}
-
 export interface MissingIndexesD<Components>
-  extends Decoder<Array<unknown>, IndexesE<MissingIndexLE>, { [K in keyof Components]: unknown }> {
+  extends Decoder<Array<unknown>, IndexesE<MissingIndexLE>, { [K in keyof Components]: unknown } & Array<unknown>> {
   readonly _tag: 'MissingIndexesD'
   readonly components: Components
 }
@@ -802,6 +771,32 @@ export const missingIndexes = <Components extends ReadonlyArray<unknown>>(
         }
       }
       return RA.isNonEmpty(es) ? left(indexesE(es)) : right(us as any)
+    }
+  }
+}
+
+export interface UnexpectedIndexesD<Components>
+  extends Decoder<
+    { [K in keyof Components]: unknown } & Array<unknown>,
+    IndexesE<UnexpectedIndexLE>,
+    { [K in keyof Components]: unknown }
+  > {
+  readonly _tag: 'UnexpectedIndexesD'
+  readonly components: Components
+}
+
+const unexpectedIndexes = <Components extends ReadonlyArray<unknown>>(
+  ...components: Components
+): UnexpectedIndexesD<Components> => {
+  return {
+    _tag: 'UnexpectedIndexesD',
+    components,
+    decode: (us) => {
+      const ws: Array<UnexpectedIndexLE> = []
+      for (let index = components.length; index < us.length; index++) {
+        ws.push(unexpectedIndex(index))
+      }
+      return RA.isNonEmpty(ws) ? both(indexesE(ws), us.slice(0, components.length) as any) : right(us)
     }
   }
 }
@@ -1411,7 +1406,7 @@ Errors:
 └─ unexpected key "b"
 */
 
-export const shouldCondemn = <E>(predicate: (e: E) => boolean): ((de: DecodeError<E>) => boolean) => {
+export const shouldCondemnWhen = <E>(predicate: (e: E) => boolean): ((de: DecodeError<E>) => boolean) => {
   const go = (de: DecodeError<E>): boolean => {
     switch (de._tag) {
       case 'KeysE':
@@ -1430,10 +1425,10 @@ export const shouldCondemn = <E>(predicate: (e: E) => boolean): ((de: DecodeErro
   return go
 }
 
-export const condemnWith = <E>(predicate: (e: E) => boolean) => <D extends Decoder<any, DecodeError<E>, any>>(
+export const condemnWhen = <E>(predicate: (e: E) => boolean) => <D extends Decoder<any, DecodeError<E>, any>>(
   decoder: D
 ): D => {
-  const should = shouldCondemn(predicate)
+  const should = shouldCondemnWhen(predicate)
   return {
     ...decoder,
     decode: (i) => {
@@ -1449,7 +1444,7 @@ export const condemnWith = <E>(predicate: (e: E) => boolean) => <D extends Decod
   }
 }
 
-export const nan = condemnWith((e: BuiltinE) => e._tag === 'NaNE')
+export const nan = condemnWhen((e: BuiltinE) => e._tag === 'NaNE')
 
 export const condemned1 = nan(struct({ a: number }))
 export const condemned2 = struct({ a: nan(number) })
@@ -1502,74 +1497,6 @@ export const Username = pipe(
 // )
 
 // -------------------------------------------------------------------------------------
-// use case: rename a prop #369
-// -------------------------------------------------------------------------------------
-
-// -------------------------------------------------------------------------------------
-// use case: fail on additional props #322
-// -------------------------------------------------------------------------------------
-
-export const warningsTuple = tuple(struct({ a: string }))
-
-// pipe(warningsTuple.decode([{ a: 'a', b: 2 }, 1, true]), debug)
-/*
-Value:
-[
-  {
-    "a": "a"
-  }
-]
-Warnings:
-2 error(s) found while decoding a composition
-├─ 2 error(s) found while checking components
-│  ├─ unexpected index 1
-│  └─ unexpected index 2
-└─ 1 error(s) found while decoding a tuple
-   └─ 1 error(s) found while decoding the required component 0
-      └─ 1 error(s) found while checking keys
-         └─ unexpected key "b"
-*/
-
-export const warningsStruct = struct({
-  a: string,
-  b: struct({
-    c: number
-  })
-})
-
-// pipe(warningsStruct.decode({ a: 'a', b: { c: 1, e: 2, f: { h: 3 } }, d: 1 }), debug)
-/*
-Value:
-{
-  "a": "a",
-  "b": {
-    "c": 1
-  }
-}
-Warnings:
-2 error(s) found while decoding a composition
-├─ 1 error(s) found while checking keys
-│  └─ unexpected key "d"
-└─ 1 error(s) found while decoding a struct
-   └─ 1 error(s) found while decoding the required key "b"
-      └─ 2 error(s) found while checking keys
-         ├─ unexpected key "e"
-         └─ unexpected key "f"
-*/
-
-// -------------------------------------------------------------------------------------
-// use case: omit, pick #553
-// -------------------------------------------------------------------------------------
-
-// -------------------------------------------------------------------------------------
-// use case: readonly by default #525
-// -------------------------------------------------------------------------------------
-
-// -------------------------------------------------------------------------------------
-// use case: more user friendly optional fields #542
-// -------------------------------------------------------------------------------------
-
-// -------------------------------------------------------------------------------------
 // use case: reflection, for example generating a match function from a sum
 // -------------------------------------------------------------------------------------
 
@@ -1598,6 +1525,131 @@ export const match = getMatch(matchDecoder)
 // A: a
 
 // -------------------------------------------------------------------------------------
+// use case: warn/fail on additional props #322
+// -------------------------------------------------------------------------------------
+
+// by default additional props are reported as warnings
+export const warnOnAdditionalProps = struct({
+  a: string,
+  b: struct({
+    c: number
+  })
+})
+
+// pipe(warnOnAdditionalProps.decode({ a: 'a', b: { c: 1, e: 2, f: { h: 3 } }, d: 1 }), debug)
+/*
+Value:
+{
+  "a": "a",
+  "b": {
+    "c": 1
+  }
+}
+Warnings:
+2 error(s) found while decoding a composition
+├─ 1 error(s) found while checking keys
+│  └─ unexpected key "d"
+└─ 1 error(s) found while decoding a struct
+   └─ 1 error(s) found while decoding the required key "b"
+      └─ 2 error(s) found while checking keys
+         ├─ unexpected key "e"
+         └─ unexpected key "f"
+*/
+
+export const exact = condemnWhen((e: BuiltinE) => e._tag === 'UnexpectedKeyE')
+
+export const failOnAdditionalProps = exact(warnOnAdditionalProps)
+
+// pipe(failOnAdditionalProps.decode({ a: 'a', b: { c: 1, e: 2, f: { h: 3 } }, d: 1 }), debug)
+/*
+Errors:
+2 error(s) found while decoding a composition
+├─ 1 error(s) found while checking keys
+│  └─ unexpected key "d"
+└─ 1 error(s) found while decoding a struct
+   └─ 1 error(s) found while decoding the required key "b"
+      └─ 2 error(s) found while checking keys
+         ├─ unexpected key "e"
+         └─ unexpected key "f"
+*/
+
+// -------------------------------------------------------------------------------------
+// use case: exact + intersection
+// -------------------------------------------------------------------------------------
+
+// exact decoders don't play well with intersections
+
+export const exactStruct1 = pipe(
+  struct({ a: string, b: string }),
+  map(({ a, b }) => ({ b: a + b })),
+  exact
+)
+export const exactStruct2 = pipe(
+  struct({ a: string }),
+  map(({ a }) => ({ c: a.length })),
+  exact
+)
+// export const exactStruct1_2 = pipe(exactStruct1, intersect(exactStruct2))
+// pipe(exactStruct1_2.decode({ a: 'aaa', b: 'bbb' }), debug)
+/*
+Errors:
+1 error(s) found while decoding an intersection
+└─ 1 error(s) found while decoding the member 1
+   └─ 1 error(s) found while checking keys
+      └─ unexpected key "b"
+*/
+
+// here we get an error even if the input is compatible, because the second decoder complains
+
+export const fromStruct1 = pipe(
+  fromStruct({ a: string, b: string }),
+  map(({ a, b }) => ({ b: a + b }))
+)
+export const fromStruct2 = pipe(
+  fromStruct({ a: string }),
+  map(({ a }) => ({ c: a.length }))
+)
+export const fromStruct1_2 = pipe(fromStruct1, intersect(fromStruct2))
+// pipe(fromStruct1_2.decode({ a: 'aaa', b: 'bbb' }), debug)
+/*
+Value:
+{
+  "b": "aaabbb",
+  "c": 3
+}
+*/
+const preFromStruct1_2 = pipe(
+  UnknownRecord,
+  compose(missingKeys({ a: null, b: null })),
+  compose(unexpectedKeys({ a: null, b: null })),
+  compose(fromStruct1_2)
+)
+pipe(preFromStruct1_2.decode({ a: 'aaa', b: 'bbb' }), debug)
+/*
+Value:
+{
+  "b": "aaabbb",
+  "c": 3
+}
+*/
+
+// -------------------------------------------------------------------------------------
+// use case: rename a prop #369
+// -------------------------------------------------------------------------------------
+
+// -------------------------------------------------------------------------------------
+// use case: omit, pick #553
+// -------------------------------------------------------------------------------------
+
+// -------------------------------------------------------------------------------------
+// use case: readonly by default #525
+// -------------------------------------------------------------------------------------
+
+// -------------------------------------------------------------------------------------
+// use case: more user friendly optional fields #542
+// -------------------------------------------------------------------------------------
+
+// -------------------------------------------------------------------------------------
 // use case: how to encode `Record<'a' | 'b', number>`
 // -------------------------------------------------------------------------------------
 
@@ -1612,33 +1664,6 @@ export const match = getMatch(matchDecoder)
 // -------------------------------------------------------------------------------------
 // use case: how to encode [A, B?]
 // -------------------------------------------------------------------------------------
-
-// -------------------------------------------------------------------------------------
-// intersection issue
-// -------------------------------------------------------------------------------------
-
-export const decoder1 = pipe(
-  struct({ a: string, b: string }),
-  map(({ a, b }) => ({ b: a + b }))
-)
-export const decoder2 = pipe(
-  struct({ a: string }),
-  map(({ a }) => ({ c: a.length }))
-)
-export const decoder1decoder2 = pipe(decoder1, intersect(decoder2))
-pipe(decoder1decoder2.decode({ a: 'aaa', b: 'bbb' }), debug)
-/*
-Value:
-{
-  "b": "aaabbb",
-  "c": 3
-}
-Warnings:
-1 error(s) found while decoding an intersection
-└─ 1 error(s) found while decoding the member 1
-   └─ 1 error(s) found while checking keys
-      └─ unexpected key "b"
-*/
 
 // -------------------------------------------------------------------------------------
 // examples
@@ -1671,7 +1696,7 @@ export type SUDA = TypeOf<typeof SUD>
 // pipe(SUD.decode({ a: 'a', b: 1, c: true }), debug)
 
 // fromPartial
-export const PSD = exactPartial({
+export const PSD = fromPartial({
   a: string,
   b: number
 })
