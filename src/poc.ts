@@ -927,40 +927,115 @@ const intersect_ = <A, B>(a: A, b: B): A & B => {
   }
   return b as any
 }
-export function intersect<S extends AnyD>(second: S): <F extends AnyD>(first: F) => IntersectD<F, S>
+export const collectUnexpected = <E>(de: DecodeError<E>): ReadonlyArray<string> => {
+  const out: Array<string> = []
+  let current: Array<string> = []
+  const go = (de: DecodeError<E>): void => {
+    switch (de._tag) {
+      case 'CompositionE':
+      case 'KeysE':
+        current.push(de._tag)
+        return de.errors.forEach(go)
+      case 'PrevE':
+      case 'NextE':
+        current.push(de._tag)
+        return go(de.error)
+      case 'LeafE': {
+        const e: any = de.error
+        if (e['_tag'] === 'UnexpectedKeyE') {
+          current.push(e.key)
+          out.push(current.join('.'))
+          current = []
+        }
+      }
+    }
+  }
+  go(de)
+  return out
+}
+export const pruneUnexpected = <E>(de: DecodeError<E>, _unexpected: ReadonlyArray<string>): DecodeError<E> | null => {
+  // console.log('pruneUnexpected')
+  // console.log(JSON.stringify(de, null, 2))
+  // console.log(JSON.stringify(unexpected, null, 2))
+  return de
+}
+export const pruneAllUnexpected = <E>(de: DecodeError<E>): DecodeError<E> | null => {
+  return pruneUnexpected(de, collectUnexpected(de))
+}
+export const pruneUnexpectedDifference = <E1, E2>(
+  de1: DecodeError<E1>,
+  de2: DecodeError<E2>
+): IntersectionE<MemberE<0, DecodeError<E1>> | MemberE<1, DecodeError<E2>>> | null => {
+  const pde1 = pruneUnexpected(de1, collectUnexpected(de2))
+  const pde2 = pruneUnexpected(de2, collectUnexpected(de1))
+  if (pde1) {
+    return pde2 ? intersectionE([memberE(0, pde1), memberE(1, pde2)]) : intersectionE([memberE(0, pde1)])
+  }
+  return pde2 ? intersectionE([memberE(1, pde2)]) : null
+}
+export function intersect<S extends Decoder<any, DecodeError<any>, any>>(
+  second: S
+): <F extends Decoder<any, DecodeError<any>, any>>(first: F) => IntersectD<F, S>
 export function intersect<I2, E2, A2>(
-  second: Decoder<I2, E2, A2>
-): <I1, E1, A1>(first: Decoder<I1, E1, A1>) => IntersectD<typeof first, typeof second> {
-  return <I1, E1, A1>(first: Decoder<I1, E1, A1>): IntersectD<typeof first, typeof second> => ({
+  second: Decoder<I2, DecodeError<E2>, A2>
+): <I1, E1, A1>(first: Decoder<I1, DecodeError<E1>, A1>) => IntersectD<typeof first, typeof second> {
+  return <I1, E1, A1>(first: Decoder<I1, DecodeError<E1>, A1>): IntersectD<typeof first, typeof second> => ({
     _tag: 'IntersectD',
     first,
     second,
     decode: (i) => {
-      const out: These<IntersectionE<MemberE<0, E1> | MemberE<1, E2>>, A1 & A2> = pipe(
+      const out: These<IntersectionE<MemberE<0, DecodeError<E1>> | MemberE<1, DecodeError<E2>>>, A1 & A2> = pipe(
         first.decode(i),
         TH.fold(
-          (e1) => {
-            const de = second.decode(i)
-            return TH.isRight(de)
-              ? left(intersectionE([memberE(0, e1)]))
-              : left(intersectionE([memberE(0, e1), memberE(1, de.left)]))
-          },
+          (de1) =>
+            pipe(
+              second.decode(i),
+              TH.fold(
+                (de2) => {
+                  const pde2 = pruneAllUnexpected(de2)
+                  return pde2
+                    ? left(intersectionE([memberE(0, de1), memberE(1, pde2)]))
+                    : left(intersectionE([memberE(0, de1)]))
+                },
+                () => left(intersectionE([memberE(0, de1)])),
+                (de2) => {
+                  const pde2 = pruneAllUnexpected(de2)
+                  return pde2
+                    ? left(intersectionE([memberE(0, de1), memberE(1, pde2)]))
+                    : left(intersectionE([memberE(0, de1)]))
+                }
+              )
+            ),
           (a1) =>
             pipe(
               second.decode(i),
               TH.fold(
-                (e2) => left(intersectionE([memberE(1, e2)])),
+                (de2) => left(intersectionE([memberE(1, de2)])),
                 (a2) => right(intersect_(a1, a2)),
-                (e2, a2) => both(intersectionE([memberE(1, e2)]), intersect_(a1, a2))
+                (de2, a2) => {
+                  const pde2 = pruneAllUnexpected(de2)
+                  return pde2 ? both(intersectionE([memberE(1, pde2)]), intersect_(a1, a2)) : right(intersect_(a1, a2))
+                }
               )
             ),
-          (e1, a1) =>
+          (de1, a1) =>
             pipe(
               second.decode(i),
               TH.fold(
-                (e2) => left(intersectionE([memberE(0, e1), memberE(1, e2)])),
-                (a2) => both(intersectionE([memberE(0, e1)]), intersect_(a1, a2)),
-                (e2, a2) => both(intersectionE([memberE(0, e1), memberE(1, e2)]), intersect_(a1, a2))
+                (de2) => {
+                  const pde1 = pruneAllUnexpected(de1)
+                  return pde1
+                    ? left(intersectionE([memberE(0, pde1), memberE(1, de2)]))
+                    : left(intersectionE([memberE(1, de2)]))
+                },
+                (a2) => {
+                  const pde1 = pruneAllUnexpected(de1)
+                  return pde1 ? both(intersectionE([memberE(0, pde1)]), intersect_(a1, a2)) : right(intersect_(a1, a2))
+                },
+                (de2, a2) => {
+                  const ie = pruneUnexpectedDifference(de1, de2)
+                  return ie ? both(ie, intersect_(a1, a2)) : right(intersect_(a1, a2))
+                }
               )
             )
         )
@@ -1565,6 +1640,19 @@ Errors:
          └─ unexpected key "f"
 */
 
+// intersections?
+
+export const intersectionStruct1 = pipe(
+  struct({ a: string, b: string }),
+  map(({ a, b }) => ({ b: a + b }))
+)
+export const intersectionStruct2 = pipe(
+  struct({ a: string }),
+  map(({ a }) => ({ c: a.length }))
+)
+export const intersectionStruct1_2 = pipe(intersectionStruct1, intersect(intersectionStruct2))
+pipe(intersectionStruct1_2.decode({ a: 'aaa', b: 'bbb' }), debug)
+
 // -------------------------------------------------------------------------------------
 // use case: exact + intersection
 // -------------------------------------------------------------------------------------
@@ -1581,7 +1669,7 @@ export const exactStruct2 = pipe(
   map(({ a }) => ({ c: a.length })),
   exact
 )
-// export const exactStruct1_2 = pipe(exactStruct1, intersect(exactStruct2))
+export const exactStruct1_2 = pipe(exactStruct1, intersect(exactStruct2))
 // pipe(exactStruct1_2.decode({ a: 'aaa', b: 'bbb' }), debug)
 /*
 Errors:
@@ -1610,13 +1698,13 @@ Value:
   "c": 3
 }
 */
-const preFromStruct1_2 = pipe(
+export const preFromStruct1_2 = pipe(
   UnknownRecord,
   compose(unexpectedKeys({ a: null, b: null })),
   compose(missingKeys({ a: null, b: null })),
   compose(fromStruct1_2)
 )
-pipe(preFromStruct1_2.decode({ a: 'aaa', b: 'bbb' }), debug)
+// pipe(preFromStruct1_2.decode({ a: 'aaa', b: 'bbb' }), debug)
 /*
 Value:
 {
