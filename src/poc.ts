@@ -6,6 +6,7 @@ import * as RNEA from 'fp-ts/lib/ReadonlyNonEmptyArray'
 
 import These = TH.These
 import ReadonlyNonEmptyArray = RNEA.ReadonlyNonEmptyArray
+import { Eq, eqString } from 'fp-ts/lib/Eq'
 
 // -------------------------------------------------------------------------------------
 // model
@@ -1074,6 +1075,11 @@ export function intersect<I2, E2, A2>(
     first,
     second,
     decode: (i) => {
+      const keys = pipe(
+        [first, second],
+        RA.chain((d) => keyOf(d)),
+        mergeEqualValues(eqString)
+      )
       const out: These<IntersectionE<MemberE<0, DecodeError<E1>> | MemberE<1, DecodeError<E2>>>, A1 & A2> = pipe(
         first.decode(i),
         TH.fold(
@@ -1082,14 +1088,14 @@ export function intersect<I2, E2, A2>(
               second.decode(i),
               TH.fold(
                 (de2) => {
-                  const pde2 = pruneAllUnexpected(de2)
+                  const pde2 = pruneUnexpectedKeys(de2, keys)
                   return pde2
                     ? left(intersectionE([memberE(0, de1), memberE(1, pde2)]))
                     : left(intersectionE([memberE(0, de1)]))
                 },
                 () => left(intersectionE([memberE(0, de1)])),
                 (de2) => {
-                  const pde2 = pruneAllUnexpected(de2)
+                  const pde2 = pruneUnexpectedKeys(de2, keys)
                   return pde2
                     ? left(intersectionE([memberE(0, de1), memberE(1, pde2)]))
                     : left(intersectionE([memberE(0, de1)]))
@@ -1103,7 +1109,7 @@ export function intersect<I2, E2, A2>(
                 (de2) => left(intersectionE([memberE(1, de2)])),
                 (a2) => right(intersect_(a1, a2)),
                 (de2, a2) => {
-                  const pde2 = pruneAllUnexpected(de2)
+                  const pde2 = pruneUnexpectedKeys(de2, keys)
                   return pde2 ? both(intersectionE([memberE(1, pde2)]), intersect_(a1, a2)) : right(intersect_(a1, a2))
                 }
               )
@@ -1113,17 +1119,19 @@ export function intersect<I2, E2, A2>(
               second.decode(i),
               TH.fold(
                 (de2) => {
-                  const pde1 = pruneAllUnexpected(de1)
+                  const pde1 = pruneUnexpectedKeys(de1, keys)
                   return pde1
                     ? left(intersectionE([memberE(0, pde1), memberE(1, de2)]))
                     : left(intersectionE([memberE(1, de2)]))
                 },
                 (a2) => {
-                  const pde1 = pruneAllUnexpected(de1)
+                  const pde1 = pruneUnexpectedKeys(de1, keys)
                   return pde1 ? both(intersectionE([memberE(0, pde1)]), intersect_(a1, a2)) : right(intersect_(a1, a2))
                 },
                 (de2, a2) => {
-                  const ie = pruneUnexpectedDifference(de1, de2)
+                  const ie: IntersectionE<
+                    MemberE<0, DecodeError<E1>> | MemberE<1, DecodeError<E2>>
+                  > = pruneUnexpectedKeys<E1 | E2>(intersectionE([memberE(0, de1), memberE(1, de2)]), keys) as any
                   return ie ? both(ie, intersect_(a1, a2)) : right(intersect_(a1, a2))
                 }
               )
@@ -1806,6 +1814,231 @@ Warnings:
 // )
 // export const I = pipe(I1, intersect(I2))
 // pipe(I.decode({ a: 'aaa', b: 'bbb' }), debug)
+
+type ConcreteDecoder =
+  | stringUD
+  | numberUD
+  | booleanUD
+  | UnknownArrayUD
+  | UnknownRecordUD
+  | RefinementD<any, any, any>
+  | ParserD<any, any, any>
+  | FromStructD<any>
+  | StructD<any>
+  | FromPartialD<any>
+  | PartialD<any>
+  | FromArrayD<any>
+  | ArrayD<any>
+  | FromTupleD<any>
+  | TupleD<any>
+  | UnionD<any>
+  | IntersectD<any, any>
+  | LazyD<any>
+  | ParseD<any, any, any>
+  | NullableD<any>
+  | CompositionD<any, any>
+
+function asConcrete(d: AnyD): ConcreteDecoder {
+  return d as any
+}
+
+export type MutableTree<A> = { value: A; forest: MutableForest<A> }
+export type MutableForest<A> = Array<MutableTree<A>>
+
+/**
+ * Merges an array of `Tree`s based on their value
+ */
+function mergeEqualValues<A>(EA: Eq<A>): (forest: Forest<A>) => Forest<A> {
+  return (forest) => {
+    const collectedValues: A[] = []
+    const merged: MutableForest<A> = []
+    for (let i = 0; i < forest.length; i++) {
+      const t = forest[i]
+      if (collectedValues.find((p) => EA.equals(p, t.value))) {
+        // value has already been collected
+        continue
+      } else {
+        // copy tree
+        let merge: Tree<A> = tree(t.value, t.forest)
+        collectedValues.push(t.value)
+        // get the remaining trees in the input
+        const remaining = forest.slice(i + 1)
+        // concatenate forests of equal value trees
+        for (let j = 0; j < remaining.length; j++) {
+          const w = remaining[j]
+          if (EA.equals(merge.value, w.value)) {
+            merge = tree(merge.value, merge.forest.concat(w.forest))
+          }
+        }
+        merged.push(merge as MutableTree<A>)
+      }
+    }
+
+    // merge the inner trees
+    for (let i = 0; i < merged.length; i++) {
+      merged[i].forest = mergeEqualValues(EA)(merged[i].forest) as MutableForest<A>
+    }
+
+    return merged
+  }
+}
+
+function keyOf<D extends AnyD>(decoder: D): ReadonlyArray<Tree<string>> {
+  const go = (d: ConcreteDecoder): ReadonlyArray<Tree<string>> => {
+    // note: missing some decoders, but should be enough for example
+    switch (d._tag) {
+      case 'CompositionD': {
+        return go(d.prev).concat(go(d.next))
+      }
+      case 'FromPartialD':
+      case 'FromStructD': {
+        const keys: Array<Tree<string>> = []
+        for (const k in d.properties) {
+          const dk: ConcreteDecoder = d.properties[k]
+          keys.push(tree(k, go(dk)))
+        }
+        return keys
+      }
+      case 'IntersectD': {
+        return go(d.first).concat(go(d.second))
+      }
+      case 'UnionD': {
+        const keys: Array<Tree<string>> = []
+        for (let i = 0; i < d.members.length; i++) {
+          const md: ConcreteDecoder = d.members[i]
+          keys.push(...go(md))
+        }
+        return keys
+      }
+      case 'NullableD': {
+        return go(d.decoder)
+      }
+      default: {
+        return []
+      }
+    }
+  }
+  return go(asConcrete(decoder))
+}
+
+export function pruneUnexpectedKeys<E>(
+  de: DecodeError<E>,
+  expectedKeys: ReadonlyArray<Tree<string>>
+): DecodeError<E> | null {
+  const topLevelKeys = pipe(
+    expectedKeys,
+    RA.reduce([] as string[], (b, a) => [...b, a.value])
+  )
+  // note: missing some errors, but should be enough for example
+  switch (de._tag) {
+    case 'IntersectionE':
+    case 'CompositionE':
+    case 'StructE':
+    case 'PartialE':
+    case 'KeysE': {
+      const errors: Array<DecodeError<E>> = []
+      for (let i = 0; i < de.errors.length; i++) {
+        const e = pruneUnexpectedKeys(de.errors[i], expectedKeys)
+        if (!e) {
+          continue
+        }
+        errors.push(e)
+      }
+      if (RA.isNonEmpty(errors)) {
+        switch (de._tag) {
+          case 'KeysE': {
+            return keysE(errors)
+          }
+          case 'PartialE': {
+            return partialE(errors)
+          }
+          case 'StructE': {
+            return structE(errors)
+          }
+          case 'CompositionE': {
+            return compositionE(errors)
+          }
+          case 'IntersectionE': {
+            return intersectionE(errors)
+          }
+        }
+      } else {
+        return null
+      }
+    }
+    // eslint-disable-next-line no-fallthrough
+    case 'OptionalKeyE':
+    case 'RequiredKeyE': {
+      const index = topLevelKeys.indexOf(de.key)
+      if (topLevelKeys.indexOf(de.key) !== -1) {
+        const keys = expectedKeys[index].forest
+        return pruneUnexpectedKeys(de.error, keys)
+      } else {
+        return null
+      }
+    }
+    case 'PrevE':
+    case 'NextE':
+    case 'MemberE': {
+      const e = pruneUnexpectedKeys(de.error, expectedKeys)
+      if (!e) {
+        return null
+      } else {
+        switch (de._tag) {
+          case 'MemberE': {
+            return memberE(de.member, e)
+          }
+          case 'NextE': {
+            return nextE(de.error)
+          }
+          case 'PrevE': {
+            return prevE(de.error)
+          }
+        }
+      }
+    }
+    // eslint-disable-next-line no-fallthrough
+    case 'UnexpectedKeyE': {
+      if (topLevelKeys.indexOf(de.key) !== -1) {
+        return null
+      }
+      return de
+    }
+    default: {
+      return de
+    }
+  }
+}
+
+// complex test
+const C1 = struct({ a: string, b: struct({ c: string }) })
+const C2 = struct({ c: number })
+const C = pipe(C1, intersect(C2))
+pipe(C.decode({ a: 'a', b: { c: 'c' }, c: 1 }), debug)
+/*
+Value:
+{
+  "a": "a",
+  "b": {
+    "c": "c"
+  },
+  "c": 1
+}
+*/
+// error
+pipe(C.decode({ a: 0, b: { c: 'c' }, c: 'not c' }), debug)
+/*
+Errors:
+2 error(s) found while decoding an intersection
+├─ 1 error(s) found while decoding the member 0
+│  └─ 1 error(s) found while decoding a struct
+│     └─ 1 error(s) found while decoding the required key "a"
+│        └─ cannot decode 0, expected a string
+└─ 1 error(s) found while decoding the member 1
+   └─ 1 error(s) found while decoding a struct
+      └─ 1 error(s) found while decoding the required key "c"
+         └─ cannot decode "not c", expected a number
+*/
 
 // -------------------------------------------------------------------------------------
 // use case: exact + intersection
