@@ -1383,8 +1383,8 @@ export const toTreeWith: <E>(f: (e: E) => Tree<string>) => (de: DecodeError<E>) 
       ? bs[0] // less noise in the output if there's only one error
       : tree(`${bs.length} error(s) found while decoding a composition`, bs),
   IntersectionE: (bs) => tree(`${bs.length} error(s) found while decoding an intersection`, bs),
-  LazyE: (id, b) => tree(`1 error(s) found while decoding the lazy decoder ${id}`, [b]),
-  MemberE: (member, b) => tree(`1 error(s) found while decoding the member ${JSON.stringify(member)}`, [b]),
+  LazyE: (id, b) => tree(`1 error(s) found while decoding lazy decoder ${id}`, [b]),
+  MemberE: (member, b) => tree(`1 error(s) found while decoding member ${JSON.stringify(member)}`, [b]),
   MissingIndexesE: (keys) =>
     tree(
       `${keys.length} error(s) found while checking indexes`,
@@ -1397,18 +1397,18 @@ export const toTreeWith: <E>(f: (e: E) => Tree<string>) => (de: DecodeError<E>) 
     ),
   NextE: (b) => b,
   NullableE: (b) => tree(`1 error(s) found while decoding a nullable`, [b]),
-  OptionalIndexE: (index, b) => tree(`1 error(s) found while decoding the optional index ${index}`, [b]),
-  OptionalKeyE: (key, b) => tree(`1 error(s) found while decoding the optional key ${JSON.stringify(key)}`, [b]),
+  OptionalIndexE: (index, b) => tree(`1 error(s) found while decoding optional index ${index}`, [b]),
+  OptionalKeyE: (key, b) => tree(`1 error(s) found while decoding optional key ${JSON.stringify(key)}`, [b]),
   ParserE: (b) => tree(`1 error(s) found while decoding a parser`, [b]),
   PartialE: (bs) => tree(`${bs.length} error(s) found while decoding a partial`, bs),
   PrevE: (b) => b,
   RecordE: (bs) => tree(`${bs.length} error(s) found while decoding a record`, bs),
   RefinementE: (b) => tree(`1 error(s) found while decoding a refinement`, [b]),
-  RequiredIndexE: (index, b) => tree(`1 error(s) found while decoding the required component ${index}`, [b]),
-  RequiredKeyE: (key, b) => tree(`1 error(s) found while decoding the required key ${JSON.stringify(key)}`, [b]),
+  RequiredIndexE: (index, b) => tree(`1 error(s) found while decoding required component ${index}`, [b]),
+  RequiredKeyE: (key, b) => tree(`1 error(s) found while decoding required key ${JSON.stringify(key)}`, [b]),
   StructE: (bs) => tree(`${bs.length} error(s) found while decoding a struct`, bs),
   SumE: (bs) => tree(`${bs.length} error(s) found while decoding a sum`, bs),
-  TagE: (tag: string, b) => tree(`1 error(s) found while decoding the sum tag ${tag}`, [b]),
+  TagE: (tag: string, b) => tree(`1 error(s) found while decoding sum tag ${tag}`, [b]),
   TupleE: (bs) => tree(`${bs.length} error(s) found while decoding a tuple`, bs),
   UnexpectedIndexesE: (indexes) =>
     tree(
@@ -1482,9 +1482,9 @@ export const print = TH.fold(printErrors, printValue, (e, a) => printValue(a) + 
 /*
 Errors:
 2 error(s) found while decoding a struct
-├─ 1 error(s) found while decoding the required key "name"
+├─ 1 error(s) found while decoding required key "name"
 │  └─ cannot decode null, expected a string
-└─ 1 error(s) found while decoding the required key "age"
+└─ 1 error(s) found while decoding required key "age"
    └─ cannot decode null, expected a number
 */
 
@@ -1535,9 +1535,9 @@ export const myDraw = TH.mapLeft(
 /*
 Errors:
 2 error(s) found while decoding a struct
-├─ 1 error(s) found while decoding the required key "name"
+├─ 1 error(s) found while decoding required key "name"
 │  └─ cannot decode null, expected a string
-└─ 1 error(s) found while decoding the required key "age"
+└─ 1 error(s) found while decoding required key "age"
    └─ 1 error(s) found while decoding a refinement
       └─ cannot decode 1.2, should be an integer
 */
@@ -1697,14 +1697,14 @@ export const condemned2 = struct({ a: nan(number) })
 /*
 Errors:
 1 error(s) found while decoding a struct
-└─ 1 error(s) found while decoding the required key "a"
+└─ 1 error(s) found while decoding required key "a"
    └─ value is NaN
 */
 // pipe(condemned2.decode({ a: NaN }), debug)
 /*
 Errors:
 1 error(s) found while decoding a struct
-└─ 1 error(s) found while decoding the required key "a"
+└─ 1 error(s) found while decoding required key "a"
    └─ value is NaN
 */
 
@@ -1794,7 +1794,7 @@ Warnings:
 ├─ 1 error(s) found while checking keys
 │  └─ unexpected key "d"
 └─ 1 error(s) found while decoding a struct
-   └─ 1 error(s) found while decoding the required key "b"
+   └─ 1 error(s) found while decoding required key "b"
       └─ 2 error(s) found while checking keys
          ├─ unexpected key "e"
          └─ unexpected key "f"
@@ -1814,7 +1814,7 @@ Errors:
 ├─ 1 error(s) found while checking keys
 │  └─ unexpected key "d"
 └─ 1 error(s) found while decoding a struct
-   └─ 1 error(s) found while decoding the required key "b"
+   └─ 1 error(s) found while decoding required key "b"
       └─ 2 error(s) found while checking keys
          ├─ unexpected key "e"
          └─ unexpected key "f"
@@ -1830,17 +1830,23 @@ pipe(I.decode({ n: { a: 'a', b: 1, c: true } }), debug)
 /*
 Value:
 {
-  "a": "a",
-  "b": 1
+  "n": {
+    "a": "a",
+    "b": 1
+  }
 }
 Warnings:
 2 error(s) found while decoding an intersection
-├─ 1 error(s) found while decoding the member 0
-│  └─ 1 error(s) found while checking keys
-│     └─ unexpected key "b"
-└─ 1 error(s) found while decoding the member 1
-   └─ 1 error(s) found while checking keys
-      └─ unexpected key "a"
+├─ 1 error(s) found while decoding member 0
+│  └─ 1 error(s) found while decoding a struct
+│     └─ 1 error(s) found while decoding required key "n"
+│        └─ 1 error(s) found while checking keys
+│           └─ unexpected key "c"
+└─ 1 error(s) found while decoding member 1
+   └─ 1 error(s) found while decoding a struct
+      └─ 1 error(s) found while decoding required key "n"
+         └─ 1 error(s) found while checking keys
+            └─ unexpected key "c"
 */
 
 // export const I1 = pipe(
@@ -1875,7 +1881,7 @@ export const exactStruct1_2 = pipe(exactStruct1, intersect(exactStruct2))
 /*
 Errors:
 1 error(s) found while decoding an intersection
-└─ 1 error(s) found while decoding the member 1
+└─ 1 error(s) found while decoding member 1
    └─ 1 error(s) found while checking keys
       └─ unexpected key "b"
 */
