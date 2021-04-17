@@ -257,32 +257,22 @@ export const recordE = <E>(errors: ReadonlyNonEmptyArray<E>): RecordE<E> => ({
   errors
 })
 
-export interface IndexesE<E> extends CompoundE<E> {
-  readonly _tag: 'IndexesE'
+export interface MissingIndexesE {
+  readonly _tag: 'MissingIndexesE'
+  readonly indexes: ReadonlyNonEmptyArray<number>
 }
-export const indexesE = <E>(errors: ReadonlyNonEmptyArray<E>): IndexesE<E> => ({
-  _tag: 'IndexesE',
-  errors
+export const missingIndexesE = (indexes: ReadonlyNonEmptyArray<number>): MissingIndexesE => ({
+  _tag: 'MissingIndexesE',
+  indexes
 })
 
-export interface MissingIndexE {
-  readonly _tag: 'MissingIndexE'
-  readonly index: number
+export interface UnexpectedIndexesE {
+  readonly _tag: 'UnexpectedIndexesE'
+  readonly indexes: ReadonlyNonEmptyArray<number>
 }
-export interface MissingIndexLE extends LeafE<MissingIndexE> {}
-export const missingIndexE = (index: number): MissingIndexE => ({
-  _tag: 'MissingIndexE',
-  index
-})
-export const missingIndex: (index: number) => MissingIndexLE = flow(missingIndexE, leafE)
-
-export interface UnexpectedIndexE {
-  readonly _tag: 'UnexpectedIndexE'
-  readonly index: number
-}
-export const unexpectedIndexE = (index: number): UnexpectedIndexE => ({
-  _tag: 'UnexpectedIndexE',
-  index
+export const unexpectedIndexesE = (indexes: ReadonlyNonEmptyArray<number>): UnexpectedIndexesE => ({
+  _tag: 'UnexpectedIndexesE',
+  indexes
 })
 
 export interface TupleE<E> extends CompoundE<E> {
@@ -342,27 +332,22 @@ export const messageE = <I>(actual: I, message: string): MessageE<I> => ({
 })
 export const message: <I>(actual: I, message: string) => MessageLE<I> = flow(messageE, leafE)
 
-export interface KeysE<E> extends CompoundE<E> {
-  readonly _tag: 'KeysE'
+export interface MissingKeysE {
+  readonly _tag: 'MissingKeysE'
+  readonly keys: ReadonlyNonEmptyArray<string>
 }
-export const keysE = <E>(errors: ReadonlyNonEmptyArray<E>): KeysE<E> => ({
-  _tag: 'KeysE',
-  errors
+export const missingKeysE = (keys: ReadonlyNonEmptyArray<string>): MissingKeysE => ({
+  _tag: 'MissingKeysE',
+  keys
 })
-
-export interface UnexpectedKeyE {
-  readonly _tag: 'UnexpectedKeyE'
-  readonly key: string
+export interface UnexpectedKeysE {
+  readonly _tag: 'UnexpectedKeysE'
+  readonly keys: ReadonlyNonEmptyArray<string>
 }
-export const unexpectedKeyE = (key: string): UnexpectedKeyE => ({ _tag: 'UnexpectedKeyE', key })
-
-export interface MissingKeyE {
-  readonly _tag: 'MissingKeyE'
-  readonly key: PropertyKey
-}
-export interface MissingKeyLE extends LeafE<MissingKeyE> {}
-export const missingKeyE = (key: PropertyKey): MissingKeyE => ({ _tag: 'MissingKeyE', key })
-export const missingKey: (key: PropertyKey) => MissingKeyLE = flow(missingKeyE, leafE)
+export const unexpectedKeysE = (keys: ReadonlyNonEmptyArray<string>): UnexpectedKeysE => ({
+  _tag: 'UnexpectedKeysE',
+  keys
+})
 
 // recursive helpers to please ts@3.5
 // simple single
@@ -381,8 +366,6 @@ export interface TagRE<E> extends TagE<string, DecodeError<E>> {}
 export interface LazyRE<E> extends LazyE<DecodeError<E>> {}
 // compound
 export interface CompositionRE<E> extends CompositionE<DecodeError<E>> {}
-export interface KeysRE<E> extends KeysE<DecodeError<E>> {}
-export interface IndexesRE<E> extends IndexesE<DecodeError<E>> {}
 export interface StructRE<E> extends StructE<DecodeError<E>> {}
 export interface PartialRE<E> extends PartialE<DecodeError<E>> {}
 export interface TupleRE<E> extends TupleE<DecodeError<E>> {}
@@ -393,8 +376,10 @@ export interface IntersectionRE<E> extends IntersectionE<DecodeError<E>> {}
 export interface SumRE<E> extends SumE<DecodeError<E>> {}
 
 export type DecodeError<E> =
-  | UnexpectedKeyE
-  | UnexpectedIndexE
+  | UnexpectedKeysE
+  | MissingKeysE
+  | UnexpectedIndexesE
+  | MissingIndexesE
   // simple single
   | LeafE<E>
   | NullableRE<E>
@@ -411,8 +396,6 @@ export type DecodeError<E> =
   | TagRE<E>
   | LazyRE<E>
   // compound
-  | KeysRE<E>
-  | IndexesRE<E>
   | StructRE<E>
   | PartialRE<E>
   | TupleRE<E>
@@ -431,8 +414,6 @@ export type BuiltinE =
   | UnknownArrayE
   | LiteralE<Literal>
   | MessageE<unknown>
-  | MissingKeyE
-  | MissingIndexE
   | NaNE
 
 // -------------------------------------------------------------------------------------
@@ -604,7 +585,7 @@ export const fromStruct = <Properties extends Record<PropertyKey, AnyD>>(
 })
 
 export interface UnexpectedKeysD<Properties>
-  extends Decoder<Record<PropertyKey, unknown>, KeysE<UnexpectedKeyE>, { [K in keyof Properties]?: unknown }> {
+  extends Decoder<Record<PropertyKey, unknown>, UnexpectedKeysE, { [K in keyof Properties]?: unknown }> {
   readonly _tag: 'UnexpectedKeysD'
   readonly properties: Properties
 }
@@ -615,7 +596,7 @@ export const unexpectedKeys = <Properties extends Record<string, unknown>>(
     _tag: 'UnexpectedKeysD',
     properties,
     decode: (ur) => {
-      const ws: Array<UnexpectedKeyE> = []
+      const es: Array<string> = []
       const out: any = {}
       for (const k in properties) {
         if (k in ur) {
@@ -624,16 +605,16 @@ export const unexpectedKeys = <Properties extends Record<string, unknown>>(
       }
       for (const k in ur) {
         if (!(k in out)) {
-          ws.push(unexpectedKeyE(k))
+          es.push(k)
         }
       }
-      return RA.isNonEmpty(ws) ? both(keysE(ws), out) : right(ur)
+      return RA.isNonEmpty(es) ? both(unexpectedKeysE(es), out) : right(ur)
     }
   }
 }
 
 export interface MissingKeysD<Properties>
-  extends Decoder<{ [K in keyof Properties]?: unknown }, KeysE<MissingKeyLE>, { [K in keyof Properties]: unknown }> {
+  extends Decoder<{ [K in keyof Properties]?: unknown }, MissingKeysE, { [K in keyof Properties]: unknown }> {
   readonly _tag: 'MissingKeysD'
   readonly properties: Properties
 }
@@ -644,13 +625,13 @@ export const missingKeys = <Properties extends Record<string, unknown>>(
     _tag: 'MissingKeysD',
     properties,
     decode: (ur) => {
-      const es: Array<MissingKeyLE> = []
+      const es: Array<string> = []
       for (const k in properties) {
         if (!(k in ur)) {
-          es.push(missingKey(k))
+          es.push(k)
         }
       }
-      return RA.isNonEmpty(es) ? left(keysE(es)) : right(ur as any)
+      return RA.isNonEmpty(es) ? left(missingKeysE(es)) : right(ur as any)
     }
   }
 }
@@ -755,7 +736,7 @@ export const fromTuple = <Components extends ReadonlyArray<AnyD>>(
 })
 
 export interface UnexpectedIndexesD<Components>
-  extends Decoder<Array<unknown>, IndexesE<UnexpectedIndexE>, { [K in keyof Components]?: unknown }> {
+  extends Decoder<Array<unknown>, UnexpectedIndexesE, { [K in keyof Components]?: unknown }> {
   readonly _tag: 'UnexpectedIndexesD'
   readonly components: Components
 }
@@ -767,11 +748,11 @@ const unexpectedIndexes = <Components extends ReadonlyArray<unknown>>(
     _tag: 'UnexpectedIndexesD',
     components,
     decode: (us) => {
-      const ws: Array<UnexpectedIndexE> = []
+      const es: Array<number> = []
       for (let index = components.length; index < us.length; index++) {
-        ws.push(unexpectedIndexE(index))
+        es.push(index)
       }
-      return RA.isNonEmpty(ws) ? both(indexesE(ws), us.slice(0, components.length) as any) : right(us)
+      return RA.isNonEmpty(es) ? both(unexpectedIndexesE(es), us.slice(0, components.length) as any) : right(us)
     }
   }
 }
@@ -779,7 +760,7 @@ const unexpectedIndexes = <Components extends ReadonlyArray<unknown>>(
 export interface MissingIndexesD<Components>
   extends Decoder<
     { readonly [K in keyof Components]?: unknown },
-    IndexesE<MissingIndexLE>,
+    MissingIndexesE,
     { [K in keyof Components]: unknown }
   > {
   readonly _tag: 'MissingIndexesD'
@@ -792,14 +773,14 @@ export const missingIndexes = <Components extends ReadonlyArray<unknown>>(
     _tag: 'MissingIndexesD',
     components,
     decode: (us) => {
-      const es: Array<MissingIndexLE> = []
+      const es: Array<number> = []
       const len = us.length
       for (let index = 0; index < components.length; index++) {
         if (len < index) {
-          es.push(missingIndex(index))
+          es.push(index)
         }
       }
-      return RA.isNonEmpty(es) ? left(indexesE(es)) : right(us as any)
+      return RA.isNonEmpty(es) ? left(missingIndexesE(es)) : right(us as any)
     }
   }
 }
@@ -944,11 +925,11 @@ const intersect_ = <A extends Record<string, unknown>, B extends Record<string, 
 export const fold = <B>(patterns: {
   ArrayE: (bs: ReadonlyNonEmptyArray<B>) => B
   CompositionE: (bs: ReadonlyNonEmptyArray<B>) => B
-  IndexesE: (bs: ReadonlyNonEmptyArray<B>) => B
   IntersectionE: (bs: ReadonlyNonEmptyArray<B>) => B
-  KeysE: (bs: ReadonlyNonEmptyArray<B>) => B
   LazyE: (id: string, b: B) => B
   MemberE: (member: string | number, b: B) => B
+  MissingIndexesE: (indexes: ReadonlyNonEmptyArray<number>) => B
+  MissingKeysE: (keys: ReadonlyNonEmptyArray<string>) => B
   NextE: (b: B) => B
   NullableE: (b: B) => B
   OptionalIndexE: (index: number, b: B) => B
@@ -964,8 +945,8 @@ export const fold = <B>(patterns: {
   SumE: (bs: ReadonlyNonEmptyArray<B>) => B
   TagE: (tag: string, b: B) => B
   TupleE: (bs: ReadonlyNonEmptyArray<B>) => B
-  UnexpectedIndexE: (index: number) => B
-  UnexpectedKeyE: (key: string) => B
+  UnexpectedIndexesE: (keys: ReadonlyNonEmptyArray<number>) => B
+  UnexpectedKeysE: (keys: ReadonlyNonEmptyArray<string>) => B
   UnionE: (bs: ReadonlyNonEmptyArray<B>) => B
 }) => <E>(f: (e: E) => B): ((de: DecodeError<E>) => B) => {
   const go = (de: DecodeError<E>): B => {
@@ -974,18 +955,18 @@ export const fold = <B>(patterns: {
         return patterns.ArrayE(pipe(de.errors, RNEA.map(go)))
       case 'CompositionE':
         return patterns.CompositionE(pipe(de.errors, RNEA.map(go)))
-      case 'IndexesE':
-        return patterns.IndexesE(pipe(de.errors, RNEA.map(go)))
       case 'IntersectionE':
         return patterns.IntersectionE(pipe(de.errors, RNEA.map(go)))
-      case 'KeysE':
-        return patterns.KeysE(pipe(de.errors, RNEA.map(go)))
       case 'LazyE':
         return patterns.LazyE(de.id, go(de.error))
       case 'LeafE':
         return f(de.error)
       case 'MemberE':
         return patterns.MemberE(de.member, go(de.error))
+      case 'MissingIndexesE':
+        return patterns.MissingIndexesE(de.indexes)
+      case 'MissingKeysE':
+        return patterns.MissingKeysE(de.keys)
       case 'NextE':
         return patterns.NextE(go(de.error))
       case 'NullableE':
@@ -1016,10 +997,10 @@ export const fold = <B>(patterns: {
         return patterns.TagE(de.tag, go(de.error))
       case 'TupleE':
         return patterns.TupleE(pipe(de.errors, RNEA.map(go)))
-      case 'UnexpectedIndexE':
-        return patterns.UnexpectedIndexE(de.index)
-      case 'UnexpectedKeyE':
-        return patterns.UnexpectedKeyE(de.key)
+      case 'UnexpectedIndexesE':
+        return patterns.UnexpectedIndexesE(de.indexes)
+      case 'UnexpectedKeysE':
+        return patterns.UnexpectedKeysE(de.keys)
       case 'UnionE':
         return patterns.UnionE(pipe(de.errors, RNEA.map(go)))
     }
@@ -1027,18 +1008,18 @@ export const fold = <B>(patterns: {
   return go
 }
 
-export type Prunable = ReadonlyArray<string>
+export type Prunable = ReadonlyArray<string | number>
 
 export const nest = RA.chain((p: Prunable) => p.map((k) => '-' + k))
 
 export const collectPrunable: <E>(de: DecodeError<E>) => Prunable = fold<Prunable>({
   ArrayE: RA.flatten,
   CompositionE: RA.flatten,
-  IndexesE: RA.flatten,
   IntersectionE: RA.flatten,
-  KeysE: RA.flatten,
   LazyE: (_, b) => b,
   MemberE: (_, b) => b,
+  MissingIndexesE: () => RA.empty,
+  MissingKeysE: () => RA.empty,
   NextE: (b) => b,
   NullableE: (b) => b,
   OptionalIndexE: (_, b) => b,
@@ -1054,8 +1035,8 @@ export const collectPrunable: <E>(de: DecodeError<E>) => Prunable = fold<Prunabl
   SumE: RA.flatten,
   TagE: (_, b) => b,
   TupleE: RA.flatten,
-  UnexpectedIndexE: (index) => [String(index)],
-  UnexpectedKeyE: (key) => [key],
+  UnexpectedIndexesE: (indexes) => indexes,
+  UnexpectedKeysE: (keys) => keys,
   UnionE: RA.flatten
 })(() => RA.empty)
 
@@ -1072,17 +1053,9 @@ export const prune = <E>(de: DecodeError<E>, prunable: Prunable): DecodeError<E>
       const pdes = de.errors.map((e) => prune(e, prunable)).filter(isNotNull)
       return RA.isNonEmpty(pdes) ? compositionE(pdes) : null
     }
-    case 'IndexesE': {
-      const pdes = de.errors.map((e) => prune(e, prunable)).filter(isNotNull)
-      return RA.isNonEmpty(pdes) ? indexesE(pdes) : null
-    }
     case 'IntersectionE': {
       const pdes = de.errors.map((e) => prune(e, prunable)).filter(isNotNull)
       return RA.isNonEmpty(pdes) ? intersectionE(pdes) : null
-    }
-    case 'KeysE': {
-      const pdes = de.errors.map((e) => prune(e, prunable)).filter(isNotNull)
-      return RA.isNonEmpty(pdes) ? keysE(pdes) : null
     }
     case 'LazyE': {
       const pde = prune(de.error, prunable)
@@ -1093,6 +1066,12 @@ export const prune = <E>(de: DecodeError<E>, prunable: Prunable): DecodeError<E>
     case 'MemberE': {
       const pde = prune(de.error, prunable)
       return pde ? memberE(de.member, pde) : null
+    }
+    case 'MissingIndexesE': {
+      return de
+    }
+    case 'MissingKeysE': {
+      return de
     }
     case 'NextE': {
       const pde = prune(de.error, prunable)
@@ -1154,10 +1133,13 @@ export const prune = <E>(de: DecodeError<E>, prunable: Prunable): DecodeError<E>
       const pdes = de.errors.map((e) => prune(e, prunable)).filter(isNotNull)
       return RA.isNonEmpty(pdes) ? tupleE(pdes) : null
     }
-    case 'UnexpectedIndexE':
-      return prunable.indexOf(String(de.index)) !== -1 ? de : null
-    case 'UnexpectedKeyE':
-      return prunable.indexOf(de.key) !== -1 ? de : null
+    case 'UnexpectedIndexesE':
+      const pindexes = de.indexes.filter((index) => prunable.indexOf(index) !== -1)
+      return RA.isNonEmpty(pindexes) ? unexpectedIndexesE(pindexes) : null
+    case 'UnexpectedKeysE': {
+      const pkeys = de.keys.filter((key) => prunable.indexOf(key) !== -1)
+      return RA.isNonEmpty(pkeys) ? unexpectedKeysE(pkeys) : null
+    }
     case 'UnionE': {
       const pdes = de.errors.map((e) => prune(e, prunable)).filter(isNotNull)
       return RA.isNonEmpty(pdes) ? unionE(pdes) : null
@@ -1400,31 +1382,44 @@ export const toTreeWith: <E>(f: (e: E) => Tree<string>) => (de: DecodeError<E>) 
     bs.length === 1
       ? bs[0] // less noise in the output if there's only one error
       : tree(`${bs.length} error(s) found while decoding a composition`, bs),
-  IndexesE: (bs) => tree(`${bs.length} error(s) found while checking components`, bs),
   IntersectionE: (bs) => tree(`${bs.length} error(s) found while decoding an intersection`, bs),
-  KeysE: (bs) => tree(`${bs.length} error(s) found while checking keys`, bs),
-  LazyE: (id: string, b) => tree(`1 error(s) found while decoding the lazy decoder ${id}`, [b]),
-  MemberE: (member: string | number, b) =>
-    tree(`1 error(s) found while decoding the member ${JSON.stringify(member)}`, [b]),
+  LazyE: (id, b) => tree(`1 error(s) found while decoding the lazy decoder ${id}`, [b]),
+  MemberE: (member, b) => tree(`1 error(s) found while decoding the member ${JSON.stringify(member)}`, [b]),
+  MissingIndexesE: (keys) =>
+    tree(
+      `${keys.length} error(s) found while checking indexes`,
+      keys.map((key) => tree(`missing required index ${JSON.stringify(key)}`))
+    ),
+  MissingKeysE: (keys) =>
+    tree(
+      `${keys.length} error(s) found while checking keys`,
+      keys.map((key) => tree(`missing required key ${JSON.stringify(key)}`))
+    ),
   NextE: (b) => b,
   NullableE: (b) => tree(`1 error(s) found while decoding a nullable`, [b]),
-  OptionalIndexE: (index: number, b) => tree(`1 error(s) found while decoding the optional index ${index}`, [b]),
-  OptionalKeyE: (key: string, b) =>
-    tree(`1 error(s) found while decoding the optional key ${JSON.stringify(key)}`, [b]),
+  OptionalIndexE: (index, b) => tree(`1 error(s) found while decoding the optional index ${index}`, [b]),
+  OptionalKeyE: (key, b) => tree(`1 error(s) found while decoding the optional key ${JSON.stringify(key)}`, [b]),
   ParserE: (b) => tree(`1 error(s) found while decoding a parser`, [b]),
   PartialE: (bs) => tree(`${bs.length} error(s) found while decoding a partial`, bs),
   PrevE: (b) => b,
   RecordE: (bs) => tree(`${bs.length} error(s) found while decoding a record`, bs),
   RefinementE: (b) => tree(`1 error(s) found while decoding a refinement`, [b]),
-  RequiredIndexE: (index: number, b) => tree(`1 error(s) found while decoding the required component ${index}`, [b]),
-  RequiredKeyE: (key: string, b) =>
-    tree(`1 error(s) found while decoding the required key ${JSON.stringify(key)}`, [b]),
+  RequiredIndexE: (index, b) => tree(`1 error(s) found while decoding the required component ${index}`, [b]),
+  RequiredKeyE: (key, b) => tree(`1 error(s) found while decoding the required key ${JSON.stringify(key)}`, [b]),
   StructE: (bs) => tree(`${bs.length} error(s) found while decoding a struct`, bs),
   SumE: (bs) => tree(`${bs.length} error(s) found while decoding a sum`, bs),
   TagE: (tag: string, b) => tree(`1 error(s) found while decoding the sum tag ${tag}`, [b]),
   TupleE: (bs) => tree(`${bs.length} error(s) found while decoding a tuple`, bs),
-  UnexpectedIndexE: (index: number) => tree(`unexpected index ${JSON.stringify(index)}`),
-  UnexpectedKeyE: (key: string) => tree(`unexpected key ${JSON.stringify(key)}`),
+  UnexpectedIndexesE: (indexes) =>
+    tree(
+      `${indexes.length} error(s) found while checking indexes`,
+      indexes.map((key) => tree(`unexpected index ${JSON.stringify(key)}`))
+    ),
+  UnexpectedKeysE: (keys) =>
+    tree(
+      `${keys.length} error(s) found while checking keys`,
+      keys.map((key) => tree(`unexpected key ${JSON.stringify(key)}`))
+    ),
   UnionE: (bs) => tree(`${bs.length} error(s) found while decoding a union`, bs)
 })
 
@@ -1448,10 +1443,6 @@ export const toTreeBuiltin = (de: BuiltinE): Tree<string> => {
       )
     case 'MessageE':
       return tree(de.message)
-    case 'MissingKeyE':
-      return tree(`missing required key ${JSON.stringify(de.key)}`)
-    case 'MissingIndexE':
-      return tree(`missing required index ${JSON.stringify(de.index)}`)
     case 'NaNE':
       return tree('value is NaN')
   }
@@ -1654,11 +1645,10 @@ Errors:
 */
 
 export const shouldCondemnWhen = <E>(
-  predicate: (e: E | UnexpectedKeyE | UnexpectedIndexE) => boolean
+  predicate: (e: E | UnexpectedKeysE | UnexpectedIndexesE) => boolean
 ): ((de: DecodeError<E>) => boolean) => {
   const go = (de: DecodeError<E>): boolean => {
     switch (de._tag) {
-      case 'KeysE':
       case 'CompositionE':
       case 'StructE':
         return de.errors.some(go)
@@ -1666,8 +1656,8 @@ export const shouldCondemnWhen = <E>(
       case 'NextE':
       case 'RequiredKeyE':
         return go(de.error)
-      case 'UnexpectedIndexE':
-      case 'UnexpectedKeyE':
+      case 'UnexpectedIndexesE':
+      case 'UnexpectedKeysE':
         return predicate(de)
       case 'LeafE':
         return predicate(de.error)
@@ -1677,7 +1667,7 @@ export const shouldCondemnWhen = <E>(
   return go
 }
 
-export const condemnWhen = <E>(predicate: (e: E | UnexpectedKeyE | UnexpectedIndexE) => boolean) => <
+export const condemnWhen = <E>(predicate: (e: E | UnexpectedKeysE | UnexpectedIndexesE) => boolean) => <
   D extends Decoder<any, DecodeError<E>, any>
 >(
   decoder: D
@@ -1698,7 +1688,7 @@ export const condemnWhen = <E>(predicate: (e: E | UnexpectedKeyE | UnexpectedInd
   }
 }
 
-export const nan = condemnWhen((e: BuiltinE | UnexpectedKeyE | UnexpectedIndexE) => e._tag === 'NaNE')
+export const nan = condemnWhen((e: BuiltinE | UnexpectedKeysE | UnexpectedIndexesE) => e._tag === 'NaNE')
 
 export const condemned1 = nan(struct({ a: number }))
 export const condemned2 = struct({ a: nan(number) })
@@ -1811,7 +1801,8 @@ Warnings:
 */
 
 export const exact = condemnWhen(
-  (e: BuiltinE | UnexpectedKeyE | UnexpectedIndexE) => e._tag === 'UnexpectedKeyE' || e._tag === 'UnexpectedIndexE'
+  (e: BuiltinE | UnexpectedKeysE | UnexpectedIndexesE) =>
+    e._tag === 'UnexpectedKeysE' || e._tag === 'UnexpectedIndexesE'
 )
 
 export const failOnAdditionalProps = exact(warnOnAdditionalProps)
