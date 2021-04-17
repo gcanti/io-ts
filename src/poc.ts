@@ -909,19 +909,6 @@ export interface IntersectD<F, S>
   readonly second: S
 }
 
-const intersect_ = <A extends Record<string, unknown>, B extends Record<string, unknown>>(a: A, b: B): A & B => {
-  const out: any = { ...a }
-  for (const k in b) {
-    const bk = b[k]
-    if (isUnknownRecord(bk)) {
-      out[k] = intersect_(out[k], bk)
-    } else {
-      out[k] = bk
-    }
-  }
-  return out
-}
-
 export type Prunable = ReadonlyArray<string>
 
 const collectPrunable = <E>(de: DecodeError<E>): Prunable => {
@@ -1087,15 +1074,32 @@ const pruneDifference = <E1, E2>(
     ? intersectionE([memberE(1, pde2)])
     : null
 }
-export function intersect<S extends Decoder<any, DecodeError<any>, Record<string, unknown>>>(
+
+// TODO: add constraints
+export type Intersecable = Record<string, unknown>
+
+const intersect_ = <A extends Intersecable, B extends Intersecable>(a: A, b: B): A & B => {
+  const out: any = { ...a }
+  for (const k in b) {
+    const bk = b[k]
+    if (isUnknownRecord(bk)) {
+      out[k] = intersect_(out[k], bk)
+    } else {
+      out[k] = bk
+    }
+  }
+  return out
+}
+
+export function intersect<S extends Decoder<any, DecodeError<any>, Intersecable>>(
   second: S
-): <F extends Decoder<any, DecodeError<any>, Record<string, unknown>>>(first: F) => IntersectD<F, S>
-export function intersect<I2, E2, A2 extends Record<string, unknown>>(
+): <F extends Decoder<any, DecodeError<any>, Intersecable>>(first: F) => IntersectD<F, S>
+export function intersect<I2, E2, A2 extends Intersecable>(
   second: Decoder<I2, DecodeError<E2>, A2>
-): <I1, E1, A1 extends Record<string, unknown>>(
+): <I1, E1, A1 extends Intersecable>(
   first: Decoder<I1, DecodeError<E1>, A1>
 ) => IntersectD<typeof first, typeof second> {
-  return <I1, E1, A1 extends Record<string, unknown>>(
+  return <I1, E1, A1 extends Intersecable>(
     first: Decoder<I1, DecodeError<E1>, A1>
   ): IntersectD<typeof first, typeof second> => ({
     _tag: 'IntersectD',
