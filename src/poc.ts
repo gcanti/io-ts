@@ -187,6 +187,7 @@ export interface LazyE<E> extends SingleE<E> {
   readonly _tag: 'LazyE'
   readonly id: string
 }
+export const lazyE = <E>(id: string, error: E): LazyE<E> => ({ _tag: 'LazyE', id, error })
 
 export interface MemberE<M, E> extends SingleE<E> {
   readonly _tag: 'MemberE'
@@ -198,6 +199,7 @@ export interface TagE<T, E> extends SingleE<E> {
   readonly _tag: 'TagE'
   readonly tag: T
 }
+export const tagE = <T, E>(tag: T, error: E): TagE<T, E> => ({ _tag: 'TagE', tag, error })
 
 // Single errors
 
@@ -209,6 +211,7 @@ export const leafE = <E>(error: E): LeafE<E> => ({ _tag: 'LeafE', error })
 export interface NullableE<E> extends SingleE<E> {
   readonly _tag: 'NullableE'
 }
+export const nullableE = <E>(error: E): NullableE<E> => ({ _tag: 'NullableE', error })
 
 export interface RefinementE<E> extends SingleE<E> {
   readonly _tag: 'RefinementE'
@@ -249,6 +252,10 @@ export const partialE = <E>(errors: ReadonlyNonEmptyArray<E>): PartialE<E> => ({
 export interface RecordE<E> extends CompoundE<E> {
   readonly _tag: 'RecordE'
 }
+export const recordE = <E>(errors: ReadonlyNonEmptyArray<E>): RecordE<E> => ({
+  _tag: 'RecordE',
+  errors
+})
 
 export interface IndexesE<E> extends CompoundE<E> {
   readonly _tag: 'IndexesE'
@@ -294,6 +301,10 @@ export const arrayE = <E>(errors: ReadonlyNonEmptyArray<E>): ArrayE<E> => ({
 export interface UnionE<E> extends CompoundE<E> {
   readonly _tag: 'UnionE'
 }
+export const unionE = <E>(errors: ReadonlyNonEmptyArray<E>): UnionE<E> => ({
+  _tag: 'UnionE',
+  errors
+})
 
 export interface CompositionE<E> extends CompoundE<E> {
   readonly _tag: 'CompositionE'
@@ -314,6 +325,10 @@ export const intersectionE = <E>(errors: ReadonlyNonEmptyArray<E>): Intersection
 export interface SumE<E> extends CompoundE<E> {
   readonly _tag: 'SumE'
 }
+export const sumE = <E>(errors: ReadonlyNonEmptyArray<E>): SumE<E> => ({
+  _tag: 'SumE',
+  errors
+})
 
 export interface MessageE<I> extends ActualE<I> {
   readonly _tag: 'MessageE'
@@ -912,24 +927,26 @@ export interface IntersectD<F, S>
   readonly first: F
   readonly second: S
 }
-const typeOf = (x: unknown): string => (x === null ? 'null' : typeof x)
-const intersect_ = <A, B>(a: A, b: B): A & B => {
-  if (a !== undefined && b !== undefined) {
-    const tx = typeOf(a)
-    const ty = typeOf(b)
-    if (tx === 'object' || ty === 'object') {
-      return Object.assign({}, a, b)
+
+const intersect_ = <A extends Record<string, unknown>, B extends Record<string, unknown>>(a: A, b: B): A & B => {
+  const out: any = { ...a }
+  for (const k in b) {
+    const bk = b[k]
+    if (isUnknownRecord(bk)) {
+      out[k] = intersect_(out[k], bk)
+    } else {
+      out[k] = bk
     }
   }
-  return b as any
+  return out
 }
 
 export const fold = <B>(patterns: {
-  ArrayE: (bs: Array<B>) => B
-  CompositionE: (bs: Array<B>) => B
-  IndexesE: (bs: Array<B>) => B
-  IntersectionE: (bs: Array<B>) => B
-  KeysE: (bs: Array<B>) => B
+  ArrayE: (bs: ReadonlyNonEmptyArray<B>) => B
+  CompositionE: (bs: ReadonlyNonEmptyArray<B>) => B
+  IndexesE: (bs: ReadonlyNonEmptyArray<B>) => B
+  IntersectionE: (bs: ReadonlyNonEmptyArray<B>) => B
+  KeysE: (bs: ReadonlyNonEmptyArray<B>) => B
   LazyE: (id: string, b: B) => B
   MemberE: (member: string | number, b: B) => B
   NextE: (b: B) => B
@@ -937,32 +954,32 @@ export const fold = <B>(patterns: {
   OptionalIndexE: (index: number, b: B) => B
   OptionalKeyE: (key: string, b: B) => B
   ParserE: (b: B) => B
-  PartialE: (bs: Array<B>) => B
+  PartialE: (bs: ReadonlyNonEmptyArray<B>) => B
   PrevE: (b: B) => B
-  RecordE: (bs: Array<B>) => B
+  RecordE: (bs: ReadonlyNonEmptyArray<B>) => B
   RefinementE: (b: B) => B
   RequiredIndexE: (index: number, b: B) => B
   RequiredKeyE: (key: string, b: B) => B
-  StructE: (bs: Array<B>) => B
-  SumE: (bs: Array<B>) => B
+  StructE: (bs: ReadonlyNonEmptyArray<B>) => B
+  SumE: (bs: ReadonlyNonEmptyArray<B>) => B
   TagE: (tag: string, b: B) => B
-  TupleE: (bs: Array<B>) => B
+  TupleE: (bs: ReadonlyNonEmptyArray<B>) => B
   UnexpectedIndexE: (index: number) => B
   UnexpectedKeyE: (key: string) => B
-  UnionE: (bs: Array<B>) => B
+  UnionE: (bs: ReadonlyNonEmptyArray<B>) => B
 }) => <E>(f: (e: E) => B): ((de: DecodeError<E>) => B) => {
   const go = (de: DecodeError<E>): B => {
     switch (de._tag) {
       case 'ArrayE':
-        return patterns.ArrayE(de.errors.map(go))
+        return patterns.ArrayE(pipe(de.errors, RNEA.map(go)))
       case 'CompositionE':
-        return patterns.CompositionE(de.errors.map(go))
+        return patterns.CompositionE(pipe(de.errors, RNEA.map(go)))
       case 'IndexesE':
-        return patterns.IndexesE(de.errors.map(go))
+        return patterns.IndexesE(pipe(de.errors, RNEA.map(go)))
       case 'IntersectionE':
-        return patterns.IntersectionE(de.errors.map(go))
+        return patterns.IntersectionE(pipe(de.errors, RNEA.map(go)))
       case 'KeysE':
-        return patterns.KeysE(de.errors.map(go))
+        return patterns.KeysE(pipe(de.errors, RNEA.map(go)))
       case 'LazyE':
         return patterns.LazyE(de.id, go(de.error))
       case 'LeafE':
@@ -980,11 +997,11 @@ export const fold = <B>(patterns: {
       case 'ParserE':
         return patterns.ParserE(go(de.error))
       case 'PartialE':
-        return patterns.PartialE(de.errors.map(go))
+        return patterns.PartialE(pipe(de.errors, RNEA.map(go)))
       case 'PrevE':
         return patterns.PrevE(go(de.error))
       case 'RecordE':
-        return patterns.RecordE(de.errors.map(go))
+        return patterns.RecordE(pipe(de.errors, RNEA.map(go)))
       case 'RefinementE':
         return patterns.RefinementE(go(de.error))
       case 'RequiredIndexE':
@@ -992,36 +1009,34 @@ export const fold = <B>(patterns: {
       case 'RequiredKeyE':
         return patterns.RequiredKeyE(de.key, go(de.error))
       case 'StructE':
-        return patterns.StructE(de.errors.map(go))
+        return patterns.StructE(pipe(de.errors, RNEA.map(go)))
       case 'SumE':
-        return patterns.SumE(de.errors.map(go))
+        return patterns.SumE(pipe(de.errors, RNEA.map(go)))
       case 'TagE':
         return patterns.TagE(de.tag, go(de.error))
       case 'TupleE':
-        return patterns.TupleE(de.errors.map(go))
+        return patterns.TupleE(pipe(de.errors, RNEA.map(go)))
       case 'UnexpectedIndexE':
         return patterns.UnexpectedIndexE(de.index)
       case 'UnexpectedKeyE':
         return patterns.UnexpectedKeyE(de.key)
       case 'UnionE':
-        return patterns.UnionE(de.errors.map(go))
+        return patterns.UnionE(pipe(de.errors, RNEA.map(go)))
     }
   }
   return go
 }
 
-const flatten = (id: string) => (bs: ReadonlyArray<ReadonlyArray<string>>): ReadonlyArray<string> => {
-  return bs === RA.empty
-    ? RA.empty
-    : RA.flatten(bs.map((b) => (b === RA.empty ? RA.empty : b.map((s) => `${id}.` + s))))
-}
+export type Prunable = ReadonlyArray<string>
 
-export const collectUnexpected = fold<ReadonlyArray<string>>({
-  ArrayE: flatten('ArrayE'),
-  CompositionE: flatten('CompositionE'),
-  IndexesE: flatten('IndexesE'),
-  IntersectionE: flatten('IntersectionE'),
-  KeysE: flatten('KeysE'),
+export const nest = RA.chain((p: Prunable) => p.map((k) => '-' + k))
+
+export const collectPrunable: <E>(de: DecodeError<E>) => Prunable = fold<Prunable>({
+  ArrayE: RA.flatten,
+  CompositionE: RA.flatten,
+  IndexesE: RA.flatten,
+  IntersectionE: RA.flatten,
+  KeysE: RA.flatten,
   LazyE: (_, b) => b,
   MemberE: (_, b) => b,
   NextE: (b) => b,
@@ -1029,47 +1044,154 @@ export const collectUnexpected = fold<ReadonlyArray<string>>({
   OptionalIndexE: (_, b) => b,
   OptionalKeyE: (_, b) => b,
   ParserE: (b) => b,
-  PartialE: flatten('PartialE'),
+  PartialE: RA.flatten,
   PrevE: (b) => b,
-  RecordE: flatten('RecordE'),
+  RecordE: RA.flatten,
   RefinementE: (b) => b,
   RequiredIndexE: (_, b) => b,
   RequiredKeyE: (_, b) => b,
-  StructE: flatten('StructE'),
-  SumE: flatten('SumE'),
+  StructE: RA.flatten,
+  SumE: RA.flatten,
   TagE: (_, b) => b,
-  TupleE: flatten('TupleE'),
+  TupleE: RA.flatten,
   UnexpectedIndexE: (index) => [String(index)],
   UnexpectedKeyE: (key) => [key],
-  UnionE: flatten('UnionE')
+  UnionE: RA.flatten
 })(() => RA.empty)
-export const pruneUnexpected = <E>(de: DecodeError<E>, unexpected: ReadonlyArray<string>): DecodeError<E> | null => {
-  // console.log('pruneUnexpected')
-  // console.log(JSON.stringify(de, null, 2))
-  console.log(JSON.stringify(unexpected, null, 2))
-  return de
+
+const isNotNull = <A>(a: A): a is NonNullable<A> => a !== null
+
+export const prune = <E>(de: DecodeError<E>, prunable: Prunable): DecodeError<E> | null => {
+  // console.log(prunable)
+  switch (de._tag) {
+    case 'ArrayE': {
+      const pdes = de.errors.map((e) => prune(e, prunable)).filter(isNotNull)
+      return RA.isNonEmpty(pdes) ? arrayE(pdes) : null
+    }
+    case 'CompositionE': {
+      const pdes = de.errors.map((e) => prune(e, prunable)).filter(isNotNull)
+      return RA.isNonEmpty(pdes) ? compositionE(pdes) : null
+    }
+    case 'IndexesE': {
+      const pdes = de.errors.map((e) => prune(e, prunable)).filter(isNotNull)
+      return RA.isNonEmpty(pdes) ? indexesE(pdes) : null
+    }
+    case 'IntersectionE': {
+      const pdes = de.errors.map((e) => prune(e, prunable)).filter(isNotNull)
+      return RA.isNonEmpty(pdes) ? intersectionE(pdes) : null
+    }
+    case 'KeysE': {
+      const pdes = de.errors.map((e) => prune(e, prunable)).filter(isNotNull)
+      return RA.isNonEmpty(pdes) ? keysE(pdes) : null
+    }
+    case 'LazyE': {
+      const pde = prune(de.error, prunable)
+      return pde ? lazyE(de.id, pde) : null
+    }
+    case 'LeafE':
+      return de
+    case 'MemberE': {
+      const pde = prune(de.error, prunable)
+      return pde ? memberE(de.member, pde) : null
+    }
+    case 'NextE': {
+      const pde = prune(de.error, prunable)
+      return pde ? nextE(pde) : null
+    }
+    case 'NullableE': {
+      const pde = prune(de.error, prunable)
+      return pde ? nullableE(pde) : null
+    }
+    case 'OptionalIndexE': {
+      const pde = prune(de.error, prunable)
+      return pde ? optionalIndexE(de.index, pde) : null
+    }
+    case 'OptionalKeyE': {
+      const pde = prune(de.error, prunable)
+      return pde ? optionalKeyE(de.key, pde) : null
+    }
+    case 'ParserE': {
+      const pde = prune(de.error, prunable)
+      return pde ? parserE(pde) : null
+    }
+    case 'PartialE': {
+      const pdes = de.errors.map((e) => prune(e, prunable)).filter(isNotNull)
+      return RA.isNonEmpty(pdes) ? partialE(pdes) : null
+    }
+    case 'PrevE': {
+      const pde = prune(de.error, prunable)
+      return pde ? prevE(pde) : null
+    }
+    case 'RecordE': {
+      const pdes = de.errors.map((e) => prune(e, prunable)).filter(isNotNull)
+      return RA.isNonEmpty(pdes) ? recordE(pdes) : null
+    }
+    case 'RefinementE': {
+      const pde = prune(de.error, prunable)
+      return pde ? refinementE(pde) : null
+    }
+    case 'RequiredIndexE': {
+      const pde = prune(de.error, prunable)
+      return pde ? requiredIndexE(de.index, pde) : null
+    }
+    case 'RequiredKeyE': {
+      const pde = prune(de.error, prunable)
+      return pde ? requiredKeyE(de.key, pde) : null
+    }
+    case 'StructE': {
+      const pdes = de.errors.map((e) => prune(e, prunable)).filter(isNotNull)
+      return RA.isNonEmpty(pdes) ? structE(pdes) : null
+    }
+    case 'SumE': {
+      const pdes = de.errors.map((e) => prune(e, prunable)).filter(isNotNull)
+      return RA.isNonEmpty(pdes) ? sumE(pdes) : null
+    }
+    case 'TagE': {
+      const pde = prune(de.error, prunable)
+      return pde ? tagE(de.tag, pde) : null
+    }
+    case 'TupleE': {
+      const pdes = de.errors.map((e) => prune(e, prunable)).filter(isNotNull)
+      return RA.isNonEmpty(pdes) ? tupleE(pdes) : null
+    }
+    case 'UnexpectedIndexE':
+      return prunable.indexOf(String(de.index)) !== -1 ? de : null
+    case 'UnexpectedKeyE':
+      return prunable.indexOf(de.key) !== -1 ? de : null
+    case 'UnionE': {
+      const pdes = de.errors.map((e) => prune(e, prunable)).filter(isNotNull)
+      return RA.isNonEmpty(pdes) ? unionE(pdes) : null
+    }
+  }
 }
-export const pruneAllUnexpected = <E>(de: DecodeError<E>): DecodeError<E> | null => {
-  return pruneUnexpected(de, collectUnexpected(de))
-}
-export const pruneUnexpectedDifference = <E1, E2>(
+
+export const pruneAllUnexpected = <E>(de: DecodeError<E>): DecodeError<E> | null => prune(de, collectPrunable(de))
+
+export const pruneDifference = <E1, E2>(
   de1: DecodeError<E1>,
   de2: DecodeError<E2>
 ): IntersectionE<MemberE<0, DecodeError<E1>> | MemberE<1, DecodeError<E2>>> | null => {
-  const pde1 = pruneUnexpected(de1, collectUnexpected(de2))
-  const pde2 = pruneUnexpected(de2, collectUnexpected(de1))
-  if (pde1) {
-    return pde2 ? intersectionE([memberE(0, pde1), memberE(1, pde2)]) : intersectionE([memberE(0, pde1)])
-  }
-  return pde2 ? intersectionE([memberE(1, pde2)]) : null
+  const pde1 = prune(de1, collectPrunable(de2))
+  const pde2 = prune(de2, collectPrunable(de1))
+  return pde1
+    ? pde2
+      ? intersectionE([memberE(0, pde1), memberE(1, pde2)])
+      : intersectionE([memberE(0, pde1)])
+    : pde2
+    ? intersectionE([memberE(1, pde2)])
+    : null
 }
-export function intersect<S extends Decoder<any, DecodeError<any>, any>>(
+export function intersect<S extends Decoder<any, DecodeError<any>, Record<string, unknown>>>(
   second: S
-): <F extends Decoder<any, DecodeError<any>, any>>(first: F) => IntersectD<F, S>
-export function intersect<I2, E2, A2>(
+): <F extends Decoder<any, DecodeError<any>, Record<string, unknown>>>(first: F) => IntersectD<F, S>
+export function intersect<I2, E2, A2 extends Record<string, unknown>>(
   second: Decoder<I2, DecodeError<E2>, A2>
-): <I1, E1, A1>(first: Decoder<I1, DecodeError<E1>, A1>) => IntersectD<typeof first, typeof second> {
-  return <I1, E1, A1>(first: Decoder<I1, DecodeError<E1>, A1>): IntersectD<typeof first, typeof second> => ({
+): <I1, E1, A1 extends Record<string, unknown>>(
+  first: Decoder<I1, DecodeError<E1>, A1>
+) => IntersectD<typeof first, typeof second> {
+  return <I1, E1, A1 extends Record<string, unknown>>(
+    first: Decoder<I1, DecodeError<E1>, A1>
+  ): IntersectD<typeof first, typeof second> => ({
     _tag: 'IntersectD',
     first,
     second,
@@ -1123,7 +1245,7 @@ export function intersect<I2, E2, A2>(
                   return pde1 ? both(intersectionE([memberE(0, pde1)]), intersect_(a1, a2)) : right(intersect_(a1, a2))
                 },
                 (de2, a2) => {
-                  const ie = pruneUnexpectedDifference(de1, de2)
+                  const ie = pruneDifference(de1, de2)
                   return ie ? both(ie, intersect_(a1, a2)) : right(intersect_(a1, a2))
                 }
               )
@@ -1272,7 +1394,7 @@ const tree = <A>(value: A, forest: Forest<A> = empty): Tree<A> => ({
   forest
 })
 
-export const toTreeWith = fold<Tree<string>>({
+export const toTreeWith: <E>(f: (e: E) => Tree<string>) => (de: DecodeError<E>) => Tree<string> = fold({
   ArrayE: (bs) => tree(`${bs.length} error(s) found while decoding an array`, bs),
   CompositionE: (bs) =>
     bs.length === 1
@@ -1305,72 +1427,6 @@ export const toTreeWith = fold<Tree<string>>({
   UnexpectedKeyE: (key: string) => tree(`unexpected key ${JSON.stringify(key)}`),
   UnionE: (bs) => tree(`${bs.length} error(s) found while decoding a union`, bs)
 })
-
-// export const toTreeWith = <E>(toTree: (e: E) => Tree<string>): ((de: DecodeError<E>) => Tree<string>) => {
-//   const go = (de: DecodeError<E>): Tree<string> => {
-//     switch (de._tag) {
-//       case 'UnexpectedKeyE':
-//         return tree(`unexpected key ${JSON.stringify(de.key)}`)
-//       case 'UnexpectedIndexE':
-//         return tree(`unexpected index ${JSON.stringify(de.index)}`)
-//       // simple singles
-//       case 'LeafE':
-//         return toTree(de.error)
-//       case 'RefinementE':
-//         return tree(`1 error(s) found while decoding a refinement`, [go(de.error)])
-//       case 'ParserE':
-//         return tree(`1 error(s) found while decoding a parser`, [go(de.error)])
-//       case 'NullableE':
-//         return tree(`1 error(s) found while decoding a nullable`, [go(de.error)])
-//       case 'PrevE':
-//       case 'NextE':
-//         return go(de.error)
-
-//       // customized singles
-//       case 'RequiredIndexE':
-//         return tree(`1 error(s) found while decoding the required component ${de.index}`, [go(de.error)])
-//       case 'OptionalIndexE':
-//         return tree(`1 error(s) found while decoding the optional index ${de.index}`, [go(de.error)])
-//       case 'RequiredKeyE':
-//         return tree(`1 error(s) found while decoding the required key ${JSON.stringify(de.key)}`, [go(de.error)])
-//       case 'OptionalKeyE':
-//         return tree(`1 error(s) found while decoding the optional key ${JSON.stringify(de.key)}`, [go(de.error)])
-//       case 'MemberE':
-//         return tree(`1 error(s) found while decoding the member ${JSON.stringify(de.member)}`, [go(de.error)])
-//       case 'TagE':
-//         return tree(`1 error(s) found while decoding the sum tag ${de.tag}`, [go(de.error)])
-//       case 'LazyE':
-//         return tree(`1 error(s) found while decoding the lazy decoder ${de.id}`, [go(de.error)])
-
-//       // compounds
-//       case 'ArrayE':
-//         return tree(`${de.errors.length} error(s) found while decoding an array`, de.errors.map(go))
-//       case 'RecordE':
-//         return tree(`${de.errors.length} error(s) found while decoding a record`, de.errors.map(go))
-//       case 'TupleE':
-//         return tree(`${de.errors.length} error(s) found while decoding a tuple`, de.errors.map(go))
-//       case 'StructE':
-//         return tree(`${de.errors.length} error(s) found while decoding a struct`, de.errors.map(go))
-//       case 'PartialE':
-//         return tree(`${de.errors.length} error(s) found while decoding a partial`, de.errors.map(go))
-//       case 'UnionE':
-//         return tree(`${de.errors.length} error(s) found while decoding a union`, de.errors.map(go))
-//       case 'IntersectionE':
-//         return tree(`${de.errors.length} error(s) found while decoding an intersection`, de.errors.map(go))
-//       case 'SumE':
-//         return tree(`${de.errors.length} error(s) found while decoding a sum`, de.errors.map(go))
-//       case 'IndexesE':
-//         return tree(`${de.errors.length} error(s) found while checking components`, de.errors.map(go))
-//       case 'KeysE':
-//         return tree(`${de.errors.length} error(s) found while checking keys`, de.errors.map(go))
-//       case 'CompositionE':
-//         return de.errors.length === 1
-//           ? go(de.errors[0]) // less noise in the output if there's only one error
-//           : tree(`${de.errors.length} error(s) found while decoding a composition`, de.errors.map(go))
-//     }
-//   }
-//   return go
-// }
 
 export const toTreeBuiltin = (de: BuiltinE): Tree<string> => {
   switch (de._tag) {
@@ -1776,10 +1832,10 @@ Errors:
 // how to prune intersections warnings?
 
 // CURRENT
-export const I1 = pipe(struct({ a: string }))
-export const I2 = pipe(struct({ b: number }))
+export const I1 = struct({ n: struct({ a: string }) })
+export const I2 = struct({ n: struct({ b: number }) })
 export const I = pipe(I1, intersect(I2))
-pipe(I.decode({ a: 'a', b: 1 }), debug)
+pipe(I.decode({ n: { a: 'a', b: 1, c: true } }), debug)
 /*
 Value:
 {
