@@ -1625,14 +1625,17 @@ export interface CondemnD<D> extends Decoder<InputOf<D>, ErrorOf<D>, TypeOf<D>> 
   readonly decoder: D
 }
 
-export const condemn = <D extends AnyD>(decoder: D): CondemnD<D> => ({
-  _tag: 'CondemnD',
-  decoder,
-  decode: (i) => {
-    const de = decoder.decode(i)
-    return TH.isBoth(de) ? left(de.left) : de
+export function condemn<D extends AnyD>(decoder: D): CondemnD<D>
+export function condemn<I, E, A>(decoder: Decoder<I, E, A>): CondemnD<typeof decoder> {
+  return {
+    _tag: 'CondemnD',
+    decoder,
+    decode: (i) => {
+      const de = decoder.decode(i)
+      return TH.isBoth(de) ? left(de.left) : de
+    }
   }
-})
+}
 
 // pipe(number.decode(NaN), debug)
 /*
@@ -1643,61 +1646,94 @@ value is NaN
 */
 
 export const mynumber = condemn(number)
-pipe(mynumber.decode(NaN), debug)
+// pipe(mynumber.decode(NaN), debug)
 /*
 Errors:
 value is NaN
 */
 
 // -------------------------------------------------------------------------------------
-// use case: warn/fail on NaN
+// use case: fail on a specific warning, for example NaN
 // -------------------------------------------------------------------------------------
 
-export const shouldCondemnWhen = <E>(
+const shouldCondemnWhen = <E>(
   predicate: (e: E | UnexpectedKeysE | UnexpectedIndexesE) => boolean
 ): ((de: DecodeError<E>) => boolean) => {
   const go = (de: DecodeError<E>): boolean => {
     switch (de._tag) {
+      case 'ArrayE':
       case 'CompositionE':
+      case 'PartialE':
       case 'StructE':
+      case 'IntersectionE':
+      case 'TupleE':
+      case 'UnionE':
+      case 'RecordE':
+      case 'SumE':
         return de.errors.some(go)
       case 'PrevE':
       case 'NextE':
       case 'RequiredKeyE':
+      case 'MemberE':
+      case 'NullableE':
+      case 'RefinementE':
+      case 'ParserE':
+      case 'OptionalKeyE':
+      case 'RequiredIndexE':
+      case 'OptionalIndexE':
+      case 'TagE':
+      case 'LazyE':
         return go(de.error)
       case 'UnexpectedIndexesE':
       case 'UnexpectedKeysE':
         return predicate(de)
       case 'LeafE':
         return predicate(de.error)
+      case 'MissingKeysE':
+      case 'MissingIndexesE':
+        return false
     }
-    return false
   }
   return go
 }
 
-export const condemnWhen = <E>(predicate: (e: E | UnexpectedKeysE | UnexpectedIndexesE) => boolean) => <
-  D extends Decoder<any, DecodeError<E>, any>
->(
-  decoder: D
-): D => {
+export const condemnWhen = <E>(
+  predicate: (e: E | UnexpectedKeysE | UnexpectedIndexesE) => boolean
+): (<A>(result: These<DecodeError<E>, A>) => These<DecodeError<E>, A>) => {
   const should = shouldCondemnWhen(predicate)
-  return {
-    ...decoder,
-    decode: (i) => {
-      const de = decoder.decode(i)
-      if (TH.isBoth(de)) {
-        const e = de.left
-        if (should(e)) {
-          return left(e)
-        }
+  const go = <A>(result: These<DecodeError<E>, A>): These<DecodeError<E>, A> => {
+    if (TH.isBoth(result)) {
+      const de = result.left
+      if (should(de)) {
+        return left(de)
       }
-      return de
     }
+    return result
   }
+  return go
 }
 
-export const nan = condemnWhen((e: BuiltinE | UnexpectedKeysE | UnexpectedIndexesE) => e._tag === 'NaNE')
+export interface EndoD<D> extends Decoder<InputOf<D>, ErrorOf<D>, TypeOf<D>> {
+  readonly _tag: 'EndoD'
+  readonly decoder: D
+  readonly endo: (result: These<ErrorOf<D>, TypeOf<D>>) => These<ErrorOf<D>, TypeOf<D>>
+}
+
+export function endo<E>(
+  endo: <A>(result: These<DecodeError<E>, A>) => These<DecodeError<E>, A>
+): <D extends Decoder<any, DecodeError<E>, any>>(decoder: D) => EndoD<D>
+export function endo<E>(
+  endo: <A>(result: These<DecodeError<E>, A>) => These<DecodeError<E>, A>
+): <I, A>(decoder: Decoder<I, DecodeError<E>, A>) => EndoD<typeof decoder> {
+  return (decoder) => ({
+    _tag: 'EndoD',
+    decoder,
+    endo,
+    decode: flow(decoder.decode, endo)
+  })
+}
+
+export const nan = endo(condemnWhen((e: BuiltinE | UnexpectedKeysE | UnexpectedIndexesE) => e._tag === 'NaNE'))
 
 export const condemned1 = nan(struct({ a: number }))
 export const condemned2 = struct({ a: nan(number) })
@@ -1718,7 +1754,7 @@ Errors:
 */
 
 // -------------------------------------------------------------------------------------
-// use case: warn/fail on additional props #322
+// use case: fail on additional props #322
 // -------------------------------------------------------------------------------------
 
 // by default additional props are reported as warnings
@@ -1749,12 +1785,14 @@ Warnings:
          └─ unexpected key "f"
 */
 
-export const exact = condemnWhen(
-  (e: BuiltinE | UnexpectedKeysE | UnexpectedIndexesE) =>
-    e._tag === 'UnexpectedKeysE' || e._tag === 'UnexpectedIndexesE'
+export const exactD = endo(
+  condemnWhen(
+    (e: BuiltinE | UnexpectedKeysE | UnexpectedIndexesE) =>
+      e._tag === 'UnexpectedKeysE' || e._tag === 'UnexpectedIndexesE'
+  )
 )
 
-export const failOnAdditionalProps = exact(warnOnAdditionalProps)
+export const failOnAdditionalProps = exactD(warnOnAdditionalProps)
 
 // pipe(failOnAdditionalProps.decode({ a: 'a', b: { c: 1, e: 2, f: { h: 3 } }, d: 1 }), debug)
 /*
@@ -1769,108 +1807,81 @@ Errors:
          └─ unexpected key "f"
 */
 
-export const I1 = struct({ a: struct({ b: string }) })
-export const I2 = struct({ a: struct({ c: number }) })
-export const I12 = pipe(I1, intersect(I2))
-// pipe(I12.decode({ a: { b: 'a', c: 1, d: true } }), debug)
-/*
-Value:
-{
-  "n": {
-    "a": "a",
-    "b": 1
-  }
-}
-Warnings:
-2 error(s) found while decoding an intersection
-├─ 1 error(s) found while decoding member 0
-│  └─ 1 error(s) found while decoding a struct
-│     └─ 1 error(s) found while decoding required key "a"
-│        └─ 1 error(s) found while checking keys
-│           └─ unexpected key "d"
-└─ 1 error(s) found while decoding member 1
-   └─ 1 error(s) found while decoding a struct
-      └─ 1 error(s) found while decoding required key "a"
-         └─ 1 error(s) found while checking keys
-            └─ unexpected key "d"
-*/
-
-export const I3 = pipe(
-  struct({ a: string, b: string }),
-  map(({ a, b }) => ({ b: a + b }))
-)
-export const I4 = pipe(
-  struct({ a: string }),
-  map(({ a }) => ({ c: a.length }))
-)
-export const I34 = pipe(I3, intersect(I4))
-// pipe(I34.decode({ a: 'aaa', b: 'bbb' }), debug)
-/*
-Value:
-{
-  "b": "aaabbb",
-  "c": 3
-}
-*/
-
 // -------------------------------------------------------------------------------------
 // use case: exact + intersection
 // -------------------------------------------------------------------------------------
 
 // exact decoders don't play well with intersections
+export const I1 = pipe(struct({ a: string }), exactD)
+export const I2 = pipe(struct({ b: number }), exactD)
+export const I12 = pipe(I1, intersect(I2))
+// pipe(I12.decode({ a: 'a', b: 1 }), debug)
+/*
+2 error(s) found while decoding an intersection
+├─ 1 error(s) found while decoding the member 0
+│  └─ 1 error(s) found while checking keys
+│     └─ unexpected key "b"
+└─ 1 error(s) found while decoding the member 1
+   └─ 1 error(s) found while checking keys
+      └─ unexpected key "a"
+*/
 
-export const exactStruct1 = pipe(
-  struct({ a: string, b: string }),
-  map(({ a, b }) => ({ b: a + b })),
-  exact
+/*
+
+solution: you write your decoders without worrying about additional props / indices,
+then at the top level when you use them to decode you get a `These` result:
+
+- if it's a Right, everything is fine and you get your expected output
+- if it's a Left, there's a blocking error and you get nothing
+- if it's a Both (i.e. you can get the output but there are warnings too) you can choose, by ispecting the left side,
+  whether you want to "absolve" the Both to a Right or "condemn" to a Left
+
+*/
+
+export const exact = condemnWhen(
+  (e: BuiltinE | UnexpectedKeysE | UnexpectedIndexesE) =>
+    e._tag === 'UnexpectedKeysE' || e._tag === 'UnexpectedIndexesE'
 )
-export const exactStruct2 = pipe(
-  struct({ a: string }),
-  map(({ a }) => ({ c: a.length })),
-  exact
-)
-export const exactStruct1_2 = pipe(exactStruct1, intersect(exactStruct2))
-// pipe(exactStruct1_2.decode({ a: 'aaa', b: 'bbb' }), debug)
+
+export const I3 = struct({ a: string })
+export const I4 = struct({ b: number })
+export const I34 = pipe(I3, intersect(I4))
+// pipe(I34.decode({ a: 'a', b: 1 }), debug)
+/*
+Value:
+{
+  "a": "a",
+  "b": 1
+}
+*/
+
+// pipe(I34.decode({ a: 'a', b: 1, c: true }), debug)
+/*
+Value:
+{
+  "a": "a",
+  "b": 1
+}
+Warnings:
+2 error(s) found while decoding an intersection
+├─ 1 error(s) found while decoding the member 0
+│  └─ 1 error(s) found while checking keys
+│     └─ unexpected key "c"
+└─ 1 error(s) found while decoding the member 1
+   └─ 1 error(s) found while checking keys
+      └─ unexpected key "c"
+*/
+
+// pipe(exact(I34.decode({ a: 'a', b: 1, c: true })), debug)
 /*
 Errors:
-1 error(s) found while decoding an intersection
-└─ 1 error(s) found while decoding member 1
+2 error(s) found while decoding an intersection
+├─ 1 error(s) found while decoding the member 0
+│  └─ 1 error(s) found while checking keys
+│     └─ unexpected key "c"
+└─ 1 error(s) found while decoding the member 1
    └─ 1 error(s) found while checking keys
-      └─ unexpected key "b"
-*/
-
-// here we get an error even if the input is compatible, because the second decoder complains
-
-export const fromStruct1 = pipe(
-  fromStruct({ a: string, b: string }),
-  map(({ a, b }) => ({ b: a + b }))
-)
-export const fromStruct2 = pipe(
-  fromStruct({ a: string }),
-  map(({ a }) => ({ c: a.length }))
-)
-export const fromStruct1_2 = pipe(fromStruct1, intersect(fromStruct2))
-// pipe(fromStruct1_2.decode({ a: 'aaa', b: 'bbb' }), debug)
-/*
-Value:
-{
-  "b": "aaabbb",
-  "c": 3
-}
-*/
-export const preFromStruct1_2 = pipe(
-  UnknownRecord,
-  compose(unexpectedKeys({ a: null, b: null })),
-  compose(missingKeys({ a: null, b: null })),
-  compose(fromStruct1_2)
-)
-// pipe(preFromStruct1_2.decode({ a: 'aaa', b: 'bbb' }), debug)
-/*
-Value:
-{
-  "b": "aaabbb",
-  "c": 3
-}
+      └─ unexpected key "c"
 */
 
 // -------------------------------------------------------------------------------------
