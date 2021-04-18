@@ -47,6 +47,34 @@ Warnings:
       })
     })
 
+    it('should raise a warning with an additional key (nested)', () => {
+      const I1 = D.struct({ a: D.struct({ b: D.string }) })
+      const I2 = D.struct({ a: D.struct({ c: D.number }) })
+      const I = pipe(I1, D.intersect(I2))
+      U.deepStrictEqual(
+        pipe(I.decode({ a: { b: 'a', c: 1, d: true } }), print),
+        `Value:
+{
+  \"a\": {
+    \"b\": \"a\",
+    \"c\": 1
+  }
+}
+Warnings:
+2 error(s) found while decoding an intersection
+├─ 1 error(s) found while decoding the member 0
+│  └─ 1 error(s) found while decoding a struct
+│     └─ 1 error(s) found while decoding the required key \"a\"
+│        └─ 1 error(s) found while checking keys
+│           └─ unexpected key \"d\"
+└─ 1 error(s) found while decoding the member 1
+   └─ 1 error(s) found while decoding a struct
+      └─ 1 error(s) found while decoding the required key \"a\"
+         └─ 1 error(s) found while checking keys
+            └─ unexpected key \"d\"`
+      )
+    })
+
     // describe('tuple', () => {
     //   it('should not raise invalid warnings', () => {
     //     const I1 = D.tuple(D.string)

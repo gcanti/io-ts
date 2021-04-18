@@ -1,4 +1,5 @@
 import { flow, Lazy, Refinement } from 'fp-ts/lib/function'
+import * as O from 'fp-ts/lib/Option'
 import { pipe } from 'fp-ts/lib/pipeable'
 import * as RA from 'fp-ts/lib/ReadonlyArray'
 import * as RNEA from 'fp-ts/lib/ReadonlyNonEmptyArray'
@@ -954,125 +955,118 @@ const collectPrunable = <E>(de: DecodeError<E>): Prunable => {
   return go(de)
 }
 
-const isNotNull = <A>(a: A): a is NonNullable<A> => a !== null
+const make = <E>(constructor: (errors: RNEA.ReadonlyNonEmptyArray<DecodeError<E>>) => DecodeError<E>) => (
+  pdes: ReadonlyArray<DecodeError<E>>
+): O.Option<DecodeError<E>> => (RA.isNonEmpty(pdes) ? O.some(constructor(pdes)) : O.none)
 
-const prune = <E>(de: DecodeError<E>, prunable: Prunable, anticollision: string): DecodeError<E> | null => {
-  switch (de._tag) {
-    case 'ArrayE': {
-      const pdes = de.errors.map((e) => prune(e, prunable, anticollision)).filter(isNotNull)
-      return RA.isNonEmpty(pdes) ? arrayE(pdes) : null
-    }
-    case 'CompositionE': {
-      const pdes = de.errors.map((e) => prune(e, prunable, anticollision)).filter(isNotNull)
-      return RA.isNonEmpty(pdes) ? compositionE(pdes) : null
-    }
-    case 'IntersectionE': {
-      const pdes = de.errors.map((e) => prune(e, prunable, anticollision)).filter(isNotNull)
-      return RA.isNonEmpty(pdes) ? intersectionE(pdes) : null
-    }
-    case 'LazyE': {
-      const pde = prune(de.error, prunable, anticollision)
-      return pde ? lazyE(de.id, pde) : null
-    }
-    case 'LeafE':
-      return de
-    case 'MemberE': {
-      const pde = prune(de.error, prunable, anticollision)
-      return pde ? memberE(de.member, pde) : null
-    }
-    case 'MissingIndexesE':
-      return de
-    case 'MissingKeysE':
-      return de
-    case 'NextE': {
-      const pde = prune(de.error, prunable, anticollision)
-      return pde ? nextE(pde) : null
-    }
-    case 'NullableE': {
-      const pde = prune(de.error, prunable, anticollision)
-      return pde ? nullableE(pde) : null
-    }
-    case 'OptionalIndexE': {
-      const pde = prune(de.error, prunable, anticollision + de.index + '.')
-      return pde ? optionalIndexE(de.index, pde) : null
-    }
-    case 'OptionalKeyE': {
-      const pde = prune(de.error, prunable, anticollision + de.key + '.')
-      return pde ? optionalKeyE(de.key, pde) : null
-    }
-    case 'ParserE': {
-      const pde = prune(de.error, prunable, anticollision)
-      return pde ? parserE(pde) : null
-    }
-    case 'PartialE': {
-      const pdes = de.errors.map((e) => prune(e, prunable, anticollision)).filter(isNotNull)
-      return RA.isNonEmpty(pdes) ? partialE(pdes) : null
-    }
-    case 'PrevE': {
-      const pde = prune(de.error, prunable, anticollision)
-      return pde ? prevE(pde) : null
-    }
-    case 'RecordE': {
-      const pdes = de.errors.map((e) => prune(e, prunable, anticollision)).filter(isNotNull)
-      return RA.isNonEmpty(pdes) ? recordE(pdes) : null
-    }
-    case 'RefinementE': {
-      const pde = prune(de.error, prunable, anticollision)
-      return pde ? refinementE(pde) : null
-    }
-    case 'RequiredIndexE': {
-      const pde = prune(de.error, prunable, anticollision + de.index + '.')
-      return pde ? requiredIndexE(de.index, pde) : null
-    }
-    case 'RequiredKeyE': {
-      const pde = prune(de.error, prunable, anticollision + de.key + '.')
-      return pde ? requiredKeyE(de.key, pde) : null
-    }
-    case 'StructE': {
-      const pdes = de.errors.map((e) => prune(e, prunable, anticollision)).filter(isNotNull)
-      return RA.isNonEmpty(pdes) ? structE(pdes) : null
-    }
-    case 'SumE': {
-      const pdes = de.errors.map((e) => prune(e, prunable, anticollision)).filter(isNotNull)
-      return RA.isNonEmpty(pdes) ? sumE(pdes) : null
-    }
-    case 'TagE': {
-      const pde = prune(de.error, prunable, anticollision)
-      return pde ? tagE(de.tag, pde) : null
-    }
-    case 'TupleE': {
-      const pdes = de.errors.map((e) => prune(e, prunable, anticollision)).filter(isNotNull)
-      return RA.isNonEmpty(pdes) ? tupleE(pdes) : null
-    }
-    case 'UnexpectedIndexesE':
-      const pindexes = de.indexes.filter((index) => prunable.indexOf(anticollision + String(index)) !== -1)
-      return RA.isNonEmpty(pindexes) ? unexpectedIndexesE(pindexes) : null
-    case 'UnexpectedKeysE': {
-      const pkeys = de.keys.filter((key) => prunable.indexOf(anticollision + key) !== -1)
-      return RA.isNonEmpty(pkeys) ? unexpectedKeysE(pkeys) : null
-    }
-    case 'UnionE': {
-      const pdes = de.errors.map((e) => prune(e, prunable, anticollision)).filter(isNotNull)
-      return RA.isNonEmpty(pdes) ? unionE(pdes) : null
+const prune = (prunable: Prunable, anticollision: string): (<E>(de: DecodeError<E>) => O.Option<DecodeError<E>>) => {
+  const go = <E>(de: DecodeError<E>): O.Option<DecodeError<E>> => {
+    switch (de._tag) {
+      case 'ArrayE':
+        return pipe(de.errors, RA.filterMap(prune(prunable, anticollision)), make(arrayE))
+      case 'CompositionE':
+        return pipe(de.errors, RA.filterMap(prune(prunable, anticollision)), make(compositionE))
+      case 'IntersectionE':
+        return pipe(de.errors, RA.filterMap(prune(prunable, anticollision)), make(intersectionE))
+      case 'PartialE':
+        return pipe(de.errors, RA.filterMap(prune(prunable, anticollision)), make(partialE))
+      case 'RecordE':
+        return pipe(de.errors, RA.filterMap(prune(prunable, anticollision)), make(recordE))
+      case 'StructE':
+        return pipe(de.errors, RA.filterMap(prune(prunable, anticollision)), make(structE))
+      case 'SumE':
+        return pipe(de.errors, RA.filterMap(prune(prunable, anticollision)), make(sumE))
+      case 'TupleE':
+        return pipe(de.errors, RA.filterMap(prune(prunable, anticollision)), make(tupleE))
+      case 'UnionE':
+        return pipe(de.errors, RA.filterMap(prune(prunable, anticollision)), make(unionE))
+      case 'NextE':
+        return pipe(de.error, prune(prunable, anticollision), O.map(nextE))
+      case 'NullableE':
+        return pipe(de.error, prune(prunable, anticollision), O.map(nullableE))
+      case 'ParserE':
+        return pipe(de.error, prune(prunable, anticollision), O.map(parserE))
+      case 'PrevE':
+        return pipe(de.error, prune(prunable, anticollision), O.map(prevE))
+      case 'RefinementE':
+        return pipe(de.error, prune(prunable, anticollision), O.map(refinementE))
+      case 'LazyE':
+        return pipe(
+          de.error,
+          prune(prunable, anticollision),
+          O.map((pde) => lazyE(de.id, pde))
+        )
+      case 'LeafE':
+      case 'MissingIndexesE':
+      case 'MissingKeysE':
+        return O.some(de)
+      case 'MemberE':
+        return pipe(
+          de.error,
+          prune(prunable, anticollision),
+          O.map((pde) => memberE(de.member, pde))
+        )
+      case 'OptionalIndexE': {
+        return pipe(
+          de.error,
+          prune(prunable, anticollision + de.index + '.'),
+          O.map((pde) => optionalIndexE(de.index, pde))
+        )
+      }
+      case 'OptionalKeyE': {
+        return pipe(
+          de.error,
+          prune(prunable, anticollision + de.key + '.'),
+          O.map((pde) => optionalKeyE(de.key, pde))
+        )
+      }
+      case 'RequiredIndexE': {
+        return pipe(
+          de.error,
+          prune(prunable, anticollision + de.index + '.'),
+          O.map((pde) => requiredIndexE(de.index, pde))
+        )
+      }
+      case 'RequiredKeyE': {
+        return pipe(
+          de.error,
+          prune(prunable, anticollision + de.key + '.'),
+          O.map((pde) => requiredKeyE(de.key, pde))
+        )
+      }
+      case 'TagE': {
+        return pipe(
+          de.error,
+          prune(prunable, anticollision),
+          O.map((pde) => tagE(de.tag, pde))
+        )
+      }
+      case 'UnexpectedIndexesE':
+        const pindexes = de.indexes.filter((index) => prunable.indexOf(anticollision + String(index)) !== -1)
+        return RA.isNonEmpty(pindexes) ? O.some(unexpectedIndexesE(pindexes)) : O.none
+      case 'UnexpectedKeysE': {
+        const pkeys = de.keys.filter((key) => prunable.indexOf(anticollision + key) !== -1)
+        return RA.isNonEmpty(pkeys) ? O.some(unexpectedKeysE(pkeys)) : O.none
+      }
     }
   }
+  return go
 }
 
-const pruneAllUnexpected = <E>(de: DecodeError<E>): DecodeError<E> | null => prune(de, RA.empty, '')
+const pruneAllUnexpected: <E>(de: DecodeError<E>) => O.Option<DecodeError<E>> = prune(RA.empty, '')
 
 const pruneDifference = <E1, E2>(
   de1: DecodeError<E1>,
   de2: DecodeError<E2>
-): IntersectionE<MemberE<0, DecodeError<E1>> | MemberE<1, DecodeError<E2>>> | null => {
-  const pde1 = prune(de1, collectPrunable(de2), '')
-  const pde2 = prune(de2, collectPrunable(de1), '')
-  return pde1
-    ? pde2
-      ? intersectionE([memberE(0, pde1), memberE(1, pde2)])
-      : intersectionE([memberE(0, pde1)])
-    : pde2
-    ? intersectionE([memberE(1, pde2)])
-    : null
+): O.Option<IntersectionE<MemberE<0, DecodeError<E1>> | MemberE<1, DecodeError<E2>>>> => {
+  const pde1 = pipe(de1, prune(collectPrunable(de2), ''))
+  const pde2 = pipe(de2, prune(collectPrunable(de1), ''))
+  if (O.isSome(pde1)) {
+    return O.isSome(pde2)
+      ? O.some(intersectionE([memberE(0, pde1.value), memberE(1, pde2.value)]))
+      : O.some(intersectionE([memberE(0, pde1.value)]))
+  }
+  return O.isSome(pde2) ? O.some(intersectionE([memberE(1, pde2.value)])) : O.none
 }
 
 // TODO: add constraints
@@ -1117,8 +1111,8 @@ export function intersect<I2, E2, A2 extends Intersecable>(
                 () => left(intersectionE([memberE(0, de1)])),
                 (de2) => {
                   const pde2 = pruneAllUnexpected(de2)
-                  return pde2
-                    ? left(intersectionE([memberE(0, de1), memberE(1, pde2)]))
+                  return O.isSome(pde2)
+                    ? left(intersectionE([memberE(0, de1), memberE(1, pde2.value)]))
                     : left(intersectionE([memberE(0, de1)]))
                 }
               )
@@ -1131,7 +1125,9 @@ export function intersect<I2, E2, A2 extends Intersecable>(
                 (a2) => right(intersect_(a1, a2)),
                 (de2, a2) => {
                   const pde2 = pruneAllUnexpected(de2)
-                  return pde2 ? both(intersectionE([memberE(1, pde2)]), intersect_(a1, a2)) : right(intersect_(a1, a2))
+                  return O.isSome(pde2)
+                    ? both(intersectionE([memberE(1, pde2.value)]), intersect_(a1, a2))
+                    : right(intersect_(a1, a2))
                 }
               )
             ),
@@ -1141,17 +1137,19 @@ export function intersect<I2, E2, A2 extends Intersecable>(
               TH.fold(
                 (de2) => {
                   const pde1 = pruneAllUnexpected(de1)
-                  return pde1
-                    ? left(intersectionE([memberE(0, pde1), memberE(1, de2)]))
+                  return O.isSome(pde1)
+                    ? left(intersectionE([memberE(0, pde1.value), memberE(1, de2)]))
                     : left(intersectionE([memberE(1, de2)]))
                 },
                 (a2) => {
                   const pde1 = pruneAllUnexpected(de1)
-                  return pde1 ? both(intersectionE([memberE(0, pde1)]), intersect_(a1, a2)) : right(intersect_(a1, a2))
+                  return O.isSome(pde1)
+                    ? both(intersectionE([memberE(0, pde1.value)]), intersect_(a1, a2))
+                    : right(intersect_(a1, a2))
                 },
                 (de2, a2) => {
-                  const ie = pruneDifference(de1, de2)
-                  return ie ? both(ie, intersect_(a1, a2)) : right(intersect_(a1, a2))
+                  const difference = pruneDifference(de1, de2)
+                  return O.isSome(difference) ? both(difference.value, intersect_(a1, a2)) : right(intersect_(a1, a2))
                 }
               )
             )
