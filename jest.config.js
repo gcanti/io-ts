@@ -2,7 +2,7 @@ module.exports = {
   preset: 'ts-jest',
   testEnvironment: 'node',
   collectCoverage: true,
-  collectCoverageFrom: ['src/**/*.ts', '!src/poc.ts', '!src/Schemable2.ts'],
+  collectCoverageFrom: ['src/**/*.ts', '!src/Schemable2.ts'],
   transform: {
     '^.+\\.tsx?$': 'ts-jest'
   },
@@ -16,5 +16,5 @@ module.exports = {
       statements: 100
     }
   },
-  modulePathIgnorePatterns: ['2.1.x/helpers.ts', 'Arbitrary.ts', 'helpers.ts', 'JsonSchema.ts']
+  modulePathIgnorePatterns: ['2.1.x/helpers.ts', 'Arbitrary.ts', 'helpers.ts', 'JsonSchema.ts', 'util.ts']
 }

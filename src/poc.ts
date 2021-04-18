@@ -585,7 +585,7 @@ export const fromStruct = <Properties extends Record<PropertyKey, AnyD>>(
 })
 
 export interface UnexpectedKeysD<Properties>
-  extends Decoder<Record<PropertyKey, unknown>, UnexpectedKeysE, { [K in keyof Properties]?: unknown }> {
+  extends Decoder<Record<PropertyKey, unknown>, UnexpectedKeysE, Partial<{ [K in keyof Properties]: unknown }>> {
   readonly _tag: 'UnexpectedKeysD'
   readonly properties: Properties
 }
@@ -614,7 +614,7 @@ export const unexpectedKeys = <Properties extends Record<string, unknown>>(
 }
 
 export interface MissingKeysD<Properties>
-  extends Decoder<{ [K in keyof Properties]?: unknown }, MissingKeysE, { [K in keyof Properties]: unknown }> {
+  extends Decoder<Partial<{ [K in keyof Properties]: unknown }>, MissingKeysE, { [K in keyof Properties]: unknown }> {
   readonly _tag: 'MissingKeysD'
   readonly properties: Properties
 }
@@ -654,7 +654,7 @@ export function struct(properties: Record<PropertyKey, AnyUD>): StructD<typeof p
 
 export interface FromPartialD<Properties>
   extends Decoder<
-    Partial<{ [K in keyof Properties]?: InputOf<Properties[K]> }>,
+    Partial<{ [K in keyof Properties]: InputOf<Properties[K]> }>,
     PartialE<{ readonly [K in keyof Properties]: OptionalKeyE<K, ErrorOf<Properties[K]>> }[keyof Properties]>,
     Partial<{ [K in keyof Properties]: TypeOf<Properties[K]> }>
   > {
@@ -741,7 +741,7 @@ export interface UnexpectedIndexesD<Components>
   readonly components: Components
 }
 
-const unexpectedIndexes = <Components extends ReadonlyArray<unknown>>(
+export const unexpectedIndexes = <Components extends ReadonlyArray<unknown>>(
   ...components: Components
 ): UnexpectedIndexesD<Components> => {
   return {
@@ -1076,7 +1076,7 @@ const pruneDifference = <E1, E2>(
 }
 
 // TODO: add constraints
-export type Intersecable = Record<string, unknown>
+export type Intersecable = Record<string, unknown> | Array<unknown>
 
 const intersect_ = <A extends Intersecable, B extends Intersecable>(a: A, b: B): A & B => {
   const out: any = { ...a }
@@ -1778,7 +1778,7 @@ Errors:
 export const I1 = struct({ a: struct({ b: string }) })
 export const I2 = struct({ a: struct({ c: number }) })
 export const I12 = pipe(I1, intersect(I2))
-pipe(I12.decode({ a: { b: 'a', c: 1, d: true } }), debug)
+// pipe(I12.decode({ a: { b: 'a', c: 1, d: true } }), debug)
 /*
 Value:
 {
@@ -1910,221 +1910,3 @@ Value:
 // -------------------------------------------------------------------------------------
 // use case: how to encode [A, B?]
 // -------------------------------------------------------------------------------------
-
-// -------------------------------------------------------------------------------------
-// examples
-// -------------------------------------------------------------------------------------
-
-// // literal
-// export const LDU = literal(1, true)
-// export type LDUI = InputOf<typeof LDU>
-// export type LDUE = ErrorOf<typeof LDU>
-// export type LDUA = TypeOf<typeof LDU>
-
-// fromStruct
-export const SD = fromStruct({
-  a: string,
-  b: number
-})
-export type SDI = InputOf<typeof SD>
-export type SDE = ErrorOf<typeof SD>
-export type SDA = TypeOf<typeof SD>
-// pipe(SD.decode({ a: 'a', b: 1, c: true }), debug)
-
-// struct
-export const SUD = struct({
-  a: string,
-  b: number
-})
-export type SUDI = InputOf<typeof SUD>
-export type SUDE = ErrorOf<typeof SUD>
-export type SUDA = TypeOf<typeof SUD>
-// pipe(SUD.decode({ a: 'a', b: 1, c: true }), debug)
-
-// fromPartial
-export const PSD = fromPartial({
-  a: string,
-  b: number
-})
-export type PSDI = InputOf<typeof PSD>
-export type PSDE = ErrorOf<typeof PSD>
-export type PSDA = TypeOf<typeof PSD>
-// pipe(PSD.decode({ a: 'a' }), debug)
-
-// partial
-export const PSUD = partial({
-  a: string,
-  b: number
-})
-export type PSUDE = ErrorOf<typeof PSUD>
-export type PSUDA = TypeOf<typeof PSUD>
-// pipe(PSUD.decode({ a: 'a' }), debug)
-
-// fromTuple
-export const TD = fromTuple(string, number)
-export type TDI = InputOf<typeof TD>
-export type TDE = ErrorOf<typeof TD>
-export type TDA = TypeOf<typeof TD>
-// pipe(TD.decode(['a', 1, true]), debug)
-
-// tuple
-export const TUD = tuple(string, number)
-export type TUDE = ErrorOf<typeof TUD>
-export type TUDA = TypeOf<typeof TUD>
-// pipe(TUD.decode(['a', 1, true]), debug)
-
-// fromArray
-export const AD = fromArray(string)
-export type ADI = InputOf<typeof AD>
-export type ADE = ErrorOf<typeof AD>
-export type ADA = TypeOf<typeof AD>
-
-// array
-export const AUD = array(string)
-
-// // fromRecord
-// export const RD = fromRecord(number)
-// export type RDI = InputOf<typeof RD>
-// export type RDE = ErrorOf<typeof RD>
-// export type RDA = TypeOf<typeof RD>
-
-// // record
-// export const RUD = record(number)
-
-// refine
-export type IntDI = InputOf<typeof IntD>
-export type IntDE = ErrorOf<typeof IntD>
-export type IntDA = TypeOf<typeof IntD>
-
-export type IntUDA = TypeOf<typeof IntUD>
-
-// // union
-// export const UD = union(NonEmptyStringD, IntD)
-// export type UDI = InputOf<typeof UD>
-// export type UDE = ErrorOf<typeof UD>
-// export type UDA = TypeOf<typeof UD>
-
-// export const UUD = union(string, number)
-// export type UUDE = ErrorOf<typeof UUD>
-// export type UUDA = TypeOf<typeof UUD>
-
-// // nullable
-// export const ND = nullable(NonEmptyStringD)
-// export type NDI = InputOf<typeof ND>
-// export type NDE = ErrorOf<typeof ND>
-// export type NDA = TypeOf<typeof ND>
-
-// export const NUD = nullable(string)
-// export type NUDE = ErrorOf<typeof NUD>
-// export type NUDA = TypeOf<typeof NUD>
-
-// // parse
-// interface ParseNumberE {
-//   readonly _tag: 'ParseNumberE'
-// }
-// declare const parseNumber: (s: string) => These<ParseNumberE, number>
-// const PD = pipe(id<string>(), parse(parseNumber))
-// export type PDI = InputOf<typeof PD>
-// export type PDE = ErrorOf<typeof PD>
-// export type PDA = TypeOf<typeof PD>
-
-// const PUD = pipe(string, parse(parseNumber))
-// export type PUDE = ErrorOf<typeof PUD>
-// export type PUDA = TypeOf<typeof PUD>
-
-// intersect
-export const ID = pipe(fromStruct({ a: string }), intersect(fromStruct({ b: number })))
-export type IDI = InputOf<typeof ID>
-export type IDE = ErrorOf<typeof ID>
-export type IDA = TypeOf<typeof ID>
-
-export const IUD = pipe(struct({ a: string }), intersect(struct({ b: number })))
-export type IUDE = ErrorOf<typeof IUD>
-export type IUDA = TypeOf<typeof IUD>
-// pipe(IUD.decode({ a: 'a', b: 1 }), debug)
-
-// // lazy
-// interface Category {
-//   name: string
-//   categories: ReadonlyArray<Category>
-// }
-// // Note: getting the error type is quite difficult.
-// interface ReadonlyArrayCategoryE extends ArrayE<IndexE<number, CategoryE>> {}
-// type CategoryE = LazyE<
-//   | UnknownRecordLE
-//   | StructE<
-//       | KeyE<'name', LeafE<StringE> | RefineE<LeafE<NonEmptyStringE>>>
-//       | KeyE<'categories', LeafE<UnknownArrayE> | ReadonlyArrayCategoryE>
-//     >
-// >
-// // A possible solution is using DecodeError<E>
-// // type CategoryE = DecodeError<StringE | NonEmptyStringE | UnknownArrayE | UnknownRecordE>
-// export const LaUD: Decoder<unknown, CategoryE, Category> = lazy('Category', () =>
-//   struct({
-//     name: NonEmptyStringUD,
-//     categories: array(LaUD)
-//   })
-// )
-// export type LaUDE = ErrorOf<typeof LaUD>
-// export type LaUDA = TypeOf<typeof LaUD>
-
-// // sum
-// export const SumD = fromSum('type')({
-//   A: fromStruct({ type: literal('A'), a: string }),
-//   B: fromStruct({ type: literal('B'), b: string })
-// })
-// export type SumDI = InputOf<typeof SumD>
-// export type SumDE = ErrorOf<typeof SumD>
-// export type SumDA = TypeOf<typeof SumD>
-
-// const sumType = sum('type')
-// export const SumUD = sumType({
-//   A: struct({ type: literal('A'), a: string }),
-//   B: struct({ type: literal('B'), b: string })
-// })
-// export type SumUDE = ErrorOf<typeof SumUD>
-// export type SumUDA = TypeOf<typeof SumUD>
-
-// // keys
-// const K = keys('a', 'b')
-// export type KI = InputOf<typeof K>
-// export type KE = ErrorOf<typeof K>
-// export type KA = TypeOf<typeof K>
-// pipe(K.decode({ a: 'a', b: 1, c: true }), debug)
-
-// // components
-// const SC = components(null, null)
-// export type SCI = InputOf<typeof SC>
-// export type SCE = ErrorOf<typeof SC>
-// export type SCA = TypeOf<typeof SC>
-
-// // all
-// const AllD = fromStruct({
-//   a: LDU,
-//   b: TD,
-//   c: AD,
-//   d: RD,
-//   e: UD,
-//   f: ND,
-//   g: NonEmptyStringD,
-//   h: PD,
-//   i: ID
-// })
-// export type AllDI = InputOf<typeof AllD>
-// export type AllDE = ErrorOf<typeof AllD>
-// export type AllDA = TypeOf<typeof AllD>
-
-// const AllUD = struct({
-//   a: LDU,
-//   b: SUD,
-//   c: TUD,
-//   d: AUD,
-//   e: RUD,
-//   f: UUD,
-//   g: NUD,
-//   h: NonEmptyStringUD,
-//   i: PUD,
-//   l: IUD
-// })
-// export type AllUDE = ErrorOf<typeof AllUD>
-// export type AllUDA = TypeOf<typeof AllUD>

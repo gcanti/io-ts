@@ -21,6 +21,7 @@
     "label-position": false,
     "function-constructor": false,
     "invalid-void": false,
-    "no-construct": false
+    "no-construct": false,
+    "max-line-length": false
   }
 }
