@@ -1424,7 +1424,8 @@ export const draw = TH.mapLeft(flow(toTree, drawTree))
 // draw utils
 // -------------------------------------------------------------------------------------
 
-const printValue = <A>(a: A): string => 'Value:\n' + JSON.stringify(a, null, 2)
+const printValue = <A>(a: A): string =>
+  'Value:\n' + (typeof a === 'number' && isNaN(a) ? 'NaN' : JSON.stringify(a, null, 2))
 const printErrors = (s: string): string => (s === '' ? s : 'Errors:\n' + s)
 const printWarnings = (s: string): string => (s === '' ? s : 'Warnings:\n' + s)
 
@@ -1556,46 +1557,101 @@ export type PositiveE = ErrorOf<typeof Positive>
 // pipe(Positive.decode(NaN), debug)
 
 // -------------------------------------------------------------------------------------
-// use case: condemn
+// use case: new decoder, multiple custom messages #487
 // -------------------------------------------------------------------------------------
 
-export const condemn = <D extends AnyD>(decoder: D): D => {
-  return {
-    ...decoder,
-    decode: (i) => {
-      const de = decoder.decode(i)
-      return TH.isBoth(de) ? left(de.left) : de
-    }
-  }
+export interface UsernameBrand {
+  readonly Username: unique symbol
 }
 
-export function strict<Properties extends Record<PropertyKey, AnyUD>>(properties: Properties): StructD<Properties>
-export function strict(properties: Record<PropertyKey, AnyUD>): StructD<typeof properties> {
-  return pipe(
-    UnknownRecord,
-    //         v-- here's the difference
-    compose(condemn(unexpectedKeys(properties))),
-    compose(missingKeys(properties)),
-    compose(fromStruct(properties))
+export type Username = string & UsernameBrand
+
+const USERNAME_REGEX = /(a|b)*d/
+
+export const Username = pipe(
+  customStringUD,
+  refine((s) =>
+    s.length < 2
+      ? left(message(s, 'too short'))
+      : s.length > 4
+      ? left(message(s, 'too long'))
+      : USERNAME_REGEX.test(s)
+      ? left(message(s, 'bad characters'))
+      : right(s as Username)
   )
+)
+
+// pipe(
+//   fromTuple(Username, Username, Username, Username, Username).decode([null, 'a', 'bbbbb', 'abd', 'ok']),
+//   draw,
+//   print,
+//   console.log
+// )
+
+// -------------------------------------------------------------------------------------
+// use case: reflection, for example generating a match function from a sum
+// -------------------------------------------------------------------------------------
+
+export const getMatch = <T extends string, Members extends Record<PropertyKey, AnyD>>(decoder: {
+  readonly tag: T
+  readonly members: Members
+}) => <B>(patterns: { [K in keyof Members]: (member: TypeOf<Members[K]>) => B }) => (
+  a: TypeOf<Members[keyof Members]>
+): B => patterns[a[decoder.tag]](a)
+
+export const matchDecoder = sum('type')({
+  A: struct({ type: literal('A'), a: string }),
+  B: struct({ type: literal('B'), b: number })
+})
+
+export const mymatch = getMatch(matchDecoder)
+
+// pipe(
+//   { type: 'A', a: 'a' },
+//   mymatch({
+//     A: ({ a }) => `A: ${a}`,
+//     B: ({ b }) => `B: ${b}`
+//   }),
+//   console.log
+// )
+// A: a
+
+// -------------------------------------------------------------------------------------
+// use case: fail on any warning
+// -------------------------------------------------------------------------------------
+
+export interface CondemnD<D> extends Decoder<InputOf<D>, ErrorOf<D>, TypeOf<D>> {
+  readonly _tag: 'CondemnD'
+  readonly decoder: D
 }
 
-// pipe(struct({ a: string }).decode({ a: 'a', b: 1 }), debug)
+export const condemn = <D extends AnyD>(decoder: D): CondemnD<D> => ({
+  _tag: 'CondemnD',
+  decoder,
+  decode: (i) => {
+    const de = decoder.decode(i)
+    return TH.isBoth(de) ? left(de.left) : de
+  }
+})
+
+// pipe(number.decode(NaN), debug)
 /*
 Value:
-{
-  "a": "a"
-}
+NaN
 Warnings:
-1 error(s) found while checking keys
-└─ unexpected key "b"
+value is NaN
 */
-// pipe(strict({ a: string }).decode({ a: 'a', b: 1 }), debug)
+
+export const mynumber = condemn(number)
+pipe(mynumber.decode(NaN), debug)
 /*
 Errors:
-1 error(s) found while checking keys
-└─ unexpected key "b"
+value is NaN
 */
+
+// -------------------------------------------------------------------------------------
+// use case: warn/fail on NaN
+// -------------------------------------------------------------------------------------
 
 export const shouldCondemnWhen = <E>(
   predicate: (e: E | UnexpectedKeysE | UnexpectedIndexesE) => boolean
@@ -1660,66 +1716,6 @@ Errors:
 └─ 1 error(s) found while decoding required key "a"
    └─ value is NaN
 */
-
-// -------------------------------------------------------------------------------------
-// use case: new decoder, multiple custom messages #487
-// -------------------------------------------------------------------------------------
-
-export interface UsernameBrand {
-  readonly Username: unique symbol
-}
-
-export type Username = string & UsernameBrand
-
-const USERNAME_REGEX = /(a|b)*d/
-
-export const Username = pipe(
-  customStringUD,
-  refine((s) =>
-    s.length < 2
-      ? left(message(s, 'too short'))
-      : s.length > 4
-      ? left(message(s, 'too long'))
-      : USERNAME_REGEX.test(s)
-      ? left(message(s, 'bad characters'))
-      : right(s as Username)
-  )
-)
-
-// pipe(
-//   fromTuple(Username, Username, Username, Username, Username).decode([null, 'a', 'bbbbb', 'abd', 'ok']),
-//   draw,
-//   print,
-//   console.log
-// )
-
-// -------------------------------------------------------------------------------------
-// use case: reflection, for example generating a match function from a sum
-// -------------------------------------------------------------------------------------
-
-export const getMatch = <T extends string, Members extends Record<PropertyKey, AnyD>>(decoder: {
-  readonly tag: T
-  readonly members: Members
-}) => <B>(patterns: { [K in keyof Members]: (member: TypeOf<Members[K]>) => B }) => (
-  a: TypeOf<Members[keyof Members]>
-): B => patterns[a[decoder.tag]](a)
-
-export const matchDecoder = sum('type')({
-  A: struct({ type: literal('A'), a: string }),
-  B: struct({ type: literal('B'), b: number })
-})
-
-export const mymatch = getMatch(matchDecoder)
-
-// pipe(
-//   { type: 'A', a: 'a' },
-//   mymatch({
-//     A: ({ a }) => `A: ${a}`,
-//     B: ({ b }) => `B: ${b}`
-//   }),
-//   console.log
-// )
-// A: a
 
 // -------------------------------------------------------------------------------------
 // use case: warn/fail on additional props #322
