@@ -1888,6 +1888,40 @@ Errors:
 // use case: rename a prop #369
 // -------------------------------------------------------------------------------------
 
+const RenameOriginal = struct({
+  a: string, // <= want to rename this to `c`
+  b: number
+})
+
+export const Renamed = pipe(
+  RenameOriginal,
+  map(({ a, ...rest }) => ({ c: a, ...rest }))
+)
+/*
+const Renamed: MapD<StructD<{
+    a: stringUD;
+    b: numberUD;
+}>, {
+    b: number;
+    c: string;
+}>
+*/
+// pipe(Renamed.decode({ a: 1, b: 2 }), debug)
+/*
+Errors:
+1 error(s) found while decoding a struct
+└─ 1 error(s) found while decoding the required key "a"
+   └─ cannot decode 1, expected a string
+*/
+// pipe(Renamed.decode({ a: 'a', b: 2 }), debug)
+/*
+Value:
+{
+  "c": "a",
+  "b": 2
+}
+*/
+
 // -------------------------------------------------------------------------------------
 // use case: omit, pick #553
 // -------------------------------------------------------------------------------------
