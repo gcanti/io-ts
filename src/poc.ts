@@ -882,16 +882,36 @@ export function parse<A, E, B>(
   return compose(parser(p))
 }
 
-export interface UnionD<Members extends ReadonlyArray<AnyD>>
+export interface UnionD<I, Members extends ReadonlyArray<AnyD>>
   extends Decoder<
-    InputOf<Members[keyof Members]>,
-    UnionE<{ [I in keyof Members]: MemberE<I, ErrorOf<Members[I]>> }[number]>,
+    I,
+    UnionE<{ [K in keyof Members]: MemberE<K, ErrorOf<Members[K]>> }[number]>,
     TypeOf<Members[keyof Members]>
   > {
   readonly _tag: 'UnionD'
   readonly members: Members
 }
-export declare const union: <Members extends ReadonlyArray<AnyD>>(...members: Members) => UnionD<Members>
+export function union<I, Members extends ReadonlyArray<Decoder<I, any, any>>>(...members: Members): UnionD<I, Members> {
+  return {
+    _tag: 'UnionD',
+    members,
+    decode: (i) => {
+      const es: Array<MemberE<number, ErrorOf<Members[number]>>> = []
+      for (let m = 0; m < members.length; m++) {
+        const de = members[m].decode(i)
+        if (TH.isLeft(de)) {
+          es.push(memberE(String(m) as any, de.left))
+        } else {
+          return pipe(
+            de,
+            TH.mapLeft((e) => unionE([memberE(String(m) as any, e)]))
+          )
+        }
+      }
+      return RA.isNonEmpty(es) ? left(unionE(es)) : right(i)
+    }
+  }
+}
 
 export interface NullableD<D> extends Decoder<null | InputOf<D>, NullableE<ErrorOf<D>>, null | TypeOf<D>> {
   readonly _tag: 'NullableD'
@@ -1336,19 +1356,19 @@ export const toTreeWith = <E>(toTree: (e: E) => Tree<string>): ((de: DecodeError
 
       // customized singles
       case 'RequiredIndexE':
-        return tree(`1 error(s) found while decoding the required component ${de.index}`, [go(de.error)])
+        return tree(`1 error(s) found while decoding required component ${de.index}`, [go(de.error)])
       case 'OptionalIndexE':
-        return tree(`1 error(s) found while decoding the optional index ${de.index}`, [go(de.error)])
+        return tree(`1 error(s) found while decoding optional index ${de.index}`, [go(de.error)])
       case 'RequiredKeyE':
-        return tree(`1 error(s) found while decoding the required key ${JSON.stringify(de.key)}`, [go(de.error)])
+        return tree(`1 error(s) found while decoding required key ${JSON.stringify(de.key)}`, [go(de.error)])
       case 'OptionalKeyE':
-        return tree(`1 error(s) found while decoding the optional key ${JSON.stringify(de.key)}`, [go(de.error)])
+        return tree(`1 error(s) found while decoding optional key ${JSON.stringify(de.key)}`, [go(de.error)])
       case 'MemberE':
-        return tree(`1 error(s) found while decoding the member ${JSON.stringify(de.member)}`, [go(de.error)])
+        return tree(`1 error(s) found while decoding member ${JSON.stringify(de.member)}`, [go(de.error)])
       case 'TagE':
-        return tree(`1 error(s) found while decoding the sum tag ${de.tag}`, [go(de.error)])
+        return tree(`1 error(s) found while decoding sum tag ${de.tag}`, [go(de.error)])
       case 'LazyE':
-        return tree(`1 error(s) found while decoding the lazy decoder ${de.id}`, [go(de.error)])
+        return tree(`1 error(s) found while decoding lazy decoder ${de.id}`, [go(de.error)])
 
       // compounds
       case 'ArrayE':
@@ -1818,10 +1838,10 @@ export const I12 = pipe(I1, intersect(I2))
 // pipe(I12.decode({ a: 'a', b: 1 }), debug)
 /*
 2 error(s) found while decoding an intersection
-├─ 1 error(s) found while decoding the member 0
+├─ 1 error(s) found while decoding member 0
 │  └─ 1 error(s) found while checking keys
 │     └─ unexpected key "b"
-└─ 1 error(s) found while decoding the member 1
+└─ 1 error(s) found while decoding member 1
    └─ 1 error(s) found while checking keys
       └─ unexpected key "a"
 */
@@ -1864,10 +1884,10 @@ Value:
 }
 Warnings:
 2 error(s) found while decoding an intersection
-├─ 1 error(s) found while decoding the member 0
+├─ 1 error(s) found while decoding member 0
 │  └─ 1 error(s) found while checking keys
 │     └─ unexpected key "c"
-└─ 1 error(s) found while decoding the member 1
+└─ 1 error(s) found while decoding member 1
    └─ 1 error(s) found while checking keys
       └─ unexpected key "c"
 */
@@ -1876,10 +1896,10 @@ Warnings:
 /*
 Errors:
 2 error(s) found while decoding an intersection
-├─ 1 error(s) found while decoding the member 0
+├─ 1 error(s) found while decoding member 0
 │  └─ 1 error(s) found while checking keys
 │     └─ unexpected key "c"
-└─ 1 error(s) found while decoding the member 1
+└─ 1 error(s) found while decoding member 1
    └─ 1 error(s) found while checking keys
       └─ unexpected key "c"
 */
@@ -1910,7 +1930,7 @@ const Renamed: MapD<StructD<{
 /*
 Errors:
 1 error(s) found while decoding a struct
-└─ 1 error(s) found while decoding the required key "a"
+└─ 1 error(s) found while decoding required key "a"
    └─ cannot decode 1, expected a string
 */
 // pipe(Renamed.decode({ a: 'a', b: 2 }), debug)
@@ -1949,3 +1969,19 @@ Value:
 // -------------------------------------------------------------------------------------
 // use case: how to encode [A, B?]
 // -------------------------------------------------------------------------------------
+
+// -------------------------------------------------------------------------------------
+// use case: #585
+// -------------------------------------------------------------------------------------
+
+export const decoder585 = union(struct({ a: string }), struct({ b: number }), struct({}))
+// pipe(decoder585.decode({ a: 12 }), debug)
+/*
+Value:
+{}
+Warnings:
+1 error(s) found while decoding a union
+└─ 1 error(s) found while decoding member "2"
+   └─ 1 error(s) found while checking keys
+      └─ unexpected key "a"
+*/

@@ -37,10 +37,10 @@ describe('poc', () => {
 }
 Warnings:
 2 error(s) found while decoding an intersection
-├─ 1 error(s) found while decoding the member 0
+├─ 1 error(s) found while decoding member 0
 │  └─ 1 error(s) found while checking keys
 │     └─ unexpected key \"c\"
-└─ 1 error(s) found while decoding the member 1
+└─ 1 error(s) found while decoding member 1
    └─ 1 error(s) found while checking keys
       └─ unexpected key \"c\"`
         )
@@ -62,14 +62,14 @@ Warnings:
 }
 Warnings:
 2 error(s) found while decoding an intersection
-├─ 1 error(s) found while decoding the member 0
+├─ 1 error(s) found while decoding member 0
 │  └─ 1 error(s) found while decoding a struct
-│     └─ 1 error(s) found while decoding the required key \"a\"
+│     └─ 1 error(s) found while decoding required key \"a\"
 │        └─ 1 error(s) found while checking keys
 │           └─ unexpected key \"d\"
-└─ 1 error(s) found while decoding the member 1
+└─ 1 error(s) found while decoding member 1
    └─ 1 error(s) found while decoding a struct
-      └─ 1 error(s) found while decoding the required key \"a\"
+      └─ 1 error(s) found while decoding required key \"a\"
          └─ 1 error(s) found while checking keys
             └─ unexpected key \"d\"`
       )
@@ -83,5 +83,31 @@ Warnings:
     //     U.deepStrictEqual(I.decode(['a', 1]), TH.right({ a: 'a', b: 1 }))
     //   })
     // })
+  })
+
+  describe('union', () => {
+    it('should return a right', () => {
+      const decoder = D.union(D.string, D.number)
+      U.deepStrictEqual(decoder.decode('a'), TH.right('a'))
+      U.deepStrictEqual(decoder.decode(1), TH.right(1))
+    })
+
+    it('should return a both', () => {
+      const decoder = D.union(D.string, D.number)
+      U.deepStrictEqual(decoder.decode(NaN), TH.both(D.unionE([D.memberE('1' as const, D.naNLE)]), NaN))
+    })
+
+    it('should return a left', () => {
+      const decoder = D.union(D.string, D.number)
+      U.deepStrictEqual(
+        pipe(decoder.decode(null), print),
+        `Errors:
+2 error(s) found while decoding a union
+├─ 1 error(s) found while decoding member "0"
+│  └─ cannot decode null, expected a string
+└─ 1 error(s) found while decoding member "1"
+   └─ cannot decode null, expected a number`
+      )
+    })
   })
 })
