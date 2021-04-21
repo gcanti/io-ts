@@ -55,16 +55,21 @@ export interface MapLeftD<D, E> extends Decoder<InputOf<D>, E, TypeOf<D>> {
   readonly mapLeft: (de: ErrorOf<D>, i: InputOf<D>) => E
 }
 
-export const mapLeft = <D extends AnyD, E>(f: (e: ErrorOf<D>, i: InputOf<D>) => E) => (decoder: D): MapLeftD<D, E> => ({
-  _tag: 'MapLeftD',
-  decode: (i) =>
-    pipe(
-      decoder.decode(i),
-      TH.mapLeft((de) => f(de, i))
-    ),
-  decoder,
-  mapLeft: f
-})
+export function mapLeft<D extends AnyD, E>(f: (e: ErrorOf<D>, i: InputOf<D>) => E): (decoder: D) => MapLeftD<D, E>
+export function mapLeft<E1, I, E2>(
+  f: (e: E1, i: I) => E2
+): <A>(decoder: Decoder<I, E1, A>) => MapLeftD<typeof decoder, E2> {
+  return (decoder) => ({
+    _tag: 'MapLeftD',
+    decode: (i) =>
+      pipe(
+        decoder.decode(i),
+        TH.mapLeft((de) => f(de, i))
+      ),
+    decoder,
+    mapLeft: f
+  })
+}
 
 export interface MapD<D, B> extends Decoder<InputOf<D>, ErrorOf<D>, B> {
   readonly _tag: 'MapD'
@@ -72,12 +77,54 @@ export interface MapD<D, B> extends Decoder<InputOf<D>, ErrorOf<D>, B> {
   readonly map: (a: TypeOf<D>) => B
 }
 
-export const map = <D extends AnyD, B>(f: (a: TypeOf<D>) => B) => (decoder: D): MapD<D, B> => ({
-  _tag: 'MapD',
-  decode: flow(decoder.decode, TH.map(f)),
-  decoder,
-  map: f
-})
+export function map<D extends AnyD, B>(f: (a: TypeOf<D>) => B): (decoder: D) => MapD<D, B>
+export function map<A, B>(f: (a: A) => B): <I, E>(decoder: Decoder<I, E, A>) => MapD<typeof decoder, B> {
+  return (decoder) => ({
+    _tag: 'MapD',
+    decode: flow(decoder.decode, TH.map(f)),
+    decoder,
+    map: f
+  })
+}
+
+// -------------------------------------------------------------------------------------
+// orElse
+// -------------------------------------------------------------------------------------
+
+// export interface OrElseD<F, S>
+//   extends Decoder<
+//     InputOf<F> & InputOf<S>,
+//     UnionE<MemberE<'0', ErrorOf<F>> | MemberE<'1', ErrorOf<S>>>,
+//     TypeOf<F> | TypeOf<S>
+//   > {
+//   readonly _tag: 'OrElseD'
+//   readonly first: F
+//   readonly second: (e: ErrorOf<F>) => S
+// }
+
+// export function orElse<F extends AnyD, S extends AnyD>(second: (e: ErrorOf<F>) => S): (first: F) => OrElseD<F, S>
+// export function orElse<E1, I2, E2, A2>(
+//   second: (e1: E1) => Decoder<I2, E2, A2>
+// ): <I1, A1>(first: Decoder<I1, E1, A1>) => OrElseD<Decoder<I1, E1, A1>, Decoder<I2, E2, A2>> {
+//   return <I1, A1>(first: Decoder<I1, E1, A1>): OrElseD<Decoder<I1, E1, A1>, Decoder<I2, E2, A2>> => ({
+//     _tag: 'OrElseD',
+//     first,
+//     second,
+//     decode: (i) =>
+//       pipe(
+//         first.decode(i),
+//         TH.fold<E1, A1, These<UnionE<MemberE<'0', E1> | MemberE<'1', E2>>, A1 | A2>>(
+//           (e1) =>
+//             pipe(
+//               second(e1).decode(i),
+//               TH.mapLeft((e2) => unionE([memberE('0', e1), memberE('1', e2)]))
+//             ),
+//           right,
+//           (e1, a1) => both(unionE([memberE('0', e1)]), a1)
+//         )
+//       )
+//   })
+// }
 
 // -------------------------------------------------------------------------------------
 // Category
@@ -501,6 +548,10 @@ export const UnknownRecord: UnknownRecordUD = {
 // decoder constructors
 // -------------------------------------------------------------------------------------
 
+export const fail = <E>(e: E): Decoder<any, E, any> => ({
+  decode: () => left(e)
+})
+
 export type Literal = string | number | boolean | null | symbol
 
 export interface LiteralE<A extends Literal> extends ActualE<unknown> {
@@ -882,16 +933,21 @@ export function parse<A, E, B>(
   return compose(parser(p))
 }
 
-export interface UnionD<I, Members extends ReadonlyArray<AnyD>>
+type UnionToIntersection<U> = (U extends any ? (k: U) => void : never) extends (k: infer I) => void ? I : never
+
+const append = <A>(end: A) => (init: ReadonlyArray<A>): ReadonlyNonEmptyArray<A> =>
+  RA.isNonEmpty(init) ? [init[0], ...init.slice(1), end] : [end]
+
+export interface UnionD<Members extends ReadonlyArray<AnyD>>
   extends Decoder<
-    I,
+    UnionToIntersection<InputOf<Members[number]>>,
     UnionE<{ [K in keyof Members]: MemberE<K, ErrorOf<Members[K]>> }[number]>,
     TypeOf<Members[keyof Members]>
   > {
   readonly _tag: 'UnionD'
   readonly members: Members
 }
-export function union<I, Members extends ReadonlyArray<Decoder<I, any, any>>>(...members: Members): UnionD<I, Members> {
+export function union<Members extends ReadonlyArray<AnyD>>(...members: Members): UnionD<Members> {
   return {
     _tag: 'UnionD',
     members,
@@ -904,7 +960,7 @@ export function union<I, Members extends ReadonlyArray<Decoder<I, any, any>>>(..
         } else {
           return pipe(
             de,
-            TH.mapLeft((e) => unionE([memberE(String(m) as any, e)]))
+            TH.mapLeft((e) => unionE(pipe(es, append(memberE(String(m) as any, e)))))
           )
         }
       }
@@ -1980,7 +2036,14 @@ export const decoder585 = union(struct({ a: string }), struct({ b: number }), st
 Value:
 {}
 Warnings:
-1 error(s) found while decoding a union
+3 error(s) found while decoding a union
+├─ 1 error(s) found while decoding member "0"
+│  └─ 1 error(s) found while decoding a struct
+│     └─ 1 error(s) found while decoding required key "a"
+│        └─ cannot decode 12, expected a string
+├─ 1 error(s) found while decoding member "1"
+│  └─ 1 error(s) found while checking keys
+│     └─ missing required key "b"
 └─ 1 error(s) found while decoding member "2"
    └─ 1 error(s) found while checking keys
       └─ unexpected key "a"
