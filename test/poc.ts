@@ -94,7 +94,10 @@ Warnings:
 
     it('should return a both', () => {
       const decoder = D.union(D.string, D.number)
-      U.deepStrictEqual(decoder.decode(NaN), TH.both(D.unionE([D.memberE('1' as const, D.naNLE)]), NaN))
+      U.deepStrictEqual(
+        decoder.decode(NaN),
+        TH.both(D.unionE([D.memberE('0' as const, D.stringLE(NaN)), D.memberE('1' as const, D.naNLE)]), NaN)
+      )
     })
 
     it('should return a left', () => {

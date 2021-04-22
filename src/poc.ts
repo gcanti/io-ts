@@ -472,12 +472,14 @@ export interface StringE extends ActualE<unknown> {
   readonly _tag: 'StringE'
 }
 export interface StringLE extends LeafE<StringE> {}
+export const stringLE = (actual: unknown): StringLE => leafE({ _tag: 'StringE', actual })
 export interface stringUD extends Decoder<unknown, StringLE, string> {
   readonly _tag: 'stringUD'
 }
+const isString = (u: unknown): u is string => typeof u === 'string'
 export const string: stringUD = {
   _tag: 'stringUD',
-  decode: (u) => (typeof u === 'string' ? right(u) : left(leafE({ _tag: 'StringE', actual: u })))
+  decode: (u) => (isString(u) ? right(u) : left(stringLE(u)))
 }
 
 // TODO: handle Infinity
@@ -485,6 +487,7 @@ export interface NumberE extends ActualE<unknown> {
   readonly _tag: 'NumberE'
 }
 export interface NumberLE extends LeafE<NumberE> {}
+export const numberLE = (actual: unknown): NumberLE => leafE({ _tag: 'NumberE', actual })
 export interface NaNE {
   readonly _tag: 'NaNE'
 }
@@ -493,20 +496,25 @@ export const naNLE: NaNLE = leafE({ _tag: 'NaNE' })
 export interface numberUD extends Decoder<unknown, NumberLE | NaNLE, number> {
   readonly _tag: 'numberUD'
 }
+const isNumber = (u: unknown): u is number => typeof u === 'number'
 export const number: numberUD = {
   _tag: 'numberUD',
-  decode: (u) =>
-    typeof u === 'number' ? (isNaN(u) ? both(naNLE, u) : right(u)) : left(leafE({ _tag: 'NumberE', actual: u }))
+  decode: (u) => (isNumber(u) ? (isNaN(u) ? both(naNLE, u) : right(u)) : left(numberLE(u)))
 }
 
 export interface BooleanE extends ActualE<unknown> {
   readonly _tag: 'BooleanE'
 }
 export interface BooleanLE extends LeafE<BooleanE> {}
+export const booleanLE = (actual: unknown): BooleanLE => leafE({ _tag: 'BooleanE', actual })
 export interface booleanUD extends Decoder<unknown, BooleanLE, boolean> {
   readonly _tag: 'booleanUD'
 }
-export declare const boolean: booleanUD
+const isBoolean = (u: unknown): u is boolean => typeof u === 'boolean'
+export const boolean: booleanUD = {
+  _tag: 'booleanUD',
+  decode: (u) => (isBoolean(u) ? right(u) : left(booleanLE(u)))
+}
 
 export interface UnknownArrayE extends ActualE<unknown> {
   readonly _tag: 'UnknownArrayE'
@@ -1145,20 +1153,33 @@ const pruneDifference = <E1, E2>(
   return O.isSome(pde2) ? O.some(intersectionE([memberE(1, pde2.value)])) : O.none
 }
 
-// TODO: add constraints
-export type Intersecable = Record<string, unknown> | Array<unknown>
+export interface IntersecableRecord extends Record<string, Intersecable> {}
+export interface IntersecableArray extends Array<Intersecable> {}
+export type Intersecable = string | number | IntersecableRecord | IntersecableArray
 
 const intersect_ = <A extends Intersecable, B extends Intersecable>(a: A, b: B): A & B => {
-  const out: any = { ...a }
-  for (const k in b) {
-    const bk = b[k]
-    if (isUnknownRecord(bk)) {
-      out[k] = intersect_(out[k], bk)
-    } else {
-      out[k] = bk
+  if (isUnknownRecord(a) && isUnknownRecord(b)) {
+    const out: any = { ...(a as any) }
+    for (const k in b) {
+      if (!(k in out)) {
+        out[k] = b[k]
+      } else {
+        out[k] = intersect_(out[k], b[k] as any)
+      }
     }
+    return out
+  } else if (Array.isArray(a) && Array.isArray(b)) {
+    const out: any = a.slice()
+    for (let i = 0; i < b.length; i++) {
+      if (i >= a.length) {
+        out[i] = b[i]
+      } else {
+        out[i] = intersect_(out[i], b[i])
+      }
+    }
+    return out
   }
-  return out
+  return b as any
 }
 
 export function intersect<S extends Decoder<any, DecodeError<any>, Intersecable>>(
@@ -2036,6 +2057,45 @@ export const decoder585 = union(struct({ a: string }), struct({ b: number }), st
 Value:
 {}
 Warnings:
+3 error(s) found while decoding a union
+├─ 1 error(s) found while decoding member "0"
+│  └─ 1 error(s) found while decoding a struct
+│     └─ 1 error(s) found while decoding required key "a"
+│        └─ cannot decode 12, expected a string
+├─ 1 error(s) found while decoding member "1"
+│  └─ 1 error(s) found while checking keys
+│     └─ missing required key "b"
+└─ 1 error(s) found while decoding member "2"
+   └─ 1 error(s) found while checking keys
+      └─ unexpected key "a"
+*/
+
+// pipe(
+//   decoder585.decode({ a: 12 }),
+//   condemnWhen(
+//     (e: BuiltinE | UnexpectedKeysE | UnexpectedIndexesE) => e._tag === 'UnexpectedKeysE' && e.keys.includes('a')
+//   ),
+//   debug
+// )
+/*
+Errors:
+3 error(s) found while decoding a union
+├─ 1 error(s) found while decoding member "0"
+│  └─ 1 error(s) found while decoding a struct
+│     └─ 1 error(s) found while decoding required key "a"
+│        └─ cannot decode 12, expected a string
+├─ 1 error(s) found while decoding member "1"
+│  └─ 1 error(s) found while checking keys
+│     └─ missing required key "b"
+└─ 1 error(s) found while decoding member "2"
+   └─ 1 error(s) found while checking keys
+      └─ unexpected key "a"
+*/
+
+export const decoder585Exact = union(struct({ a: string }), struct({ b: number }), exactD(struct({})))
+// pipe(decoder585Exact.decode({ a: 12 }), debug)
+/*
+Errors:
 3 error(s) found while decoding a union
 ├─ 1 error(s) found while decoding member "0"
 │  └─ 1 error(s) found while decoding a struct
