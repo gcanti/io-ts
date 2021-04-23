@@ -139,6 +139,15 @@ export const id = <A>(): IdentityD<A> => ({
   decode: TH.right
 })
 
+export interface stringD extends IdentityD<string> {}
+export const stringD: stringD = id<string>()
+
+export interface numberD extends IdentityD<number> {}
+export const numberD: numberD = id<number>()
+
+export interface booleanD extends IdentityD<boolean> {}
+export const booleanD: booleanD = id<boolean>()
+
 export interface CompositionD<P, N>
   extends Decoder<InputOf<P>, CompositionE<PrevE<ErrorOf<P>> | NextE<ErrorOf<N>>>, TypeOf<N>> {
   readonly _tag: 'CompositionD'
@@ -1153,6 +1162,7 @@ const pruneDifference = <E1, E2>(
   return O.isSome(pde2) ? O.some(intersectionE([memberE(1, pde2.value)])) : O.none
 }
 
+// TODO: can we come up with better types?
 export interface IntersecableRecord extends Record<string, Intersecable> {}
 export interface IntersecableArray extends Array<Intersecable> {}
 export type Intersecable = string | number | IntersecableRecord | IntersecableArray
@@ -1551,7 +1561,7 @@ export interface IntE extends ActualE<number> {
 }
 export const intE = (actual: number): IntE => ({ _tag: 'IntE', actual })
 export const IntD = pipe(
-  id<number>(),
+  numberD,
   fromRefinement(
     (n): n is Int => Number.isInteger(n),
     (n) => leafE(intE(n))
@@ -1622,7 +1632,7 @@ export interface NonEmptyStringE extends ActualE<string> {
 export interface NonEmptyStringLE extends LeafE<NonEmptyStringE> {}
 
 export const NonEmptyStringD = pipe(
-  id<string>(),
+  stringD,
   fromRefinement(
     (s): s is NonEmptyString => s.length > 0,
     (actual): NonEmptyStringLE => leafE({ _tag: 'NonEmptyStringE', actual })
@@ -2020,6 +2030,26 @@ Value:
 */
 
 // -------------------------------------------------------------------------------------
+// use case: how to encode `Record<'a' | 'b', number>`
+// -------------------------------------------------------------------------------------
+
+// with `struct`
+export const Recordab = struct({
+  a: number,
+  b: number
+})
+
+// -------------------------------------------------------------------------------------
+// use case: how to encode `Partial<Record<'a' | 'b', number>>`
+// -------------------------------------------------------------------------------------
+
+// with `partial`
+export const PartialRecordab = partial({
+  a: number,
+  b: number
+})
+
+// -------------------------------------------------------------------------------------
 // use case: omit, pick #553
 // -------------------------------------------------------------------------------------
 
@@ -2029,14 +2059,6 @@ Value:
 
 // -------------------------------------------------------------------------------------
 // use case: more user friendly optional fields #542
-// -------------------------------------------------------------------------------------
-
-// -------------------------------------------------------------------------------------
-// use case: how to encode `Record<'a' | 'b', number>`
-// -------------------------------------------------------------------------------------
-
-// -------------------------------------------------------------------------------------
-// use case: how to encode `Partial<Record<'a' | 'b', number>>`
 // -------------------------------------------------------------------------------------
 
 // -------------------------------------------------------------------------------------
