@@ -1,60 +1,72 @@
-import { HKT3 } from 'fp-ts/lib/HKT'
+import { HKT, Kind, URIS } from 'fp-ts/lib/HKT'
+import * as I from 'fp-ts/lib/Identity'
 import * as D from './poc'
+import { memoize } from './Schemable'
+import * as G from './Guard'
 
 // -------------------------------------------------------------------------------------
 // use case: Schemable
 // -------------------------------------------------------------------------------------
 
-export interface AnyHKT3 extends HKT3<any, any, any, any> {}
-
-export type InputOfHKT3<K3> = K3 extends HKT3<any, infer I, any, any> ? I : never
-export type ErrorOfHKT3<K3> = K3 extends HKT3<any, any, infer E, any> ? E : never
-export type TypeOfHKT3<K3> = K3 extends HKT3<any, any, any, infer A> ? A : never
-
 export interface Schemable<S> {
   readonly URI: S
-  readonly string: HKT3<S, unknown, D.StringLE, string>
-  readonly number: HKT3<S, unknown, D.NumberLE, number>
-  readonly nullable: <Or extends AnyHKT3>(
-    or: Or
-  ) => HKT3<S, null | InputOfHKT3<Or>, D.NullableE<ErrorOfHKT3<Or>>, null | TypeOfHKT3<Or>>
+  readonly string: HKT<S, D.stringUD>
+  readonly number: HKT<S, D.numberUD>
+  readonly nullable: <A>(or: HKT<S, A>) => HKT<S, D.NullableD<A>>
 }
 
-export interface Schema<I, E, A> {
-  <S>(S: Schemable<S>): HKT3<S, I, E, A>
+export interface Schemable1<S extends URIS> {
+  readonly URI: S
+  readonly string: Kind<S, D.stringUD>
+  readonly number: Kind<S, D.numberUD>
+  readonly nullable: <A extends D.AnyD>(or: Kind<S, A>) => Kind<S, D.NullableD<A>>
 }
 
-export interface AnyS extends Schema<any, any, any> {}
+export interface Schema<A> {
+  <S>(S: Schemable<S>): HKT<S, A>
+}
 
-export type InputOfS<S> = S extends Schema<infer I, any, any> ? I : never
-export type ErrorOfS<S> = S extends Schema<any, infer E, any> ? E : never
-export type TypeOfS<S> = S extends Schema<any, any, infer A> ? A : never
+export function make<A>(schema: Schema<A>): Schema<A> {
+  return memoize(schema)
+}
 
-export declare const make: <I, E, A>(schema: Schema<I, E, A>) => Schema<I, E, A>
+export const schemableIdentity: Schemable1<I.URI> = {
+  URI: I.URI,
+  string: D.string,
+  number: D.number,
+  nullable: D.nullable
+}
 
-export interface stringS extends Schema<unknown, D.LeafE<D.StringE>, string> {}
-export const stringS: stringS = make((S) => S.string)
+export function to<S extends URIS>(S: Schemable1<S>): <A>(schema: Schema<A>) => Kind<S, A>
+export function to<S>(S: Schemable<S>): <A>(schema: Schema<A>) => HKT<S, A> {
+  return (schema) => schema(S)
+}
 
-export interface numberS extends Schema<unknown, D.LeafE<D.NumberE>, number> {}
-export const numberS: numberS = make((S) => S.number)
+const schema = make((S) => S.nullable(S.string))
 
-export interface NullableS<Or> extends Schema<null | InputOfS<Or>, D.NullableE<ErrorOfS<Or>>, null | TypeOfS<Or>> {}
+export const decoder = to(schemableIdentity)(schema)
+console.log(decoder.decode(null))
+console.log(decoder.decode('a'))
+console.log(decoder.decode(1))
 
-export declare const nullableS: <Or extends AnyS>(or: Or) => NullableS<Or>
+export const URI = 'io-ts/GuardWrapper'
 
-const schema1 = make((S) => S.nullable(S.string))
-const schema2 = nullableS(stringS)
+export type URI = typeof URI
 
-type ToDecoder<S> = S extends stringS
-  ? D.stringUD
-  : S extends NullableS<infer Or>
-  ? D.NullableD<ToDecoder<Or>>
-  : D.Decoder<InputOfS<S>, ErrorOfS<S>, TypeOfS<S>>
+declare module 'fp-ts/lib/HKT' {
+  interface URItoKind<A> {
+    readonly [URI]: G.Guard<unknown, D.TypeOf<A>>
+  }
+}
 
-export declare const toDecoder: <S extends AnyS>(schema: S) => ToDecoder<S>
+export const schemableGuard: Schemable1<URI> = {
+  URI: URI,
+  string: G.string,
+  number: G.number,
+  nullable: G.nullable
+}
 
-// const decoder1: Decoder<unknown, NullableE<LeafE<StringE>>, string | null>
-export const decoder1 = toDecoder(schema1)
-
-// const decoder2: D.NullableD<D.stringD>
-export const decoder2 = toDecoder(schema2)
+export const guard = to(schemableGuard)(schema)
+console.log(guard.is(null))
+console.log(guard.is('a'))
+console.log(guard.is(1))

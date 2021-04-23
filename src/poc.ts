@@ -25,8 +25,8 @@ export interface Decoder<I, E, A> {
   readonly decode: (i: I) => These<E, A>
 }
 
-interface AnyD extends Decoder<any, any, any> {}
-interface AnyUD extends Decoder<unknown, any, any> {}
+export interface AnyD extends Decoder<any, any, any> {}
+export interface AnyUD extends Decoder<unknown, any, any> {}
 
 export type InputOf<D> = D extends Decoder<infer I, any, any> ? I : never
 export type ErrorOf<D> = D extends Decoder<any, infer E, any> ? E : never
@@ -990,7 +990,13 @@ export interface NullableD<D> extends Decoder<null | InputOf<D>, NullableE<Error
   readonly _tag: 'NullableD'
   readonly decoder: D
 }
-export declare const nullable: <D extends AnyD>(decoder: D) => NullableD<D>
+export function nullable<D extends AnyD>(decoder: D): NullableD<D> {
+  return {
+    _tag: 'NullableD',
+    decoder,
+    decode: (i) => (i === null ? right(null) : decoder.decode(i))
+  }
+}
 
 export interface IntersectD<F, S>
   extends Decoder<
