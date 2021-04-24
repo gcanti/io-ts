@@ -12,7 +12,13 @@ export interface Schemable<S> {
   readonly URI: S
   readonly string: HKT<S, D.stringUD>
   readonly number: HKT<S, D.numberUD>
-  readonly nullable: <A>(or: HKT<S, A>) => HKT<S, D.NullableD<A>>
+  readonly nullable: <A extends D.AnyD>(or: HKT<S, A>) => HKT<S, D.NullableD<A>>
+  readonly tuple: <A extends ReadonlyArray<D.AnyUD>>(
+    ...components: { [K in keyof A]: HKT<S, A[K]> }
+  ) => HKT<S, D.TupleD<A>>
+  readonly fromTuple: <A extends ReadonlyArray<D.AnyD>>(
+    ...components: { [K in keyof A]: HKT<S, A[K]> }
+  ) => HKT<S, D.FromTupleD<A>>
 }
 
 export interface Schemable1<S extends URIS> {
@@ -20,6 +26,12 @@ export interface Schemable1<S extends URIS> {
   readonly string: Kind<S, D.stringUD>
   readonly number: Kind<S, D.numberUD>
   readonly nullable: <A extends D.AnyD>(or: Kind<S, A>) => Kind<S, D.NullableD<A>>
+  readonly tuple: <A extends ReadonlyArray<D.AnyUD>>(
+    ...components: { [K in keyof A]: Kind<S, A[K]> }
+  ) => Kind<S, D.TupleD<A>>
+  readonly fromTuple: <A extends ReadonlyArray<D.AnyD>>(
+    ...components: { [K in keyof A]: Kind<S, A[K]> }
+  ) => Kind<S, D.FromTupleD<A>>
 }
 
 export interface Schema<A> {
@@ -30,43 +42,49 @@ export function make<A>(schema: Schema<A>): Schema<A> {
   return memoize(schema)
 }
 
-export const schemableIdentity: Schemable1<I.URI> = {
-  URI: I.URI,
-  string: D.string,
-  number: D.number,
-  nullable: D.nullable
-}
-
-export function to<S extends URIS>(S: Schemable1<S>): <A>(schema: Schema<A>) => Kind<S, A>
-export function to<S>(S: Schemable<S>): <A>(schema: Schema<A>) => HKT<S, A> {
+export function compile<S extends URIS>(S: Schemable1<S>): <A>(schema: Schema<A>) => Kind<S, A>
+export function compile<S>(S: Schemable<S>): <A>(schema: Schema<A>) => HKT<S, A> {
   return (schema) => schema(S)
 }
 
-const schema = make((S) => S.nullable(S.string))
-
-export const decoder = to(schemableIdentity)(schema)
-console.log(decoder.decode(null))
-console.log(decoder.decode('a'))
-console.log(decoder.decode(1))
-
-export const URI = 'io-ts/GuardWrapper'
-
-export type URI = typeof URI
+export const toDecoder: Schemable1<I.URI> = {
+  URI: I.URI,
+  string: D.string,
+  number: D.number,
+  nullable: D.nullable,
+  tuple: D.tuple,
+  fromTuple: D.fromTuple
+}
 
 declare module 'fp-ts/lib/HKT' {
   interface URItoKind<A> {
-    readonly [URI]: G.Guard<unknown, D.TypeOf<A>>
+    readonly 'io-ts/ToGuard': G.Guard<D.InputOf<A>, D.TypeOf<A> extends D.InputOf<A> ? D.TypeOf<A> : never>
   }
 }
 
-export const schemableGuard: Schemable1<URI> = {
-  URI: URI,
+export const toGuard: Schemable1<'io-ts/ToGuard'> = {
+  URI: 'io-ts/ToGuard',
   string: G.string,
   number: G.number,
-  nullable: G.nullable
+  nullable: G.nullable as any,
+  tuple: G.tuple as any,
+  fromTuple: G.fromTuple as any
 }
 
-export const guard = to(schemableGuard)(schema)
-console.log(guard.is(null))
-console.log(guard.is('a'))
-console.log(guard.is(1))
+// -------------------------------------------------------------------------------------
+// example
+// -------------------------------------------------------------------------------------
+
+const schema = make((S) => S.fromTuple(S.nullable(S.string)))
+
+export const decoder = compile(toDecoder)(schema)
+console.log(decoder.decode([null]))
+console.log(decoder.decode(['a']))
+console.log(decoder.decode([1]))
+
+export const guard = compile(toGuard)(schema)
+console.log(guard.is([null]))
+console.log(guard.is(['a']))
+console.log(guard.is([1]))
+
+console.log(JSON.stringify(decoder, null, 2))

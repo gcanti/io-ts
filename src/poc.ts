@@ -770,7 +770,7 @@ export function partial(properties: Record<PropertyKey, AnyUD>): PartialD<typeof
   return pipe(UnknownRecord, compose(unexpectedKeys(properties)), compose(fromPartial(properties)))
 }
 
-export interface FromTupleD<Components extends ReadonlyArray<AnyD>>
+export interface FromTupleD<Components extends ReadonlyArray<unknown>>
   extends Decoder<
     { readonly [K in keyof Components]: InputOf<Components[K]> },
     TupleE<{ [K in keyof Components]: RequiredIndexE<K, ErrorOf<Components[K]>> }[number]>,
@@ -854,7 +854,7 @@ export const missingIndexes = <Components extends ReadonlyArray<unknown>>(
   }
 }
 
-export interface TupleD<Components extends ReadonlyArray<AnyUD>>
+export interface TupleD<Components extends ReadonlyArray<unknown>>
   extends CompositionD<
     CompositionD<CompositionD<UnknownArrayUD, UnexpectedIndexesD<Components>>, MissingIndexesD<Components>>,
     FromTupleD<Components>
@@ -952,8 +952,14 @@ export function parse<A, E, B>(
 
 type UnionToIntersection<U> = (U extends any ? (k: U) => void : never) extends (k: infer I) => void ? I : never
 
-const append = <A>(end: A) => (init: ReadonlyArray<A>): ReadonlyNonEmptyArray<A> =>
-  RA.isNonEmpty(init) ? [init[0], ...init.slice(1), end] : [end]
+const append = <A>(end: A) => (init: ReadonlyArray<A>): ReadonlyNonEmptyArray<A> => {
+  if (RA.isNonEmpty(init)) {
+    const tail = init.slice(1)
+    tail.push(end)
+    return [init[0], ...tail]
+  }
+  return [end]
+}
 
 export interface UnionD<Members extends ReadonlyArray<AnyD>>
   extends Decoder<
@@ -988,13 +994,13 @@ export function union<Members extends ReadonlyArray<AnyD>>(...members: Members):
 
 export interface NullableD<D> extends Decoder<null | InputOf<D>, NullableE<ErrorOf<D>>, null | TypeOf<D>> {
   readonly _tag: 'NullableD'
-  readonly decoder: D
+  readonly or: D
 }
-export function nullable<D extends AnyD>(decoder: D): NullableD<D> {
+export function nullable<D extends AnyD>(or: D): NullableD<D> {
   return {
     _tag: 'NullableD',
-    decoder,
-    decode: (i) => (i === null ? right(null) : decoder.decode(i))
+    or,
+    decode: (i) => (i === null ? right(null) : or.decode(i))
   }
 }
 
