@@ -39,7 +39,7 @@ export type TypeOf<D> = D extends Decoder<any, any, infer A> ? A : never
 // success
 export const right = TH.right
 
-// error
+// failure
 export const left = TH.left
 
 // warning
@@ -991,6 +991,9 @@ export function union<Members extends ReadonlyArray<AnyD>>(...members: Members):
     }
   }
 }
+
+// A | B -> <C>(A: (a: A) => C, B: (b: B) => C) => C
+// I1 | I2 -> (i: (I1 | I2) => Decoder<I1, E1, A1> | Decoder<I2, E2, A2>) -> Decoder<I1 | I2, E1 | E2, A1 | A2>
 
 export interface NullableD<D> extends Decoder<null | InputOf<D>, NullableE<ErrorOf<D>>, null | TypeOf<D>> {
   readonly _tag: 'NullableD'
@@ -2142,3 +2145,25 @@ Errors:
    └─ 1 error(s) found while checking keys
       └─ unexpected key "a"
 */
+
+// -------------------------------------------------------------------------------------
+// use case: #586
+// -------------------------------------------------------------------------------------
+
+export type Value = string | number | boolean | NoFunctionObject | NoFunctionArray
+
+export interface NoFunctionObject {
+  [key: string]: Value
+}
+
+export interface NoFunctionArray extends Array<Value | NoFunctionObject> {}
+
+export const Value: Decoder<
+  unknown,
+  DecodeError<StringE | NumberE | NaNE | BooleanE | UnknownRecordE | UnknownArrayE>,
+  Value
+> = lazy('Value', () => {
+  const NoFunctionObject = record(Value)
+  const NoFunctionArray = array(union(Value, NoFunctionObject))
+  return union(string, number, boolean, NoFunctionObject, NoFunctionArray)
+})

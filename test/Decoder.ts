@@ -383,6 +383,15 @@ describe('Decoder', () => {
         )
       )
     })
+
+    // it('bug!', () => {
+    //   const trim = pipe(
+    //     _.id<string>(),
+    //     _.map((s) => s.trim())
+    //   )
+    //   const decoder = _.union(trim, _.id<number>())
+    //   assert.deepStrictEqual(decoder.decode(1), _.success(1))
+    // })
   })
 
   describe('refine', () => {
