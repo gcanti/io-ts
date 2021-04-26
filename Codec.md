@@ -15,7 +15,7 @@ A codec is just a decoder and an encoder packed together.
 
 The following laws must hold
 
-1. `pipe(codec.decode(u), E.fold(() => u, codec.encode) = u` for all `u` in `unknown`
+1. `pipe(codec.decode(u), E.fold(() => u, codec.encode)) = u` for all `u` in `unknown`
 2. `codec.decode(codec.encode(a)) = E.right(a)` for all `a` in `A`
 
 You can build a new codec using the `make` helper
