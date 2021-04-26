@@ -134,7 +134,7 @@ export interface IdentityD<A> extends Decoder<A, never, A> {
   readonly _tag: 'IdentityD'
 }
 
-export const id = <A>(): IdentityD<A> => ({
+export const id = <A = never>(): IdentityD<A> => ({
   _tag: 'IdentityD',
   decode: TH.right
 })
@@ -529,7 +529,7 @@ export interface UnknownArrayE extends ActualE<unknown> {
   readonly _tag: 'UnknownArrayE'
 }
 export interface UnknownArrayLE extends LeafE<UnknownArrayE> {}
-export const unknownArrayE = (actual: unknown): UnknownArrayLE =>
+export const unknownArrayLE = (actual: unknown): UnknownArrayLE =>
   leafE({
     _tag: 'UnknownArrayE',
     actual
@@ -539,14 +539,14 @@ export interface UnknownArrayUD extends Decoder<unknown, UnknownArrayLE, Array<u
 }
 export const UnknownArray: UnknownArrayUD = {
   _tag: 'UnknownArrayUD',
-  decode: (u) => (Array.isArray(u) ? right(u) : left(unknownArrayE(u)))
+  decode: (u) => (Array.isArray(u) ? right(u) : left(unknownArrayLE(u)))
 }
 
 export interface UnknownRecordE extends ActualE<unknown> {
   readonly _tag: 'UnknownRecordE'
 }
 export interface UnknownRecordLE extends LeafE<UnknownRecordE> {}
-export const unknownRecordE = (actual: unknown): UnknownRecordLE =>
+export const unknownRecordLE = (actual: unknown): UnknownRecordLE =>
   leafE({
     _tag: 'UnknownRecordE',
     actual
@@ -558,7 +558,7 @@ const isUnknownRecord = (u: unknown): u is Record<PropertyKey, unknown> =>
   u !== null && typeof u === 'object' && !Array.isArray(u)
 export const UnknownRecord: UnknownRecordUD = {
   _tag: 'UnknownRecordUD',
-  decode: (u) => (isUnknownRecord(u) ? right(u) : left(unknownRecordE(u)))
+  decode: (u) => (isUnknownRecord(u) ? right(u) : left(unknownRecordLE(u)))
 }
 
 // -------------------------------------------------------------------------------------
@@ -576,6 +576,12 @@ export interface LiteralE<A extends Literal> extends ActualE<unknown> {
   readonly literals: ReadonlyNonEmptyArray<A>
 }
 export interface LiteralLE<A extends Literal> extends LeafE<LiteralE<A>> {}
+export const literalLE = <A extends Literal>(actual: unknown, literals: ReadonlyNonEmptyArray<A>): LiteralLE<A> =>
+  leafE({
+    _tag: 'LiteralE',
+    actual,
+    literals
+  })
 export interface LiteralD<A extends ReadonlyNonEmptyArray<Literal>>
   extends Decoder<unknown, LiteralLE<A[number]>, A[number]> {
   readonly _tag: 'LiteralD'
@@ -992,9 +998,6 @@ export function union<Members extends ReadonlyArray<AnyD>>(...members: Members):
   }
 }
 
-// A | B -> <C>(A: (a: A) => C, B: (b: B) => C) => C
-// I1 | I2 -> (i: (I1 | I2) => Decoder<I1, E1, A1> | Decoder<I2, E2, A2>) -> Decoder<I1 | I2, E1 | E2, A1 | A2>
-
 export interface NullableD<D> extends Decoder<null | InputOf<D>, NullableE<ErrorOf<D>>, null | TypeOf<D>> {
   readonly _tag: 'NullableD'
   readonly or: D
@@ -1315,7 +1318,7 @@ export const lazy = <I, E, A>(id: string, f: Lazy<Decoder<I, E, A>>): LazyD<I, E
 export interface FromSumD<T extends string, Members>
   extends Decoder<
     InputOf<Members[keyof Members]>,
-    TagE<T, LiteralE<keyof Members>> | SumE<{ [K in keyof Members]: MemberE<K, ErrorOf<Members[K]>> }[keyof Members]>,
+    TagE<T, LiteralLE<keyof Members>> | SumE<{ [K in keyof Members]: MemberE<K, ErrorOf<Members[K]>> }[keyof Members]>,
     TypeOf<Members[keyof Members]>
   > {
   readonly _tag: 'FromSumD'
@@ -1323,15 +1326,35 @@ export interface FromSumD<T extends string, Members>
   readonly members: Members
 }
 // TODO: every `Members` should own a tag field
-export declare const fromSum: <T extends string>(
-  tag: T
-) => <Members extends Record<PropertyKey, AnyD>>(members: Members) => FromSumD<T, Members>
+export const fromSum = <T extends string>(tag: T) => <Members extends Record<PropertyKey, AnyD>>(
+  members: Members
+): FromSumD<T, Members> => {
+  const literals = Object.keys(members)
+  if (RA.isNonEmpty(literals)) {
+    return {
+      _tag: 'FromSumD',
+      members,
+      decode: (i: any) => {
+        const v = i[tag]
+        if (v in members) {
+          return members[v].decode(i)
+        }
+        return left(tagE(tag, literalLE(i, literals)))
+      }
+    } as any
+  }
+  return {
+    _tag: 'FromSumD',
+    members,
+    decode: left
+  } as any
+}
 
 export interface SumD<T extends string, Members>
   extends Decoder<
     unknown,
     | UnknownRecordLE
-    | TagE<T, LiteralE<keyof Members>>
+    | TagE<T, LiteralLE<keyof Members>>
     | SumE<{ [K in keyof Members]: MemberE<K, ErrorOf<Members[K]>> }[keyof Members]>,
     TypeOf<Members[keyof Members]>
   > {
@@ -1576,8 +1599,10 @@ const printWarnings = (s: string): string => (s === '' ? s : 'Warnings:\n' + s)
 
 export const print = TH.fold(printErrors, printValue, (e, a) => printValue(a) + '\n' + printWarnings(e))
 
+export const debug = flow(draw, print, console.log)
+
 // example 1
-// pipe(Form.decode({ name: null, age: null }), draw, print, console.log)
+// pipe(Form.decode({ name: null, age: null }), debug)
 /*
 Errors:
 2 error(s) found while decoding a struct
@@ -1613,7 +1638,7 @@ export const Form2 = fromStruct({
   age: IntD
 })
 
-// pipe(Form2.decode({ name: null, age: 1.2 }), draw, print, console.log) // <= type error because `IntE` is not handled
+// pipe(Form2.decode({ name: null, age: 1.2 }), debug) // <= type error because `IntE` is not handled
 
 // I can define my own `draw` function
 export const myDraw = TH.mapLeft(
@@ -1644,8 +1669,6 @@ Errors:
 // -------------------------------------------------------------------------------------
 // use case: old decoder, custom error message
 // -------------------------------------------------------------------------------------
-
-export const debug = flow(draw, print, console.log)
 
 export const customStringUD = pipe(
   string,
@@ -2137,23 +2160,6 @@ Warnings:
 //   ),
 //   debug
 // )
-/*
-Errors:
-3 error(s) found while decoding a union
-├─ 1 error(s) found while decoding member "0"
-│  └─ 1 error(s) found while decoding a struct
-│     └─ 1 error(s) found while decoding required key "a"
-│        └─ cannot decode 12, expected a string
-├─ 1 error(s) found while decoding member "1"
-│  └─ 1 error(s) found while checking keys
-│     └─ missing required key "b"
-└─ 1 error(s) found while decoding member "2"
-   └─ 1 error(s) found while checking keys
-      └─ unexpected key "a"
-*/
-
-export const decoder585Exact = union(struct({ a: string }), struct({ b: number }), exactD(struct({})))
-// pipe(decoder585Exact.decode({ a: 12 }), debug)
 /*
 Errors:
 3 error(s) found while decoding a union
