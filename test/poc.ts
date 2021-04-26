@@ -113,4 +113,50 @@ Warnings:
       )
     })
   })
+
+  describe('lazy', () => {
+    interface Category {
+      name: string
+      categories: ReadonlyArray<Category>
+    }
+    const Category: D.Decoder<
+      unknown,
+      D.DecodeError<D.UnknownRecordE | D.StringE | D.UnknownArrayE>,
+      Category
+    > = D.lazy('Category', () =>
+      D.struct({
+        name: D.string,
+        categories: D.array(Category)
+      })
+    )
+
+    it('should return a right', () => {
+      const i1 = { name: 'a', categories: [] }
+      U.deepStrictEqual(Category.decode(i1), TH.right(i1))
+      const i2 = {
+        name: 'a',
+        categories: [
+          { name: 'b', categories: [] },
+          { name: 'c', categories: [{ name: 'd', categories: [] }] }
+        ]
+      }
+      U.deepStrictEqual(Category.decode(i2), TH.right(i2))
+    })
+
+    it('should return a left', () => {
+      U.deepStrictEqual(
+        pipe(Category.decode({ name: 'a', categories: [{}] }), print),
+        `Errors:
+1 error(s) found while decoding lazy decoder Category
+└─ 1 error(s) found while decoding a struct
+   └─ 1 error(s) found while decoding required key \"categories\"
+      └─ 1 error(s) found while decoding an array
+         └─ 1 error(s) found while decoding optional index 0
+            └─ 1 error(s) found while decoding lazy decoder Category
+               └─ 2 error(s) found while checking keys
+                  ├─ missing required key \"name\"
+                  └─ missing required key \"categories\"`
+      )
+    })
+  })
 })

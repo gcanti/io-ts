@@ -1282,12 +1282,35 @@ export function intersect<I2, E2, A2 extends Intersecable>(
   })
 }
 
-export interface LazyD<D> {
+export interface LazyD<I, E, A> extends Decoder<I, LazyE<E>, A> {
   readonly _tag: 'LazyD'
   readonly id: string
-  readonly decoder: Lazy<D>
+  readonly f: Lazy<Decoder<I, E, A>>
 }
-export declare const lazy: <I, E, A>(id: string, decoder: Lazy<Decoder<I, E, A>>) => Decoder<I, LazyE<E>, A>
+function memoize<A, B>(f: (a: A) => B): (a: A) => B {
+  const cache = new Map()
+  return (a) => {
+    if (!cache.has(a)) {
+      const b = f(a)
+      cache.set(a, b)
+      return b
+    }
+    return cache.get(a)
+  }
+}
+export const lazy = <I, E, A>(id: string, f: Lazy<Decoder<I, E, A>>): LazyD<I, E, A> => {
+  const get = memoize<void, Decoder<I, E, A>>(f)
+  return {
+    _tag: 'LazyD',
+    id,
+    f,
+    decode: (i) =>
+      pipe(
+        get().decode(i),
+        TH.mapLeft((e) => lazyE(id, e))
+      )
+  }
+}
 
 export interface FromSumD<T extends string, Members>
   extends Decoder<
