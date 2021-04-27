@@ -252,11 +252,12 @@ export interface MemberE<M, E> extends SingleE<E> {
 }
 export const memberE = <M, E>(member: M, error: E): MemberE<M, E> => ({ _tag: 'MemberE', member, error })
 
-export interface TagE<T, E> extends SingleE<E> {
+export interface TagE {
   readonly _tag: 'TagE'
-  readonly tag: T
+  readonly tag: string
+  readonly literals: ReadonlyArray<string>
 }
-export const tagE = <T, E>(tag: T, error: E): TagE<T, E> => ({ _tag: 'TagE', tag, error })
+export const tagE = (tag: string, literals: ReadonlyArray<string>): TagE => ({ _tag: 'TagE', tag, literals })
 
 // Single errors
 
@@ -420,7 +421,6 @@ export interface OptionalKeyRE<E> extends OptionalKeyE<string, DecodeError<E>> {
 export interface RequiredIndexRE<E> extends RequiredIndexE<number, DecodeError<E>> {}
 export interface OptionalIndexRE<E> extends OptionalIndexE<number, DecodeError<E>> {}
 export interface MemberRE<E> extends MemberE<string | number, DecodeError<E>> {}
-export interface TagRE<E> extends TagE<string, DecodeError<E>> {}
 export interface LazyRE<E> extends LazyE<DecodeError<E>> {}
 // compound
 export interface CompositionRE<E> extends CompositionE<DecodeError<E>> {}
@@ -451,7 +451,6 @@ export type DecodeError<E> =
   | RequiredIndexRE<E>
   | OptionalIndexRE<E>
   | MemberRE<E>
-  | TagRE<E>
   | LazyRE<E>
   // compound
   | StructRE<E>
@@ -473,6 +472,7 @@ export type BuiltinE =
   | LiteralE<Literal>
   | MessageE<unknown>
   | NaNE
+  | TagE
 
 // -------------------------------------------------------------------------------------
 // decoder primitives
@@ -1044,7 +1044,6 @@ const collectPrunable = <E>(de: DecodeError<E>): Prunable => {
       case 'ParserE':
       case 'PrevE':
       case 'RefinementE':
-      case 'TagE':
         return go(de.error)
       case 'LeafE':
       case 'MissingIndexesE':
@@ -1144,13 +1143,6 @@ const prune = (prunable: Prunable, anticollision: string): (<E>(de: DecodeError<
           de.error,
           prune(prunable, anticollision + de.key + '.'),
           O.map((pde) => requiredKeyE(de.key, pde))
-        )
-      }
-      case 'TagE': {
-        return pipe(
-          de.error,
-          prune(prunable, anticollision),
-          O.map((pde) => tagE(de.tag, pde))
         )
       }
       case 'UnexpectedIndexesE':
@@ -1319,7 +1311,7 @@ export const lazy = <I, E, A>(id: string, f: Lazy<Decoder<I, E, A>>): LazyD<I, E
 export interface FromSumD<T extends string, Members>
   extends Decoder<
     InputOf<Members[keyof Members]>,
-    TagE<T, LiteralLE<keyof Members>> | SumE<{ [K in keyof Members]: MemberE<K, ErrorOf<Members[K]>> }[keyof Members]>,
+    TagE | SumE<{ [K in keyof Members]: MemberE<K, ErrorOf<Members[K]>> }[keyof Members]>,
     TypeOf<Members[keyof Members]>
   > {
   readonly _tag: 'FromSumD'
@@ -1331,32 +1323,23 @@ export const fromSum = <T extends string>(tag: T) => <Members extends Record<Pro
   members: Members
 ): FromSumD<T, Members> => {
   const literals = Object.keys(members)
-  if (RA.isNonEmpty(literals)) {
-    return {
-      _tag: 'FromSumD',
-      members,
-      decode: (i: any) => {
-        const v = i[tag]
-        if (v in members) {
-          return members[v].decode(i)
-        }
-        return left(tagE(tag, literalLE(i, literals)))
-      }
-    } as any
-  }
   return {
     _tag: 'FromSumD',
     members,
-    decode: left
+    decode: (i: any) => {
+      const v = i[tag]
+      if (v in members) {
+        return members[v].decode(i)
+      }
+      return left(tagE(tag, literals))
+    }
   } as any
 }
 
 export interface SumD<T extends string, Members>
   extends Decoder<
     unknown,
-    | UnknownRecordLE
-    | TagE<T, LiteralLE<keyof Members>>
-    | SumE<{ [K in keyof Members]: MemberE<K, ErrorOf<Members[K]>> }[keyof Members]>,
+    UnknownRecordLE | TagE | SumE<{ [K in keyof Members]: MemberE<K, ErrorOf<Members[K]>> }[keyof Members]>,
     TypeOf<Members[keyof Members]>
   > {
   readonly _tag: 'SumD'
@@ -1514,8 +1497,6 @@ export const toTreeWith = <E>(toTree: (e: E) => Tree<string>): ((de: DecodeError
         return tree(`1 error(s) found while decoding optional key ${JSON.stringify(de.key)}`, [go(de.error)])
       case 'MemberE':
         return tree(`1 error(s) found while decoding member ${JSON.stringify(de.member)}`, [go(de.error)])
-      case 'TagE':
-        return tree(`1 error(s) found while decoding sum tag ${de.tag}`, [go(de.error)])
       case 'LazyE':
         return tree(`1 error(s) found while decoding lazy decoder ${de.id}`, [go(de.error)])
 
@@ -1567,6 +1548,8 @@ export const toTreeBuiltin = (de: BuiltinE): Tree<string> => {
       return tree(de.message)
     case 'NaNE':
       return tree('value is NaN')
+    case 'TagE':
+      return tree(`1 error(s) found while decoding sum tag ${de.tag}, expected one of ${JSON.stringify(de.literals)}`)
   }
 }
 
@@ -1850,7 +1833,6 @@ const shouldCondemnWhen = <E>(
       case 'OptionalKeyE':
       case 'RequiredIndexE':
       case 'OptionalIndexE':
-      case 'TagE':
       case 'LazyE':
         return go(de.error)
       case 'UnexpectedIndexesE':
