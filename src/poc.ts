@@ -257,7 +257,8 @@ export interface TagE {
   readonly tag: string
   readonly literals: ReadonlyArray<string>
 }
-export const tagE = (tag: string, literals: ReadonlyArray<string>): TagE => ({ _tag: 'TagE', tag, literals })
+export interface TagLE extends LeafE<TagE> {}
+export const tagLE = (tag: string, literals: ReadonlyArray<string>): TagLE => leafE({ _tag: 'TagE', tag, literals })
 
 // Single errors
 
@@ -1311,7 +1312,7 @@ export const lazy = <I, E, A>(id: string, f: Lazy<Decoder<I, E, A>>): LazyD<I, E
 export interface FromSumD<T extends string, Members>
   extends Decoder<
     InputOf<Members[keyof Members]>,
-    TagE | SumE<{ [K in keyof Members]: MemberE<K, ErrorOf<Members[K]>> }[keyof Members]>,
+    TagLE | SumE<{ [K in keyof Members]: MemberE<K, ErrorOf<Members[K]>> }[keyof Members]>,
     TypeOf<Members[keyof Members]>
   > {
   readonly _tag: 'FromSumD'
@@ -1341,7 +1342,7 @@ export function fromSum<T extends string>(
             TH.mapLeft((e) => sumE(memberE(v, e)))
           ) as any
         }
-        return left(tagE(tag, literals))
+        return left(tagLE(tag, literals))
       }
     }
   }
@@ -1350,7 +1351,7 @@ export function fromSum<T extends string>(
 export interface SumD<T extends string, Members>
   extends Decoder<
     unknown,
-    UnknownRecordLE | TagE | SumE<{ [K in keyof Members]: MemberE<K, ErrorOf<Members[K]>> }[keyof Members]>,
+    UnknownRecordLE | TagLE | SumE<{ [K in keyof Members]: MemberE<K, ErrorOf<Members[K]>> }[keyof Members]>,
     TypeOf<Members[keyof Members]>
   > {
   readonly _tag: 'SumD'

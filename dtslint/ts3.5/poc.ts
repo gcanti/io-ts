@@ -260,6 +260,13 @@ export type SumDI = D.InputOf<typeof SumD>
 // $ExpectType { type: "A"; a: string; } | { type: "B"; b: string; }
 export type SumDA = D.TypeOf<typeof SumD>
 
+export const SumD2 = D.fromSum('type')({
+  1: D.fromStruct({ type: D.literal(1), a: D.string }),
+  2: D.fromStruct({ type: D.literal(2), b: D.string })
+})
+export type SumD2I = D.InputOf<typeof SumD2>
+export type SumD2A = D.TypeOf<typeof SumD2>
+
 export const SumUD = D.sum('type')({
   A: D.struct({ type: D.literal('A'), a: D.string }),
   B: D.struct({ type: D.literal('B'), b: D.string })

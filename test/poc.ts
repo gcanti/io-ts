@@ -8,6 +8,32 @@ import * as RA from 'fp-ts/lib/ReadonlyArray'
 export const print = flow(D.draw, D.print)
 
 describe('poc', () => {
+  describe('fromSum', () => {
+    it('should return a right', () => {
+      const decoder = D.fromSum('type')({
+        1: D.fromStruct({ type: D.literal(1), a: D.string }),
+        2: D.fromStruct({ type: D.literal(2), b: D.number })
+      })
+      U.deepStrictEqual(decoder.decode({ type: 1, a: 'a' }), TH.right({ type: 1, a: 'a' } as const))
+      U.deepStrictEqual(decoder.decode({ type: 2, b: 1 }), TH.right({ type: 2, b: 1 } as const))
+    })
+
+    it('should return a left', () => {
+      const decoder = D.fromSum('type')({
+        1: D.fromStruct({ type: D.literal(1), a: D.string }),
+        2: D.fromStruct({ type: D.literal(2), b: D.number })
+      })
+      U.deepStrictEqual(
+        pipe(decoder.decode({ type: 1, a: 1 }), print),
+        `Errors:
+1 error(s) found while decoding a sum
+└─ 1 error(s) found while decoding member 1
+   └─ 1 error(s) found while decoding a struct
+      └─ 1 error(s) found while decoding required key \"a\"
+         └─ cannot decode 1, expected a string`
+      )
+    })
+  })
   describe('intersect', () => {
     describe('struct', () => {
       it('should not raise invalid warnings', () => {
