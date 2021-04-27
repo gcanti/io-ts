@@ -371,12 +371,12 @@ export const intersectionE = <E>(errors: ReadonlyNonEmptyArray<E>): Intersection
   errors
 })
 
-export interface SumE<E> extends CompoundE<E> {
+export interface SumE<E> extends SingleE<E> {
   readonly _tag: 'SumE'
 }
-export const sumE = <E>(errors: ReadonlyNonEmptyArray<E>): SumE<E> => ({
+export const sumE = <E>(error: E): SumE<E> => ({
   _tag: 'SumE',
-  errors
+  error
 })
 
 export interface MessageE<I> extends ActualE<I> {
@@ -1033,7 +1033,6 @@ const collectPrunable = <E>(de: DecodeError<E>): Prunable => {
       case 'PartialE':
       case 'RecordE':
       case 'StructE':
-      case 'SumE':
       case 'TupleE':
       case 'UnionE':
         return pipe(de.errors, RA.chain(go))
@@ -1044,6 +1043,7 @@ const collectPrunable = <E>(de: DecodeError<E>): Prunable => {
       case 'ParserE':
       case 'PrevE':
       case 'RefinementE':
+      case 'SumE':
         return go(de.error)
       case 'LeafE':
       case 'MissingIndexesE':
@@ -1085,12 +1085,12 @@ const prune = (prunable: Prunable, anticollision: string): (<E>(de: DecodeError<
         return pipe(de.errors, RA.filterMap(prune(prunable, anticollision)), make(recordE))
       case 'StructE':
         return pipe(de.errors, RA.filterMap(prune(prunable, anticollision)), make(structE))
-      case 'SumE':
-        return pipe(de.errors, RA.filterMap(prune(prunable, anticollision)), make(sumE))
       case 'TupleE':
         return pipe(de.errors, RA.filterMap(prune(prunable, anticollision)), make(tupleE))
       case 'UnionE':
         return pipe(de.errors, RA.filterMap(prune(prunable, anticollision)), make(unionE))
+      case 'SumE':
+        return pipe(de.error, prune(prunable, anticollision), O.map(sumE))
       case 'NextE':
         return pipe(de.error, prune(prunable, anticollision), O.map(nextE))
       case 'NullableE':
@@ -1318,22 +1318,33 @@ export interface FromSumD<T extends string, Members>
   readonly tag: T
   readonly members: Members
 }
-// TODO: every `Members` should own a tag field
-export const fromSum = <T extends string>(tag: T) => <Members extends Record<PropertyKey, AnyD>>(
-  members: Members
-): FromSumD<T, Members> => {
-  const literals = Object.keys(members)
-  return {
-    _tag: 'FromSumD',
-    members,
-    decode: (i: any) => {
-      const v = i[tag]
-      if (v in members) {
-        return members[v].decode(i)
+export function fromSum<T extends string>(
+  tag: T
+): <Members extends Record<string, AnyD>>(members: Members) => FromSumD<T, Members>
+export function fromSum<T extends string>(
+  tag: T
+): <I extends Record<T, PropertyKey>, E, A>(members: Record<I[T], Decoder<I, E, A>>) => FromSumD<T, typeof members> {
+  return <I extends Record<T, PropertyKey>, E, A>(
+    members: Record<I[T], Decoder<I, E, A>>
+  ): FromSumD<T, typeof members> => {
+    const literals = Object.keys(members)
+    return {
+      _tag: 'FromSumD',
+      tag,
+      members,
+      decode: (i: I) => {
+        const v = i[tag]
+        const member: Decoder<I, E, A> = members[v]
+        if (member) {
+          return pipe(
+            member.decode(i),
+            TH.mapLeft((e) => sumE(memberE(v, e)))
+          ) as any
+        }
+        return left(tagE(tag, literals))
       }
-      return left(tagE(tag, literals))
     }
-  } as any
+  }
 }
 
 export interface SumD<T extends string, Members>
@@ -1499,6 +1510,8 @@ export const toTreeWith = <E>(toTree: (e: E) => Tree<string>): ((de: DecodeError
         return tree(`1 error(s) found while decoding member ${JSON.stringify(de.member)}`, [go(de.error)])
       case 'LazyE':
         return tree(`1 error(s) found while decoding lazy decoder ${de.id}`, [go(de.error)])
+      case 'SumE':
+        return tree(`1 error(s) found while decoding a sum`, [go(de.error)])
 
       // compounds
       case 'ArrayE':
@@ -1515,8 +1528,6 @@ export const toTreeWith = <E>(toTree: (e: E) => Tree<string>): ((de: DecodeError
         return tree(`${de.errors.length} error(s) found while decoding a union`, de.errors.map(go))
       case 'IntersectionE':
         return tree(`${de.errors.length} error(s) found while decoding an intersection`, de.errors.map(go))
-      case 'SumE':
-        return tree(`${de.errors.length} error(s) found while decoding a sum`, de.errors.map(go))
       case 'CompositionE':
         return de.errors.length === 1
           ? go(de.errors[0]) // less noise in the output if there's only one error
@@ -1821,7 +1832,6 @@ const shouldCondemnWhen = <E>(
       case 'TupleE':
       case 'UnionE':
       case 'RecordE':
-      case 'SumE':
         return de.errors.some(go)
       case 'PrevE':
       case 'NextE':
@@ -1834,6 +1844,7 @@ const shouldCondemnWhen = <E>(
       case 'RequiredIndexE':
       case 'OptionalIndexE':
       case 'LazyE':
+      case 'SumE':
         return go(de.error)
       case 'UnexpectedIndexesE':
       case 'UnexpectedKeysE':

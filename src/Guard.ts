@@ -197,16 +197,6 @@ export const record = <A>(codomain: Guard<unknown, A>): Guard<unknown, Record<st
 
 /**
  * @category combinators
- * @since 2.2.17
- */
-export const fromTuple = <Components extends ReadonlyArray<Guard<any, any>>>(
-  ...components: Components
-): Guard<{ [K in keyof Components]: InputOf<Components[K]> }, { [K in keyof Components]: TypeOf<Components[K]> }> => ({
-  is: (i): i is { [K in keyof Components]: TypeOf<Components[K]> } => components.every((c, index) => c.is(i[index]))
-})
-
-/**
- * @category combinators
  * @since 2.2.0
  */
 export const tuple = <A extends ReadonlyArray<unknown>>(
