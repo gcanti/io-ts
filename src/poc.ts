@@ -345,10 +345,11 @@ export const arrayE = <E>(errors: ReadonlyNonEmptyArray<E>): ArrayE<E> => ({
   errors
 })
 
-export interface UnionE<E> extends CompoundE<E> {
+export interface UnionE<E> {
   readonly _tag: 'UnionE'
+  readonly errors: ReadonlyArray<E>
 }
-export const unionE = <E>(errors: ReadonlyNonEmptyArray<E>): UnionE<E> => ({
+export const unionE = <E>(errors: ReadonlyArray<E>): UnionE<E> => ({
   _tag: 'UnionE',
   errors
 })
@@ -993,7 +994,7 @@ export function union<Members extends ReadonlyArray<AnyD>>(...members: Members):
           )
         }
       }
-      return RA.isNonEmpty(es) ? left(unionE(es)) : right(i)
+      return left(unionE(es))
     }
   }
 }
@@ -2196,3 +2197,13 @@ export const Value: Decoder<
   const NoFunctionArray = array(union(Value, NoFunctionObject))
   return union(string, number, boolean, NoFunctionObject, NoFunctionArray)
 })
+
+// declare const union2: <I, E1, A1, E2, A2>(
+//   decoder1: Decoder<I, E1, A1>,
+//   decoder2: Decoder<I, E2, A2>
+// ) => Decoder<I, E1 | E2, A1 | A2>
+
+// declare const union3: <I1, E1, A1, I2, E2, A2>(
+//   decoder1: Decoder<I1, E1, A1>,
+//   decoder2: Decoder<I2, E2, A2>
+// ) => Decoder<I1 & I2, E1 | E2, A1 | A2>

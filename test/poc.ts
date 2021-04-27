@@ -3,6 +3,7 @@ import * as D from '../src/poc'
 import * as U from './util'
 import * as TH from 'fp-ts/lib/These'
 import { flow } from 'fp-ts/lib/function'
+import * as RA from 'fp-ts/lib/ReadonlyArray'
 
 export const print = flow(D.draw, D.print)
 
@@ -90,6 +91,11 @@ Warnings:
       const decoder = D.union(D.string, D.number)
       U.deepStrictEqual(decoder.decode('a'), TH.right('a'))
       U.deepStrictEqual(decoder.decode(1), TH.right(1))
+    })
+
+    it('should return a left with zero members', () => {
+      const decoder = D.union()
+      U.deepStrictEqual(decoder.decode('a'), TH.left(D.unionE(RA.empty)))
     })
 
     it('should return a both', () => {
