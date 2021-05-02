@@ -1021,7 +1021,7 @@ export function nullable<D extends AnyD>(or: D): NullableD<D> {
   return {
     _tag: 'NullableD',
     or,
-    decode: (i) => (i === null ? success(null) : or.decode(i))
+    decode: (i) => (i === null ? success(null) : pipe(or.decode(i), TH.mapLeft(nullableE)))
   }
 }
 

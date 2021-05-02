@@ -98,6 +98,28 @@ cannot decode \"b\", expected one of \"a\", null`
     })
   })
 
+  // -------------------------------------------------------------------------------------
+  // combinators
+  // -------------------------------------------------------------------------------------
+
+  describe('nullable', () => {
+    it('should decode a valid input', () => {
+      const decoder = _.nullable(_.string)
+      U.deepStrictEqual(decoder.decode(null), _.success(null))
+      U.deepStrictEqual(decoder.decode('a'), _.success('a'))
+    })
+
+    it('should reject an invalid input', () => {
+      const decoder = _.nullable(_.string)
+      U.deepStrictEqual(
+        pipe(decoder.decode(undefined), print),
+        `Errors:
+1 error(s) found while decoding a nullable
+└─ cannot decode undefined, expected a string`
+      )
+    })
+  })
+
   describe('fromSum', () => {
     it('should return a right', () => {
       const decoder = _.fromSum('type')({
