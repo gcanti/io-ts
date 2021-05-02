@@ -1390,7 +1390,8 @@ export function fromSum<T extends string>(
   }
 }
 
-export interface SumD<T extends string, Members> extends CompositionD<UnknownRecordUD, FromSumD<T, Members>> {}
+export interface SumD<T extends string, Members>
+  extends CompositionD<UnionD<[UnknownRecordUD, UnknownArrayUD]>, FromSumD<T, Members>> {}
 
 export function sum<T extends string>(
   tag: T
@@ -1399,7 +1400,7 @@ export function sum<T extends string>(
   tag: T
 ): <E, A>(members: Record<string, Decoder<unknown, E, A>>) => SumD<T, typeof members> {
   const fromSumTag = fromSum(tag)
-  return (members) => pipe(UnknownRecord, compose(fromSumTag(members)))
+  return (members) => pipe(union(UnknownRecord, UnknownArray), compose(fromSumTag(members)))
 }
 
 // -------------------------------------------------------------------------------------

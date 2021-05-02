@@ -2,7 +2,7 @@ import { pipe } from 'fp-ts/lib/pipeable'
 import * as _ from '../src/poc'
 import * as U from './util'
 import * as TH from 'fp-ts/lib/These'
-import { flow } from 'fp-ts/lib/function'
+import { flow, tuple } from 'fp-ts/lib/function'
 import * as RA from 'fp-ts/lib/ReadonlyArray'
 
 export const print = flow(_.draw, _.print)
@@ -335,6 +335,41 @@ cannot decode undefined, expected an object`
     })
   })
 
+  describe('fromSum', () => {
+    it('should return a right', () => {
+      const decoder = _.fromSum('type')({
+        1: _.fromStruct({ type: _.literal(1), a: _.string }),
+        2: _.fromStruct({ type: _.literal(2), b: _.number })
+      })
+      U.deepStrictEqual(decoder.decode({ type: 1, a: 'a' }), TH.right({ type: 1, a: 'a' } as const))
+      U.deepStrictEqual(decoder.decode({ type: 2, b: 1 }), TH.right({ type: 2, b: 1 } as const))
+    })
+
+    it('should return a left', () => {
+      const decoder = _.fromSum('type')({
+        1: _.fromStruct({ type: _.literal(1), a: _.string }),
+        2: _.fromStruct({ type: _.literal(2), b: _.number })
+      })
+      U.deepStrictEqual(
+        pipe(decoder.decode({ type: 1, a: 1 }), print),
+        `Errors:
+1 error(s) found while decoding a sum
+└─ 1 error(s) found while decoding member 1
+   └─ 1 error(s) found while decoding a struct
+      └─ 1 error(s) found while decoding required key \"a\"
+         └─ cannot decode 1, expected a string`
+      )
+    })
+
+    it('should handle tuples', () => {
+      const decoder = _.fromSum('0')({
+        A: _.tuple(_.literal('A'), _.string),
+        B: _.tuple(_.literal('B'), _.number)
+      })
+      U.deepStrictEqual(decoder.decode(['A', 'a']), TH.right(tuple('A' as const, 'a')))
+    })
+  })
+
   describe('sum', () => {
     it('should return a right', () => {
       const decoder = _.sum('type')({
@@ -360,32 +395,13 @@ cannot decode undefined, expected an object`
          └─ cannot decode 1, expected a string`
       )
     })
-  })
 
-  describe('fromSum', () => {
-    it('should return a right', () => {
-      const decoder = _.fromSum('type')({
-        1: _.fromStruct({ type: _.literal(1), a: _.string }),
-        2: _.fromStruct({ type: _.literal(2), b: _.number })
+    it('should handle tuples', () => {
+      const decoder = _.sum('0')({
+        A: _.tuple(_.literal('A'), _.string),
+        B: _.tuple(_.literal('B'), _.number)
       })
-      U.deepStrictEqual(decoder.decode({ type: 1, a: 'a' }), TH.right({ type: 1, a: 'a' } as const))
-      U.deepStrictEqual(decoder.decode({ type: 2, b: 1 }), TH.right({ type: 2, b: 1 } as const))
-    })
-
-    it('should return a left', () => {
-      const decoder = _.fromSum('type')({
-        1: _.fromStruct({ type: _.literal(1), a: _.string }),
-        2: _.fromStruct({ type: _.literal(2), b: _.number })
-      })
-      U.deepStrictEqual(
-        pipe(decoder.decode({ type: 1, a: 1 }), print),
-        `Errors:
-1 error(s) found while decoding a sum
-└─ 1 error(s) found while decoding member 1
-   └─ 1 error(s) found while decoding a struct
-      └─ 1 error(s) found while decoding required key \"a\"
-         └─ cannot decode 1, expected a string`
-      )
+      U.deepStrictEqual(decoder.decode(['A', 'a']), TH.right(tuple('A' as const, 'a')))
     })
   })
 
