@@ -98,7 +98,7 @@ cannot decode null, expected a number`
       U.deepStrictEqual(
         pipe(_.number.decode(Infinity), print),
         `Value:
-null
+Infinity
 Warnings:
 value is Infinity`
       )
@@ -241,9 +241,7 @@ Warnings:
       U.deepStrictEqual(
         pipe(decoder.decode({ a: 'a', b: 1 }), print),
         `Value:
-{
-  \"a\": \"a\"
-}
+{ a: 'a' }
 Warnings:
 1 error(s) found while checking keys
 └─ unexpected key \"b\"`
@@ -315,9 +313,7 @@ cannot decode undefined, expected an object`
       U.deepStrictEqual(
         pipe(decoder.decode({ a: 'a', b: 1 }), print),
         `Value:
-{
-  \"a\": \"a\"
-}
+{ a: 'a' }
 Warnings:
 1 error(s) found while checking keys
 └─ unexpected key \"b\"`
@@ -373,9 +369,7 @@ cannot decode undefined, expected an object`
       U.deepStrictEqual(
         pipe(decoder.decode({ a: NaN }), print),
         `Value:
-{
-  \"a\": null
-}
+{ a: NaN }
 Warnings:
 1 error(s) found while decoding a partial
 └─ 1 error(s) found while decoding optional key \"a\"
@@ -396,10 +390,7 @@ Warnings:
       U.deepStrictEqual(
         pipe(decoder.decode([1, NaN]), print),
         `Value:
-[
-  1,
-  null
-]
+[ 1, NaN ]
 Warnings:
 1 error(s) found while decoding an array
 └─ 1 error(s) found while decoding optional index 1
@@ -478,9 +469,7 @@ cannot decode undefined, expected an object`
       U.deepStrictEqual(
         pipe(decoder.decode({ a: NaN }), print),
         `Value:
-{
-  \"a\": null
-}
+{ a: NaN }
 Warnings:
 1 error(s) found while decoding a record
 └─ 1 error(s) found while decoding optional key \"a\"
@@ -588,10 +577,7 @@ Warnings:
         U.deepStrictEqual(
           pipe(I.decode({ a: 'a', b: 1, c: true }), print),
           `Value:
-{
-  \"a\": \"a\",
-  \"b\": 1
-}
+{ a: 'a', b: 1 }
 Warnings:
 2 error(s) found while decoding an intersection
 ├─ 1 error(s) found while decoding member 0
@@ -611,12 +597,7 @@ Warnings:
       U.deepStrictEqual(
         pipe(I.decode({ a: { b: 'a', c: 1, d: true } }), print),
         `Value:
-{
-  \"a\": {
-    \"b\": \"a\",
-    \"c\": 1
-  }
-}
+{ a: { b: 'a', c: 1 } }
 Warnings:
 2 error(s) found while decoding an intersection
 ├─ 1 error(s) found while decoding member 0
@@ -692,10 +673,7 @@ cannot decode undefined, expected an array`
       U.deepStrictEqual(
         pipe(decoder.decode(['a', 1, true]), print),
         `Value:
-[
-  \"a\",
-  1
-]
+[ 'a', 1 ]
 Warnings:
 1 error(s) found while checking indexes
 └─ unexpected index 2`
@@ -707,9 +685,7 @@ Warnings:
       U.deepStrictEqual(
         pipe(decoder.decode([NaN]), print),
         `Value:
-[
-  null
-]
+[ NaN ]
 Warnings:
 1 error(s) found while decoding a tuple
 └─ 1 error(s) found while decoding required component 0

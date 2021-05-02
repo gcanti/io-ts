@@ -6,6 +6,7 @@ import { pipe } from 'fp-ts/lib/pipeable'
 import * as RA from 'fp-ts/lib/ReadonlyArray'
 import * as RNEA from 'fp-ts/lib/ReadonlyNonEmptyArray'
 import * as TH from 'fp-ts/lib/These'
+import * as util from 'util'
 
 import These = TH.These
 import ReadonlyNonEmptyArray = RNEA.ReadonlyNonEmptyArray
@@ -1583,23 +1584,26 @@ export const toTreeWith = <E>(toTree: (e: E) => Tree<string>): ((de: DecodeError
   return go
 }
 
-const stringify = (a: unknown): string => (typeof a === 'number' && isNaN(a) ? 'NaN' : JSON.stringify(a, null, 2))
+const format = (a: unknown): string => {
+  if (typeof a === 'string') return JSON.stringify(a)
+  return util.format(a)
+}
 
 export const toTreeBuiltin = (de: BuiltinE): Tree<string> => {
   switch (de._tag) {
     case 'StringE':
-      return tree(`cannot decode ${stringify(de.actual)}, expected a string`)
+      return tree(`cannot decode ${format(de.actual)}, expected a string`)
     case 'NumberE':
-      return tree(`cannot decode ${stringify(de.actual)}, expected a number`)
+      return tree(`cannot decode ${format(de.actual)}, expected a number`)
     case 'BooleanE':
-      return tree(`cannot decode ${stringify(de.actual)}, expected a boolean`)
+      return tree(`cannot decode ${format(de.actual)}, expected a boolean`)
     case 'UnknownArrayE':
-      return tree(`cannot decode ${stringify(de.actual)}, expected an array`)
+      return tree(`cannot decode ${format(de.actual)}, expected an array`)
     case 'UnknownRecordE':
-      return tree(`cannot decode ${stringify(de.actual)}, expected an object`)
+      return tree(`cannot decode ${format(de.actual)}, expected an object`)
     case 'LiteralE':
       return tree(
-        `cannot decode ${stringify(de.actual)}, expected one of ${de.literals
+        `cannot decode ${format(de.actual)}, expected one of ${de.literals
           .map((literal) => JSON.stringify(literal))
           .join(', ')}`
       )
@@ -1641,7 +1645,7 @@ export const draw = TH.mapLeft(flow(toTree, drawTree))
 // draw utils
 // -------------------------------------------------------------------------------------
 
-const printValue = (a: unknown): string => 'Value:\n' + stringify(a)
+const printValue = (a: unknown): string => 'Value:\n' + format(a)
 const printErrors = (s: string): string => (s === '' ? s : 'Errors:\n' + s)
 const printWarnings = (s: string): string => (s === '' ? s : 'Warnings:\n' + s)
 
