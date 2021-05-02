@@ -77,6 +77,27 @@ cannot decode null, expected an object`
     )
   })
 
+  // -------------------------------------------------------------------------------------
+  // constructors
+  // -------------------------------------------------------------------------------------
+
+  describe('literal', () => {
+    it('should decode a valid input', async () => {
+      const decoder = _.literal('a', null, 'b', 1, true)
+      U.deepStrictEqual(decoder.decode('a'), _.success('a' as const))
+      U.deepStrictEqual(decoder.decode(null), _.success(null))
+    })
+
+    it('should reject an invalid input', async () => {
+      const decoder = _.literal('a', null)
+      U.deepStrictEqual(
+        pipe(decoder.decode('b'), print),
+        `Errors:
+cannot decode \"b\", expected one of \"a\", null`
+      )
+    })
+  })
+
   describe('fromSum', () => {
     it('should return a right', () => {
       const decoder = _.fromSum('type')({
