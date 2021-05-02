@@ -120,6 +120,221 @@ cannot decode \"b\", expected one of \"a\", null`
     })
   })
 
+  describe('struct', () => {
+    it('should decode a valid input', async () => {
+      const decoder = _.struct({
+        a: _.string
+      })
+      U.deepStrictEqual(decoder.decode({ a: 'a' }), _.success({ a: 'a' }))
+    })
+
+    it('should strip additional fields', async () => {
+      const decoder = _.struct({
+        a: _.string
+      })
+      U.deepStrictEqual(
+        pipe(decoder.decode({ a: 'a', b: 1 }), print),
+        `Value:
+{
+  \"a\": \"a\"
+}
+Warnings:
+1 error(s) found while checking keys
+└─ unexpected key \"b\"`
+      )
+    })
+
+    it('should not strip fields corresponding to undefined values', async () => {
+      const decoder = _.struct({
+        a: _.literal(undefined)
+      })
+      U.deepStrictEqual(decoder.decode({ a: undefined }), _.success({ a: undefined }))
+    })
+
+    it('should reject an invalid input', async () => {
+      const decoder = _.struct({
+        a: _.string
+      })
+      U.deepStrictEqual(
+        pipe(decoder.decode(undefined), print),
+        `Errors:
+cannot decode undefined, expected an object`
+      )
+      U.deepStrictEqual(
+        pipe(decoder.decode({ a: 1 }), print),
+        `Errors:
+1 error(s) found while decoding a struct
+└─ 1 error(s) found while decoding required key \"a\"
+   └─ cannot decode 1, expected a string`
+      )
+    })
+
+    it('should collect all errors', async () => {
+      const decoder = _.struct({
+        a: _.string,
+        b: _.number
+      })
+      U.deepStrictEqual(
+        pipe(decoder.decode({}), print),
+        `Errors:
+2 error(s) found while checking keys
+├─ missing required key \"a\"
+└─ missing required key \"b\"`
+      )
+    })
+
+    it('should support getters', async () => {
+      class A {
+        get a() {
+          return 'a'
+        }
+        get b() {
+          return 'b'
+        }
+      }
+      const decoder = _.struct({ a: _.string, b: _.string })
+      U.deepStrictEqual(decoder.decode(new A()), _.success({ a: 'a', b: 'b' }))
+    })
+  })
+
+  describe('partial', () => {
+    it('should decode a valid input', async () => {
+      const decoder = _.partial({ a: _.string })
+      U.deepStrictEqual(decoder.decode({ a: 'a' }), _.success({ a: 'a' }))
+      U.deepStrictEqual(decoder.decode({}), _.success({}))
+    })
+
+    it('should strip additional fields', async () => {
+      const decoder = _.partial({ a: _.string })
+      U.deepStrictEqual(
+        pipe(decoder.decode({ a: 'a', b: 1 }), print),
+        `Value:
+{
+  \"a\": \"a\"
+}
+Warnings:
+1 error(s) found while checking keys
+└─ unexpected key \"b\"`
+      )
+    })
+
+    it('should not add missing fields', async () => {
+      const decoder = _.partial({ a: _.string })
+      U.deepStrictEqual(decoder.decode({}), _.success({}))
+    })
+
+    it('should not strip fields corresponding to undefined values', async () => {
+      const decoder = _.partial({ a: _.string })
+      U.deepStrictEqual(decoder.decode({ a: undefined }), _.success({ a: undefined }))
+    })
+
+    it('should reject an invalid input', async () => {
+      const decoder = _.partial({ a: _.string })
+      U.deepStrictEqual(
+        pipe(decoder.decode(undefined), print),
+        `Errors:
+cannot decode undefined, expected an object`
+      )
+      U.deepStrictEqual(
+        pipe(decoder.decode({ a: 1 }), print),
+        `Errors:
+1 error(s) found while decoding a partial
+└─ 1 error(s) found while decoding optional key \"a\"
+   └─ cannot decode 1, expected a string`
+      )
+    })
+
+    it('should collect all errors', async () => {
+      const decoder = _.partial({
+        a: _.string,
+        b: _.number
+      })
+      U.deepStrictEqual(
+        pipe(decoder.decode({ a: 1, b: 'b' }), print),
+        `Errors:
+2 error(s) found while decoding a partial
+├─ 1 error(s) found while decoding optional key \"a\"
+│  └─ cannot decode 1, expected a string
+└─ 1 error(s) found while decoding optional key \"b\"
+   └─ cannot decode \"b\", expected a number`
+      )
+    })
+  })
+
+  describe('array', () => {
+    it('should decode a valid input', async () => {
+      const decoder = _.array(_.string)
+      U.deepStrictEqual(decoder.decode([]), _.success([]))
+      U.deepStrictEqual(decoder.decode(['a']), _.success(['a']))
+    })
+
+    it('should reject an invalid input', async () => {
+      const decoder = _.array(_.string)
+      U.deepStrictEqual(
+        pipe(decoder.decode(undefined), print),
+        `Errors:
+cannot decode undefined, expected an array`
+      )
+      U.deepStrictEqual(
+        pipe(decoder.decode([1]), print),
+        `Errors:
+1 error(s) found while decoding an array
+└─ 1 error(s) found while decoding optional index 0
+   └─ cannot decode 1, expected a string`
+      )
+    })
+
+    it('should collect all errors', async () => {
+      const decoder = _.array(_.string)
+      U.deepStrictEqual(
+        pipe(decoder.decode([1, 2]), print),
+        `Errors:
+2 error(s) found while decoding an array
+├─ 1 error(s) found while decoding optional index 0
+│  └─ cannot decode 1, expected a string
+└─ 1 error(s) found while decoding optional index 1
+   └─ cannot decode 2, expected a string`
+      )
+    })
+  })
+
+  describe('record', () => {
+    it('should decode a valid value', async () => {
+      const decoder = _.record(_.number)
+      U.deepStrictEqual(decoder.decode({}), _.success({}))
+      U.deepStrictEqual(decoder.decode({ a: 1 }), _.success({ a: 1 }))
+    })
+
+    it('should reject an invalid value', async () => {
+      const decoder = _.record(_.number)
+      U.deepStrictEqual(
+        pipe(decoder.decode(undefined), print),
+        `Errors:
+cannot decode undefined, expected an object`
+      )
+      U.deepStrictEqual(
+        pipe(decoder.decode({ a: 'a' }), print),
+        `Errors:
+1 error(s) found while decoding a record
+└─ 1 error(s) found while decoding optional key \"a\"
+   └─ cannot decode \"a\", expected a number`
+      )
+    })
+
+    it('should collect all errors', async () => {
+      const decoder = _.record(_.number)
+      U.deepStrictEqual(
+        pipe(decoder.decode({ a: 'a', b: 'b' }), print),
+        `Errors:
+2 error(s) found while decoding a record
+├─ 1 error(s) found while decoding optional key \"a\"
+│  └─ cannot decode \"a\", expected a number
+└─ 1 error(s) found while decoding optional key \"b\"
+   └─ cannot decode \"b\", expected a number`
+      )
+    })
+  })
+
   describe('fromSum', () => {
     it('should return a right', () => {
       const decoder = _.fromSum('type')({

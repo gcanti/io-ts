@@ -584,7 +584,7 @@ export const fail = <E>(e: E): Decoder<any, E, any> => ({
   decode: () => failure(e)
 })
 
-export type Literal = string | number | boolean | null | symbol
+export type Literal = string | number | boolean | null | undefined | symbol
 
 export interface LiteralE<A extends Literal> extends ActualE<unknown> {
   readonly _tag: 'LiteralE'
@@ -903,7 +903,7 @@ export function fromArray<I, E, A>(item: Decoder<I, E, A>): FromArrayD<typeof it
     _tag: 'FromArrayD',
     item,
     decode: (us) => {
-      const es: Array<OptionalIndexE<number, ErrorOf<typeof item>>> = []
+      const es: Array<OptionalIndexE<number, E>> = []
       const as: Array<A> = []
       let isBoth = true
       for (let index = 0; index < us.length; index++) {
@@ -935,13 +935,40 @@ export function array<E, A>(item: Decoder<unknown, E, A>): ArrayD<typeof item> {
 export interface FromRecordD<Codomain>
   extends Decoder<
     Record<PropertyKey, InputOf<Codomain>>,
-    RecordE<RequiredKeyE<string, ErrorOf<Codomain>>>,
+    RecordE<OptionalKeyE<string, ErrorOf<Codomain>>>,
     Record<PropertyKey, TypeOf<Codomain>>
   > {
   readonly _tag: 'FromRecordD'
   readonly codomain: Codomain
 }
-export declare const fromRecord: <Codomain extends AnyD>(codomain: Codomain) => FromRecordD<Codomain>
+export function fromRecord<Codomain extends AnyD>(codomain: Codomain): FromRecordD<Codomain>
+export function fromRecord<I, E, A>(codomain: Decoder<I, E, A>): FromRecordD<typeof codomain> {
+  return {
+    _tag: 'FromRecordD',
+    codomain,
+    decode: (i) => {
+      const es: Array<OptionalKeyE<string, E>> = []
+      const r: Record<string, A> = {}
+      let isBoth = true
+      for (const k in i) {
+        const de = codomain.decode(i[k])
+        if (TH.isLeft(de)) {
+          isBoth = false
+          es.push(optionalKeyE(k, de.left))
+        } else if (TH.isRight(de)) {
+          r[k] = de.right
+        } else {
+          es.push(optionalKeyE(k, de.left))
+          r[k] = de.right
+        }
+      }
+      if (RA.isNonEmpty(es)) {
+        return isBoth ? warning(recordE(es), r) : failure(recordE(es))
+      }
+      return success(r)
+    }
+  }
+}
 
 export interface RecordD<Codomain> extends CompositionD<UnknownRecordUD, FromRecordD<Codomain>> {}
 export function record<Codomain extends AnyUD>(codomain: Codomain): CompositionD<UnknownRecordUD, FromRecordD<Codomain>>
@@ -2126,6 +2153,10 @@ export const PartialRecordab = partial({
   a: number,
   b: number
 })
+
+// -------------------------------------------------------------------------------------
+// use case: undefined -> Option<A>
+// -------------------------------------------------------------------------------------
 
 // -------------------------------------------------------------------------------------
 // use case: omit, pick #553
