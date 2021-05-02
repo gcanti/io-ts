@@ -1,3 +1,4 @@
+import { Bifunctor3 } from 'fp-ts/lib/Bifunctor'
 import { flow, Lazy, Refinement } from 'fp-ts/lib/function'
 import { Functor3 } from 'fp-ts/lib/Functor'
 import * as O from 'fp-ts/lib/Option'
@@ -179,7 +180,7 @@ export function compose<A, E2, B>(
           pipe(
             next.decode(a),
             TH.fold(
-              (e2) => failure(compositionE([nextE(e2)])),
+              (e2) => failure(compositionE([prevE(w1), nextE(e2)])),
               (b) => warning(compositionE([prevE(w1)]), b),
               (w2, b) => warning(compositionE([prevE(w1), nextE(w2)]), b)
             )
@@ -420,7 +421,7 @@ export interface NextRE<E> extends NextE<DecodeError<E>> {}
 // customized single
 export interface RequiredKeyRE<E> extends RequiredKeyE<string, DecodeError<E>> {}
 export interface OptionalKeyRE<E> extends OptionalKeyE<string, DecodeError<E>> {}
-export interface RequiredIndexRE<E> extends RequiredIndexE<number, DecodeError<E>> {}
+export interface RequiredIndexRE<E> extends RequiredIndexE<string | number, DecodeError<E>> {}
 export interface OptionalIndexRE<E> extends OptionalIndexE<number, DecodeError<E>> {}
 export interface MemberRE<E> extends MemberE<string | number, DecodeError<E>> {}
 export interface LazyRE<E> extends LazyE<DecodeError<E>> {}
@@ -580,9 +581,9 @@ export const UnknownRecord: UnknownRecordUD = {
 // decoder constructors
 // -------------------------------------------------------------------------------------
 
-export const fail = <E>(e: E): Decoder<any, E, any> => ({
-  decode: () => failure(e)
-})
+// export const fail = <E>(e: E): Decoder<any, E, any> => ({
+//   decode: () => failure(e)
+// })
 
 export type Literal = string | number | boolean | null | undefined | symbol
 
@@ -872,7 +873,7 @@ export const missingIndexes = <Components extends ReadonlyArray<unknown>>(
       const es: Array<number> = []
       const len = us.length
       for (let index = 0; index < components.length; index++) {
-        if (len < index) {
+        if (len <= index) {
           es.push(index)
         }
       }
@@ -1420,6 +1421,12 @@ export const Functor: Functor3<URI> = {
   map: (fa, f) => pipe(fa, map(f))
 }
 
+export const Bifunctor: Bifunctor3<URI> = {
+  URI,
+  mapLeft: (fa, f) => pipe(fa, mapLeft(f)),
+  bimap: (fea, f, g) => pipe(fea, mapLeft(f), map(g))
+}
+
 // -------------------------------------------------------------------------------------
 // use case: form
 // -------------------------------------------------------------------------------------
@@ -1576,21 +1583,23 @@ export const toTreeWith = <E>(toTree: (e: E) => Tree<string>): ((de: DecodeError
   return go
 }
 
+const stringify = (a: unknown): string => (typeof a === 'number' && isNaN(a) ? 'NaN' : JSON.stringify(a, null, 2))
+
 export const toTreeBuiltin = (de: BuiltinE): Tree<string> => {
   switch (de._tag) {
     case 'StringE':
-      return tree(`cannot decode ${JSON.stringify(de.actual)}, expected a string`)
+      return tree(`cannot decode ${stringify(de.actual)}, expected a string`)
     case 'NumberE':
-      return tree(`cannot decode ${JSON.stringify(de.actual)}, expected a number`)
+      return tree(`cannot decode ${stringify(de.actual)}, expected a number`)
     case 'BooleanE':
-      return tree(`cannot decode ${JSON.stringify(de.actual)}, expected a boolean`)
+      return tree(`cannot decode ${stringify(de.actual)}, expected a boolean`)
     case 'UnknownArrayE':
-      return tree(`cannot decode ${JSON.stringify(de.actual)}, expected an array`)
+      return tree(`cannot decode ${stringify(de.actual)}, expected an array`)
     case 'UnknownRecordE':
-      return tree(`cannot decode ${JSON.stringify(de.actual)}, expected an object`)
+      return tree(`cannot decode ${stringify(de.actual)}, expected an object`)
     case 'LiteralE':
       return tree(
-        `cannot decode ${JSON.stringify(de.actual)}, expected one of ${de.literals
+        `cannot decode ${stringify(de.actual)}, expected one of ${de.literals
           .map((literal) => JSON.stringify(literal))
           .join(', ')}`
       )
@@ -1601,7 +1610,11 @@ export const toTreeBuiltin = (de: BuiltinE): Tree<string> => {
     case 'InfinityE':
       return tree('value is Infinity')
     case 'TagE':
-      return tree(`1 error(s) found while decoding sum tag ${de.tag}, expected one of ${JSON.stringify(de.literals)}`)
+      return tree(
+        `1 error(s) found while decoding sum tag ${JSON.stringify(
+          de.tag
+        )}, expected one of ${de.literals.map((literal) => JSON.stringify(literal)).join(', ')}`
+      )
   }
 }
 
@@ -1628,8 +1641,7 @@ export const draw = TH.mapLeft(flow(toTree, drawTree))
 // draw utils
 // -------------------------------------------------------------------------------------
 
-const printValue = <A>(a: A): string =>
-  'Value:\n' + (typeof a === 'number' && isNaN(a) ? 'NaN' : JSON.stringify(a, null, 2))
+const printValue = (a: unknown): string => 'Value:\n' + stringify(a)
 const printErrors = (s: string): string => (s === '' ? s : 'Errors:\n' + s)
 const printWarnings = (s: string): string => (s === '' ? s : 'Warnings:\n' + s)
 

@@ -17,6 +17,54 @@ describe('poc', () => {
     U.deepStrictEqual(decoder.decode('a'), _.success('a!'))
   })
 
+  it('Bifunctor', () => {
+    const decoder = _.Functor.map(_.string, (s) => s + '!')
+    U.deepStrictEqual(decoder.decode('a'), _.success('a!'))
+  })
+
+  it('map', () => {
+    const decoder = pipe(
+      _.string,
+      _.map((s) => s.trim())
+    )
+    U.deepStrictEqual(decoder.decode('a'), _.success('a'))
+    U.deepStrictEqual(decoder.decode(' a '), _.success('a'))
+  })
+
+  it('mapLeft', () => {
+    const decoder = pipe(
+      _.string,
+      _.mapLeft(() => 'not a string')
+    )
+    U.deepStrictEqual(decoder.decode(null), _.failure('not a string'))
+  })
+
+  describe('compose', () => {
+    it('should accumulate warnings', () => {
+      const decoder = pipe(_.number, _.compose(_.number))
+      U.deepStrictEqual(
+        pipe(decoder.decode(NaN), print),
+        `Value:
+NaN
+Warnings:
+2 error(s) found while decoding a composition
+├─ value is NaN
+└─ value is NaN`
+      )
+    })
+
+    it('should accumulate warnings and errors', () => {
+      const decoder = pipe(_.number, _.compose(_.string))
+      U.deepStrictEqual(
+        pipe(decoder.decode(NaN), print),
+        `Errors:
+2 error(s) found while decoding a composition
+├─ value is NaN
+└─ cannot decode NaN, expected a string`
+      )
+    })
+  })
+
   // -------------------------------------------------------------------------------------
   // primitives
   // -------------------------------------------------------------------------------------
@@ -47,6 +95,13 @@ cannot decode null, expected a number`
     it('should warn Infinity', () => {
       U.deepStrictEqual(_.number.decode(Infinity), _.warning(_.infinityLE, Infinity))
       U.deepStrictEqual(_.number.decode(-Infinity), _.warning(_.infinityLE, -Infinity))
+      U.deepStrictEqual(
+        pipe(_.number.decode(Infinity), print),
+        `Value:
+null
+Warnings:
+value is Infinity`
+      )
     })
   })
 
@@ -94,6 +149,57 @@ cannot decode null, expected an object`
         pipe(decoder.decode('b'), print),
         `Errors:
 cannot decode \"b\", expected one of \"a\", null`
+      )
+    })
+  })
+
+  describe('refinement', () => {
+    interface NonEmptyStringBrand {
+      readonly NonEmptyString: unique symbol
+    }
+
+    type NonEmptyString = string & NonEmptyStringBrand
+
+    const NonEmptyStringD = pipe(
+      _.stringD,
+      _.fromRefinement(
+        (s): s is NonEmptyString => s.length > 0,
+        (actual) => _.leafE(_.messageE(actual, 'expected a non empty string'))
+      )
+    )
+
+    it('should decode a valid input', async () => {
+      U.deepStrictEqual(NonEmptyStringD.decode('a'), _.success('a'))
+    })
+
+    it('should reject an invalid input', async () => {
+      U.deepStrictEqual(
+        pipe(NonEmptyStringD.decode(''), print),
+        `Errors:
+1 error(s) found while decoding a refinement
+└─ expected a non empty string`
+      )
+    })
+  })
+
+  describe('parser', () => {
+    const NumberFromString = pipe(
+      _.stringD,
+      _.parse((s) => _.number.decode(parseFloat(s)))
+    )
+
+    it('should decode a valid input', async () => {
+      U.deepStrictEqual(NumberFromString.decode('1'), _.success(1))
+    })
+
+    it('should reject an invalid input', async () => {
+      U.deepStrictEqual(
+        pipe(NumberFromString.decode(''), print),
+        `Value:
+NaN
+Warnings:
+1 error(s) found while decoding a parser
+└─ value is NaN`
       )
     })
   })
@@ -259,6 +365,23 @@ cannot decode undefined, expected an object`
    └─ cannot decode \"b\", expected a number`
       )
     })
+
+    it('should accumulate warnings', async () => {
+      const decoder = _.partial({
+        a: _.number
+      })
+      U.deepStrictEqual(
+        pipe(decoder.decode({ a: NaN }), print),
+        `Value:
+{
+  \"a\": null
+}
+Warnings:
+1 error(s) found while decoding a partial
+└─ 1 error(s) found while decoding optional key \"a\"
+   └─ value is NaN`
+      )
+    })
   })
 
   describe('array', () => {
@@ -266,6 +389,22 @@ cannot decode undefined, expected an object`
       const decoder = _.array(_.string)
       U.deepStrictEqual(decoder.decode([]), _.success([]))
       U.deepStrictEqual(decoder.decode(['a']), _.success(['a']))
+    })
+
+    it('should accumulate warnings', async () => {
+      const decoder = _.array(_.number)
+      U.deepStrictEqual(
+        pipe(decoder.decode([1, NaN]), print),
+        `Value:
+[
+  1,
+  null
+]
+Warnings:
+1 error(s) found while decoding an array
+└─ 1 error(s) found while decoding optional index 1
+   └─ value is NaN`
+      )
     })
 
     it('should reject an invalid input', async () => {
@@ -333,6 +472,21 @@ cannot decode undefined, expected an object`
    └─ cannot decode \"b\", expected a number`
       )
     })
+
+    it('should accumulate warnings', async () => {
+      const decoder = _.record(_.number)
+      U.deepStrictEqual(
+        pipe(decoder.decode({ a: NaN }), print),
+        `Value:
+{
+  \"a\": null
+}
+Warnings:
+1 error(s) found while decoding a record
+└─ 1 error(s) found while decoding optional key \"a\"
+   └─ value is NaN`
+      )
+    })
   })
 
   describe('fromSum', () => {
@@ -358,6 +512,11 @@ cannot decode undefined, expected an object`
    └─ 1 error(s) found while decoding a struct
       └─ 1 error(s) found while decoding required key \"a\"
          └─ cannot decode 1, expected a string`
+      )
+      U.deepStrictEqual(
+        pipe(decoder.decode({ type: 3, a: 1 }), print),
+        `Errors:
+1 error(s) found while decoding sum tag \"type\", expected one of \"1\", \"2\"`
       )
     })
 
@@ -483,6 +642,82 @@ Warnings:
     // })
   })
 
+  describe('tuple', () => {
+    it('should decode a valid input', async () => {
+      const decoder = _.tuple(_.string, _.number)
+      U.deepStrictEqual(decoder.decode(['a', 1]), _.success(['a', 1]))
+    })
+
+    it('should handle zero components', async () => {
+      U.deepStrictEqual(_.tuple().decode([]), _.success([]))
+    })
+
+    it('should reject an invalid input', async () => {
+      const decoder = _.tuple(_.string, _.number)
+      U.deepStrictEqual(
+        pipe(decoder.decode(undefined), print),
+        `Errors:
+cannot decode undefined, expected an array`
+      )
+      U.deepStrictEqual(
+        pipe(decoder.decode(['a']), print),
+        `Errors:
+1 error(s) found while checking indexes
+└─ missing required index 1`
+      )
+      U.deepStrictEqual(
+        pipe(decoder.decode([1, 2]), print),
+        `Errors:
+1 error(s) found while decoding a tuple
+└─ 1 error(s) found while decoding required component 0
+   └─ cannot decode 1, expected a string`
+      )
+    })
+
+    it('should collect all errors', async () => {
+      const decoder = _.tuple(_.string, _.number)
+      U.deepStrictEqual(
+        pipe(decoder.decode([1, 'a']), print),
+        `Errors:
+2 error(s) found while decoding a tuple
+├─ 1 error(s) found while decoding required component 0
+│  └─ cannot decode 1, expected a string
+└─ 1 error(s) found while decoding required component 1
+   └─ cannot decode \"a\", expected a number`
+      )
+    })
+
+    it('should strip additional components', async () => {
+      const decoder = _.tuple(_.string, _.number)
+      U.deepStrictEqual(
+        pipe(decoder.decode(['a', 1, true]), print),
+        `Value:
+[
+  \"a\",
+  1
+]
+Warnings:
+1 error(s) found while checking indexes
+└─ unexpected index 2`
+      )
+    })
+
+    it('should accumulate warnings', async () => {
+      const decoder = _.tuple(_.number)
+      U.deepStrictEqual(
+        pipe(decoder.decode([NaN]), print),
+        `Value:
+[
+  null
+]
+Warnings:
+1 error(s) found while decoding a tuple
+└─ 1 error(s) found while decoding required component 0
+   └─ value is NaN`
+      )
+    })
+  })
+
   describe('union', () => {
     it('should return a right', () => {
       const decoder = _.union(_.string, _.number)
@@ -513,6 +748,19 @@ Warnings:
 │  └─ cannot decode null, expected a string
 └─ 1 error(s) found while decoding member "1"
    └─ cannot decode null, expected a number`
+      )
+    })
+
+    it('should accumulate warnings', async () => {
+      const decoder = _.union(_.number)
+      U.deepStrictEqual(
+        pipe(decoder.decode(NaN), print),
+        `Value:
+NaN
+Warnings:
+1 error(s) found while decoding a union
+└─ 1 error(s) found while decoding member \"0\"
+   └─ value is NaN`
       )
     })
   })
