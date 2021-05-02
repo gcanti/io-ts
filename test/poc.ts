@@ -1,27 +1,96 @@
 import { pipe } from 'fp-ts/lib/pipeable'
-import * as D from '../src/poc'
+import * as _ from '../src/poc'
 import * as U from './util'
 import * as TH from 'fp-ts/lib/These'
 import { flow } from 'fp-ts/lib/function'
 import * as RA from 'fp-ts/lib/ReadonlyArray'
 
-export const print = flow(D.draw, D.print)
+export const print = flow(_.draw, _.print)
 
 describe('poc', () => {
+  // -------------------------------------------------------------------------------------
+  // instances
+  // -------------------------------------------------------------------------------------
+
+  it('Functor', () => {
+    const decoder = _.Functor.map(_.string, (s) => s + '!')
+    U.deepStrictEqual(decoder.decode('a'), _.success('a!'))
+  })
+
+  // -------------------------------------------------------------------------------------
+  // primitives
+  // -------------------------------------------------------------------------------------
+
+  it('string', async () => {
+    U.deepStrictEqual(_.string.decode('a'), _.success('a'))
+    U.deepStrictEqual(
+      pipe(_.string.decode(null), print),
+      `Errors:
+cannot decode null, expected a string`
+    )
+  })
+
+  describe('number', () => {
+    it('number', async () => {
+      U.deepStrictEqual(_.number.decode(1), _.success(1))
+      U.deepStrictEqual(
+        pipe(_.number.decode(null), print),
+        `Errors:
+cannot decode null, expected a number`
+      )
+    })
+
+    it('should warn NaN', () => {
+      U.deepStrictEqual(_.number.decode(NaN), _.warning(_.naNLE, NaN))
+    })
+
+    it('should warn Infinity', () => {
+      U.deepStrictEqual(_.number.decode(Infinity), _.warning(_.infinityLE, Infinity))
+      U.deepStrictEqual(_.number.decode(-Infinity), _.warning(_.infinityLE, -Infinity))
+    })
+  })
+
+  it('boolean', async () => {
+    U.deepStrictEqual(_.boolean.decode(true), _.success(true))
+    U.deepStrictEqual(
+      pipe(_.boolean.decode(null), print),
+      `Errors:
+cannot decode null, expected a boolean`
+    )
+  })
+
+  it('UnknownArray', async () => {
+    U.deepStrictEqual(_.UnknownArray.decode([1, 'a']), _.success([1, 'a']))
+    U.deepStrictEqual(
+      pipe(_.UnknownArray.decode(null), print),
+      `Errors:
+cannot decode null, expected an array`
+    )
+  })
+
+  it('UnknownRecord', async () => {
+    U.deepStrictEqual(_.UnknownRecord.decode({ a: 1, b: 'b' }), _.success({ a: 1, b: 'b' }))
+    U.deepStrictEqual(
+      pipe(_.UnknownRecord.decode(null), print),
+      `Errors:
+cannot decode null, expected an object`
+    )
+  })
+
   describe('fromSum', () => {
     it('should return a right', () => {
-      const decoder = D.fromSum('type')({
-        1: D.fromStruct({ type: D.literal(1), a: D.string }),
-        2: D.fromStruct({ type: D.literal(2), b: D.number })
+      const decoder = _.fromSum('type')({
+        1: _.fromStruct({ type: _.literal(1), a: _.string }),
+        2: _.fromStruct({ type: _.literal(2), b: _.number })
       })
       U.deepStrictEqual(decoder.decode({ type: 1, a: 'a' }), TH.right({ type: 1, a: 'a' } as const))
       U.deepStrictEqual(decoder.decode({ type: 2, b: 1 }), TH.right({ type: 2, b: 1 } as const))
     })
 
     it('should return a left', () => {
-      const decoder = D.fromSum('type')({
-        1: D.fromStruct({ type: D.literal(1), a: D.string }),
-        2: D.fromStruct({ type: D.literal(2), b: D.number })
+      const decoder = _.fromSum('type')({
+        1: _.fromStruct({ type: _.literal(1), a: _.string }),
+        2: _.fromStruct({ type: _.literal(2), b: _.number })
       })
       U.deepStrictEqual(
         pipe(decoder.decode({ type: 1, a: 1 }), print),
@@ -37,24 +106,24 @@ describe('poc', () => {
   describe('intersect', () => {
     describe('struct', () => {
       it('should not raise invalid warnings', () => {
-        const I1 = D.struct({
-          a: D.string
+        const I1 = _.struct({
+          a: _.string
         })
-        const I2 = D.struct({
-          b: D.number
+        const I2 = _.struct({
+          b: _.number
         })
-        const I = pipe(I1, D.intersect(I2))
+        const I = pipe(I1, _.intersect(I2))
         U.deepStrictEqual(I.decode({ a: 'a', b: 1 }), TH.right({ a: 'a', b: 1 }))
       })
 
       it('should raise a warning with an additional key', () => {
-        const I1 = D.struct({
-          a: D.string
+        const I1 = _.struct({
+          a: _.string
         })
-        const I2 = D.struct({
-          b: D.number
+        const I2 = _.struct({
+          b: _.number
         })
-        const I = pipe(I1, D.intersect(I2))
+        const I = pipe(I1, _.intersect(I2))
         U.deepStrictEqual(
           pipe(I.decode({ a: 'a', b: 1, c: true }), print),
           `Value:
@@ -75,9 +144,9 @@ Warnings:
     })
 
     it('should raise a warning with an additional key (nested)', () => {
-      const I1 = D.struct({ a: D.struct({ b: D.string }) })
-      const I2 = D.struct({ a: D.struct({ c: D.number }) })
-      const I = pipe(I1, D.intersect(I2))
+      const I1 = _.struct({ a: _.struct({ b: _.string }) })
+      const I2 = _.struct({ a: _.struct({ c: _.number }) })
+      const I = pipe(I1, _.intersect(I2))
       U.deepStrictEqual(
         pipe(I.decode({ a: { b: 'a', c: 1, d: true } }), print),
         `Value:
@@ -104,9 +173,9 @@ Warnings:
 
     // describe('tuple', () => {
     //   it('should not raise invalid warnings', () => {
-    //     const I1 = D.tuple(D.string)
-    //     const I2 = D.tuple(D.string, D.number)
-    //     const I = pipe(I1, D.intersect(I2))
+    //     const I1 = _.tuple(_.string)
+    //     const I2 = _.tuple(_.string, _.number)
+    //     const I = pipe(I1, _.intersect(I2))
     //     U.deepStrictEqual(I.decode(['a', 1]), TH.right({ a: 'a', b: 1 }))
     //   })
     // })
@@ -114,26 +183,26 @@ Warnings:
 
   describe('union', () => {
     it('should return a right', () => {
-      const decoder = D.union(D.string, D.number)
+      const decoder = _.union(_.string, _.number)
       U.deepStrictEqual(decoder.decode('a'), TH.right('a'))
       U.deepStrictEqual(decoder.decode(1), TH.right(1))
     })
 
     it('should return a left with zero members', () => {
-      const decoder = D.union()
-      U.deepStrictEqual(decoder.decode('a'), TH.left(D.unionE(RA.empty)))
+      const decoder = _.union()
+      U.deepStrictEqual(decoder.decode('a'), TH.left(_.unionE(RA.empty)))
     })
 
     it('should return a both', () => {
-      const decoder = D.union(D.string, D.number)
+      const decoder = _.union(_.string, _.number)
       U.deepStrictEqual(
         decoder.decode(NaN),
-        TH.both(D.unionE([D.memberE('0' as const, D.stringLE(NaN)), D.memberE('1' as const, D.naNLE)]), NaN)
+        TH.both(_.unionE([_.memberE('0' as const, _.stringLE(NaN)), _.memberE('1' as const, _.naNLE)]), NaN)
       )
     })
 
     it('should return a left', () => {
-      const decoder = D.union(D.string, D.number)
+      const decoder = _.union(_.string, _.number)
       U.deepStrictEqual(
         pipe(decoder.decode(null), print),
         `Errors:
@@ -151,14 +220,14 @@ Warnings:
       name: string
       categories: ReadonlyArray<Category>
     }
-    const Category: D.Decoder<
+    const Category: _.Decoder<
       unknown,
-      D.DecodeError<D.UnknownRecordE | D.StringE | D.UnknownArrayE>,
+      _.DecodeError<_.UnknownRecordE | _.StringE | _.UnknownArrayE>,
       Category
-    > = D.lazy('Category', () =>
-      D.struct({
-        name: D.string,
-        categories: D.array(Category)
+    > = _.lazy('Category', () =>
+      _.struct({
+        name: _.string,
+        categories: _.array(Category)
       })
     )
 

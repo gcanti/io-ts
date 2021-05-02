@@ -1,4 +1,5 @@
 import { flow, Lazy, Refinement } from 'fp-ts/lib/function'
+import { Functor3 } from 'fp-ts/lib/Functor'
 import * as O from 'fp-ts/lib/Option'
 import { pipe } from 'fp-ts/lib/pipeable'
 import * as RA from 'fp-ts/lib/ReadonlyArray'
@@ -37,13 +38,13 @@ export type TypeOf<D> = D extends Decoder<any, any, infer A> ? A : never
 // -------------------------------------------------------------------------------------
 
 // success
-export const right = TH.right
+export const success = TH.right
 
 // failure
-export const left = TH.left
+export const failure = TH.left
 
 // warning
-export const both = TH.both
+export const warning = TH.both
 
 // -------------------------------------------------------------------------------------
 // Bifunctor
@@ -168,7 +169,7 @@ export function compose<A, E2, B>(
     decode: flow(
       prev.decode,
       TH.fold(
-        (e1) => left(compositionE([prevE(e1)])),
+        (e1) => failure(compositionE([prevE(e1)])),
         (a) =>
           pipe(
             next.decode(a),
@@ -178,9 +179,9 @@ export function compose<A, E2, B>(
           pipe(
             next.decode(a),
             TH.fold(
-              (e2) => left(compositionE([nextE(e2)])),
-              (b) => both(compositionE([prevE(w1)]), b),
-              (w2, b) => both(compositionE([prevE(w1), nextE(w2)]), b)
+              (e2) => failure(compositionE([nextE(e2)])),
+              (b) => warning(compositionE([prevE(w1)]), b),
+              (w2, b) => warning(compositionE([prevE(w1), nextE(w2)]), b)
             )
           )
       )
@@ -473,6 +474,7 @@ export type BuiltinE =
   | LiteralE<Literal>
   | MessageE<unknown>
   | NaNE
+  | InfinityE
   | TagE
 
 // -------------------------------------------------------------------------------------
@@ -490,10 +492,9 @@ export interface stringUD extends Decoder<unknown, StringLE, string> {
 const isString = (u: unknown): u is string => typeof u === 'string'
 export const string: stringUD = {
   _tag: 'stringUD',
-  decode: (u) => (isString(u) ? right(u) : left(stringLE(u)))
+  decode: (u) => (isString(u) ? success(u) : failure(stringLE(u)))
 }
 
-// TODO: handle Infinity
 export interface NumberE extends ActualE<unknown> {
   readonly _tag: 'NumberE'
 }
@@ -504,13 +505,25 @@ export interface NaNE {
 }
 export interface NaNLE extends LeafE<NaNE> {}
 export const naNLE: NaNLE = leafE({ _tag: 'NaNE' })
-export interface numberUD extends Decoder<unknown, NumberLE | NaNLE, number> {
+export interface InfinityE {
+  readonly _tag: 'InfinityE'
+}
+export interface InfinityLE extends LeafE<InfinityE> {}
+export const infinityLE: InfinityLE = leafE({ _tag: 'InfinityE' })
+export interface numberUD extends Decoder<unknown, NumberLE | NaNLE | InfinityLE, number> {
   readonly _tag: 'numberUD'
 }
 const isNumber = (u: unknown): u is number => typeof u === 'number'
 export const number: numberUD = {
   _tag: 'numberUD',
-  decode: (u) => (isNumber(u) ? (isNaN(u) ? both(naNLE, u) : right(u)) : left(numberLE(u)))
+  decode: (u) =>
+    isNumber(u)
+      ? isNaN(u)
+        ? warning(naNLE, u)
+        : isFinite(u)
+        ? success(u)
+        : warning(infinityLE, u)
+      : failure(numberLE(u))
 }
 
 export interface BooleanE extends ActualE<unknown> {
@@ -524,7 +537,7 @@ export interface booleanUD extends Decoder<unknown, BooleanLE, boolean> {
 const isBoolean = (u: unknown): u is boolean => typeof u === 'boolean'
 export const boolean: booleanUD = {
   _tag: 'booleanUD',
-  decode: (u) => (isBoolean(u) ? right(u) : left(booleanLE(u)))
+  decode: (u) => (isBoolean(u) ? success(u) : failure(booleanLE(u)))
 }
 
 export interface UnknownArrayE extends ActualE<unknown> {
@@ -541,7 +554,7 @@ export interface UnknownArrayUD extends Decoder<unknown, UnknownArrayLE, Array<u
 }
 export const UnknownArray: UnknownArrayUD = {
   _tag: 'UnknownArrayUD',
-  decode: (u) => (Array.isArray(u) ? right(u) : left(unknownArrayLE(u)))
+  decode: (u) => (Array.isArray(u) ? success(u) : failure(unknownArrayLE(u)))
 }
 
 export interface UnknownRecordE extends ActualE<unknown> {
@@ -560,7 +573,7 @@ const isUnknownRecord = (u: unknown): u is Record<PropertyKey, unknown> =>
   u !== null && typeof u === 'object' && !Array.isArray(u)
 export const UnknownRecord: UnknownRecordUD = {
   _tag: 'UnknownRecordUD',
-  decode: (u) => (isUnknownRecord(u) ? right(u) : left(unknownRecordLE(u)))
+  decode: (u) => (isUnknownRecord(u) ? success(u) : failure(unknownRecordLE(u)))
 }
 
 // -------------------------------------------------------------------------------------
@@ -568,7 +581,7 @@ export const UnknownRecord: UnknownRecordUD = {
 // -------------------------------------------------------------------------------------
 
 export const fail = <E>(e: E): Decoder<any, E, any> => ({
-  decode: () => left(e)
+  decode: () => failure(e)
 })
 
 export type Literal = string | number | boolean | null | symbol
@@ -593,7 +606,7 @@ export interface LiteralD<A extends ReadonlyNonEmptyArray<Literal>>
 export const literal = <A extends ReadonlyNonEmptyArray<Literal>>(...literals: A): LiteralD<A> => ({
   _tag: 'LiteralD',
   literals,
-  decode: (u) => right(u as any) // TODO
+  decode: (u) => success(u as any) // TODO
 })
 
 export interface RefinementD<A, E, B extends A> extends Decoder<A, RefinementE<E>, B> {
@@ -610,7 +623,7 @@ export const refinement = <A, E, B extends A>(parser: (a: A) => These<E, B>): Re
 export const fromRefinement = <From extends AnyD, B extends TypeOf<From>, E>(
   refinement: Refinement<TypeOf<From>, B>,
   error: (from: TypeOf<From>) => E
-): ((from: From) => RefineD<From, E, B>) => refine((a) => (refinement(a) ? right(a) : left(error(a))))
+): ((from: From) => RefineD<From, E, B>) => refine((a) => (refinement(a) ? success(a) : failure(error(a))))
 
 export interface ParserD<A, E, B> extends Decoder<A, ParserE<E>, B> {
   readonly _tag: 'ParserD'
@@ -657,7 +670,7 @@ export const fromStruct = <Properties extends Record<PropertyKey, AnyD>>(
         ar[k] = de.right
       }
     }
-    return RA.isNonEmpty(es) ? (isBoth ? both(structE(es), ar) : left(structE(es))) : right(ar)
+    return RA.isNonEmpty(es) ? (isBoth ? warning(structE(es), ar) : failure(structE(es))) : success(ar)
   }
 })
 
@@ -685,7 +698,7 @@ export const unexpectedKeys = <Properties extends Record<string, unknown>>(
           es.push(k)
         }
       }
-      return RA.isNonEmpty(es) ? both(unexpectedKeysE(es), out) : right(ur)
+      return RA.isNonEmpty(es) ? warning(unexpectedKeysE(es), out) : success(ur)
     }
   }
 }
@@ -708,7 +721,7 @@ export const missingKeys = <Properties extends Record<string, unknown>>(
           es.push(k)
         }
       }
-      return RA.isNonEmpty(es) ? left(missingKeysE(es)) : right(ur as any)
+      return RA.isNonEmpty(es) ? failure(missingKeysE(es)) : success(ur as any)
     }
   }
 }
@@ -766,7 +779,7 @@ export const fromPartial = <Properties extends Record<PropertyKey, AnyD>>(
         ar[k] = de.right
       }
     }
-    return RA.isNonEmpty(es) ? (isBoth ? both(partialE(es), ar) : left(partialE(es))) : right(ar)
+    return RA.isNonEmpty(es) ? (isBoth ? warning(partialE(es), ar) : failure(partialE(es))) : success(ar)
   }
 })
 
@@ -808,7 +821,7 @@ export const fromTuple = <Components extends ReadonlyArray<AnyD>>(
         as[index] = de.right
       }
     }
-    return RA.isNonEmpty(es) ? (isBoth ? both(tupleE(es), as) : left(tupleE(es))) : right(as)
+    return RA.isNonEmpty(es) ? (isBoth ? warning(tupleE(es), as) : failure(tupleE(es))) : success(as)
   }
 })
 
@@ -829,7 +842,7 @@ export const unexpectedIndexes = <Components extends ReadonlyArray<unknown>>(
       for (let index = components.length; index < us.length; index++) {
         es.push(index)
       }
-      return RA.isNonEmpty(es) ? both(unexpectedIndexesE(es), us.slice(0, components.length) as any) : right(us)
+      return RA.isNonEmpty(es) ? warning(unexpectedIndexesE(es), us.slice(0, components.length) as any) : success(us)
     }
   }
 }
@@ -857,7 +870,7 @@ export const missingIndexes = <Components extends ReadonlyArray<unknown>>(
           es.push(index)
         }
       }
-      return RA.isNonEmpty(es) ? left(missingIndexesE(es)) : right(us as any)
+      return RA.isNonEmpty(es) ? failure(missingIndexesE(es)) : success(us as any)
     }
   }
 }
@@ -906,9 +919,9 @@ export function fromArray<I, E, A>(item: Decoder<I, E, A>): FromArrayD<typeof it
         }
       }
       if (RA.isNonEmpty(es)) {
-        return isBoth ? both(arrayE(es), as) : left(arrayE(es))
+        return isBoth ? warning(arrayE(es), as) : failure(arrayE(es))
       }
-      return right(as)
+      return success(as)
     }
   }
 }
@@ -995,7 +1008,7 @@ export function union<Members extends ReadonlyArray<AnyD>>(...members: Members):
           )
         }
       }
-      return left(unionE(es))
+      return failure(unionE(es))
     }
   }
 }
@@ -1008,7 +1021,7 @@ export function nullable<D extends AnyD>(or: D): NullableD<D> {
   return {
     _tag: 'NullableD',
     or,
-    decode: (i) => (i === null ? right(null) : or.decode(i))
+    decode: (i) => (i === null ? success(null) : or.decode(i))
   }
 }
 
@@ -1226,13 +1239,13 @@ export function intersect<I2, E2, A2 extends Intersecable>(
             pipe(
               second.decode(i),
               TH.fold(
-                (de2) => left(intersectionE([memberE(0, de1), memberE(1, de2)])),
-                () => left(intersectionE([memberE(0, de1)])),
+                (de2) => failure(intersectionE([memberE(0, de1), memberE(1, de2)])),
+                () => failure(intersectionE([memberE(0, de1)])),
                 (de2) => {
                   const pde2 = pruneAllUnexpected(de2)
                   return O.isSome(pde2)
-                    ? left(intersectionE([memberE(0, de1), memberE(1, pde2.value)]))
-                    : left(intersectionE([memberE(0, de1)]))
+                    ? failure(intersectionE([memberE(0, de1), memberE(1, pde2.value)]))
+                    : failure(intersectionE([memberE(0, de1)]))
                 }
               )
             ),
@@ -1240,13 +1253,13 @@ export function intersect<I2, E2, A2 extends Intersecable>(
             pipe(
               second.decode(i),
               TH.fold(
-                (de2) => left(intersectionE([memberE(1, de2)])),
-                (a2) => right(intersect_(a1, a2)),
+                (de2) => failure(intersectionE([memberE(1, de2)])),
+                (a2) => success(intersect_(a1, a2)),
                 (de2, a2) => {
                   const pde2 = pruneAllUnexpected(de2)
                   return O.isSome(pde2)
-                    ? both(intersectionE([memberE(1, pde2.value)]), intersect_(a1, a2))
-                    : right(intersect_(a1, a2))
+                    ? warning(intersectionE([memberE(1, pde2.value)]), intersect_(a1, a2))
+                    : success(intersect_(a1, a2))
                 }
               )
             ),
@@ -1257,18 +1270,20 @@ export function intersect<I2, E2, A2 extends Intersecable>(
                 (de2) => {
                   const pde1 = pruneAllUnexpected(de1)
                   return O.isSome(pde1)
-                    ? left(intersectionE([memberE(0, pde1.value), memberE(1, de2)]))
-                    : left(intersectionE([memberE(1, de2)]))
+                    ? failure(intersectionE([memberE(0, pde1.value), memberE(1, de2)]))
+                    : failure(intersectionE([memberE(1, de2)]))
                 },
                 (a2) => {
                   const pde1 = pruneAllUnexpected(de1)
                   return O.isSome(pde1)
-                    ? both(intersectionE([memberE(0, pde1.value)]), intersect_(a1, a2))
-                    : right(intersect_(a1, a2))
+                    ? warning(intersectionE([memberE(0, pde1.value)]), intersect_(a1, a2))
+                    : success(intersect_(a1, a2))
                 },
                 (de2, a2) => {
                   const difference = pruneDifference(de1, de2)
-                  return O.isSome(difference) ? both(difference.value, intersect_(a1, a2)) : right(intersect_(a1, a2))
+                  return O.isSome(difference)
+                    ? warning(difference.value, intersect_(a1, a2))
+                    : success(intersect_(a1, a2))
                 }
               )
             )
@@ -1342,7 +1357,7 @@ export function fromSum<T extends string>(
             TH.mapLeft((e) => sumE(memberE(v, e)))
           ) as any
         }
-        return left(tagLE(tag, literals))
+        return failure(tagLE(tag, literals))
       }
     }
   }
@@ -1365,7 +1380,7 @@ export const sum = <T extends string>(tag: T) => <Members extends Record<Propert
   _tag: 'SumD',
   tag,
   members,
-  decode: (u) => right(u as any) // TODO
+  decode: (u) => success(u as any) // TODO
 })
 
 // -------------------------------------------------------------------------------------
@@ -1380,6 +1395,11 @@ declare module 'fp-ts/lib/HKT' {
   interface URItoKind3<R, E, A> {
     readonly [URI]: Decoder<R, E, A>
   }
+}
+
+export const Functor: Functor3<URI> = {
+  URI,
+  map: (fa, f) => pipe(fa, map(f))
 }
 
 // -------------------------------------------------------------------------------------
@@ -1560,6 +1580,8 @@ export const toTreeBuiltin = (de: BuiltinE): Tree<string> => {
       return tree(de.message)
     case 'NaNE':
       return tree('value is NaN')
+    case 'InfinityE':
+      return tree('value is Infinity')
     case 'TagE':
       return tree(`1 error(s) found while decoding sum tag ${de.tag}, expected one of ${JSON.stringify(de.literals)}`)
   }
@@ -1736,12 +1758,12 @@ export const Username = pipe(
   customStringUD,
   refine((s) =>
     s.length < 2
-      ? left(message(s, 'too short'))
+      ? failure(message(s, 'too short'))
       : s.length > 4
-      ? left(message(s, 'too long'))
+      ? failure(message(s, 'too long'))
       : USERNAME_REGEX.test(s)
-      ? left(message(s, 'bad characters'))
-      : right(s as Username)
+      ? failure(message(s, 'bad characters'))
+      : success(s as Username)
   )
 )
 
@@ -1796,7 +1818,7 @@ export function condemn<I, E, A>(decoder: Decoder<I, E, A>): CondemnD<typeof dec
     decoder,
     decode: (i) => {
       const de = decoder.decode(i)
-      return TH.isBoth(de) ? left(de.left) : de
+      return TH.isBoth(de) ? failure(de.left) : de
     }
   }
 }
@@ -1868,7 +1890,7 @@ export const condemnWhen = <E>(
     if (TH.isBoth(result)) {
       const de = result.left
       if (should(de)) {
-        return left(de)
+        return failure(de)
       }
     }
     return result
@@ -2184,7 +2206,7 @@ export interface NoFunctionArray extends Array<Value | NoFunctionObject> {}
 
 export const Value: Decoder<
   unknown,
-  DecodeError<StringE | NumberE | NaNE | BooleanE | UnknownRecordE | UnknownArrayE>,
+  DecodeError<StringE | NumberE | NaNE | InfinityE | BooleanE | UnknownRecordE | UnknownArrayE>,
   Value
 > = lazy('Value', () => {
   const NoFunctionObject = record(Value)
@@ -2192,12 +2214,34 @@ export const Value: Decoder<
   return union(string, number, boolean, NoFunctionObject, NoFunctionArray)
 })
 
-// declare const union2: <I, E1, A1, E2, A2>(
-//   decoder1: Decoder<I, E1, A1>,
-//   decoder2: Decoder<I, E2, A2>
-// ) => Decoder<I, E1 | E2, A1 | A2>
+// -------------------------------------------------------------------------------------
+// sum by hand
+// -------------------------------------------------------------------------------------
 
-// declare const union3: <I1, E1, A1, I2, E2, A2>(
-//   decoder1: Decoder<I1, E1, A1>,
-//   decoder2: Decoder<I2, E2, A2>
-// ) => Decoder<I1 & I2, E1 | E2, A1 | A2>
+const withInput = <I, E, A>(decoder: Decoder<I, E, A>): Decoder<I, E, readonly [A, I]> => ({
+  decode: (i) =>
+    pipe(
+      decoder.decode(i),
+      TH.map((a) => [a, i])
+    )
+})
+
+export const decoderSumByHand = pipe(
+  withInput(
+    struct({
+      _tag: literal('A', 'B')
+    })
+  ),
+  compose({
+    decode: ([tags, i]) => {
+      switch (tags._tag) {
+        case 'A':
+          return struct({ _tag: literal('A'), a: string }).decode(i)
+        case 'B':
+          return struct({ _tag: literal('B'), b: number }).decode(i)
+      }
+    }
+  })
+)
+
+// pipe(decoderSumByHand.decode({ _tag: 'A', a: 'a' }), debug)

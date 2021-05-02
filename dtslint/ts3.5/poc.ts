@@ -18,7 +18,7 @@ export const SD = D.fromStruct({
 })
 // $ExpectType { a: unknown; b: unknown; }
 export type SDI = D.InputOf<typeof SD>
-// $ExpectType StructE<RequiredKeyE<"a", StringLE> | RequiredKeyE<"b", NumberLE | NaNLE>>
+// $ExpectType StructE<RequiredKeyE<"a", StringLE> | RequiredKeyE<"b", NumberLE | NaNLE | InfinityLE>>
 export type SDE = D.ErrorOf<typeof SD>
 // $ExpectType { a: string; b: number; }
 export type SDA = D.TypeOf<typeof SD>
@@ -30,7 +30,7 @@ export const SUD = D.struct({
 })
 // $ExpectType unknown
 export type SUDI = D.InputOf<typeof SUD>
-// $ExpectType CompositionE<PrevE<CompositionE<PrevE<CompositionE<PrevE<UnknownRecordLE> | NextE<UnexpectedKeysE>>> | NextE<MissingKeysE>>> | NextE<StructE<RequiredKeyE<"a", StringLE> | RequiredKeyE<"b", NumberLE | NaNLE>>>>
+// $ExpectType CompositionE<PrevE<CompositionE<PrevE<CompositionE<PrevE<UnknownRecordLE> | NextE<UnexpectedKeysE>>> | NextE<MissingKeysE>>> | NextE<StructE<RequiredKeyE<"a", StringLE> | RequiredKeyE<"b", NumberLE | NaNLE | InfinityLE>>>>
 export type SUDE = D.ErrorOf<typeof SUD>
 // $ExpectType { a: string; b: number; }
 export type SUDA = D.TypeOf<typeof SUD>
@@ -42,7 +42,7 @@ export const PSD = D.fromPartial({
 })
 // $ExpectType Partial<{ a: unknown; b: unknown; }>
 export type PSDI = D.InputOf<typeof PSD>
-// $ExpectType PartialE<OptionalKeyE<"a", StringLE> | OptionalKeyE<"b", NumberLE | NaNLE>>
+// $ExpectType PartialE<OptionalKeyE<"a", StringLE> | OptionalKeyE<"b", NumberLE | NaNLE | InfinityLE>>
 export type PSDE = D.ErrorOf<typeof PSD>
 // $ExpectType Partial<{ a: string; b: number; }>
 export type PSDA = D.TypeOf<typeof PSD>
@@ -54,7 +54,7 @@ export const PSUD = D.partial({
 })
 // $ExpectType unknown
 export type PSUDI = D.InputOf<typeof PSUD>
-// $ExpectType CompositionE<PrevE<CompositionE<PrevE<UnknownRecordLE> | NextE<UnexpectedKeysE>>> | NextE<PartialE<OptionalKeyE<"a", StringLE> | OptionalKeyE<"b", NumberLE | NaNLE>>>>
+// $ExpectType CompositionE<PrevE<CompositionE<PrevE<UnknownRecordLE> | NextE<UnexpectedKeysE>>> | NextE<PartialE<OptionalKeyE<"a", StringLE> | OptionalKeyE<"b", NumberLE | NaNLE | InfinityLE>>>>
 export type PSUDE = D.ErrorOf<typeof PSUD>
 // $ExpectType Partial<{ a: string; b: number; }>
 export type PSUDA = D.TypeOf<typeof PSUD>
@@ -63,7 +63,7 @@ export type PSUDA = D.TypeOf<typeof PSUD>
 export const TD = D.fromTuple(D.string, D.number)
 // $ExpectType readonly [unknown, unknown]
 export type TDI = D.InputOf<typeof TD>
-// $ExpectType TupleE<RequiredIndexE<"0", StringLE> | RequiredIndexE<"1", NumberLE | NaNLE>>
+// $ExpectType TupleE<RequiredIndexE<"0", StringLE> | RequiredIndexE<"1", NumberLE | NaNLE | InfinityLE>>
 export type TDE = D.ErrorOf<typeof TD>
 // $ExpectType [string, number]
 export type TDA = D.TypeOf<typeof TD>
@@ -72,7 +72,7 @@ export type TDA = D.TypeOf<typeof TD>
 export const TUD = D.tuple(D.string, D.number)
 // $ExpectType unknown
 export type TUDI = D.InputOf<typeof TUD>
-// $ExpectType CompositionE<PrevE<CompositionE<PrevE<CompositionE<PrevE<UnknownArrayLE> | NextE<UnexpectedIndexesE>>> | NextE<MissingIndexesE>>> | NextE<TupleE<RequiredIndexE<"0", StringLE> | RequiredIndexE<"1", NumberLE | NaNLE>>>>
+// $ExpectType CompositionE<PrevE<CompositionE<PrevE<CompositionE<PrevE<UnknownArrayLE> | NextE<UnexpectedIndexesE>>> | NextE<MissingIndexesE>>> | NextE<TupleE<RequiredIndexE<"0", StringLE> | RequiredIndexE<"1", NumberLE | NaNLE | InfinityLE>>>>
 export type TUDE = D.ErrorOf<typeof TUD>
 // $ExpectType [string, number]
 export type TUDA = D.TypeOf<typeof TUD>
@@ -99,7 +99,7 @@ export type AUDA = D.TypeOf<typeof AUD>
 export const RD = D.fromRecord(D.number)
 // $ExpectType Record<string | number | symbol, unknown>
 export type RDI = D.InputOf<typeof RD>
-// $ExpectType RecordE<RequiredKeyE<string, NumberLE | NaNLE>>
+// $ExpectType RecordE<RequiredKeyE<string, NumberLE | NaNLE | InfinityLE>>
 export type RDE = D.ErrorOf<typeof RD>
 // $ExpectType Record<string | number | symbol, number>
 export type RDA = D.TypeOf<typeof RD>
@@ -108,7 +108,7 @@ export type RDA = D.TypeOf<typeof RD>
 export const RUD = D.record(D.number)
 // $ExpectType unknown
 export type RUDI = D.InputOf<typeof RUD>
-// $ExpectType CompositionE<PrevE<UnknownRecordLE> | NextE<RecordE<RequiredKeyE<string, NumberLE | NaNLE>>>>
+// $ExpectType CompositionE<PrevE<UnknownRecordLE> | NextE<RecordE<RequiredKeyE<string, NumberLE | NaNLE | InfinityLE>>>>
 export type RUDE = D.ErrorOf<typeof RUD>
 // $ExpectType Record<string | number | symbol, number>
 export type RUDA = D.TypeOf<typeof RUD>
@@ -139,7 +139,7 @@ export type ReDA = D.TypeOf<typeof ReD>
 export const ReUD = pipe(D.number, D.compose(ReD))
 // $ExpectType unknown
 export type ReUDI = D.InputOf<typeof ReUD>
-// $ExpectType CompositionE<PrevE<NumberLE | NaNLE> | NextE<CompositionE<PrevE<never> | NextE<RefinementE<LeafE<IntE>>>>>>
+// $ExpectType CompositionE<PrevE<NumberLE | NaNLE | InfinityLE> | NextE<CompositionE<PrevE<never> | NextE<RefinementE<LeafE<IntE>>>>>>
 export type ReUDE = D.ErrorOf<typeof ReUD>
 // $ExpectType Int
 export type ReUDA = D.TypeOf<typeof ReUD>
@@ -148,7 +148,7 @@ export type ReUDA = D.TypeOf<typeof ReUD>
 export const UD = D.union(D.string, D.number)
 // $ExpectType unknown
 export type UDI = D.InputOf<typeof UD>
-// $ExpectType UnionE<MemberE<"0", StringLE> | MemberE<"1", NumberLE | NaNLE>>
+// $ExpectType UnionE<MemberE<"0", StringLE> | MemberE<"1", NumberLE | NaNLE | InfinityLE>>
 export type UDE = D.ErrorOf<typeof UD>
 // $ExpectType string | number
 export type UDA = D.TypeOf<typeof UD>
@@ -157,7 +157,7 @@ export type UDA = D.TypeOf<typeof UD>
 export const NUD = D.nullable(D.number)
 // $ExpectType unknown
 export type NUDI = D.InputOf<typeof NUD>
-// $ExpectType NullableE<NumberLE | NaNLE>
+// $ExpectType NullableE<NumberLE | NaNLE | InfinityLE>
 export type NUDE = D.ErrorOf<typeof NUD>
 // $ExpectType number | null
 export type NUDA = D.TypeOf<typeof NUD>
@@ -187,7 +187,7 @@ export type PUDA = D.TypeOf<typeof PUD>
 export const ID = pipe(D.fromStruct({ a: D.string }), D.intersect(D.fromStruct({ b: D.number })))
 // $ExpectType { a: unknown; } & { b: unknown; }
 export type IDI = D.InputOf<typeof ID>
-// $ExpectType IntersectionE<MemberE<0, StructE<RequiredKeyE<"a", StringLE>>> | MemberE<1, StructE<RequiredKeyE<"b", NumberLE | NaNLE>>>>
+// $ExpectType IntersectionE<MemberE<0, StructE<RequiredKeyE<"a", StringLE>>> | MemberE<1, StructE<RequiredKeyE<"b", NumberLE | NaNLE | InfinityLE>>>>
 export type IDE = D.ErrorOf<typeof ID>
 // $ExpectType { a: string; } & { b: number; }
 export type IDA = D.TypeOf<typeof ID>
@@ -195,7 +195,7 @@ export type IDA = D.TypeOf<typeof ID>
 export const IUD = pipe(D.struct({ a: D.string }), D.intersect(D.struct({ b: D.number })))
 // $ExpectType unknown
 export type IUDI = D.InputOf<typeof IUD>
-// $ExpectType IntersectionE<MemberE<0, CompositionE<PrevE<CompositionE<PrevE<CompositionE<PrevE<UnknownRecordLE> | NextE<UnexpectedKeysE>>> | NextE<MissingKeysE>>> | NextE<StructE<RequiredKeyE<"a", StringLE>>>>> | MemberE<1, CompositionE<PrevE<CompositionE<PrevE<CompositionE<PrevE<UnknownRecordLE> | NextE<UnexpectedKeysE>>> | NextE<MissingKeysE>>> | NextE<StructE<RequiredKeyE<"b", NumberLE | NaNLE>>>>>>
+// $ExpectType IntersectionE<MemberE<0, CompositionE<PrevE<CompositionE<PrevE<CompositionE<PrevE<UnknownRecordLE> | NextE<UnexpectedKeysE>>> | NextE<MissingKeysE>>> | NextE<StructE<RequiredKeyE<"a", StringLE>>>>> | MemberE<1, CompositionE<PrevE<CompositionE<PrevE<CompositionE<PrevE<UnknownRecordLE> | NextE<UnexpectedKeysE>>> | NextE<MissingKeysE>>> | NextE<StructE<RequiredKeyE<"b", NumberLE | NaNLE | InfinityLE>>>>>>
 export type IUDE = D.ErrorOf<typeof IUD>
 // $ExpectType { a: string; } & { b: number; }
 export type IUDA = D.TypeOf<typeof IUD>
