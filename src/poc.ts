@@ -1390,25 +1390,17 @@ export function fromSum<T extends string>(
   }
 }
 
-export interface SumD<T extends string, Members>
-  extends Decoder<
-    unknown,
-    UnknownRecordLE | TagLE | SumE<{ [K in keyof Members]: MemberE<K, ErrorOf<Members[K]>> }[keyof Members]>,
-    TypeOf<Members[keyof Members]>
-  > {
-  readonly _tag: 'SumD'
-  readonly tag: T
-  readonly members: Members
+export interface SumD<T extends string, Members> extends CompositionD<UnknownRecordUD, FromSumD<T, Members>> {}
+
+export function sum<T extends string>(
+  tag: T
+): <Members extends Record<string, AnyUD>>(members: Members) => SumD<T, Members>
+export function sum<T extends string>(
+  tag: T
+): <E, A>(members: Record<string, Decoder<unknown, E, A>>) => SumD<T, typeof members> {
+  const fromSumTag = fromSum(tag)
+  return (members) => pipe(UnknownRecord, compose(fromSumTag(members)))
 }
-// TODO: every `Members` should own a tag field
-export const sum = <T extends string>(tag: T) => <Members extends Record<PropertyKey, AnyUD>>(
-  members: Members
-): SumD<T, Members> => ({
-  _tag: 'SumD',
-  tag,
-  members,
-  decode: (u) => success(u as any) // TODO
-})
 
 // -------------------------------------------------------------------------------------
 // instances
@@ -1812,7 +1804,8 @@ export const getMatch = <T extends string, Members extends Record<PropertyKey, A
   a: TypeOf<Members[keyof Members]>
 ): B => patterns[a[decoder.tag]](a)
 
-export const matchDecoder = sum('type')({
+// TODO: handle sum
+export const matchDecoder = fromSum('type')({
   A: struct({ type: literal('A'), a: string }),
   B: struct({ type: literal('B'), b: number })
 })
