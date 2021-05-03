@@ -151,7 +151,7 @@ export const numberD: numberD = id<number>()
 export interface booleanD extends IdentityD<boolean> {}
 export const booleanD: booleanD = id<boolean>()
 
-export interface CompositionDE<P, N> extends CompositionE<PrevE<ErrorOf<P>> | NextE<ErrorOf<N>>> {}
+export interface CompositionDE<P, N> extends CompoundE<PrevE<ErrorOf<P>> | NextE<ErrorOf<N>>> {}
 export interface CompositionD<P, N> extends Decoder<InputOf<P>, CompositionDE<P, N>, TypeOf<N>> {
   readonly _tag: 'CompositionD'
   readonly prev: P
@@ -255,6 +255,11 @@ export interface MemberE<M, E> extends SingleE<E> {
 }
 export const memberE = <M, E>(member: M, error: E): MemberE<M, E> => ({ _tag: 'MemberE', member, error })
 
+export interface LeafE<E> extends SingleE<E> {
+  readonly _tag: 'LeafE'
+}
+export const leafE = <E>(error: E): LeafE<E> => ({ _tag: 'LeafE', error })
+
 export interface TagE {
   readonly _tag: 'TagE'
   readonly tag: string
@@ -263,12 +268,13 @@ export interface TagE {
 export interface TagLE extends LeafE<TagE> {}
 export const tagLE = (tag: string, literals: ReadonlyArray<string>): TagLE => leafE({ _tag: 'TagE', tag, literals })
 
-// Single errors
-
-export interface LeafE<E> extends SingleE<E> {
-  readonly _tag: 'LeafE'
+export interface NoMembersE {
+  readonly _tag: 'NoMembersE'
 }
-export const leafE = <E>(error: E): LeafE<E> => ({ _tag: 'LeafE', error })
+export interface NoMembersLE extends LeafE<NoMembersE> {}
+export const noMembersLE: NoMembersLE = leafE({
+  _tag: 'NoMembersE'
+})
 
 export interface NullableE<E> extends SingleE<E> {
   readonly _tag: 'NullableE'
@@ -295,30 +301,6 @@ export interface NextE<E> extends SingleE<E> {
 }
 export const nextE = <E>(error: E): NextE<E> => ({ _tag: 'NextE', error })
 
-// Compound errors
-
-export interface CompoundE<E> {
-  readonly errors: ReadonlyNonEmptyArray<E>
-}
-
-export interface StructE<E> extends CompoundE<E> {
-  readonly _tag: 'StructE'
-}
-export const structE = <E>(errors: ReadonlyNonEmptyArray<E>): StructE<E> => ({ _tag: 'StructE', errors })
-
-export interface PartialE<E> extends CompoundE<E> {
-  readonly _tag: 'PartialE'
-}
-export const partialE = <E>(errors: ReadonlyNonEmptyArray<E>): PartialE<E> => ({ _tag: 'PartialE', errors })
-
-export interface RecordE<E> extends CompoundE<E> {
-  readonly _tag: 'RecordE'
-}
-export const recordE = <E>(errors: ReadonlyNonEmptyArray<E>): RecordE<E> => ({
-  _tag: 'RecordE',
-  errors
-})
-
 export interface MissingIndexesE {
   readonly _tag: 'MissingIndexesE'
   readonly indexes: ReadonlyNonEmptyArray<number>
@@ -335,44 +317,6 @@ export interface UnexpectedIndexesE {
 export const unexpectedIndexesE = (indexes: ReadonlyNonEmptyArray<number>): UnexpectedIndexesE => ({
   _tag: 'UnexpectedIndexesE',
   indexes
-})
-
-export interface TupleE<E> extends CompoundE<E> {
-  readonly _tag: 'TupleE'
-}
-export const tupleE = <E>(errors: ReadonlyNonEmptyArray<E>): TupleE<E> => ({ _tag: 'TupleE', errors })
-
-export interface ArrayE<E> extends CompoundE<E> {
-  readonly _tag: 'ArrayE'
-}
-export const arrayE = <E>(errors: ReadonlyNonEmptyArray<E>): ArrayE<E> => ({
-  _tag: 'ArrayE',
-  errors
-})
-
-export interface UnionE<E> {
-  readonly _tag: 'UnionE'
-  readonly errors: ReadonlyArray<E>
-}
-export const unionE = <E>(errors: ReadonlyArray<E>): UnionE<E> => ({
-  _tag: 'UnionE',
-  errors
-})
-
-export interface CompositionE<E> extends CompoundE<E> {
-  readonly _tag: 'CompositionE'
-}
-export const compositionE = <E>(errors: ReadonlyNonEmptyArray<E>): CompositionE<E> => ({
-  _tag: 'CompositionE',
-  errors
-})
-
-export interface IntersectionE<E> extends CompoundE<E> {
-  readonly _tag: 'IntersectionE'
-}
-export const intersectionE = <E>(errors: ReadonlyNonEmptyArray<E>): IntersectionE<E> => ({
-  _tag: 'IntersectionE',
-  errors
 })
 
 export interface SumE<E> extends SingleE<E> {
@@ -412,6 +356,35 @@ export const unexpectedKeysE = (keys: ReadonlyNonEmptyArray<string>): Unexpected
   keys
 })
 
+// Compound errors
+
+export interface CompoundE<E> {
+  readonly _tag: 'CompoundE'
+  readonly name: string
+  readonly errors: ReadonlyNonEmptyArray<E>
+}
+export const compoundE = (name: string) => <E>(errors: ReadonlyNonEmptyArray<E>): CompoundE<E> => ({
+  _tag: 'CompoundE',
+  name,
+  errors
+})
+
+export const unionE = compoundE('union')
+
+export const structE = compoundE('struct')
+
+export const partialE = compoundE('partial')
+
+export const recordE = compoundE('record')
+
+export const tupleE = compoundE('tuple')
+
+export const arrayE = compoundE('array')
+
+export const compositionE = compoundE('composition')
+
+export const intersectionE = compoundE('intersection')
+
 // recursive helpers to please ts@3.5
 // simple single
 export interface NullableRE<E> extends NullableE<DecodeError<E>> {}
@@ -426,16 +399,9 @@ export interface RequiredIndexRE<E> extends RequiredIndexE<string | number, Deco
 export interface OptionalIndexRE<E> extends OptionalIndexE<number, DecodeError<E>> {}
 export interface MemberRE<E> extends MemberE<string | number, DecodeError<E>> {}
 export interface LazyRE<E> extends LazyE<DecodeError<E>> {}
-// compound
-export interface CompositionRE<E> extends CompositionE<DecodeError<E>> {}
-export interface StructRE<E> extends StructE<DecodeError<E>> {}
-export interface PartialRE<E> extends PartialE<DecodeError<E>> {}
-export interface TupleRE<E> extends TupleE<DecodeError<E>> {}
-export interface ArrayRE<E> extends ArrayE<DecodeError<E>> {}
-export interface RecordRE<E> extends RecordE<DecodeError<E>> {}
-export interface UnionRE<E> extends UnionE<DecodeError<E>> {}
-export interface IntersectionRE<E> extends IntersectionE<DecodeError<E>> {}
 export interface SumRE<E> extends SumE<DecodeError<E>> {}
+// compound
+export interface CompoundRE<E> extends CompoundE<DecodeError<E>> {}
 
 export type DecodeError<E> =
   | UnexpectedKeysE
@@ -456,16 +422,9 @@ export type DecodeError<E> =
   | OptionalIndexRE<E>
   | MemberRE<E>
   | LazyRE<E>
-  // compound
-  | StructRE<E>
-  | PartialRE<E>
-  | TupleRE<E>
-  | ArrayRE<E>
-  | RecordRE<E>
-  | UnionRE<E>
-  | IntersectionRE<E>
   | SumRE<E>
-  | CompositionRE<E>
+  // compound
+  | CompoundRE<E>
 
 export type BuiltinE =
   | StringE
@@ -478,6 +437,7 @@ export type BuiltinE =
   | NaNE
   | InfinityE
   | TagE
+  | NoMembersE
 
 // -------------------------------------------------------------------------------------
 // decoder primitives
@@ -643,7 +603,7 @@ export const parser = <A, E, B>(parser: (a: A) => These<E, B>): ParserD<A, E, B>
 // -------------------------------------------------------------------------------------
 
 export interface FromStructDE<Properties>
-  extends StructE<{ readonly [K in keyof Properties]: RequiredKeyE<K, ErrorOf<Properties[K]>> }[keyof Properties]> {}
+  extends CompoundE<{ readonly [K in keyof Properties]: RequiredKeyE<K, ErrorOf<Properties[K]>> }[keyof Properties]> {}
 export interface FromStructD<Properties>
   extends Decoder<
     { [K in keyof Properties]: InputOf<Properties[K]> },
@@ -718,14 +678,14 @@ export const missingKeys = <Properties extends Record<string, unknown>>(
   return {
     _tag: 'MissingKeysD',
     properties,
-    decode: (ur) => {
+    decode: (r) => {
       const es: Array<string> = []
       for (const k in properties) {
-        if (!(k in ur)) {
+        if (!(k in r)) {
           es.push(k)
         }
       }
-      return RA.isNonEmpty(es) ? failure(missingKeysE(es)) : success(ur as any)
+      return RA.isNonEmpty(es) ? failure(missingKeysE(es)) : success(r as any)
     }
   }
 }
@@ -747,7 +707,7 @@ export function struct(properties: Record<PropertyKey, AnyUD>): StructD<typeof p
 }
 
 export interface FromPartialDE<Properties>
-  extends PartialE<{ readonly [K in keyof Properties]: OptionalKeyE<K, ErrorOf<Properties[K]>> }[keyof Properties]> {}
+  extends CompoundE<{ readonly [K in keyof Properties]: OptionalKeyE<K, ErrorOf<Properties[K]>> }[keyof Properties]> {}
 export interface FromPartialD<Properties>
   extends Decoder<
     Partial<{ [K in keyof Properties]: InputOf<Properties[K]> }>,
@@ -798,7 +758,7 @@ export function partial(properties: Record<PropertyKey, AnyUD>): PartialD<typeof
 }
 
 export interface FromTupleDE<Components extends ReadonlyArray<unknown>>
-  extends TupleE<{ [K in keyof Components]: RequiredIndexE<K, ErrorOf<Components[K]>> }[number]> {}
+  extends CompoundE<{ [K in keyof Components]: RequiredIndexE<K, ErrorOf<Components[K]>> }[number]> {}
 export interface FromTupleD<Components extends ReadonlyArray<unknown>>
   extends Decoder<
     { readonly [K in keyof Components]: InputOf<Components[K]> },
@@ -900,7 +860,7 @@ export function tuple(...cs: ReadonlyArray<AnyUD>): TupleD<typeof cs> {
 }
 
 export interface FromArrayD<Item>
-  extends Decoder<Array<InputOf<Item>>, ArrayE<OptionalIndexE<number, ErrorOf<Item>>>, Array<TypeOf<Item>>> {
+  extends Decoder<Array<InputOf<Item>>, CompoundE<OptionalIndexE<number, ErrorOf<Item>>>, Array<TypeOf<Item>>> {
   readonly _tag: 'FromArrayD'
   readonly item: Item
 }
@@ -943,7 +903,7 @@ export function array<E, A>(item: Decoder<unknown, E, A>): ArrayD<typeof item> {
 export interface FromRecordD<Codomain>
   extends Decoder<
     Record<PropertyKey, InputOf<Codomain>>,
-    RecordE<OptionalKeyE<string, ErrorOf<Codomain>>>,
+    CompoundE<OptionalKeyE<string, ErrorOf<Codomain>>>,
     Record<PropertyKey, TypeOf<Codomain>>
   > {
   readonly _tag: 'FromRecordD'
@@ -1018,9 +978,13 @@ const append = <A>(end: A) => (init: ReadonlyArray<A>): ReadonlyNonEmptyArray<A>
 }
 
 export interface UnionDE<Members extends ReadonlyArray<AnyD>>
-  extends UnionE<{ [K in keyof Members]: MemberE<K, ErrorOf<Members[K]>> }[number]> {}
+  extends CompoundE<{ [K in keyof Members]: MemberE<K, ErrorOf<Members[K]>> }[number]> {}
 export interface UnionD<Members extends ReadonlyArray<AnyD>>
-  extends Decoder<UnionToIntersection<InputOf<Members[number]>>, UnionDE<Members>, TypeOf<Members[keyof Members]>> {
+  extends Decoder<
+    UnionToIntersection<InputOf<Members[number]>>,
+    NoMembersLE | UnionDE<Members>,
+    TypeOf<Members[keyof Members]>
+  > {
   readonly _tag: 'UnionD'
   readonly members: Members
 }
@@ -1041,7 +1005,7 @@ export function union<Members extends ReadonlyArray<AnyD>>(...members: Members):
           )
         }
       }
-      return failure(unionE(es))
+      return RA.isNonEmpty(es) ? failure(unionE(es)) : failure(noMembersLE)
     }
   }
 }
@@ -1058,7 +1022,7 @@ export function nullable<D extends AnyD>(or: D): NullableD<D> {
   }
 }
 
-export interface IntersectDE<F, S> extends IntersectionE<MemberE<0, ErrorOf<F>> | MemberE<1, ErrorOf<S>>> {}
+export interface IntersectDE<F, S> extends CompoundE<MemberE<0, ErrorOf<F>> | MemberE<1, ErrorOf<S>>> {}
 export interface IntersectD<F, S> extends Decoder<InputOf<F> & InputOf<S>, IntersectDE<F, S>, TypeOf<F> & TypeOf<S>> {
   readonly _tag: 'IntersectD'
   readonly first: F
@@ -1070,14 +1034,7 @@ export type Prunable = ReadonlyArray<string>
 const collectPrunable = <E>(de: DecodeError<E>): Prunable => {
   const go = (de: DecodeError<E>): Prunable => {
     switch (de._tag) {
-      case 'ArrayE':
-      case 'CompositionE':
-      case 'IntersectionE':
-      case 'PartialE':
-      case 'RecordE':
-      case 'StructE':
-      case 'TupleE':
-      case 'UnionE':
+      case 'CompoundE':
         return pipe(de.errors, RA.chain(go))
       case 'LazyE':
       case 'MemberE':
@@ -1116,22 +1073,8 @@ const make = <E>(constructor: (errors: RNEA.ReadonlyNonEmptyArray<DecodeError<E>
 const prune = (prunable: Prunable, anticollision: string): (<E>(de: DecodeError<E>) => O.Option<DecodeError<E>>) => {
   const go = <E>(de: DecodeError<E>): O.Option<DecodeError<E>> => {
     switch (de._tag) {
-      case 'ArrayE':
-        return pipe(de.errors, RA.filterMap(prune(prunable, anticollision)), make(arrayE))
-      case 'CompositionE':
-        return pipe(de.errors, RA.filterMap(prune(prunable, anticollision)), make(compositionE))
-      case 'IntersectionE':
-        return pipe(de.errors, RA.filterMap(prune(prunable, anticollision)), make(intersectionE))
-      case 'PartialE':
-        return pipe(de.errors, RA.filterMap(prune(prunable, anticollision)), make(partialE))
-      case 'RecordE':
-        return pipe(de.errors, RA.filterMap(prune(prunable, anticollision)), make(recordE))
-      case 'StructE':
-        return pipe(de.errors, RA.filterMap(prune(prunable, anticollision)), make(structE))
-      case 'TupleE':
-        return pipe(de.errors, RA.filterMap(prune(prunable, anticollision)), make(tupleE))
-      case 'UnionE':
-        return pipe(de.errors, RA.filterMap(prune(prunable, anticollision)), make(unionE))
+      case 'CompoundE':
+        return pipe(de.errors, RA.filterMap(prune(prunable, anticollision)), make(compoundE(de.name)))
       case 'SumE':
         return pipe(de.error, prune(prunable, anticollision), O.map(sumE))
       case 'NextE':
@@ -1205,7 +1148,7 @@ const pruneAllUnexpected: <E>(de: DecodeError<E>) => O.Option<DecodeError<E>> = 
 const pruneDifference = <E1, E2>(
   de1: DecodeError<E1>,
   de2: DecodeError<E2>
-): O.Option<IntersectionE<MemberE<0, DecodeError<E1>> | MemberE<1, DecodeError<E2>>>> => {
+): O.Option<CompoundE<MemberE<0, DecodeError<E1>> | MemberE<1, DecodeError<E2>>>> => {
   const pde1 = pipe(de1, prune(collectPrunable(de2), ''))
   const pde2 = pipe(de2, prune(collectPrunable(de1), ''))
   if (O.isSome(pde1)) {
@@ -1261,7 +1204,7 @@ export function intersect<I2, E2, A2 extends Intersecable>(
     first,
     second,
     decode: (i) => {
-      const out: These<IntersectionE<MemberE<0, DecodeError<E1>> | MemberE<1, DecodeError<E2>>>, A1 & A2> = pipe(
+      const out: These<CompoundE<MemberE<0, DecodeError<E1>> | MemberE<1, DecodeError<E2>>>, A1 & A2> = pipe(
         first.decode(i),
         TH.fold(
           (de1) =>
@@ -1560,25 +1503,15 @@ export const toTreeWith = <E>(toTree: (e: E) => Tree<string>): ((de: DecodeError
       case 'SumE':
         return tree(`1 error(s) found while decoding a sum`, [go(de.error)])
 
-      // compounds
-      case 'ArrayE':
-        return tree(`${de.errors.length} error(s) found while decoding an array`, de.errors.map(go))
-      case 'RecordE':
-        return tree(`${de.errors.length} error(s) found while decoding a record`, de.errors.map(go))
-      case 'TupleE':
-        return tree(`${de.errors.length} error(s) found while decoding a tuple`, de.errors.map(go))
-      case 'StructE':
-        return tree(`${de.errors.length} error(s) found while decoding a struct`, de.errors.map(go))
-      case 'PartialE':
-        return tree(`${de.errors.length} error(s) found while decoding a partial`, de.errors.map(go))
-      case 'UnionE':
-        return tree(`${de.errors.length} error(s) found while decoding a union`, de.errors.map(go))
-      case 'IntersectionE':
-        return tree(`${de.errors.length} error(s) found while decoding an intersection`, de.errors.map(go))
-      case 'CompositionE':
-        return de.errors.length === 1
-          ? go(de.errors[0]) // less noise in the output if there's only one error
-          : tree(`${de.errors.length} error(s) found while decoding a composition`, de.errors.map(go))
+      // compound
+      case 'CompoundE': {
+        if (de.name === 'composition') {
+          return de.errors.length === 1
+            ? go(de.errors[0]) // less noise in the output if there's only one error
+            : tree(`${de.errors.length} error(s) found while decoding (${de.name})`, de.errors.map(go))
+        }
+        return tree(`${de.errors.length} error(s) found while decoding (${de.name})`, de.errors.map(go))
+      }
     }
   }
   return go
@@ -1619,6 +1552,8 @@ export const toTreeBuiltin = (de: BuiltinE): Tree<string> => {
           de.tag
         )}, expected one of ${de.literals.map((literal) => JSON.stringify(literal)).join(', ')}`
       )
+    case 'NoMembersE':
+      return tree('no members')
   }
 }
 
@@ -1882,14 +1817,7 @@ const shouldCondemnWhen = <E>(
 ): ((de: DecodeError<E>) => boolean) => {
   const go = (de: DecodeError<E>): boolean => {
     switch (de._tag) {
-      case 'ArrayE':
-      case 'CompositionE':
-      case 'PartialE':
-      case 'StructE':
-      case 'IntersectionE':
-      case 'TupleE':
-      case 'UnionE':
-      case 'RecordE':
+      case 'CompoundE':
         return de.errors.some(go)
       case 'PrevE':
       case 'NextE':
@@ -2166,6 +2094,21 @@ export const PartialRecordab = partial({
 // use case: undefined -> Option<A>
 // -------------------------------------------------------------------------------------
 
+export interface OptionD<D>
+  extends Decoder<InputOf<D> | null | undefined, ErrorOf<D>, O.Option<NonNullable<TypeOf<D>>>> {
+  readonly _tag: 'OptionD'
+  readonly decoder: D
+}
+
+export function option<D extends AnyD>(decoder: D): OptionD<D>
+export function option<I, E, A>(decoder: Decoder<I, E, A>): OptionD<typeof decoder> {
+  return {
+    _tag: 'OptionD',
+    decoder,
+    decode: (i) => (i === null || i === undefined ? success(O.none) : pipe(decoder.decode(i), TH.map(O.fromNullable)))
+  }
+}
+
 // -------------------------------------------------------------------------------------
 // use case: omit, pick #553
 // -------------------------------------------------------------------------------------
@@ -2245,7 +2188,7 @@ export interface NoFunctionArray extends Array<Value | NoFunctionObject> {}
 
 export const Value: Decoder<
   unknown,
-  DecodeError<StringE | NumberE | NaNE | InfinityE | BooleanE | UnknownRecordE | UnknownArrayE>,
+  DecodeError<StringE | NumberE | NaNE | InfinityE | BooleanE | UnknownRecordE | UnknownArrayE | NoMembersE>,
   Value
 > = lazy('Value', () => {
   const NoFunctionObject = record(Value)

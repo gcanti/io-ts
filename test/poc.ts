@@ -2,8 +2,8 @@ import { pipe } from 'fp-ts/lib/pipeable'
 import * as _ from '../src/poc'
 import * as U from './util'
 import * as TH from 'fp-ts/lib/These'
+import * as O from 'fp-ts/lib/Option'
 import { flow, tuple } from 'fp-ts/lib/function'
-import * as RA from 'fp-ts/lib/ReadonlyArray'
 
 export const print = flow(_.draw, _.print)
 
@@ -47,7 +47,7 @@ describe('poc', () => {
         `Value:
 NaN
 Warnings:
-2 error(s) found while decoding a composition
+2 error(s) found while decoding (composition)
 ├─ value is NaN
 └─ value is NaN`
       )
@@ -58,7 +58,7 @@ Warnings:
       U.deepStrictEqual(
         pipe(decoder.decode(NaN), print),
         `Errors:
-2 error(s) found while decoding a composition
+2 error(s) found while decoding (composition)
 ├─ value is NaN
 └─ cannot decode NaN, expected a string`
       )
@@ -255,6 +255,13 @@ Warnings:
       U.deepStrictEqual(decoder.decode({ a: undefined }), _.success({ a: undefined }))
     })
 
+    it.skip('should not error on missing keys with undefined values', async () => {
+      const decoder = _.struct({
+        a: _.literal(undefined)
+      })
+      U.deepStrictEqual(decoder.decode({}), _.success({ a: undefined }))
+    })
+
     it('should reject an invalid input', async () => {
       const decoder = _.struct({
         a: _.string
@@ -267,7 +274,7 @@ cannot decode undefined, expected an object`
       U.deepStrictEqual(
         pipe(decoder.decode({ a: 1 }), print),
         `Errors:
-1 error(s) found while decoding a struct
+1 error(s) found while decoding (struct)
 └─ 1 error(s) found while decoding required key \"a\"
    └─ cannot decode 1, expected a string`
       )
@@ -340,7 +347,7 @@ cannot decode undefined, expected an object`
       U.deepStrictEqual(
         pipe(decoder.decode({ a: 1 }), print),
         `Errors:
-1 error(s) found while decoding a partial
+1 error(s) found while decoding (partial)
 └─ 1 error(s) found while decoding optional key \"a\"
    └─ cannot decode 1, expected a string`
       )
@@ -354,7 +361,7 @@ cannot decode undefined, expected an object`
       U.deepStrictEqual(
         pipe(decoder.decode({ a: 1, b: 'b' }), print),
         `Errors:
-2 error(s) found while decoding a partial
+2 error(s) found while decoding (partial)
 ├─ 1 error(s) found while decoding optional key \"a\"
 │  └─ cannot decode 1, expected a string
 └─ 1 error(s) found while decoding optional key \"b\"
@@ -371,7 +378,7 @@ cannot decode undefined, expected an object`
         `Value:
 { a: NaN }
 Warnings:
-1 error(s) found while decoding a partial
+1 error(s) found while decoding (partial)
 └─ 1 error(s) found while decoding optional key \"a\"
    └─ value is NaN`
       )
@@ -392,7 +399,7 @@ Warnings:
         `Value:
 [ 1, NaN ]
 Warnings:
-1 error(s) found while decoding an array
+1 error(s) found while decoding (array)
 └─ 1 error(s) found while decoding optional index 1
    └─ value is NaN`
       )
@@ -408,7 +415,7 @@ cannot decode undefined, expected an array`
       U.deepStrictEqual(
         pipe(decoder.decode([1]), print),
         `Errors:
-1 error(s) found while decoding an array
+1 error(s) found while decoding (array)
 └─ 1 error(s) found while decoding optional index 0
    └─ cannot decode 1, expected a string`
       )
@@ -419,7 +426,7 @@ cannot decode undefined, expected an array`
       U.deepStrictEqual(
         pipe(decoder.decode([1, 2]), print),
         `Errors:
-2 error(s) found while decoding an array
+2 error(s) found while decoding (array)
 ├─ 1 error(s) found while decoding optional index 0
 │  └─ cannot decode 1, expected a string
 └─ 1 error(s) found while decoding optional index 1
@@ -445,7 +452,7 @@ cannot decode undefined, expected an object`
       U.deepStrictEqual(
         pipe(decoder.decode({ a: 'a' }), print),
         `Errors:
-1 error(s) found while decoding a record
+1 error(s) found while decoding (record)
 └─ 1 error(s) found while decoding optional key \"a\"
    └─ cannot decode \"a\", expected a number`
       )
@@ -456,7 +463,7 @@ cannot decode undefined, expected an object`
       U.deepStrictEqual(
         pipe(decoder.decode({ a: 'a', b: 'b' }), print),
         `Errors:
-2 error(s) found while decoding a record
+2 error(s) found while decoding (record)
 ├─ 1 error(s) found while decoding optional key \"a\"
 │  └─ cannot decode \"a\", expected a number
 └─ 1 error(s) found while decoding optional key \"b\"
@@ -471,7 +478,7 @@ cannot decode undefined, expected an object`
         `Value:
 { a: NaN }
 Warnings:
-1 error(s) found while decoding a record
+1 error(s) found while decoding (record)
 └─ 1 error(s) found while decoding optional key \"a\"
    └─ value is NaN`
       )
@@ -498,7 +505,7 @@ Warnings:
         `Errors:
 1 error(s) found while decoding a sum
 └─ 1 error(s) found while decoding member 1
-   └─ 1 error(s) found while decoding a struct
+   └─ 1 error(s) found while decoding (struct)
       └─ 1 error(s) found while decoding required key \"a\"
          └─ cannot decode 1, expected a string`
       )
@@ -538,7 +545,7 @@ Warnings:
         `Errors:
 1 error(s) found while decoding a sum
 └─ 1 error(s) found while decoding member 1
-   └─ 1 error(s) found while decoding a struct
+   └─ 1 error(s) found while decoding (struct)
       └─ 1 error(s) found while decoding required key \"a\"
          └─ cannot decode 1, expected a string`
       )
@@ -579,7 +586,7 @@ Warnings:
           `Value:
 { a: 'a', b: 1 }
 Warnings:
-2 error(s) found while decoding an intersection
+2 error(s) found while decoding (intersection)
 ├─ 1 error(s) found while decoding member 0
 │  └─ 1 error(s) found while checking keys
 │     └─ unexpected key \"c\"
@@ -599,14 +606,14 @@ Warnings:
         `Value:
 { a: { b: 'a', c: 1 } }
 Warnings:
-2 error(s) found while decoding an intersection
+2 error(s) found while decoding (intersection)
 ├─ 1 error(s) found while decoding member 0
-│  └─ 1 error(s) found while decoding a struct
+│  └─ 1 error(s) found while decoding (struct)
 │     └─ 1 error(s) found while decoding required key \"a\"
 │        └─ 1 error(s) found while checking keys
 │           └─ unexpected key \"d\"
 └─ 1 error(s) found while decoding member 1
-   └─ 1 error(s) found while decoding a struct
+   └─ 1 error(s) found while decoding (struct)
       └─ 1 error(s) found while decoding required key \"a\"
          └─ 1 error(s) found while checking keys
             └─ unexpected key \"d\"`
@@ -649,7 +656,7 @@ cannot decode undefined, expected an array`
       U.deepStrictEqual(
         pipe(decoder.decode([1, 2]), print),
         `Errors:
-1 error(s) found while decoding a tuple
+1 error(s) found while decoding (tuple)
 └─ 1 error(s) found while decoding required component 0
    └─ cannot decode 1, expected a string`
       )
@@ -660,7 +667,7 @@ cannot decode undefined, expected an array`
       U.deepStrictEqual(
         pipe(decoder.decode([1, 'a']), print),
         `Errors:
-2 error(s) found while decoding a tuple
+2 error(s) found while decoding (tuple)
 ├─ 1 error(s) found while decoding required component 0
 │  └─ cannot decode 1, expected a string
 └─ 1 error(s) found while decoding required component 1
@@ -687,7 +694,7 @@ Warnings:
         `Value:
 [ NaN ]
 Warnings:
-1 error(s) found while decoding a tuple
+1 error(s) found while decoding (tuple)
 └─ 1 error(s) found while decoding required component 0
    └─ value is NaN`
       )
@@ -703,7 +710,7 @@ Warnings:
 
     it('should return a left with zero members', () => {
       const decoder = _.union()
-      U.deepStrictEqual(decoder.decode('a'), TH.left(_.unionE(RA.empty)))
+      U.deepStrictEqual(decoder.decode('a'), TH.left(_.noMembersLE))
     })
 
     it('should return a both', () => {
@@ -719,7 +726,7 @@ Warnings:
       U.deepStrictEqual(
         pipe(decoder.decode(null), print),
         `Errors:
-2 error(s) found while decoding a union
+2 error(s) found while decoding (union)
 ├─ 1 error(s) found while decoding member "0"
 │  └─ cannot decode null, expected a string
 └─ 1 error(s) found while decoding member "1"
@@ -734,7 +741,7 @@ Warnings:
         `Value:
 NaN
 Warnings:
-1 error(s) found while decoding a union
+1 error(s) found while decoding (union)
 └─ 1 error(s) found while decoding member \"0\"
    └─ value is NaN`
       )
@@ -775,14 +782,37 @@ Warnings:
         pipe(Category.decode({ name: 'a', categories: [{}] }), print),
         `Errors:
 1 error(s) found while decoding lazy decoder Category
-└─ 1 error(s) found while decoding a struct
+└─ 1 error(s) found while decoding (struct)
    └─ 1 error(s) found while decoding required key \"categories\"
-      └─ 1 error(s) found while decoding an array
+      └─ 1 error(s) found while decoding (array)
          └─ 1 error(s) found while decoding optional index 0
             └─ 1 error(s) found while decoding lazy decoder Category
                └─ 2 error(s) found while checking keys
                   ├─ missing required key \"name\"
                   └─ missing required key \"categories\"`
+      )
+    })
+  })
+
+  describe('option', () => {
+    it('should return a right', () => {
+      const decoder = _.option(_.string)
+      U.deepStrictEqual(decoder.decode(null), TH.right(O.none))
+      U.deepStrictEqual(decoder.decode(undefined), TH.right(O.none))
+      U.deepStrictEqual(decoder.decode('a'), TH.right(O.some('a')))
+    })
+
+    it.skip('may be used to encode optional props', () => {
+      const decoder = _.partial({ a: _.option(_.string) })
+      U.deepStrictEqual(decoder.decode({}), TH.right({ a: O.some('a') }))
+    })
+
+    it('should return a left', () => {
+      const decoder = _.option(_.string)
+      U.deepStrictEqual(
+        pipe(decoder.decode(1), print),
+        `Errors:
+cannot decode 1, expected a string`
       )
     })
   })
