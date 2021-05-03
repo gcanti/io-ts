@@ -81,7 +81,7 @@ export type TUDA = D.TypeOf<typeof TUD>
 export const AD = D.fromArray(D.string)
 // $ExpectType unknown[]
 export type ADI = D.InputOf<typeof AD>
-// $ExpectType ArrayE<OptionalIndexE<number, StringLE>>
+// $ExpectType FromArrayDE<stringUD>
 export type ADE = D.ErrorOf<typeof AD>
 // $ExpectType string[]
 export type ADA = D.TypeOf<typeof AD>
@@ -99,7 +99,7 @@ export type AUDA = D.TypeOf<typeof AUD>
 export const RD = D.fromRecord(D.number)
 // $ExpectType Record<string | number | symbol, unknown>
 export type RDI = D.InputOf<typeof RD>
-// $ExpectType RecordE<OptionalKeyE<string, NumberLE | NaNLE | InfinityLE>>
+// $ExpectType FromRecordDE<numberUD>
 export type RDE = D.ErrorOf<typeof RD>
 // $ExpectType Record<string | number | symbol, number>
 export type RDA = D.TypeOf<typeof RD>
@@ -148,7 +148,7 @@ export type ReUDA = D.TypeOf<typeof ReUD>
 export const UD = D.union(D.string, D.number)
 // $ExpectType unknown
 export type UDI = D.InputOf<typeof UD>
-// $ExpectType UnionDE<[stringUD, numberUD]>
+// $ExpectType NoMembersLE | UnionDE<[stringUD, numberUD]>
 export type UDE = D.ErrorOf<typeof UD>
 // $ExpectType string | number
 export type UDA = D.TypeOf<typeof UD>
@@ -313,3 +313,15 @@ export type UII = D.InputOf<typeof UI>
 export type UIE = D.ErrorOf<typeof UI>
 // $ExpectType [unknown?, unknown?]
 export type UIA = D.TypeOf<typeof UI>
+
+// option
+export const OSUD = D.option({
+  a: D.string,
+  b: D.number
+})
+// $ExpectType unknown
+export type OSUDI = D.InputOf<typeof OSUD>
+// $ExpectType CompositionDE<CompositionD<UnknownRecordUD, UnexpectedKeysD<{ a: stringUD; b: numberUD; }>>, FromOptionD<{ a: stringUD; b: numberUD; }>>
+export type OSUDE = D.ErrorOf<typeof OSUD>
+// $ExpectType { a: Option<string>; b: Option<number>; }
+export type OSUDA = D.TypeOf<typeof OSUD>

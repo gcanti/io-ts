@@ -796,23 +796,23 @@ Warnings:
 
   describe('option', () => {
     it('should return a right', () => {
-      const decoder = _.option(_.string)
-      U.deepStrictEqual(decoder.decode(null), TH.right(O.none))
-      U.deepStrictEqual(decoder.decode(undefined), TH.right(O.none))
-      U.deepStrictEqual(decoder.decode('a'), TH.right(O.some('a')))
-    })
-
-    it.skip('may be used to encode optional props', () => {
-      const decoder = _.partial({ a: _.option(_.string) })
-      U.deepStrictEqual(decoder.decode({}), TH.right({ a: O.some('a') }))
+      const decoder = _.option({
+        a: _.string
+      })
+      U.deepStrictEqual(decoder.decode({}), TH.right({ a: O.none }))
+      U.deepStrictEqual(decoder.decode({ a: 'a' }), TH.right({ a: O.some('a') }))
     })
 
     it('should return a left', () => {
-      const decoder = _.option(_.string)
+      const decoder = _.option({
+        a: _.string
+      })
       U.deepStrictEqual(
-        pipe(decoder.decode(1), print),
+        pipe(decoder.decode({ a: null }), print),
         `Errors:
-cannot decode 1, expected a string`
+1 error(s) found while decoding (option)
+└─ 1 error(s) found while decoding optional key \"a\"
+   └─ cannot decode null, expected a string`
       )
     })
   })

@@ -859,8 +859,8 @@ export function tuple(...cs: ReadonlyArray<AnyUD>): TupleD<typeof cs> {
   )
 }
 
-export interface FromArrayD<Item>
-  extends Decoder<Array<InputOf<Item>>, CompoundE<OptionalIndexE<number, ErrorOf<Item>>>, Array<TypeOf<Item>>> {
+export interface FromArrayDE<Item> extends CompoundE<OptionalIndexE<number, ErrorOf<Item>>> {}
+export interface FromArrayD<Item> extends Decoder<Array<InputOf<Item>>, FromArrayDE<Item>, Array<TypeOf<Item>>> {
   readonly _tag: 'FromArrayD'
   readonly item: Item
 }
@@ -900,10 +900,11 @@ export function array<E, A>(item: Decoder<unknown, E, A>): ArrayD<typeof item> {
   return pipe(UnknownArray, compose(fromArray(item)))
 }
 
+export interface FromRecordDE<Codomain> extends CompoundE<OptionalKeyE<string, ErrorOf<Codomain>>> {}
 export interface FromRecordD<Codomain>
   extends Decoder<
     Record<PropertyKey, InputOf<Codomain>>,
-    CompoundE<OptionalKeyE<string, ErrorOf<Codomain>>>,
+    FromRecordDE<Codomain>,
     Record<PropertyKey, TypeOf<Codomain>>
   > {
   readonly _tag: 'FromRecordD'
@@ -2094,20 +2095,70 @@ export const PartialRecordab = partial({
 // use case: undefined -> Option<A>
 // -------------------------------------------------------------------------------------
 
-export interface OptionD<D>
-  extends Decoder<InputOf<D> | null | undefined, ErrorOf<D>, O.Option<NonNullable<TypeOf<D>>>> {
-  readonly _tag: 'OptionD'
-  readonly decoder: D
+export const optionE = compoundE('option')
+
+export interface FromOptionDE<Properties>
+  extends CompoundE<{ readonly [K in keyof Properties]: OptionalKeyE<K, ErrorOf<Properties[K]>> }[keyof Properties]> {}
+export interface FromOptionD<Properties>
+  extends Decoder<
+    Partial<{ [K in keyof Properties]: InputOf<Properties[K]> }>,
+    FromPartialDE<Properties>,
+    { [K in keyof Properties]: O.Option<TypeOf<Properties[K]>> }
+  > {
+  readonly _tag: 'FromOptionD'
+  readonly properties: Properties
+}
+export const fromOption = <Properties extends Record<PropertyKey, AnyD>>(
+  properties: Properties
+): FromOptionD<Properties> => ({
+  _tag: 'FromOptionD',
+  properties,
+  decode: (ur) => {
+    const es: Array<OptionalKeyE<string, ErrorOf<Properties[keyof Properties]>>> = []
+    const ar: any = {}
+    let isBoth = true
+    for (const k in properties) {
+      if (ur[k] === undefined) {
+        ar[k] = O.none
+        continue
+      }
+      const de = properties[k].decode(ur[k])
+      if (TH.isLeft(de)) {
+        isBoth = false
+        es.push(optionalKeyE(k, de.left))
+      } else if (TH.isRight(de)) {
+        ar[k] = O.some(de.right)
+      } else {
+        es.push(optionalKeyE(k, de.left))
+        ar[k] = O.some(de.right)
+      }
+    }
+    return RA.isNonEmpty(es) ? (isBoth ? warning(optionE(es), ar) : failure(optionE(es))) : success(ar)
+  }
+})
+
+export interface OptionD<Properties>
+  extends CompositionD<CompositionD<UnknownRecordUD, UnexpectedKeysD<Properties>>, FromOptionD<Properties>> {}
+
+export function option<Properties extends Record<PropertyKey, AnyUD>>(properties: Properties): OptionD<Properties>
+export function option(properties: Record<PropertyKey, AnyUD>): OptionD<typeof properties> {
+  return pipe(UnknownRecord, compose(unexpectedKeys(properties)), compose(fromOption(properties)))
 }
 
-export function option<D extends AnyD>(decoder: D): OptionD<D>
-export function option<I, E, A>(decoder: Decoder<I, E, A>): OptionD<typeof decoder> {
-  return {
-    _tag: 'OptionD',
-    decoder,
-    decode: (i) => (i === null || i === undefined ? success(O.none) : pipe(decoder.decode(i), TH.map(O.fromNullable)))
-  }
-}
+// export interface OptionD<D>
+//   extends Decoder<InputOf<D> | null | undefined, ErrorOf<D>, O.Option<NonNullable<TypeOf<D>>>> {
+//   readonly _tag: 'OptionD'
+//   readonly decoder: D
+// }
+
+// export function option<D extends AnyD>(decoder: D): OptionD<D>
+// export function option<I, E, A>(decoder: Decoder<I, E, A>): OptionD<typeof decoder> {
+//   return {
+//     _tag: 'OptionD',
+//     decoder,
+//     decode: (i) => (i === null || i === undefined ? success(O.none) : pipe(decoder.decode(i), TH.map(O.fromNullable)))
+//   }
+// }
 
 // -------------------------------------------------------------------------------------
 // use case: omit, pick #553
