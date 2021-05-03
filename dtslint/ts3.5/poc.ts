@@ -18,7 +18,7 @@ export const SD = D.fromStruct({
 })
 // $ExpectType { a: unknown; b: unknown; }
 export type SDI = D.InputOf<typeof SD>
-// $ExpectType FromStructDE<{ a: stringUD; b: numberUD; }>
+// $ExpectType FromStructE<{ a: stringUD; b: numberUD; }>
 export type SDE = D.ErrorOf<typeof SD>
 // $ExpectType { a: string; b: number; }
 export type SDA = D.TypeOf<typeof SD>
@@ -30,7 +30,7 @@ export const SUD = D.struct({
 })
 // $ExpectType unknown
 export type SUDI = D.InputOf<typeof SUD>
-// $ExpectType CompositionDE<CompositionD<CompositionD<UnknownRecordUD, UnexpectedKeysD<{ a: stringUD; b: numberUD; }>>, MissingKeysD<{ a: stringUD; b: numberUD; }>>, FromStructD<{ a: stringUD; b: numberUD; }>>
+// $ExpectType CompositionE<CompositionD<CompositionD<UnknownRecordUD, UnexpectedKeysD<{ a: stringUD; b: numberUD; }>>, MissingKeysD<{ a: stringUD; b: numberUD; }>>, FromStructD<{ a: stringUD; b: numberUD; }>>
 export type SUDE = D.ErrorOf<typeof SUD>
 // $ExpectType { a: string; b: number; }
 export type SUDA = D.TypeOf<typeof SUD>
@@ -42,7 +42,7 @@ export const PSD = D.fromPartial({
 })
 // $ExpectType Partial<{ a: unknown; b: unknown; }>
 export type PSDI = D.InputOf<typeof PSD>
-// $ExpectType FromPartialDE<{ a: stringUD; b: numberUD; }>
+// $ExpectType FromPartialE<{ a: stringUD; b: numberUD; }>
 export type PSDE = D.ErrorOf<typeof PSD>
 // $ExpectType Partial<{ a: string; b: number; }>
 export type PSDA = D.TypeOf<typeof PSD>
@@ -54,7 +54,7 @@ export const PSUD = D.partial({
 })
 // $ExpectType unknown
 export type PSUDI = D.InputOf<typeof PSUD>
-// $ExpectType CompositionDE<CompositionD<UnknownRecordUD, UnexpectedKeysD<{ a: stringUD; b: numberUD; }>>, FromPartialD<{ a: stringUD; b: numberUD; }>>
+// $ExpectType CompositionE<CompositionD<UnknownRecordUD, UnexpectedKeysD<{ a: stringUD; b: numberUD; }>>, FromPartialD<{ a: stringUD; b: numberUD; }>>
 export type PSUDE = D.ErrorOf<typeof PSUD>
 // $ExpectType Partial<{ a: string; b: number; }>
 export type PSUDA = D.TypeOf<typeof PSUD>
@@ -63,7 +63,7 @@ export type PSUDA = D.TypeOf<typeof PSUD>
 export const TD = D.fromTuple(D.string, D.number)
 // $ExpectType readonly [unknown, unknown]
 export type TDI = D.InputOf<typeof TD>
-// $ExpectType FromTupleDE<[stringUD, numberUD]>
+// $ExpectType FromTupleE<[stringUD, numberUD]>
 export type TDE = D.ErrorOf<typeof TD>
 // $ExpectType [string, number]
 export type TDA = D.TypeOf<typeof TD>
@@ -72,7 +72,7 @@ export type TDA = D.TypeOf<typeof TD>
 export const TUD = D.tuple(D.string, D.number)
 // $ExpectType unknown
 export type TUDI = D.InputOf<typeof TUD>
-// $ExpectType CompositionDE<CompositionD<CompositionD<UnknownArrayUD, UnexpectedIndexesD<[stringUD, numberUD]>>, MissingIndexesD<[stringUD, numberUD]>>, FromTupleD<[stringUD, numberUD]>>
+// $ExpectType CompositionE<CompositionD<CompositionD<UnknownArrayUD, UnexpectedIndexesD<[stringUD, numberUD]>>, MissingIndexesD<[stringUD, numberUD]>>, FromTupleD<[stringUD, numberUD]>>
 export type TUDE = D.ErrorOf<typeof TUD>
 // $ExpectType [string, number]
 export type TUDA = D.TypeOf<typeof TUD>
@@ -81,7 +81,7 @@ export type TUDA = D.TypeOf<typeof TUD>
 export const AD = D.fromArray(D.string)
 // $ExpectType unknown[]
 export type ADI = D.InputOf<typeof AD>
-// $ExpectType FromArrayDE<stringUD>
+// $ExpectType FromArrayE<stringUD>
 export type ADE = D.ErrorOf<typeof AD>
 // $ExpectType string[]
 export type ADA = D.TypeOf<typeof AD>
@@ -90,7 +90,7 @@ export type ADA = D.TypeOf<typeof AD>
 export const AUD = D.array(D.string)
 // $ExpectType unknown
 export type AUDI = D.InputOf<typeof AUD>
-// $ExpectType CompositionDE<UnknownArrayUD, FromArrayD<stringUD>>
+// $ExpectType CompositionE<UnknownArrayUD, FromArrayD<stringUD>>
 export type AUDE = D.ErrorOf<typeof AUD>
 // $ExpectType string[]
 export type AUDA = D.TypeOf<typeof AUD>
@@ -99,7 +99,7 @@ export type AUDA = D.TypeOf<typeof AUD>
 export const RD = D.fromRecord(D.number)
 // $ExpectType Record<string | number | symbol, unknown>
 export type RDI = D.InputOf<typeof RD>
-// $ExpectType FromRecordDE<numberUD>
+// $ExpectType FromRecordE<numberUD>
 export type RDE = D.ErrorOf<typeof RD>
 // $ExpectType Record<string | number | symbol, number>
 export type RDA = D.TypeOf<typeof RD>
@@ -108,7 +108,7 @@ export type RDA = D.TypeOf<typeof RD>
 export const RUD = D.record(D.number)
 // $ExpectType unknown
 export type RUDI = D.InputOf<typeof RUD>
-// $ExpectType CompositionDE<UnknownRecordUD, FromRecordD<numberUD>>
+// $ExpectType CompositionE<UnknownRecordUD, FromRecordD<numberUD>>
 export type RUDE = D.ErrorOf<typeof RUD>
 // $ExpectType Record<string | number | symbol, number>
 export type RUDA = D.TypeOf<typeof RUD>
@@ -123,7 +123,7 @@ export interface IntE extends D.ActualE<number> {
 }
 export const intE = (actual: number): IntE => ({ _tag: 'IntE', actual })
 export const ReD = pipe(
-  D.id<number>(),
+  D.numberD,
   D.fromRefinement(
     (n): n is Int => Number.isInteger(n),
     (n) => D.leafE(intE(n))
@@ -131,7 +131,7 @@ export const ReD = pipe(
 )
 // $ExpectType number
 export type ReDI = D.InputOf<typeof ReD>
-// $ExpectType CompositionDE<IdentityD<number>, RefinementD<number, LeafE<IntE>, Int>>
+// $ExpectType CompositionE<numberD, RefinementD<number, LeafE<IntE>, Int>>
 export type ReDE = D.ErrorOf<typeof ReD>
 // $ExpectType Int
 export type ReDA = D.TypeOf<typeof ReD>
@@ -139,7 +139,7 @@ export type ReDA = D.TypeOf<typeof ReD>
 export const ReUD = pipe(D.number, D.compose(ReD))
 // $ExpectType unknown
 export type ReUDI = D.InputOf<typeof ReUD>
-// $ExpectType CompositionDE<numberUD, RefineD<IdentityD<number>, LeafE<IntE>, Int>>
+// $ExpectType CompositionE<numberUD, RefineD<numberD, LeafE<IntE>, Int>>
 export type ReUDE = D.ErrorOf<typeof ReUD>
 // $ExpectType Int
 export type ReUDA = D.TypeOf<typeof ReUD>
@@ -148,7 +148,7 @@ export type ReUDA = D.TypeOf<typeof ReUD>
 export const UD = D.union(D.string, D.number)
 // $ExpectType unknown
 export type UDI = D.InputOf<typeof UD>
-// $ExpectType NoMembersLE | UnionDE<[stringUD, numberUD]>
+// $ExpectType NoMembersLE | UnionE<[stringUD, numberUD]>
 export type UDE = D.ErrorOf<typeof UD>
 // $ExpectType string | number
 export type UDA = D.TypeOf<typeof UD>
@@ -167,10 +167,10 @@ interface ParseNumberE {
   readonly _tag: 'ParseNumberE'
 }
 declare const parseNumber: (s: string) => These<ParseNumberE, number>
-const PD = pipe(D.id<string>(), D.parse(parseNumber))
+const PD = pipe(D.stringD, D.parse(parseNumber))
 // $ExpectType string
 export type PDI = D.InputOf<typeof PD>
-// $ExpectType CompositionDE<IdentityD<string>, ParserD<string, ParseNumberE, number>>
+// $ExpectType CompositionE<stringD, ParserD<string, ParseNumberE, number>>
 export type PDE = D.ErrorOf<typeof PD>
 // $ExpectType number
 export type PDA = D.TypeOf<typeof PD>
@@ -178,7 +178,7 @@ export type PDA = D.TypeOf<typeof PD>
 const PUD = pipe(D.string, D.parse(parseNumber))
 // $ExpectType unknown
 export type PUDI = D.InputOf<typeof PUD>
-// $ExpectType CompositionDE<stringUD, ParserD<string, ParseNumberE, number>>
+// $ExpectType CompositionE<stringUD, ParserD<string, ParseNumberE, number>>
 export type PUDE = D.ErrorOf<typeof PUD>
 // $ExpectType number
 export type PUDA = D.TypeOf<typeof PUD>
@@ -187,7 +187,7 @@ export type PUDA = D.TypeOf<typeof PUD>
 export const ID = pipe(D.fromStruct({ a: D.string }), D.intersect(D.fromStruct({ b: D.number })))
 // $ExpectType { a: unknown; } & { b: unknown; }
 export type IDI = D.InputOf<typeof ID>
-// $ExpectType IntersectDE<FromStructD<{ a: stringUD; }>, FromStructD<{ b: numberUD; }>>
+// $ExpectType IntersectE<FromStructD<{ a: stringUD; }>, FromStructD<{ b: numberUD; }>>
 export type IDE = D.ErrorOf<typeof ID>
 // $ExpectType { a: string; } & { b: number; }
 export type IDA = D.TypeOf<typeof ID>
@@ -195,7 +195,7 @@ export type IDA = D.TypeOf<typeof ID>
 export const IUD = pipe(D.struct({ a: D.string }), D.intersect(D.struct({ b: D.number })))
 // $ExpectType unknown
 export type IUDI = D.InputOf<typeof IUD>
-// $ExpectType IntersectDE<StructD<{ a: stringUD; }>, StructD<{ b: numberUD; }>>
+// $ExpectType IntersectE<StructD<{ a: stringUD; }>, StructD<{ b: numberUD; }>>
 export type IUDE = D.ErrorOf<typeof IUD>
 // $ExpectType { a: string; } & { b: number; }
 export type IUDA = D.TypeOf<typeof IUD>
@@ -254,7 +254,7 @@ export const SumD = D.fromSum('type')({
 })
 // $ExpectType { type: unknown; a: unknown; } | { type: unknown; b: unknown; }
 export type SumDI = D.InputOf<typeof SumD>
-// $ExpectType TagLE | FromSumDE<{ A: FromStructD<{ type: LiteralD<["A"]>; a: stringUD; }>; B: FromStructD<{ type: LiteralD<["B"]>; b: stringUD; }>; }>
+// $ExpectType TagLE | FromSumE<{ A: FromStructD<{ type: LiteralD<["A"]>; a: stringUD; }>; B: FromStructD<{ type: LiteralD<["B"]>; b: stringUD; }>; }>
 export type SumDE = D.ErrorOf<typeof SumD>
 // $ExpectType { type: "A"; a: string; } | { type: "B"; b: string; }
 export type SumDA = D.TypeOf<typeof SumD>
@@ -273,7 +273,7 @@ export const SumUD = D.sum('type')({
 // $ExpectType unknown
 export type SumUDI = D.InputOf<typeof SumUD>
 // TODO: enable with recent ts versions
-// $ExpectType CompositionDE<UnionD<[UnknownRecordUD, UnknownArrayUD]>, FromSumD<"type", { A: StructD<{ type: LiteralD<["A"]>; a: stringUD; }>; B: StructD<{ type: LiteralD<["B"]>; b: stringUD; }>; }>>
+// $ExpectType CompositionE<UnionD<[UnknownRecordUD, UnknownArrayUD]>, FromSumD<"type", { A: StructD<{ type: LiteralD<["A"]>; a: stringUD; }>; B: StructD<{ type: LiteralD<["B"]>; b: stringUD; }>; }>>
 export type SumUDE = D.ErrorOf<typeof SumUD>
 // $ExpectType { type: "A"; a: string; } | { type: "B"; b: string; }
 export type SumUDA = D.TypeOf<typeof SumUD>
@@ -321,7 +321,7 @@ export const OSUD = D.option({
 })
 // $ExpectType unknown
 export type OSUDI = D.InputOf<typeof OSUD>
-// $ExpectType CompositionDE<CompositionD<UnknownRecordUD, UnexpectedKeysD<{ a: stringUD; b: numberUD; }>>, FromOptionD<{ a: stringUD; b: numberUD; }>>
+// $ExpectType CompositionE<CompositionD<UnknownRecordUD, UnexpectedKeysD<{ a: stringUD; b: numberUD; }>>, FromOptionD<{ a: stringUD; b: numberUD; }>>
 export type OSUDE = D.ErrorOf<typeof OSUD>
 // $ExpectType { a: Option<string>; b: Option<number>; }
 export type OSUDA = D.TypeOf<typeof OSUD>

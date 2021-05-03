@@ -151,8 +151,8 @@ export const numberD: numberD = id<number>()
 export interface booleanD extends IdentityD<boolean> {}
 export const booleanD: booleanD = id<boolean>()
 
-export interface CompositionDE<P, N> extends CompoundE<PrevE<ErrorOf<P>> | NextE<ErrorOf<N>>> {}
-export interface CompositionD<P, N> extends Decoder<InputOf<P>, CompositionDE<P, N>, TypeOf<N>> {
+export interface CompositionE<P, N> extends CompoundE<PrevE<ErrorOf<P>> | NextE<ErrorOf<N>>> {}
+export interface CompositionD<P, N> extends Decoder<InputOf<P>, CompositionE<P, N>, TypeOf<N>> {
   readonly _tag: 'CompositionD'
   readonly prev: P
   readonly next: N
@@ -602,12 +602,12 @@ export const parser = <A, E, B>(parser: (a: A) => These<E, B>): ParserD<A, E, B>
 // decoder combinators
 // -------------------------------------------------------------------------------------
 
-export interface FromStructDE<Properties>
+export interface FromStructE<Properties>
   extends CompoundE<{ readonly [K in keyof Properties]: RequiredKeyE<K, ErrorOf<Properties[K]>> }[keyof Properties]> {}
 export interface FromStructD<Properties>
   extends Decoder<
     { [K in keyof Properties]: InputOf<Properties[K]> },
-    FromStructDE<Properties>,
+    FromStructE<Properties>,
     { [K in keyof Properties]: TypeOf<Properties[K]> }
   > {
   readonly _tag: 'FromStructD'
@@ -706,12 +706,12 @@ export function struct(properties: Record<PropertyKey, AnyUD>): StructD<typeof p
   )
 }
 
-export interface FromPartialDE<Properties>
+export interface FromPartialE<Properties>
   extends CompoundE<{ readonly [K in keyof Properties]: OptionalKeyE<K, ErrorOf<Properties[K]>> }[keyof Properties]> {}
 export interface FromPartialD<Properties>
   extends Decoder<
     Partial<{ [K in keyof Properties]: InputOf<Properties[K]> }>,
-    FromPartialDE<Properties>,
+    FromPartialE<Properties>,
     Partial<{ [K in keyof Properties]: TypeOf<Properties[K]> }>
   > {
   readonly _tag: 'FromPartialD'
@@ -757,12 +757,12 @@ export function partial(properties: Record<PropertyKey, AnyUD>): PartialD<typeof
   return pipe(UnknownRecord, compose(unexpectedKeys(properties)), compose(fromPartial(properties)))
 }
 
-export interface FromTupleDE<Components extends ReadonlyArray<unknown>>
+export interface FromTupleE<Components extends ReadonlyArray<unknown>>
   extends CompoundE<{ [K in keyof Components]: RequiredIndexE<K, ErrorOf<Components[K]>> }[number]> {}
 export interface FromTupleD<Components extends ReadonlyArray<unknown>>
   extends Decoder<
     { readonly [K in keyof Components]: InputOf<Components[K]> },
-    FromTupleDE<Components>,
+    FromTupleE<Components>,
     { [K in keyof Components]: TypeOf<Components[K]> }
   > {
   readonly _tag: 'FromTupleD'
@@ -859,8 +859,8 @@ export function tuple(...cs: ReadonlyArray<AnyUD>): TupleD<typeof cs> {
   )
 }
 
-export interface FromArrayDE<Item> extends CompoundE<OptionalIndexE<number, ErrorOf<Item>>> {}
-export interface FromArrayD<Item> extends Decoder<Array<InputOf<Item>>, FromArrayDE<Item>, Array<TypeOf<Item>>> {
+export interface FromArrayE<Item> extends CompoundE<OptionalIndexE<number, ErrorOf<Item>>> {}
+export interface FromArrayD<Item> extends Decoder<Array<InputOf<Item>>, FromArrayE<Item>, Array<TypeOf<Item>>> {
   readonly _tag: 'FromArrayD'
   readonly item: Item
 }
@@ -900,11 +900,11 @@ export function array<E, A>(item: Decoder<unknown, E, A>): ArrayD<typeof item> {
   return pipe(UnknownArray, compose(fromArray(item)))
 }
 
-export interface FromRecordDE<Codomain> extends CompoundE<OptionalKeyE<string, ErrorOf<Codomain>>> {}
+export interface FromRecordE<Codomain> extends CompoundE<OptionalKeyE<string, ErrorOf<Codomain>>> {}
 export interface FromRecordD<Codomain>
   extends Decoder<
     Record<PropertyKey, InputOf<Codomain>>,
-    FromRecordDE<Codomain>,
+    FromRecordE<Codomain>,
     Record<PropertyKey, TypeOf<Codomain>>
   > {
   readonly _tag: 'FromRecordD'
@@ -978,12 +978,12 @@ const append = <A>(end: A) => (init: ReadonlyArray<A>): ReadonlyNonEmptyArray<A>
   return [end]
 }
 
-export interface UnionDE<Members extends ReadonlyArray<AnyD>>
+export interface UnionE<Members extends ReadonlyArray<AnyD>>
   extends CompoundE<{ [K in keyof Members]: MemberE<K, ErrorOf<Members[K]>> }[number]> {}
 export interface UnionD<Members extends ReadonlyArray<AnyD>>
   extends Decoder<
     UnionToIntersection<InputOf<Members[number]>>,
-    NoMembersLE | UnionDE<Members>,
+    NoMembersLE | UnionE<Members>,
     TypeOf<Members[keyof Members]>
   > {
   readonly _tag: 'UnionD'
@@ -1023,8 +1023,8 @@ export function nullable<D extends AnyD>(or: D): NullableD<D> {
   }
 }
 
-export interface IntersectDE<F, S> extends CompoundE<MemberE<0, ErrorOf<F>> | MemberE<1, ErrorOf<S>>> {}
-export interface IntersectD<F, S> extends Decoder<InputOf<F> & InputOf<S>, IntersectDE<F, S>, TypeOf<F> & TypeOf<S>> {
+export interface IntersectE<F, S> extends CompoundE<MemberE<0, ErrorOf<F>> | MemberE<1, ErrorOf<S>>> {}
+export interface IntersectD<F, S> extends Decoder<InputOf<F> & InputOf<S>, IntersectE<F, S>, TypeOf<F> & TypeOf<S>> {
   readonly _tag: 'IntersectD'
   readonly first: F
   readonly second: S
@@ -1297,10 +1297,10 @@ export const lazy = <I, E, A>(id: string, f: Lazy<Decoder<I, E, A>>): LazyD<I, E
   }
 }
 
-export interface FromSumDE<Members>
+export interface FromSumE<Members>
   extends SumE<{ [K in keyof Members]: MemberE<K, ErrorOf<Members[K]>> }[keyof Members]> {}
 export interface FromSumD<T extends string, Members>
-  extends Decoder<InputOf<Members[keyof Members]>, TagLE | FromSumDE<Members>, TypeOf<Members[keyof Members]>> {
+  extends Decoder<InputOf<Members[keyof Members]>, TagLE | FromSumE<Members>, TypeOf<Members[keyof Members]>> {
   readonly _tag: 'FromSumD'
   readonly tag: T
   readonly members: Members
@@ -2097,12 +2097,12 @@ export const PartialRecordab = partial({
 
 export const optionE = compoundE('option')
 
-export interface FromOptionDE<Properties>
+export interface FromOptionE<Properties>
   extends CompoundE<{ readonly [K in keyof Properties]: OptionalKeyE<K, ErrorOf<Properties[K]>> }[keyof Properties]> {}
 export interface FromOptionD<Properties>
   extends Decoder<
     Partial<{ [K in keyof Properties]: InputOf<Properties[K]> }>,
-    FromPartialDE<Properties>,
+    FromPartialE<Properties>,
     { [K in keyof Properties]: O.Option<TypeOf<Properties[K]>> }
   > {
   readonly _tag: 'FromOptionD'
