@@ -575,7 +575,10 @@ const toTree: (e: DE.DecodeError<string>) => Tree<string> = DE.fold({
   Wrap: (error, errors) => make(error, toForest(errors))
 })
 
-const toForest = (e: DecodeError): ReadonlyArray<Tree<string>> => {
+/**
+ * @since 2.2.17
+ */
+export const toForest = (e: DecodeError): ReadonlyArray<Tree<string>> => {
   const stack = []
   let focus = e
   const res = []
