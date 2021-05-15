@@ -1,5 +1,5 @@
 import { Bifunctor3 } from 'fp-ts/lib/Bifunctor'
-import { flow, Lazy, Refinement } from 'fp-ts/lib/function'
+import { flow, Lazy } from 'fp-ts/lib/function'
 import { Functor3 } from 'fp-ts/lib/Functor'
 import * as O from 'fp-ts/lib/Option'
 import { pipe } from 'fp-ts/lib/pipeable'
@@ -10,6 +10,16 @@ import * as util from 'util'
 
 import These = TH.These
 import ReadonlyNonEmptyArray = RNEA.ReadonlyNonEmptyArray
+
+/*
+
+  BREAKING CHANGE
+
+  - error model
+  - `refine`
+  - `parse`
+
+*/
 
 // -------------------------------------------------------------------------------------
 // model
@@ -588,11 +598,6 @@ export const refinement = <A, E, B extends A>(parser: (a: A) => These<E, B>): Re
   decode: flow(parser, TH.mapLeft(refinementE))
 })
 
-export const fromRefinement = <From extends AnyD, B extends TypeOf<From>, E>(
-  refinement: Refinement<TypeOf<From>, B>,
-  error: (from: TypeOf<From>) => E
-): ((from: From) => RefineD<From, E, B>) => refine((a) => (refinement(a) ? success(a) : failure(error(a))))
-
 export interface ParserD<A, E, B> extends Decoder<A, ParserE<E>, B> {
   readonly _tag: 'ParserD'
   readonly parser: (a: A) => These<E, B>
@@ -949,28 +954,6 @@ export interface RecordD<Codomain> extends CompositionD<UnknownRecordUD, FromRec
 export function record<Codomain extends AnyUD>(codomain: Codomain): RecordD<Codomain>
 export function record<E, A>(codomain: Decoder<unknown, E, A>): RecordD<typeof codomain> {
   return pipe(UnknownRecord, compose(fromRecord(codomain)))
-}
-
-export interface RefineD<From, E, B extends TypeOf<From>> extends CompositionD<From, RefinementD<TypeOf<From>, E, B>> {}
-
-export function refine<From extends AnyD, E, B extends TypeOf<From>>(
-  parser: (a: TypeOf<From>) => These<E, B>
-): (from: From) => RefineD<From, E, B>
-export function refine<A, E2, B extends A>(
-  parser: (a: A) => These<E2, B>
-): <I, E1>(from: Decoder<I, E1, A>) => RefineD<typeof from, E2, B> {
-  return compose(refinement(parser))
-}
-
-export interface ParseD<From, E, B> extends CompositionD<From, ParserD<TypeOf<From>, E, B>> {}
-
-export function parse<From extends AnyD, E, B>(
-  parser: (a: TypeOf<From>) => These<E, B>
-): (from: From) => ParseD<From, E, B>
-export function parse<A, E, B>(
-  p: (a: A) => These<E, B>
-): <I, E1>(from: Decoder<I, E1, A>) => ParseD<typeof from, E, B> {
-  return compose(parser(p))
 }
 
 type UnionToIntersection<U> = (U extends any ? (k: U) => void : never) extends (k: infer I) => void ? I : never
@@ -1617,13 +1600,11 @@ export interface IntE extends ActualE<number> {
   readonly _tag: 'IntE'
 }
 export const intE = (actual: number): IntE => ({ _tag: 'IntE', actual })
-export const IntD = pipe(
-  numberD,
-  fromRefinement(
-    (n): n is Int => Number.isInteger(n),
-    (n) => leafE(intE(n))
-  )
-)
+
+const isInt = (n: number): n is Int => Number.isInteger(n)
+
+export const IntD = refinement((n: number) => (isInt(n) ? success(n) : failure(leafE(intE(n)))))
+
 export const IntUD = pipe(number, compose(IntD))
 export type IntUDE = ErrorOf<typeof IntUD>
 
@@ -1686,12 +1667,10 @@ export interface NonEmptyStringE extends ActualE<string> {
 }
 export interface NonEmptyStringLE extends LeafE<NonEmptyStringE> {}
 
-export const NonEmptyStringD = pipe(
-  stringD,
-  fromRefinement(
-    (s): s is NonEmptyString => s.length > 0,
-    (actual): NonEmptyStringLE => leafE({ _tag: 'NonEmptyStringE', actual })
-  )
+const isNonEmptyString = (s: string): s is NonEmptyString => s.length > 0
+
+export const NonEmptyStringD = refinement((s: string) =>
+  isNonEmptyString(s) ? success(s) : failure(leafE({ _tag: 'NonEmptyStringE', actual: s }))
 )
 
 export const NonEmptyStringUD = pipe(string, compose(NonEmptyStringD))
@@ -1707,16 +1686,16 @@ export interface PositiveBrand {
 
 export type Positive = number & PositiveBrand
 
-export const Positive = pipe(
-  number,
-  fromRefinement(
-    (n): n is Positive => n > 0 || isNaN(n),
-    (n) => message(n, `cannot decode ${n}, expected a positive number`)
-  )
-)
-export type PositiveE = ErrorOf<typeof Positive>
+const isPositive = (n: number): n is Positive => n > 0 || isNaN(n)
 
-// pipe(Positive.decode(NaN), debug)
+const PositiveD = refinement((n: number) =>
+  isPositive(n) ? success(n) : failure(message(n, `cannot decode ${n}, expected a positive number`))
+)
+
+export const PositiveUD = pipe(number, compose(PositiveD))
+export type PositiveE = ErrorOf<typeof PositiveUD>
+
+// pipe(PositiveUD.decode(NaN), debug)
 
 // -------------------------------------------------------------------------------------
 // use case: new decoder, multiple custom messages #487
@@ -1732,14 +1711,16 @@ const USERNAME_REGEX = /(a|b)*d/
 
 export const Username = pipe(
   customStringUD,
-  refine((s) =>
-    s.length < 2
-      ? failure(message(s, 'too short'))
-      : s.length > 4
-      ? failure(message(s, 'too long'))
-      : USERNAME_REGEX.test(s)
-      ? failure(message(s, 'bad characters'))
-      : success(s as Username)
+  compose(
+    refinement((s: string) =>
+      s.length < 2
+        ? failure(message(s, 'too short'))
+        : s.length > 4
+        ? failure(message(s, 'too long'))
+        : USERNAME_REGEX.test(s)
+        ? failure(message(s, 'bad characters'))
+        : success(s as Username)
+    )
   )
 )
 
@@ -2315,3 +2296,30 @@ export const decoderSumByHand = pipe(
 )
 
 // pipe(decoderSumByHand.decode({ _tag: 'A', a: 'a' }), debug)
+
+// -------------------------------------------------------------------------------------
+// use case: intersection of primitives
+// -------------------------------------------------------------------------------------
+
+export interface IntegerBrand {
+  readonly Integer: unique symbol
+}
+export type IntegerUD = number & IntegerBrand
+
+const IntegerD = refinement((n: number) => (isInt(n) ? success(n) : failure(message(n, 'not an integer'))))
+
+const IntegerUD = pipe(number, compose(IntegerD))
+
+export const PositiveIntD = pipe(PositiveD, intersect(IntegerD))
+export type PositiveIntDI = InputOf<typeof PositiveIntD>
+export type PositiveIntDE = ErrorOf<typeof PositiveIntD>
+export type PositiveIntDA = TypeOf<typeof PositiveIntD>
+
+export const PositiveIntUD = pipe(number, compose(PositiveIntD))
+export type PositiveIntUDI = InputOf<typeof PositiveIntUD>
+export type PositiveIntUDE = ErrorOf<typeof PositiveIntUD>
+export type PositiveIntUDA = TypeOf<typeof PositiveIntUD>
+
+// pipe(PositiveIntUD.decode(null), debug)
+// pipe(PositiveIntUD.decode(-1), debug)
+pipe(PositiveIntUD.decode(1.2), debug)

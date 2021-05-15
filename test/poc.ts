@@ -1,9 +1,9 @@
+import { flow, tuple } from 'fp-ts/lib/function'
+import * as O from 'fp-ts/lib/Option'
 import { pipe } from 'fp-ts/lib/pipeable'
+import * as TH from 'fp-ts/lib/These'
 import * as _ from '../src/poc'
 import * as U from './util'
-import * as TH from 'fp-ts/lib/These'
-import * as O from 'fp-ts/lib/Option'
-import { flow, tuple } from 'fp-ts/lib/function'
 
 export const print = flow(_.draw, _.print)
 
@@ -160,12 +160,10 @@ cannot decode \"b\", expected one of \"a\", null`
 
     type NonEmptyString = string & NonEmptyStringBrand
 
-    const NonEmptyStringD = pipe(
-      _.stringD,
-      _.fromRefinement(
-        (s): s is NonEmptyString => s.length > 0,
-        (actual) => _.leafE(_.messageE(actual, 'expected a non empty string'))
-      )
+    const isNonEmptyString = (s: string): s is NonEmptyString => s.length > 0
+
+    const NonEmptyStringD = _.refinement((s: string) =>
+      isNonEmptyString(s) ? _.success(s) : _.failure(_.leafE(_.messageE(s, 'expected a non empty string')))
     )
 
     it('should decode a valid input', async () => {
@@ -183,10 +181,7 @@ cannot decode \"b\", expected one of \"a\", null`
   })
 
   describe('parser', () => {
-    const NumberFromString = pipe(
-      _.stringD,
-      _.parse((s) => _.number.decode(parseFloat(s)))
-    )
+    const NumberFromString = _.parser((s: string) => _.number.decode(parseFloat(s)))
 
     it('should decode a valid input', async () => {
       U.deepStrictEqual(NumberFromString.decode('1'), _.success(1))
