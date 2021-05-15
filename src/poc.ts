@@ -2092,6 +2092,37 @@ export const PartialRecordab = partial({
 })
 
 // -------------------------------------------------------------------------------------
+// use case: opaque decoder
+// -------------------------------------------------------------------------------------
+
+interface OpaqueD
+  extends StructD<{
+    a: stringUD
+    b: numberUD
+  }> {}
+
+const Opaque: OpaqueD = struct({
+  a: string,
+  b: number
+})
+
+export const Opaque2 = struct({
+  c: Opaque
+})
+/*
+const Opaque2: StructD<{
+    c: OpaqueD;
+}>
+instead of
+const Opaque2: StructD<{
+    c: StructD<{
+        a: stringUD;
+        b: numberUD;
+    }>;
+}>
+*/
+
+// -------------------------------------------------------------------------------------
 // use case: undefined -> Option<A>
 // -------------------------------------------------------------------------------------
 
