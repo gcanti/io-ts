@@ -565,11 +565,17 @@ export interface LiteralD<A extends ReadonlyNonEmptyArray<Literal>>
   readonly literals: A
 }
 
-export const literal = <A extends ReadonlyNonEmptyArray<Literal>>(...literals: A): LiteralD<A> => ({
-  _tag: 'LiteralD',
-  literals,
-  decode: (u) => (literals.findIndex((a) => a === u) !== -1 ? success(u as any) : failure(literalLE(u, literals)))
-})
+const isLiteral = <A extends ReadonlyNonEmptyArray<Literal>>(...literals: A) => (u: unknown): u is A[number] =>
+  literals.findIndex((literal) => literal === u) !== -1
+
+export const literal = <A extends ReadonlyNonEmptyArray<Literal>>(...literals: A): LiteralD<A> => {
+  const is = isLiteral(...literals)
+  return {
+    _tag: 'LiteralD',
+    literals,
+    decode: (u) => (is(u) ? success(u) : failure(literalLE(u, literals)))
+  }
+}
 
 export interface RefinementD<A, E, B extends A> extends Decoder<A, RefinementE<E>, B> {
   readonly _tag: 'RefinementD'
