@@ -627,14 +627,14 @@ Warnings:
       )
     })
 
-    // describe('tuple', () => {
-    //   it('should not raise invalid warnings', () => {
-    //     const I1 = _.tuple(_.string)
-    //     const I2 = _.tuple(_.string, _.number)
-    //     const I = pipe(I1, _.intersect(I2))
-    //     U.deepStrictEqual(I.decode(['a', 1]), TH.right({ a: 'a', b: 1 }))
-    //   })
-    // })
+    describe('tuple', () => {
+      it('should not raise invalid warnings', () => {
+        const I1 = _.tuple(_.string)
+        const I2 = _.tuple(_.string, _.number)
+        const I = pipe(I1, _.intersect(I2))
+        U.deepStrictEqual(I.decode(['a', 1]), TH.right(['a', 1]))
+      })
+    })
   })
 
   describe('tuple', () => {

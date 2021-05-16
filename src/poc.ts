@@ -15,6 +15,7 @@ import ReadonlyNonEmptyArray = RNEA.ReadonlyNonEmptyArray
 
   BREAKING CHANGES
 
+  - Either -> These
   - error model
   - `refine`
   - `parse`
