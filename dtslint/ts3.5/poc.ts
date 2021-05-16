@@ -113,25 +113,22 @@ export type RUDE = D.ErrorOf<typeof RUD>
 // $ExpectType Record<string | number | symbol, number>
 export type RUDA = D.TypeOf<typeof RUD>
 
-// refine
+// refinement
 export interface IntBrand {
   readonly Int: unique symbol
 }
 export type Int = number & IntBrand
-export interface IntE extends D.ActualE<number> {
+export interface IntE {
   readonly _tag: 'IntE'
+  readonly actual: number
 }
 export const intE = (actual: number): IntE => ({ _tag: 'IntE', actual })
-export const ReD = pipe(
-  D.numberD,
-  D.fromRefinement(
-    (n): n is Int => Number.isInteger(n),
-    (n) => D.leafE(intE(n))
-  )
-)
+const isInt = (n: number): n is Int => Number.isInteger(n)
+export const ReD = D.refinement((n: number) => (isInt(n) ? D.success(n) : D.failure(D.leafE(intE(n)))))
+
 // $ExpectType number
 export type ReDI = D.InputOf<typeof ReD>
-// $ExpectType CompositionE<numberD, RefinementD<number, LeafE<IntE>, Int>>
+// $ExpectType RefinementE<LeafE<IntE>>
 export type ReDE = D.ErrorOf<typeof ReD>
 // $ExpectType Int
 export type ReDA = D.TypeOf<typeof ReD>
@@ -139,7 +136,7 @@ export type ReDA = D.TypeOf<typeof ReD>
 export const ReUD = pipe(D.number, D.compose(ReD))
 // $ExpectType unknown
 export type ReUDI = D.InputOf<typeof ReUD>
-// $ExpectType CompositionE<numberUD, RefineD<numberD, LeafE<IntE>, Int>>
+// $ExpectType CompositionE<numberUD, RefinementD<number, LeafE<IntE>, Int>>
 export type ReUDE = D.ErrorOf<typeof ReUD>
 // $ExpectType Int
 export type ReUDA = D.TypeOf<typeof ReUD>
@@ -167,15 +164,15 @@ interface ParseNumberE {
   readonly _tag: 'ParseNumberE'
 }
 declare const parseNumber: (s: string) => These<ParseNumberE, number>
-const PD = pipe(D.stringD, D.parse(parseNumber))
+const PD = D.parser(parseNumber)
 // $ExpectType string
 export type PDI = D.InputOf<typeof PD>
-// $ExpectType CompositionE<stringD, ParserD<string, ParseNumberE, number>>
+// $ExpectType ParserE<ParseNumberE>
 export type PDE = D.ErrorOf<typeof PD>
 // $ExpectType number
 export type PDA = D.TypeOf<typeof PD>
 
-const PUD = pipe(D.string, D.parse(parseNumber))
+const PUD = pipe(D.string, D.compose(PD))
 // $ExpectType unknown
 export type PUDI = D.InputOf<typeof PUD>
 // $ExpectType CompositionE<stringUD, ParserD<string, ParseNumberE, number>>
