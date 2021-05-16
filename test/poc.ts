@@ -12,16 +12,6 @@ describe('poc', () => {
   // instances
   // -------------------------------------------------------------------------------------
 
-  it('Functor', () => {
-    const decoder = _.Functor.map(_.string, (s) => s + '!')
-    U.deepStrictEqual(decoder.decode('a'), _.success('a!'))
-  })
-
-  it('Bifunctor', () => {
-    const decoder = _.Functor.map(_.string, (s) => s + '!')
-    U.deepStrictEqual(decoder.decode('a'), _.success('a!'))
-  })
-
   it('map', () => {
     const decoder = pipe(
       _.string,
@@ -31,12 +21,34 @@ describe('poc', () => {
     U.deepStrictEqual(decoder.decode(' a '), _.success('a'))
   })
 
+  it('Functor', () => {
+    const decoder = _.Functor.map(_.string, (s) => s.trim())
+    U.deepStrictEqual(decoder.decode(' a '), _.success('a'))
+  })
+
   it('mapLeft', () => {
     const decoder = pipe(
       _.string,
       _.mapLeft(() => 'not a string')
     )
     U.deepStrictEqual(decoder.decode(null), _.failure('not a string'))
+  })
+
+  describe('Bifunctor', () => {
+    it('mapLeft', () => {
+      const decoder = _.Bifunctor.mapLeft(_.string, () => 'not a string')
+      U.deepStrictEqual(decoder.decode(null), _.failure('not a string'))
+    })
+
+    it('bimap', () => {
+      const decoder = _.Bifunctor.bimap(
+        _.string,
+        () => 'not a string',
+        (s) => s.trim()
+      )
+      U.deepStrictEqual(decoder.decode(' a '), _.success('a'))
+      U.deepStrictEqual(decoder.decode(null), _.failure('not a string'))
+    })
   })
 
   describe('compose', () => {
@@ -705,7 +717,11 @@ Warnings:
 
     it('should return a left with zero members', () => {
       const decoder = _.union()
-      U.deepStrictEqual(decoder.decode('a'), TH.left(_.noMembersLE))
+      U.deepStrictEqual(
+        pipe(decoder.decode(null), print),
+        `Errors:
+no members`
+      )
     })
 
     it('should return a both', () => {

@@ -46,6 +46,31 @@ export type ErrorOf<D> = D extends Decoder<any, infer E, any> ? E : never
 export type TypeOf<D> = D extends Decoder<any, any, infer A> ? A : never
 
 // -------------------------------------------------------------------------------------
+// instances
+// -------------------------------------------------------------------------------------
+
+export const URI = 'io-ts/Decoder-These'
+
+export type URI = typeof URI
+
+declare module 'fp-ts/lib/HKT' {
+  interface URItoKind3<R, E, A> {
+    readonly [URI]: Decoder<R, E, A>
+  }
+}
+
+export const Functor: Functor3<URI> = {
+  URI,
+  map: (fa, f) => pipe(fa, map(f))
+}
+
+export const Bifunctor: Bifunctor3<URI> = {
+  URI,
+  mapLeft: (fa, f) => pipe(fa, mapLeft(f)),
+  bimap: (fea, f, g) => pipe(fea, mapLeft(f), map(g))
+}
+
+// -------------------------------------------------------------------------------------
 // decoding constructors
 // -------------------------------------------------------------------------------------
 
@@ -354,13 +379,11 @@ export const compositionE = compoundE('composition')
 export const intersectionE = compoundE('intersection')
 
 // recursive helpers to please ts@3.5
-// simple single
 export interface NullableRE<E> extends NullableE<DecodeError<E>> {}
 export interface RefinementRE<E> extends RefinementE<DecodeError<E>> {}
 export interface ParserRE<E> extends ParserE<DecodeError<E>> {}
 export interface PrevRE<E> extends PrevE<DecodeError<E>> {}
 export interface NextRE<E> extends NextE<DecodeError<E>> {}
-// customized single
 export interface RequiredKeyRE<E> extends RequiredKeyE<string, DecodeError<E>> {}
 export interface OptionalKeyRE<E> extends OptionalKeyE<string, DecodeError<E>> {}
 export interface RequiredIndexRE<E> extends RequiredIndexE<string | number, DecodeError<E>> {}
@@ -368,7 +391,6 @@ export interface OptionalIndexRE<E> extends OptionalIndexE<number, DecodeError<E
 export interface MemberRE<E> extends MemberE<string | number, DecodeError<E>> {}
 export interface LazyRE<E> extends LazyE<DecodeError<E>> {}
 export interface SumRE<E> extends SumE<DecodeError<E>> {}
-// compound
 export interface CompoundRE<E> extends CompoundE<DecodeError<E>> {}
 
 export type DecodeError<E> =
@@ -376,14 +398,12 @@ export type DecodeError<E> =
   | MissingKeysE
   | UnexpectedIndexesE
   | MissingIndexesE
-  // simple single
   | LeafE<E>
   | NullableRE<E>
   | RefinementRE<E>
   | ParserRE<E>
   | PrevRE<E>
   | NextRE<E>
-  // customized single
   | RequiredKeyRE<E>
   | OptionalKeyRE<E>
   | RequiredIndexRE<E>
@@ -391,7 +411,6 @@ export type DecodeError<E> =
   | MemberRE<E>
   | LazyRE<E>
   | SumRE<E>
-  // compound
   | CompoundRE<E>
 
 export type BuiltinE =
@@ -979,7 +998,7 @@ export interface IntersectD<F, S> extends Decoder<InputOf<F> & InputOf<S>, Inter
   readonly second: S
 }
 
-export type Prunable = ReadonlyArray<string>
+type Prunable = ReadonlyArray<string>
 
 const collectPrunable = <E>(de: DecodeError<E>): Prunable => {
   const go = (de: DecodeError<E>): Prunable => {
@@ -1016,15 +1035,13 @@ const collectPrunable = <E>(de: DecodeError<E>): Prunable => {
   return go(de)
 }
 
-const make = <E>(constructor: (errors: RNEA.ReadonlyNonEmptyArray<DecodeError<E>>) => DecodeError<E>) => (
-  pdes: ReadonlyArray<DecodeError<E>>
-): O.Option<DecodeError<E>> => (RA.isNonEmpty(pdes) ? O.some(constructor(pdes)) : O.none)
-
 const prune = (prunable: Prunable, anticollision: string): (<E>(de: DecodeError<E>) => O.Option<DecodeError<E>>) => {
   const go = <E>(de: DecodeError<E>): O.Option<DecodeError<E>> => {
     switch (de._tag) {
       case 'CompoundE':
-        return pipe(de.errors, RA.filterMap(prune(prunable, anticollision)), make(compoundE(de.name)))
+        return pipe(de.errors, RA.filterMap(prune(prunable, anticollision)), (pdes) =>
+          RA.isNonEmpty(pdes) ? O.some(compoundE(de.name)(pdes)) : O.none
+        )
       case 'SumE':
         return pipe(de.error, prune(prunable, anticollision), O.map(sumE))
       case 'NextE':
@@ -1093,14 +1110,16 @@ const prune = (prunable: Prunable, anticollision: string): (<E>(de: DecodeError<
   return go
 }
 
-const pruneAllUnexpected: <E>(de: DecodeError<E>) => O.Option<DecodeError<E>> = prune(RA.empty, '')
+const emptyString = ''
+
+const pruneAllUnexpected: <E>(de: DecodeError<E>) => O.Option<DecodeError<E>> = prune(RA.empty, emptyString)
 
 const pruneDifference = <E1, E2>(
   de1: DecodeError<E1>,
   de2: DecodeError<E2>
 ): O.Option<CompoundE<MemberE<0, DecodeError<E1>> | MemberE<1, DecodeError<E2>>>> => {
-  const pde1 = pipe(de1, prune(collectPrunable(de2), ''))
-  const pde2 = pipe(de2, prune(collectPrunable(de1), ''))
+  const pde1 = pipe(de1, prune(collectPrunable(de2), emptyString))
+  const pde2 = pipe(de2, prune(collectPrunable(de1), emptyString))
   if (O.isSome(pde1)) {
     return O.isSome(pde2)
       ? O.some(intersectionE([memberE(0, pde1.value), memberE(1, pde2.value)]))
@@ -1109,12 +1128,12 @@ const pruneDifference = <E1, E2>(
   return O.isSome(pde2) ? O.some(intersectionE([memberE(1, pde2.value)])) : O.none
 }
 
-// TODO: can we come up with better types?
-export interface IntersecableRecord extends Record<string, Intersecable> {}
-export interface IntersecableArray extends Array<Intersecable> {}
-export type Intersecable = string | number | IntersecableRecord | IntersecableArray
+interface IntersecableRecord extends Record<string, Intersecable> {}
+interface IntersecableArray extends Array<Intersecable> {}
+type Intersecable = string | number | IntersecableRecord | IntersecableArray
 
-const intersect_ = <A extends Intersecable, B extends Intersecable>(a: A, b: B): A & B => {
+/** @internal */
+export const intersect_ = <A extends Intersecable, B extends Intersecable>(a: A, b: B): A & B => {
   if (isUnknownRecord(a) && isUnknownRecord(b)) {
     const out: any = { ...(a as any) }
     for (const k in b) {
@@ -1139,9 +1158,9 @@ const intersect_ = <A extends Intersecable, B extends Intersecable>(a: A, b: B):
   return b as any
 }
 
-export function intersect<S extends Decoder<any, DecodeError<any>, Intersecable>>(
+export function intersect<S extends Decoder<any, DecodeError<any>, any>>(
   second: S
-): <F extends Decoder<any, DecodeError<any>, Intersecable>>(first: F) => IntersectD<F, S>
+): <F extends Decoder<any, DecodeError<any>, any>>(first: F) => IntersectD<F, S>
 export function intersect<I2, E2, A2 extends Intersecable>(
   second: Decoder<I2, DecodeError<E2>, A2>
 ): <I1, E1, A1 extends Intersecable>(
@@ -1297,29 +1316,10 @@ export function sum<T extends string>(
 }
 
 // -------------------------------------------------------------------------------------
-// instances
+// use cases
 // -------------------------------------------------------------------------------------
 
-export const URI = 'io-ts/Decoder-These'
-
-export type URI = typeof URI
-
-declare module 'fp-ts/lib/HKT' {
-  interface URItoKind3<R, E, A> {
-    readonly [URI]: Decoder<R, E, A>
-  }
-}
-
-export const Functor: Functor3<URI> = {
-  URI,
-  map: (fa, f) => pipe(fa, map(f))
-}
-
-export const Bifunctor: Bifunctor3<URI> = {
-  URI,
-  mapLeft: (fa, f) => pipe(fa, mapLeft(f)),
-  bimap: (fea, f, g) => pipe(fea, mapLeft(f), map(g))
-}
+import * as assert from 'assert'
 
 // -------------------------------------------------------------------------------------
 // use case: form
@@ -1330,11 +1330,9 @@ export const Form = fromStruct({
   age: number
 })
 
-// the decode error is fully typed...
-// type FormE = StructE<RequiredKeyE<"name", StringLE> | RequiredKeyE<"age", NaNLE | NumberLE>>
 export type FormE = ErrorOf<typeof Form>
 
-// ...this means that you can pattern match on the error
+// the decode error is fully typed, this means that you can pattern match on the error
 export const formatFormMessages = (de: FormE): string =>
   de.errors
     .map((e): string => {
@@ -1347,8 +1345,10 @@ export const formatFormMessages = (de: FormE): string =>
     })
     .join(', ')
 
-// pipe(Form.decode({ name: null, age: null }), TH.mapLeft(formatErroMessages), console.log)
-// => left('invalid name, invalid age')
+assert.deepStrictEqual(
+  pipe(Form.decode({ name: null, age: null }), TH.mapLeft(formatFormMessages)),
+  failure('invalid name, invalid age')
+)
 
 export const NestedForm = fromStruct({
   a: string,
@@ -1358,7 +1358,6 @@ export const NestedForm = fromStruct({
   })
 })
 
-// type NestedFormE = StructE<RequiredKeyE<"a", StringLE> | RequiredKeyE<"b", NaNLE | NumberLE> | RequiredKeyE<"c", StructE<RequiredKeyE<"d", BooleanLE>>>>
 export type NestedFormE = ErrorOf<typeof NestedForm>
 
 export const formatNestedFormMessages = (de: NestedFormE): string =>
@@ -1381,6 +1380,11 @@ export const formatNestedFormMessages = (de: NestedFormE): string =>
       }
     })
     .join(', ')
+
+assert.deepStrictEqual(
+  pipe(NestedForm.decode({ a: null, b: null, c: { d: null } }), TH.mapLeft(formatNestedFormMessages)),
+  failure('invalid a, invalid b, invalid d')
+)
 
 // -------------------------------------------------------------------------------------
 // use case: handling a generic error, for example encoding to a Tree<string>
@@ -1531,8 +1535,8 @@ export const draw = TH.mapLeft(flow(toTree, drawTree))
 // -------------------------------------------------------------------------------------
 
 const printValue = (a: unknown): string => 'Value:\n' + format(a)
-const printErrors = (s: string): string => (s === '' ? s : 'Errors:\n' + s)
-const printWarnings = (s: string): string => (s === '' ? s : 'Warnings:\n' + s)
+const printErrors = (s: string): string => 'Errors:\n' + s
+const printWarnings = (s: string): string => 'Warnings:\n' + s
 
 export const print = TH.fold(printErrors, printValue, (e, a) => printValue(a) + '\n' + printWarnings(e))
 
