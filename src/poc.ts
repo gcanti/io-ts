@@ -13,7 +13,7 @@ import ReadonlyNonEmptyArray = RNEA.ReadonlyNonEmptyArray
 
 /*
 
-  BREAKING CHANGE
+  BREAKING CHANGES
 
   - error model
   - `refine`
@@ -101,45 +101,6 @@ export function map<A, B>(f: (a: A) => B): <I, E>(decoder: Decoder<I, E, A>) => 
 }
 
 // -------------------------------------------------------------------------------------
-// orElse
-// -------------------------------------------------------------------------------------
-
-// export interface OrElseD<F, S>
-//   extends Decoder<
-//     InputOf<F> & InputOf<S>,
-//     UnionE<MemberE<'0', ErrorOf<F>> | MemberE<'1', ErrorOf<S>>>,
-//     TypeOf<F> | TypeOf<S>
-//   > {
-//   readonly _tag: 'OrElseD'
-//   readonly first: F
-//   readonly second: (e: ErrorOf<F>) => S
-// }
-
-// export function orElse<F extends AnyD, S extends AnyD>(second: (e: ErrorOf<F>) => S): (first: F) => OrElseD<F, S>
-// export function orElse<E1, I2, E2, A2>(
-//   second: (e1: E1) => Decoder<I2, E2, A2>
-// ): <I1, A1>(first: Decoder<I1, E1, A1>) => OrElseD<Decoder<I1, E1, A1>, Decoder<I2, E2, A2>> {
-//   return <I1, A1>(first: Decoder<I1, E1, A1>): OrElseD<Decoder<I1, E1, A1>, Decoder<I2, E2, A2>> => ({
-//     _tag: 'OrElseD',
-//     first,
-//     second,
-//     decode: (i) =>
-//       pipe(
-//         first.decode(i),
-//         TH.fold<E1, A1, These<UnionE<MemberE<'0', E1> | MemberE<'1', E2>>, A1 | A2>>(
-//           (e1) =>
-//             pipe(
-//               second(e1).decode(i),
-//               TH.mapLeft((e2) => unionE([memberE('0', e1), memberE('1', e2)]))
-//             ),
-//           right,
-//           (e1, a1) => both(unionE([memberE('0', e1)]), a1)
-//         )
-//       )
-//   })
-// }
-
-// -------------------------------------------------------------------------------------
 // Category
 // -------------------------------------------------------------------------------------
 
@@ -204,10 +165,6 @@ export function compose<A, E2, B>(
 // -------------------------------------------------------------------------------------
 // error model
 // -------------------------------------------------------------------------------------
-
-export interface ActualE<I> {
-  readonly actual: I
-}
 
 export interface SingleE<E> {
   readonly error: E
@@ -337,8 +294,9 @@ export const sumE = <E>(error: E): SumE<E> => ({
   error
 })
 
-export interface MessageE<I> extends ActualE<I> {
+export interface MessageE<I> {
   readonly _tag: 'MessageE'
+  readonly actual: I
   readonly message: string
 }
 export interface MessageLE<I> extends LeafE<MessageE<I>> {}
@@ -453,8 +411,9 @@ export type BuiltinE =
 // decoder primitives
 // -------------------------------------------------------------------------------------
 
-export interface StringE extends ActualE<unknown> {
+export interface StringE {
   readonly _tag: 'StringE'
+  readonly actual: unknown
 }
 export interface StringLE extends LeafE<StringE> {}
 export const stringLE = (actual: unknown): StringLE => leafE({ _tag: 'StringE', actual })
@@ -467,8 +426,9 @@ export const string: stringUD = {
   decode: (u) => (isString(u) ? success(u) : failure(stringLE(u)))
 }
 
-export interface NumberE extends ActualE<unknown> {
+export interface NumberE {
   readonly _tag: 'NumberE'
+  readonly actual: unknown
 }
 export interface NumberLE extends LeafE<NumberE> {}
 export const numberLE = (actual: unknown): NumberLE => leafE({ _tag: 'NumberE', actual })
@@ -498,8 +458,9 @@ export const number: numberUD = {
       : failure(numberLE(u))
 }
 
-export interface BooleanE extends ActualE<unknown> {
+export interface BooleanE {
   readonly _tag: 'BooleanE'
+  readonly actual: unknown
 }
 export interface BooleanLE extends LeafE<BooleanE> {}
 export const booleanLE = (actual: unknown): BooleanLE => leafE({ _tag: 'BooleanE', actual })
@@ -512,8 +473,9 @@ export const boolean: booleanUD = {
   decode: (u) => (isBoolean(u) ? success(u) : failure(booleanLE(u)))
 }
 
-export interface UnknownArrayE extends ActualE<unknown> {
+export interface UnknownArrayE {
   readonly _tag: 'UnknownArrayE'
+  readonly actual: unknown
 }
 export interface UnknownArrayLE extends LeafE<UnknownArrayE> {}
 export const unknownArrayLE = (actual: unknown): UnknownArrayLE =>
@@ -529,8 +491,9 @@ export const UnknownArray: UnknownArrayUD = {
   decode: (u) => (Array.isArray(u) ? success(u) : failure(unknownArrayLE(u)))
 }
 
-export interface UnknownRecordE extends ActualE<unknown> {
+export interface UnknownRecordE {
   readonly _tag: 'UnknownRecordE'
+  readonly actual: unknown
 }
 export interface UnknownRecordLE extends LeafE<UnknownRecordE> {}
 export const unknownRecordLE = (actual: unknown): UnknownRecordLE =>
@@ -552,15 +515,12 @@ export const UnknownRecord: UnknownRecordUD = {
 // decoder constructors
 // -------------------------------------------------------------------------------------
 
-// export const fail = <E>(e: E): Decoder<any, E, any> => ({
-//   decode: () => failure(e)
-// })
-
 export type Literal = string | number | boolean | null | undefined | symbol
 
-export interface LiteralE<A extends Literal> extends ActualE<unknown> {
+export interface LiteralE<A extends Literal> {
   readonly _tag: 'LiteralE'
   readonly literals: ReadonlyNonEmptyArray<A>
+  readonly actual: unknown
 }
 export interface LiteralLE<A extends Literal> extends LeafE<LiteralE<A>> {}
 export const literalLE = <A extends Literal>(actual: unknown, literals: ReadonlyNonEmptyArray<A>): LiteralLE<A> =>
@@ -1596,8 +1556,9 @@ export interface IntBrand {
   readonly Int: unique symbol
 }
 export type Int = number & IntBrand
-export interface IntE extends ActualE<number> {
+export interface IntE {
   readonly _tag: 'IntE'
+  readonly actual: number
 }
 export const intE = (actual: number): IntE => ({ _tag: 'IntE', actual })
 
@@ -1662,8 +1623,9 @@ interface NonEmptyStringBrand {
 
 export type NonEmptyString = string & NonEmptyStringBrand
 
-export interface NonEmptyStringE extends ActualE<string> {
+export interface NonEmptyStringE {
   readonly _tag: 'NonEmptyStringE'
+  readonly actual: string
 }
 export interface NonEmptyStringLE extends LeafE<NonEmptyStringE> {}
 
@@ -2322,4 +2284,4 @@ export type PositiveIntUDA = TypeOf<typeof PositiveIntUD>
 
 // pipe(PositiveIntUD.decode(null), debug)
 // pipe(PositiveIntUD.decode(-1), debug)
-pipe(PositiveIntUD.decode(1.2), debug)
+// pipe(PositiveIntUD.decode(1.2), debug)
