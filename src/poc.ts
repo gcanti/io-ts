@@ -1323,71 +1323,6 @@ export function sum<T extends string>(
 import * as assert from 'assert'
 
 // -------------------------------------------------------------------------------------
-// use case: form
-// -------------------------------------------------------------------------------------
-
-export const Form = fromStruct({
-  name: string,
-  age: number
-})
-
-export type FormE = ErrorOf<typeof Form>
-
-// the decode error is fully typed, this means that you can pattern match on the error
-export const formatFormMessages = (de: FormE): string =>
-  de.errors
-    .map((e): string => {
-      switch (e.key) {
-        case 'name':
-          return 'invalid name'
-        case 'age':
-          return 'invalid age'
-      }
-    })
-    .join(', ')
-
-assert.deepStrictEqual(
-  pipe(Form.decode({ name: null, age: null }), TH.mapLeft(formatFormMessages)),
-  failure('invalid name, invalid age')
-)
-
-export const NestedForm = fromStruct({
-  a: string,
-  b: number,
-  c: fromStruct({
-    d: boolean
-  })
-})
-
-export type NestedFormE = ErrorOf<typeof NestedForm>
-
-export const formatNestedFormMessages = (de: NestedFormE): string =>
-  de.errors
-    .map((e): string => {
-      switch (e.key) {
-        case 'a':
-          return 'invalid a'
-        case 'b':
-          return 'invalid b'
-        case 'c':
-          return e.error.errors
-            .map((e): string => {
-              switch (e.key) {
-                case 'd':
-                  return 'invalid d'
-              }
-            })
-            .join(', ')
-      }
-    })
-    .join(', ')
-
-assert.deepStrictEqual(
-  pipe(NestedForm.decode({ a: null, b: null, c: { d: null } }), TH.mapLeft(formatNestedFormMessages)),
-  failure('invalid a, invalid b, invalid d')
-)
-
-// -------------------------------------------------------------------------------------
 // use case: handling a generic error, for example encoding to a Tree<string>
 // -------------------------------------------------------------------------------------
 
@@ -1428,8 +1363,6 @@ export const toTreeWith = <E>(toTree: (e: E) => Tree<string>): ((de: DecodeError
           `${de.keys.length} error(s) found while checking keys`,
           de.keys.map((key) => tree(`unexpected key ${JSON.stringify(key)}`))
         )
-
-      // simple singles
       case 'LeafE':
         return toTree(de.error)
       case 'RefinementE':
@@ -1441,8 +1374,6 @@ export const toTreeWith = <E>(toTree: (e: E) => Tree<string>): ((de: DecodeError
       case 'PrevE':
       case 'NextE':
         return go(de.error)
-
-      // customized singles
       case 'RequiredIndexE':
         return tree(`1 error(s) found while decoding required component ${de.index}`, [go(de.error)])
       case 'OptionalIndexE':
@@ -1457,8 +1388,6 @@ export const toTreeWith = <E>(toTree: (e: E) => Tree<string>): ((de: DecodeError
         return tree(`1 error(s) found while decoding lazy decoder ${de.id}`, [go(de.error)])
       case 'SumE':
         return tree(`1 error(s) found while decoding a sum`, [go(de.error)])
-
-      // compound
       case 'CompoundE': {
         if (de.name === 'composition') {
           return de.errors.length === 1
@@ -1530,6 +1459,134 @@ const drawForest = (indentation: string, forest: ReadonlyArray<Tree<string>>): s
 const toTree = toTreeWith(toTreeBuiltin)
 
 export const draw = TH.mapLeft(flow(toTree, drawTree))
+
+// -------------------------------------------------------------------------------------
+// use case: custom errors #578
+// -------------------------------------------------------------------------------------
+
+// Let's say we want to check the minimum length of a string
+
+// the model of the custom error
+export interface MinLengthE<N extends number> {
+  readonly _tag: 'MinLengthE'
+  readonly minLength: N
+  readonly actual: string
+}
+
+// all custom errors must be wrapped in a `LeafE` error
+export interface MinLengthLE<N extends number> extends LeafE<MinLengthE<N>> {}
+
+// constructor
+export const minLengthLE = <N extends number>(minLength: N, actual: string): MinLengthLE<N> =>
+  leafE({ _tag: 'MinLengthE', minLength, actual })
+
+// custom combinator
+export const minLength = <N extends number>(minLength: N): Decoder<string, MinLengthLE<N>, string> => ({
+  decode: (s) => (s.length >= minLength ? success(s) : failure(minLengthLE(minLength, s)))
+})
+
+const string3 = minLength(3)
+assert.deepStrictEqual(string3.decode('abc'), success('abc'))
+assert.deepStrictEqual(string3.decode('a'), failure(minLengthLE(3, 'a')))
+
+// -------------------------------------------------------------------------------------
+// use case: form
+// -------------------------------------------------------------------------------------
+
+// let's use `string3` in a `fromStruct`
+export const PersonForm = fromStruct({
+  name: string3,
+  age: number
+})
+/*
+const PersonForm: FromStructD<{
+    name: Decoder<string, MinLengthLE<3>, string>;
+    age: numberUD;
+}>
+*/
+
+// The decoding error is fully typed, this means that you can pattern match on the error:
+export const formatPersonFormE = (de: ErrorOf<typeof PersonForm>): string =>
+  de.errors
+    .map((e): string => {
+      switch (e.key) {
+        case 'name':
+          //     this is of type `MinLengthE<3>` ---v
+          return `invalid name, must be ${e.error.error.minLength} or more characters long`
+        case 'age':
+          return 'invalid age'
+      }
+    })
+    .join(', ')
+
+assert.deepStrictEqual(
+  pipe(PersonForm.decode({ name: 'name', age: 18 }), TH.mapLeft(formatPersonFormE)),
+  success({ name: 'name', age: 18 })
+)
+assert.deepStrictEqual(
+  pipe(PersonForm.decode({ name: '', age: 18 }), TH.mapLeft(formatPersonFormE)),
+  failure('invalid name, must be 3 or more characters long')
+)
+assert.deepStrictEqual(
+  pipe(PersonForm.decode({ name: '', age: null }), TH.mapLeft(formatPersonFormE)),
+  failure('invalid name, must be 3 or more characters long, invalid age')
+)
+
+// -------------------------------------------------------------------------------------
+// use case: return warnings other than errors
+// -------------------------------------------------------------------------------------
+
+// the `number` decoder can raise a `NumberE` error but also two warnings:
+// - NaNE
+// - InfinityE
+
+export const formatNumberE = (de: ErrorOf<typeof number>): string => {
+  switch (de.error._tag) {
+    case 'NumberE':
+      return 'the input is not even a number'
+    case 'NaNE':
+      return 'the input is NaN'
+    case 'InfinityE':
+      return 'the input is Infinity'
+  }
+}
+
+assert.deepStrictEqual(pipe(number.decode(1), TH.mapLeft(formatNumberE)), success(1))
+assert.deepStrictEqual(pipe(number.decode(null), TH.mapLeft(formatNumberE)), failure('the input is not even a number'))
+assert.deepStrictEqual(pipe(number.decode(NaN), TH.mapLeft(formatNumberE)), warning('the input is NaN', NaN))
+
+// -------------------------------------------------------------------------------------
+// use case: optionally fail on additional properties
+// -------------------------------------------------------------------------------------
+
+export const A = struct({ a: string })
+
+assert.deepStrictEqual(
+  //                                   v-- this utility transforms a decoding error in a tree
+  pipe(A.decode({ a: 'a', c: true }), draw),
+  warning('1 error(s) found while checking keys\n└─ unexpected key "c"', { a: 'a' })
+  // warning ---^                                                             ^-- stripped out result
+)
+
+// since additional properties are reported as warnings rather than errors,
+// this mechanism play well with intersections too
+
+export const B = struct({ b: number })
+export const AB = pipe(A, intersect(B))
+
+assert.deepStrictEqual(
+  pipe(AB.decode({ a: 'a', b: 1, c: true }), draw),
+  warning(
+    `2 error(s) found while decoding (intersection)
+├─ 1 error(s) found while decoding member 0
+│  └─ 1 error(s) found while checking keys
+│     └─ unexpected key "c"
+└─ 1 error(s) found while decoding member 1
+   └─ 1 error(s) found while checking keys
+      └─ unexpected key "c"`,
+    { a: 'a', b: 1 }
+  )
+)
 
 // -------------------------------------------------------------------------------------
 // draw utils
@@ -1613,35 +1670,10 @@ Errors:
 
 export const customStringUD = pipe(
   string,
-  mapLeft((s) => message(s, `please insert a string`))
+  mapLeft((de) => message(de, `please insert a string`))
 )
 
 // pipe(customStringD.decode(null), debug)
-
-// -------------------------------------------------------------------------------------
-// use case: new decoder, custom leaf error #578
-// -------------------------------------------------------------------------------------
-
-interface NonEmptyStringBrand {
-  readonly NonEmptyString: unique symbol
-}
-
-export type NonEmptyString = string & NonEmptyStringBrand
-
-export interface NonEmptyStringE {
-  readonly _tag: 'NonEmptyStringE'
-  readonly actual: string
-}
-export interface NonEmptyStringLE extends LeafE<NonEmptyStringE> {}
-
-const isNonEmptyString = (s: string): s is NonEmptyString => s.length > 0
-
-export const NonEmptyStringD = refinement((s: string) =>
-  isNonEmptyString(s) ? success(s) : failure(leafE({ _tag: 'NonEmptyStringE', actual: s }))
-)
-
-export const NonEmptyStringUD = pipe(string, compose(NonEmptyStringD))
-export type NonEmptyStringUDE = ErrorOf<typeof NonEmptyStringUD>
 
 // -------------------------------------------------------------------------------------
 // use case: new decoder, custom error message
@@ -2290,3 +2322,24 @@ export type PositiveIntUDA = TypeOf<typeof PositiveIntUD>
 // pipe(PositiveIntUD.decode(null), debug)
 // pipe(PositiveIntUD.decode(-1), debug)
 // pipe(PositiveIntUD.decode(1.2), debug)
+
+// interface NonEmptyStringBrand {
+//   readonly NonEmptyString: unique symbol
+// }
+
+// export type NonEmptyString = string & NonEmptyStringBrand
+
+// export interface NonEmptyStringE {
+//   readonly _tag: 'NonEmptyStringE'
+//   readonly actual: string
+// }
+// export interface NonEmptyStringLE extends LeafE<NonEmptyStringE> {}
+
+// const isNonEmptyString = (s: string): s is NonEmptyString => s.length > 0
+
+// export const NonEmptyStringD = refinement((s: string) =>
+//   isNonEmptyString(s) ? success(s) : failure(leafE({ _tag: 'NonEmptyStringE', actual: s }))
+// )
+
+// export const NonEmptyStringUD = pipe(string, compose(NonEmptyStringD))
+// export type NonEmptyStringUDE = ErrorOf<typeof NonEmptyStringUD>

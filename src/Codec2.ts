@@ -29,10 +29,8 @@ export const compose = <PD extends D.AnyD, ND extends D.Decoder<D.TypeOf<PD>, an
   next: Codec<ND, NE>
 ) => <PE extends D.Decoder<D.TypeOf<NE>, any, any>>(
   prev: Codec<PD, PE>
-): Codec<D.CompositionD<PD, ND>, D.CompositionD<NE, PE>> => ({
-  decoder: pipe(prev.decoder, D.compose(next.decoder)),
-  encoder: pipe(next.encoder, D.compose(prev.encoder))
-})
+): Codec<D.CompositionD<PD, ND>, D.CompositionD<NE, PE>> =>
+  codec(pipe(prev.decoder, D.compose(next.decoder)), pipe(next.encoder, D.compose(prev.encoder)))
 
 // -------------------------------------------------------------------------------------
 // examples
