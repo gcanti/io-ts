@@ -1625,39 +1625,42 @@ const printWarnings = (s: string): string => 'Warnings:\n' + s
 
 export const print = TH.fold(printErrors, printValue, (e, a) => printValue(a) + '\n' + printWarnings(e))
 
-export const debug = flow(draw, print, console.log)
+export const toString = flow(draw, print)
+export const debug = flow(toString, console.log)
 
 // -------------------------------------------------------------------------------------
 // use case: old decoder, custom error message
 // -------------------------------------------------------------------------------------
 
-export const customStringUD = pipe(
+export const mystring = pipe(
   string,
-  mapLeft((de) => message(de, `please insert a string`))
+  mapLeft((_, i) => message(i, `please insert a string`))
 )
 
-// pipe(customStringD.decode(null), debug)
+assert.deepStrictEqual(
+  pipe(string.decode(null), toString),
+  `Errors:
+cannot decode null, expected a string` // <= default message
+)
+assert.deepStrictEqual(
+  pipe(mystring.decode(null), toString),
+  `Errors:
+please insert a string` // <= custom message
+)
 
 // -------------------------------------------------------------------------------------
 // use case: new decoder, custom error message
 // -------------------------------------------------------------------------------------
 
-export interface PositiveBrand {
-  readonly Positive: unique symbol
+export const date: Decoder<unknown, MessageLE<unknown>, Date> = {
+  decode: (u) => (u instanceof Date ? success(u) : failure(message(u, 'not a Date')))
 }
 
-export type Positive = number & PositiveBrand
-
-const isPositive = (n: number): n is Positive => n > 0 || isNaN(n)
-
-const PositiveD = refinement((n: number) =>
-  isPositive(n) ? success(n) : failure(message(n, `cannot decode ${n}, expected a positive number`))
+assert.deepStrictEqual(
+  pipe(date.decode(null), toString),
+  `Errors:
+not a Date`
 )
-
-export const PositiveUD = pipe(number, compose(PositiveD))
-export type PositiveE = ErrorOf<typeof PositiveUD>
-
-// pipe(PositiveUD.decode(NaN), debug)
 
 // -------------------------------------------------------------------------------------
 // use case: new decoder, multiple custom messages #487
@@ -1672,7 +1675,7 @@ export type Username = string & UsernameBrand
 const USERNAME_REGEX = /(a|b)*d/
 
 export const Username = pipe(
-  customStringUD,
+  mystring,
   compose(
     refinement((s: string) =>
       s.length < 2
@@ -1686,12 +1689,22 @@ export const Username = pipe(
   )
 )
 
-// pipe(
-//   fromTuple(Username, Username, Username, Username, Username).decode([null, 'a', 'bbbbb', 'abd', 'ok']),
-//   draw,
-//   print,
-//   console.log
-// )
+assert.deepStrictEqual(
+  pipe(tuple(Username, Username, Username, Username, Username).decode([null, 'a', 'bbbbb', 'abd', 'ok']), toString),
+  `Errors:
+4 error(s) found while decoding (tuple)
+├─ 1 error(s) found while decoding required component 0
+│  └─ please insert a string
+├─ 1 error(s) found while decoding required component 1
+│  └─ 1 error(s) found while decoding a refinement
+│     └─ too short
+├─ 1 error(s) found while decoding required component 2
+│  └─ 1 error(s) found while decoding a refinement
+│     └─ too long
+└─ 1 error(s) found while decoding required component 3
+   └─ 1 error(s) found while decoding a refinement
+      └─ bad characters`
+)
 
 // -------------------------------------------------------------------------------------
 // use case: reflection, for example generating a match function from a sum
@@ -2262,6 +2275,18 @@ export const decoderSumByHand = pipe(
 // -------------------------------------------------------------------------------------
 // use case: intersection of primitives
 // -------------------------------------------------------------------------------------
+
+export interface PositiveBrand {
+  readonly Positive: unique symbol
+}
+
+export type Positive = number & PositiveBrand
+
+const isPositive = (n: number): n is Positive => n > 0 || isNaN(n)
+
+const PositiveD = refinement((n: number) =>
+  isPositive(n) ? success(n) : failure(message(n, `cannot decode ${n}, expected a positive number`))
+)
 
 export interface IntegerBrand {
   readonly Integer: unique symbol
