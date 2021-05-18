@@ -1323,6 +1323,35 @@ export function sum<T extends string>(
 import * as assert from 'assert'
 
 // -------------------------------------------------------------------------------------
+// use case: custom errors #578
+// -------------------------------------------------------------------------------------
+
+// Let's say we want to check the minimum length of a string
+
+// the model of the custom error
+export interface MinLengthE<N extends number> {
+  readonly _tag: 'MinLengthE'
+  readonly minLength: N
+  readonly actual: string
+}
+
+// all custom errors must be wrapped in a `LeafE` error
+export interface MinLengthLE<N extends number> extends LeafE<MinLengthE<N>> {}
+
+// constructor
+export const minLengthLE = <N extends number>(minLength: N, actual: string): MinLengthLE<N> =>
+  leafE({ _tag: 'MinLengthE', minLength, actual })
+
+// custom combinator
+export const minLength = <N extends number>(minLength: N): Decoder<string, MinLengthLE<N>, string> => ({
+  decode: (s) => (s.length >= minLength ? success(s) : failure(minLengthLE(minLength, s)))
+})
+
+const string3 = minLength(3)
+assert.deepStrictEqual(string3.decode('abc'), success('abc'))
+assert.deepStrictEqual(string3.decode('a'), failure(minLengthLE(3, 'a')))
+
+// -------------------------------------------------------------------------------------
 // use case: handling a generic error, for example encoding to a Tree<string>
 // -------------------------------------------------------------------------------------
 
@@ -1401,7 +1430,8 @@ export const toTreeWith = <E>(toTree: (e: E) => Tree<string>): ((de: DecodeError
   return go
 }
 
-const format = (a: unknown): string => {
+// this is exported because users may need to define a custom `toTree` function
+export const format = (a: unknown): string => {
   if (typeof a === 'string') return JSON.stringify(a)
   return util.format(a)
 }
@@ -1461,35 +1491,6 @@ const toTree = toTreeWith(toTreeBuiltin)
 export const draw = TH.mapLeft(flow(toTree, drawTree))
 
 // -------------------------------------------------------------------------------------
-// use case: custom errors #578
-// -------------------------------------------------------------------------------------
-
-// Let's say we want to check the minimum length of a string
-
-// the model of the custom error
-export interface MinLengthE<N extends number> {
-  readonly _tag: 'MinLengthE'
-  readonly minLength: N
-  readonly actual: string
-}
-
-// all custom errors must be wrapped in a `LeafE` error
-export interface MinLengthLE<N extends number> extends LeafE<MinLengthE<N>> {}
-
-// constructor
-export const minLengthLE = <N extends number>(minLength: N, actual: string): MinLengthLE<N> =>
-  leafE({ _tag: 'MinLengthE', minLength, actual })
-
-// custom combinator
-export const minLength = <N extends number>(minLength: N): Decoder<string, MinLengthLE<N>, string> => ({
-  decode: (s) => (s.length >= minLength ? success(s) : failure(minLengthLE(minLength, s)))
-})
-
-const string3 = minLength(3)
-assert.deepStrictEqual(string3.decode('abc'), success('abc'))
-assert.deepStrictEqual(string3.decode('a'), failure(minLengthLE(3, 'a')))
-
-// -------------------------------------------------------------------------------------
 // use case: form
 // -------------------------------------------------------------------------------------
 
@@ -1530,6 +1531,32 @@ assert.deepStrictEqual(
 assert.deepStrictEqual(
   pipe(PersonForm.decode({ name: '', age: null }), TH.mapLeft(formatPersonFormE)),
   failure('invalid name, must be 3 or more characters long, invalid age')
+)
+
+// -------------------------------------------------------------------------------------
+// use case: draw a custom error
+// -------------------------------------------------------------------------------------
+
+// pipe(PersonForm.decode({ name: '', age: 18 }), TH.mapLeft(toTree)) // Type 'MinLengthLE<3>' is not assignable to type 'LeafE<BuiltinE>'
+
+export const myToTree = toTreeWith((e: BuiltinE | MinLengthE<number>) => {
+  switch (e._tag) {
+    case 'MinLengthE':
+      return tree(`cannot decode ${format(e.actual)}, must be ${e.minLength} or more characters long`)
+    default:
+      return toTreeBuiltin(e)
+  }
+})
+
+assert.deepStrictEqual(
+  pipe(PersonForm.decode({ name: '', age: 18 }), TH.mapLeft(myToTree)),
+  failure(
+    tree('1 error(s) found while decoding (struct)', [
+      tree('1 error(s) found while decoding required key "name"', [
+        tree('cannot decode "", must be 3 or more characters long')
+      ])
+    ])
+  )
 )
 
 // -------------------------------------------------------------------------------------
@@ -1589,7 +1616,7 @@ assert.deepStrictEqual(
 )
 
 // -------------------------------------------------------------------------------------
-// draw utils
+// debug utils
 // -------------------------------------------------------------------------------------
 
 const printValue = (a: unknown): string => 'Value:\n' + format(a)
@@ -1599,70 +1626,6 @@ const printWarnings = (s: string): string => 'Warnings:\n' + s
 export const print = TH.fold(printErrors, printValue, (e, a) => printValue(a) + '\n' + printWarnings(e))
 
 export const debug = flow(draw, print, console.log)
-
-// example 1
-// pipe(Form.decode({ name: null, age: null }), debug)
-/*
-Errors:
-2 error(s) found while decoding a struct
-├─ 1 error(s) found while decoding required key "name"
-│  └─ cannot decode null, expected a string
-└─ 1 error(s) found while decoding required key "age"
-   └─ cannot decode null, expected a number
-*/
-
-// what if the decoder contains a custom error?
-
-// example 2
-export interface IntBrand {
-  readonly Int: unique symbol
-}
-export type Int = number & IntBrand
-export interface IntE {
-  readonly _tag: 'IntE'
-  readonly actual: number
-}
-export const intE = (actual: number): IntE => ({ _tag: 'IntE', actual })
-
-const isInt = (n: number): n is Int => Number.isInteger(n)
-
-export const IntD = refinement((n: number) => (isInt(n) ? success(n) : failure(leafE(intE(n)))))
-
-export const IntUD = pipe(number, compose(IntD))
-export type IntUDE = ErrorOf<typeof IntUD>
-
-export const Form2 = fromStruct({
-  name: string,
-  age: IntD
-})
-
-// pipe(Form2.decode({ name: null, age: 1.2 }), debug) // <= type error because `IntE` is not handled
-
-// I can define my own `draw` function
-export const myDraw = TH.mapLeft(
-  flow(
-    toTreeWith((e: BuiltinE | IntE) => {
-      switch (e._tag) {
-        case 'IntE':
-          return tree(`cannot decode ${e.actual}, should be an integer`)
-        default:
-          return toTreeBuiltin(e)
-      }
-    }),
-    drawTree
-  )
-)
-
-// pipe(Form2.decode({ name: null, age: 1.2 }), myDraw, print, console.log) // <= ok
-/*
-Errors:
-2 error(s) found while decoding a struct
-├─ 1 error(s) found while decoding required key "name"
-│  └─ cannot decode null, expected a string
-└─ 1 error(s) found while decoding required key "age"
-   └─ 1 error(s) found while decoding a refinement
-      └─ cannot decode 1.2, should be an integer
-*/
 
 // -------------------------------------------------------------------------------------
 // use case: old decoder, custom error message
@@ -2303,11 +2266,11 @@ export const decoderSumByHand = pipe(
 export interface IntegerBrand {
   readonly Integer: unique symbol
 }
-export type IntegerUD = number & IntegerBrand
+export type Integer = number & IntegerBrand
 
-const IntegerD = refinement((n: number) => (isInt(n) ? success(n) : failure(message(n, 'not an integer'))))
+const isInteger = (n: number): n is Integer => Number.isInteger(n)
 
-const IntegerUD = pipe(number, compose(IntegerD))
+const IntegerD = refinement((n: number) => (isInteger(n) ? success(n) : failure(message(n, 'not an integer'))))
 
 export const PositiveIntD = pipe(PositiveD, intersect(IntegerD))
 export type PositiveIntDI = InputOf<typeof PositiveIntD>
