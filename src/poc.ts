@@ -1306,6 +1306,9 @@ export function fromSum<T extends string>(
 export interface SumD<T extends string, Members>
   extends CompositionD<UnionD<[UnknownRecordUD, UnknownArrayUD]>, FromSumD<T, Members>> {}
 
+//                    tagged objects --v             v-- tagged tuples
+const UnknownRecordArray = union(UnknownRecord, UnknownArray)
+
 export function sum<T extends string>(
   tag: T
 ): <Members extends Record<string, AnyUD>>(members: Members) => SumD<T, Members>
@@ -1313,7 +1316,7 @@ export function sum<T extends string>(
   tag: T
 ): <E, A>(members: Record<string, Decoder<unknown, E, A>>) => SumD<T, typeof members> {
   const fromSumTag = fromSum(tag)
-  return (members) => pipe(union(UnknownRecord, UnknownArray), compose(fromSumTag(members)))
+  return (members) => pipe(UnknownRecordArray, compose(fromSumTag(members)))
 }
 
 // -------------------------------------------------------------------------------------
@@ -1710,30 +1713,97 @@ assert.deepStrictEqual(
 // use case: reflection, for example generating a match function from a sum
 // -------------------------------------------------------------------------------------
 
-export const getMatch = <T extends string, Members extends Record<PropertyKey, AnyD>>(decoder: {
-  readonly tag: T
-  readonly members: Members
-}) => <B>(patterns: { [K in keyof Members]: (member: TypeOf<Members[K]>) => B }) => (
+export const matchSum = <T extends string, Members extends Record<string, Decoder<any, any, Record<T, any>>>>(
+  decoder: SumD<T, Members>
+) => <B>(patterns: { [K in keyof Members]: (member: TypeOf<Members[K]>) => B }) => (
   a: TypeOf<Members[keyof Members]>
-): B => patterns[a[decoder.tag]](a)
+): B => {
+  const tag = decoder.next.tag
+  const value = a[tag]
+  return patterns[value](a)
+}
 
-// TODO: handle sum
-export const matchDecoder = fromSum('type')({
+export const matchSum1 = sum('type')({
   A: struct({ type: literal('A'), a: string }),
   B: struct({ type: literal('B'), b: number })
 })
 
-export const mymatch = getMatch(matchDecoder)
+export const match1 = matchSum(matchSum1)
 
-// pipe(
-//   { type: 'A', a: 'a' },
-//   mymatch({
-//     A: ({ a }) => `A: ${a}`,
-//     B: ({ b }) => `B: ${b}`
-//   }),
-//   console.log
-// )
-// A: a
+assert.deepStrictEqual(
+  pipe(
+    { type: 'A', a: 'a' },
+    match1({
+      A: ({ a }) => `A: ${a}`,
+      B: ({ b }) => `B: ${b}`
+    })
+  ),
+  'A: a'
+)
+
+export const matchSum2 = sum('0')({
+  A: tuple(literal('A'), string),
+  B: tuple(literal('B'), number)
+})
+
+export const match2 = matchSum(matchSum2)
+
+assert.deepStrictEqual(
+  pipe(
+    ['A', 'a'],
+    match2({
+      A: ([_, a]) => `A: ${a}`,
+      B: ([_, b]) => `B: ${b}`
+    })
+  ),
+  'A: a'
+)
+
+export const matchFromSum = <T extends string, Members extends Record<string, Decoder<any, any, Record<T, any>>>>(
+  decoder: FromSumD<T, Members>
+) => <B>(patterns: { [K in keyof Members]: (member: TypeOf<Members[K]>) => B }) => (
+  a: TypeOf<Members[keyof Members]>
+): B => {
+  const tag = decoder.tag
+  const value = a[tag]
+  return patterns[value](a)
+}
+
+export const matchFromSum1 = fromSum('type')({
+  A: struct({ type: literal('A'), a: string }),
+  B: struct({ type: literal('B'), b: number })
+})
+
+export const match3 = matchFromSum(matchFromSum1)
+
+assert.deepStrictEqual(
+  pipe(
+    { type: 'A', a: 'a' },
+    match3({
+      A: ({ a }) => `A: ${a}`,
+      B: ({ b }) => `B: ${b}`
+    })
+  ),
+  'A: a'
+)
+
+export const matchFromSum2 = fromSum('0')({
+  A: tuple(literal('A'), string),
+  B: tuple(literal('B'), number)
+})
+
+export const match4 = matchFromSum(matchFromSum2)
+
+assert.deepStrictEqual(
+  pipe(
+    ['A', 'a'],
+    match4({
+      A: ([_, a]) => `A: ${a}`,
+      B: ([_, b]) => `B: ${b}`
+    })
+  ),
+  'A: a'
+)
 
 // -------------------------------------------------------------------------------------
 // use case: fail on any warning
