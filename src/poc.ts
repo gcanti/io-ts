@@ -1710,7 +1710,7 @@ assert.deepStrictEqual(
 )
 
 // -------------------------------------------------------------------------------------
-// use case: https://github.com/gcanti/io-ts/issues/453#issuecomment-756768089 by @mmkal
+// use case: extend https://github.com/gcanti/io-ts/issues/453#issuecomment-756768089 by @mmkal
 // -------------------------------------------------------------------------------------
 
 export const User = struct({
@@ -1729,8 +1729,26 @@ assert.deepStrictEqual(
 )
 
 // -------------------------------------------------------------------------------------
-// use case: omit, pick #553
+// use case: pick, omit #553
 // -------------------------------------------------------------------------------------
+
+const Original = struct({
+  a: string,
+  b: number,
+  c: boolean
+})
+
+const { a, b } = Original.next.properties
+
+const Pick = struct({ a, b })
+
+assert.deepStrictEqual(Pick.decode({ a: 'a', b: 1 }), success({ a: 'a', b: 1 }))
+
+const { a: _a, ...rest } = Original.next.properties
+
+const Omit = struct({ ...rest })
+
+assert.deepStrictEqual(Omit.decode({ b: 1, c: true }), success({ b: 1, c: true }))
 
 // -------------------------------------------------------------------------------------
 // use case: reflection, for example generating a match function from a sum
