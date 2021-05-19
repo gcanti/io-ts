@@ -1710,6 +1710,29 @@ assert.deepStrictEqual(
 )
 
 // -------------------------------------------------------------------------------------
+// use case: https://github.com/gcanti/io-ts/issues/453#issuecomment-756768089 by @mmkal
+// -------------------------------------------------------------------------------------
+
+export const User = struct({
+  name: string,
+  address: string
+})
+
+export const UserWithAge = struct({
+  ...User.next.properties,
+  age: number
+})
+
+assert.deepStrictEqual(
+  UserWithAge.decode({ name: 'name', address: 'address', age: 18 }),
+  success({ name: 'name', address: 'address', age: 18 })
+)
+
+// -------------------------------------------------------------------------------------
+// use case: omit, pick #553
+// -------------------------------------------------------------------------------------
+
+// -------------------------------------------------------------------------------------
 // use case: reflection, for example generating a match function from a sum
 // -------------------------------------------------------------------------------------
 
@@ -2222,10 +2245,6 @@ export function option(properties: Record<PropertyKey, AnyUD>): OptionD<typeof p
 //     decode: (i) => (i === null || i === undefined ? success(O.none) : pipe(decoder.decode(i), TH.map(O.fromNullable)))
 //   }
 // }
-
-// -------------------------------------------------------------------------------------
-// use case: omit, pick #553
-// -------------------------------------------------------------------------------------
 
 // -------------------------------------------------------------------------------------
 // use case: readonly by default #525
