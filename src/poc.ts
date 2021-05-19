@@ -1923,7 +1923,7 @@ export const condemnWhen = <E>(
   predicate: (e: E | UnexpectedKeysE | UnexpectedIndexesE) => boolean
 ): (<A>(result: These<DecodeError<E>, A>) => These<DecodeError<E>, A>) => {
   const should = shouldCondemnWhen(predicate)
-  const go = <A>(result: These<DecodeError<E>, A>): These<DecodeError<E>, A> => {
+  return (result) => {
     if (TH.isBoth(result)) {
       const de = result.left
       if (should(de)) {
@@ -1932,7 +1932,6 @@ export const condemnWhen = <E>(
     }
     return result
   }
-  return go
 }
 
 export interface EndoD<D> extends Decoder<InputOf<D>, ErrorOf<D>, TypeOf<D>> {
@@ -2007,14 +2006,14 @@ Warnings:
          └─ unexpected key "f"
 */
 
-export const exactD = endo(
-  condemnWhen(
-    (e: BuiltinE | UnexpectedKeysE | UnexpectedIndexesE) =>
-      e._tag === 'UnexpectedKeysE' || e._tag === 'UnexpectedIndexesE'
-  )
+export const exactEndo = condemnWhen(
+  (e: BuiltinE | UnexpectedKeysE | UnexpectedIndexesE) =>
+    e._tag === 'UnexpectedKeysE' || e._tag === 'UnexpectedIndexesE'
 )
 
-export const failOnAdditionalProps = exactD(warnOnAdditionalProps)
+export const exact = endo(exactEndo)
+
+export const failOnAdditionalProps = exact(warnOnAdditionalProps)
 
 // pipe(failOnAdditionalProps.decode({ a: 'a', b: { c: 1, e: 2, f: { h: 3 } }, d: 1 }), debug)
 /*
@@ -2027,83 +2026,6 @@ Errors:
       └─ 2 error(s) found while checking keys
          ├─ unexpected key "e"
          └─ unexpected key "f"
-*/
-
-// -------------------------------------------------------------------------------------
-// use case: exact + intersection
-// -------------------------------------------------------------------------------------
-
-// exact decoders don't play well with intersections
-export const I1 = pipe(struct({ a: string }), exactD)
-export const I2 = pipe(struct({ b: number }), exactD)
-export const I12 = pipe(I1, intersect(I2))
-// pipe(I12.decode({ a: 'a', b: 1 }), debug)
-/*
-2 error(s) found while decoding an intersection
-├─ 1 error(s) found while decoding member 0
-│  └─ 1 error(s) found while checking keys
-│     └─ unexpected key "b"
-└─ 1 error(s) found while decoding member 1
-   └─ 1 error(s) found while checking keys
-      └─ unexpected key "a"
-*/
-
-/*
-
-solution: you write your decoders without worrying about additional props / indices,
-then at the top level when you use them to decode you get a `These` result:
-
-- if it's a Right, everything is fine and you get your expected output
-- if it's a Left, there's a blocking error and you get nothing
-- if it's a Both (i.e. you can get the output but there are warnings too) you can choose, by ispecting the left side,
-  whether you want to "absolve" the Both to a Right or "condemn" to a Left
-
-*/
-
-export const exact = condemnWhen(
-  (e: BuiltinE | UnexpectedKeysE | UnexpectedIndexesE) =>
-    e._tag === 'UnexpectedKeysE' || e._tag === 'UnexpectedIndexesE'
-)
-
-export const I3 = struct({ a: string })
-export const I4 = struct({ b: number })
-export const I34 = pipe(I3, intersect(I4))
-// pipe(I34.decode({ a: 'a', b: 1 }), debug)
-/*
-Value:
-{
-  "a": "a",
-  "b": 1
-}
-*/
-
-// pipe(I34.decode({ a: 'a', b: 1, c: true }), debug)
-/*
-Value:
-{
-  "a": "a",
-  "b": 1
-}
-Warnings:
-2 error(s) found while decoding an intersection
-├─ 1 error(s) found while decoding member 0
-│  └─ 1 error(s) found while checking keys
-│     └─ unexpected key "c"
-└─ 1 error(s) found while decoding member 1
-   └─ 1 error(s) found while checking keys
-      └─ unexpected key "c"
-*/
-
-// pipe(exact(I34.decode({ a: 'a', b: 1, c: true })), debug)
-/*
-Errors:
-2 error(s) found while decoding an intersection
-├─ 1 error(s) found while decoding member 0
-│  └─ 1 error(s) found while checking keys
-│     └─ unexpected key "c"
-└─ 1 error(s) found while decoding member 1
-   └─ 1 error(s) found while checking keys
-      └─ unexpected key "c"
 */
 
 // -------------------------------------------------------------------------------------
