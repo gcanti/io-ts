@@ -2249,21 +2249,6 @@ export function option(properties: Record<PropertyKey, AnyUD>): OptionD<typeof p
   return pipe(UnknownRecord, compose(unexpectedKeys(properties)), compose(fromOption(properties)))
 }
 
-// export interface OptionD<D>
-//   extends Decoder<InputOf<D> | null | undefined, ErrorOf<D>, O.Option<NonNullable<TypeOf<D>>>> {
-//   readonly _tag: 'OptionD'
-//   readonly decoder: D
-// }
-
-// export function option<D extends AnyD>(decoder: D): OptionD<D>
-// export function option<I, E, A>(decoder: Decoder<I, E, A>): OptionD<typeof decoder> {
-//   return {
-//     _tag: 'OptionD',
-//     decoder,
-//     decode: (i) => (i === null || i === undefined ? success(O.none) : pipe(decoder.decode(i), TH.map(O.fromNullable)))
-//   }
-// }
-
 // -------------------------------------------------------------------------------------
 // use case: readonly by default #525
 // -------------------------------------------------------------------------------------
@@ -2346,38 +2331,6 @@ export const Value: Decoder<
   const NoFunctionArray = array(union(Value, NoFunctionObject))
   return union(string, number, boolean, NoFunctionObject, NoFunctionArray)
 })
-
-// -------------------------------------------------------------------------------------
-// sum by hand
-// -------------------------------------------------------------------------------------
-
-const withInput = <I, E, A>(decoder: Decoder<I, E, A>): Decoder<I, E, readonly [A, I]> => ({
-  decode: (i) =>
-    pipe(
-      decoder.decode(i),
-      TH.map((a) => [a, i])
-    )
-})
-
-export const decoderSumByHand = pipe(
-  withInput(
-    struct({
-      _tag: literal('A', 'B')
-    })
-  ),
-  compose({
-    decode: ([tags, i]) => {
-      switch (tags._tag) {
-        case 'A':
-          return struct({ _tag: literal('A'), a: string }).decode(i)
-        case 'B':
-          return struct({ _tag: literal('B'), b: number }).decode(i)
-      }
-    }
-  })
-)
-
-// pipe(decoderSumByHand.decode({ _tag: 'A', a: 'a' }), debug)
 
 // -------------------------------------------------------------------------------------
 // use case: intersection of primitives
