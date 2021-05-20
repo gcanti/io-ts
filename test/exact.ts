@@ -51,6 +51,16 @@ describe('exact', () => {
       assertSuccess(T.decode({ foo: 'foo' }))
     })
 
+    it('should succeed validating a valid value (intersection with inner exact of a empty interface)', () => {
+      const T = t.intersection([
+        t.type({ foo: t.string }),
+        t.exact(t.intersection([t.interface({}), t.partial({ bar: t.number })]))
+      ])
+      assertSuccess(T.decode({ foo: 'foo', bar: 1 }))
+      assertSuccess(T.decode({ foo: 'foo', bar: undefined }))
+      assertSuccess(T.decode({ foo: 'foo' }), { foo: 'foo' })
+    })
+
     it('should succeed validating a valid value (refinement)', () => {
       // tslint:disable-next-line: deprecation
       const T = t.exact(t.refinement(t.type({ foo: t.string }), p => p.foo.length > 2))
