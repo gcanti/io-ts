@@ -113,34 +113,6 @@ export type RUDE = D.ErrorOf<typeof RUD>
 // $ExpectType Record<string | number | symbol, number>
 export type RUDA = D.TypeOf<typeof RUD>
 
-// refinement
-export interface IntBrand {
-  readonly Int: unique symbol
-}
-export type Int = number & IntBrand
-export interface IntE {
-  readonly _tag: 'IntE'
-  readonly actual: number
-}
-export const intE = (actual: number): IntE => ({ _tag: 'IntE', actual })
-const isInt = (n: number): n is Int => Number.isInteger(n)
-export const ReD = D.refinement((n: number) => (isInt(n) ? D.success(n) : D.failure(D.leafE(intE(n)))))
-
-// $ExpectType number
-export type ReDI = D.InputOf<typeof ReD>
-// $ExpectType RefinementE<LeafE<IntE>>
-export type ReDE = D.ErrorOf<typeof ReD>
-// $ExpectType Int
-export type ReDA = D.TypeOf<typeof ReD>
-
-export const ReUD = pipe(D.number, D.compose(ReD))
-// $ExpectType unknown
-export type ReUDI = D.InputOf<typeof ReUD>
-// $ExpectType CompositionE<numberUD, RefinementD<number, LeafE<IntE>, Int>>
-export type ReUDE = D.ErrorOf<typeof ReUD>
-// $ExpectType Int
-export type ReUDA = D.TypeOf<typeof ReUD>
-
 // union
 export const UD = D.union(D.string, D.number)
 // $ExpectType unknown
@@ -158,27 +130,6 @@ export type NUDI = D.InputOf<typeof NUD>
 export type NUDE = D.ErrorOf<typeof NUD>
 // $ExpectType number | null
 export type NUDA = D.TypeOf<typeof NUD>
-
-// parse
-interface ParseNumberE {
-  readonly _tag: 'ParseNumberE'
-}
-declare const parseNumber: (s: string) => These<ParseNumberE, number>
-const PD = D.parser(parseNumber)
-// $ExpectType string
-export type PDI = D.InputOf<typeof PD>
-// $ExpectType ParserE<ParseNumberE>
-export type PDE = D.ErrorOf<typeof PD>
-// $ExpectType number
-export type PDA = D.TypeOf<typeof PD>
-
-const PUD = pipe(D.string, D.compose(PD))
-// $ExpectType unknown
-export type PUDI = D.InputOf<typeof PUD>
-// $ExpectType CompositionE<stringUD, ParserD<string, ParseNumberE, number>>
-export type PUDE = D.ErrorOf<typeof PUD>
-// $ExpectType number
-export type PUDA = D.TypeOf<typeof PUD>
 
 // intersect
 export const ID = pipe(D.fromStruct({ a: D.string }), D.intersect(D.fromStruct({ b: D.number })))

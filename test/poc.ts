@@ -165,52 +165,6 @@ cannot decode \"b\", expected one of \"a\", null`
     })
   })
 
-  describe('refinement', () => {
-    interface NonEmptyStringBrand {
-      readonly NonEmptyString: unique symbol
-    }
-
-    type NonEmptyString = string & NonEmptyStringBrand
-
-    const isNonEmptyString = (s: string): s is NonEmptyString => s.length > 0
-
-    const NonEmptyStringD = _.refinement((s: string) =>
-      isNonEmptyString(s) ? _.success(s) : _.failure(_.leafE(_.messageE(s, 'expected a non empty string')))
-    )
-
-    it('should decode a valid input', async () => {
-      U.deepStrictEqual(NonEmptyStringD.decode('a'), _.success('a'))
-    })
-
-    it('should reject an invalid input', async () => {
-      U.deepStrictEqual(
-        pipe(NonEmptyStringD.decode(''), print),
-        `Errors:
-1 error(s) found while decoding a refinement
-└─ expected a non empty string`
-      )
-    })
-  })
-
-  describe('parser', () => {
-    const NumberFromString = _.parser((s: string) => _.number.decode(parseFloat(s)))
-
-    it('should decode a valid input', async () => {
-      U.deepStrictEqual(NumberFromString.decode('1'), _.success(1))
-    })
-
-    it('should reject an invalid input', async () => {
-      U.deepStrictEqual(
-        pipe(NumberFromString.decode(''), print),
-        `Value:
-NaN
-Warnings:
-1 error(s) found while decoding a parser
-└─ value is NaN`
-      )
-    })
-  })
-
   // -------------------------------------------------------------------------------------
   // combinators
   // -------------------------------------------------------------------------------------

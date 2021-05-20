@@ -274,16 +274,6 @@ export interface NullableE<E> extends SingleE<E> {
 }
 export const nullableE = <E>(error: E): NullableE<E> => ({ _tag: 'NullableE', error })
 
-export interface RefinementE<E> extends SingleE<E> {
-  readonly _tag: 'RefinementE'
-}
-export const refinementE = <E>(error: E): RefinementE<E> => ({ _tag: 'RefinementE', error })
-
-export interface ParserE<E> extends SingleE<E> {
-  readonly _tag: 'ParserE'
-}
-export const parserE = <E>(error: E): ParserE<E> => ({ _tag: 'ParserE', error })
-
 export interface PrevE<E> extends SingleE<E> {
   readonly _tag: 'PrevE'
 }
@@ -381,8 +371,6 @@ export const intersectionE = compoundE('intersection')
 
 // recursive helpers to please ts@3.5
 export interface NullableRE<E> extends NullableE<DecodeError<E>> {}
-export interface RefinementRE<E> extends RefinementE<DecodeError<E>> {}
-export interface ParserRE<E> extends ParserE<DecodeError<E>> {}
 export interface PrevRE<E> extends PrevE<DecodeError<E>> {}
 export interface NextRE<E> extends NextE<DecodeError<E>> {}
 export interface RequiredKeyRE<E> extends RequiredKeyE<string, DecodeError<E>> {}
@@ -401,8 +389,6 @@ export type DecodeError<E> =
   | MissingIndexesE
   | LeafE<E>
   | NullableRE<E>
-  | RefinementRE<E>
-  | ParserRE<E>
   | PrevRE<E>
   | NextRE<E>
   | RequiredKeyRE<E>
@@ -535,6 +521,10 @@ export const UnknownRecord: UnknownRecordUD = {
 // decoder constructors
 // -------------------------------------------------------------------------------------
 
+export const fromDecode = <I, E, A>(decode: (i: I) => These<E, A>): Decoder<I, E, A> => ({
+  decode
+})
+
 export type Literal = string | number | boolean | null | undefined | symbol
 
 export interface LiteralE<A extends Literal> {
@@ -566,28 +556,6 @@ export const literal = <A extends ReadonlyNonEmptyArray<Literal>>(...literals: A
     decode: (u) => (is(u) ? success(u) : failure(literalLE(u, literals)))
   }
 }
-
-export interface RefinementD<A, E, B extends A> extends Decoder<A, RefinementE<E>, B> {
-  readonly _tag: 'RefinementD'
-  readonly parser: (a: A) => These<E, B>
-}
-
-export const refinement = <A, E, B extends A>(parser: (a: A) => These<E, B>): RefinementD<A, E, B> => ({
-  _tag: 'RefinementD',
-  parser,
-  decode: flow(parser, TH.mapLeft(refinementE))
-})
-
-export interface ParserD<A, E, B> extends Decoder<A, ParserE<E>, B> {
-  readonly _tag: 'ParserD'
-  readonly parser: (a: A) => These<E, B>
-}
-
-export const parser = <A, E, B>(parser: (a: A) => These<E, B>): ParserD<A, E, B> => ({
-  _tag: 'ParserD',
-  parser,
-  decode: flow(parser, TH.mapLeft(parserE))
-})
 
 // -------------------------------------------------------------------------------------
 // decoder combinators
@@ -1010,9 +978,7 @@ const collectPrunable = <E>(de: DecodeError<E>): Prunable => {
       case 'MemberE':
       case 'NextE':
       case 'NullableE':
-      case 'ParserE':
       case 'PrevE':
-      case 'RefinementE':
       case 'SumE':
         return go(de.error)
       case 'LeafE':
@@ -1049,12 +1015,8 @@ const prune = (prunable: Prunable, anticollision: string): (<E>(de: DecodeError<
         return pipe(de.error, prune(prunable, anticollision), O.map(nextE))
       case 'NullableE':
         return pipe(de.error, prune(prunable, anticollision), O.map(nullableE))
-      case 'ParserE':
-        return pipe(de.error, prune(prunable, anticollision), O.map(parserE))
       case 'PrevE':
         return pipe(de.error, prune(prunable, anticollision), O.map(prevE))
-      case 'RefinementE':
-        return pipe(de.error, prune(prunable, anticollision), O.map(refinementE))
       case 'LazyE':
         return pipe(
           de.error,
@@ -1241,17 +1203,6 @@ export interface LazyD<I, E, A> extends Decoder<I, LazyE<E>, A> {
   readonly id: string
   readonly f: Lazy<Decoder<I, E, A>>
 }
-function memoize<A, B>(f: (a: A) => B): (a: A) => B {
-  const cache = new Map()
-  return (a) => {
-    if (!cache.has(a)) {
-      const b = f(a)
-      cache.set(a, b)
-      return b
-    }
-    return cache.get(a)
-  }
-}
 export const lazy = <I, E, A>(id: string, f: Lazy<Decoder<I, E, A>>): LazyD<I, E, A> => {
   const get = memoize<void, Decoder<I, E, A>>(f)
   return {
@@ -1324,6 +1275,7 @@ export function sum<T extends string>(
 // -------------------------------------------------------------------------------------
 
 import * as assert from 'assert'
+import { HKT, URIS, Kind } from 'fp-ts/lib/HKT'
 
 // -------------------------------------------------------------------------------------
 // use case: custom errors #578
@@ -1397,10 +1349,6 @@ export const toTreeWith = <E>(toTree: (e: E) => Tree<string>): ((de: DecodeError
         )
       case 'LeafE':
         return toTree(de.error)
-      case 'RefinementE':
-        return tree(`1 error(s) found while decoding a refinement`, [go(de.error)])
-      case 'ParserE':
-        return tree(`1 error(s) found while decoding a parser`, [go(de.error)])
       case 'NullableE':
         return tree(`1 error(s) found while decoding a nullable`, [go(de.error)])
       case 'PrevE':
@@ -1679,8 +1627,8 @@ const USERNAME_REGEX = /(a|b)*d/
 
 export const Username = pipe(
   mystring,
-  compose(
-    refinement((s: string) =>
+  compose({
+    decode: (s) =>
       s.length < 2
         ? failure(message(s, 'too short'))
         : s.length > 4
@@ -1688,8 +1636,7 @@ export const Username = pipe(
         : USERNAME_REGEX.test(s)
         ? failure(message(s, 'bad characters'))
         : success(s as Username)
-    )
-  )
+  })
 )
 
 assert.deepStrictEqual(
@@ -1699,14 +1646,11 @@ assert.deepStrictEqual(
 ├─ 1 error(s) found while decoding required component 0
 │  └─ please insert a string
 ├─ 1 error(s) found while decoding required component 1
-│  └─ 1 error(s) found while decoding a refinement
-│     └─ too short
+│  └─ too short
 ├─ 1 error(s) found while decoding required component 2
-│  └─ 1 error(s) found while decoding a refinement
-│     └─ too long
+│  └─ too long
 └─ 1 error(s) found while decoding required component 3
-   └─ 1 error(s) found while decoding a refinement
-      └─ bad characters`
+   └─ bad characters`
 )
 
 // -------------------------------------------------------------------------------------
@@ -1847,6 +1791,100 @@ assert.deepStrictEqual(
 )
 
 // -------------------------------------------------------------------------------------
+// use case: Schemable
+// -------------------------------------------------------------------------------------
+
+export function memoize<A, B>(f: (a: A) => B): (a: A) => B {
+  const cache = new Map()
+  return (a) => {
+    if (!cache.has(a)) {
+      const b = f(a)
+      cache.set(a, b)
+      return b
+    }
+    return cache.get(a)
+  }
+}
+
+export interface Schemable<S> {
+  readonly URI: S
+  //                         v-- this is the actual string decoder
+  readonly string: HKT<S, stringUD>
+  // this is the actual decoder returned by the nullable combinator --v
+  readonly nullable: <A extends AnyD>(or: HKT<S, A>) => HKT<S, NullableD<A>>
+  // etc...
+}
+
+export interface Schemable1<S extends URIS> {
+  readonly URI: S
+  readonly string: Kind<S, stringUD>
+  readonly nullable: <A extends AnyD>(or: Kind<S, A>) => Kind<S, NullableD<A>>
+  // etc...
+}
+
+export interface Schema<A> {
+  <S>(S: Schemable<S>): HKT<S, A>
+}
+
+export function make<A>(schema: Schema<A>): Schema<A> {
+  return memoize(schema)
+}
+
+export function compile<S extends URIS>(S: Schemable1<S>): <A>(schema: Schema<A>) => Kind<S, A>
+export function compile<S>(S: Schemable<S>): <A>(schema: Schema<A>) => HKT<S, A> {
+  return (schema) => schema(S)
+}
+
+// declare module 'fp-ts/lib/HKT' {
+//   interface URItoKind<A> {
+//     readonly 'io-ts/toDecoder': A
+//   }
+// }
+
+// export const toDecoder: Schemable1<'io-ts/toDecoder'> = {
+//   URI: 'io-ts/toDecoder',
+//   string: string,
+//   nullable: nullable
+//   // etc...
+// }
+
+// import { Eq } from 'fp-ts/lib/Eq'
+// import * as E from './Eq'
+
+// declare module 'fp-ts/lib/HKT' {
+//   interface URItoKind<A> {
+//     readonly 'io-ts/toEq': Eq<TypeOf<A>>
+//   }
+// }
+
+// export const toEq: Schemable1<'io-ts/toEq'> = {
+//   URI: 'io-ts/toEq',
+//   string: E.string,
+//   nullable: E.nullable
+//   // etc...
+// }
+
+// // const schema: Schema<NullableD<stringUD>>
+// const schema = make((S) => S.nullable(S.string))
+
+// // const decoder: NullableD<stringUD>
+// const decoder = compile(toDecoder)(schema)
+
+// // you can get access to the meta infos as usual
+// export const referenceToString = decoder.or
+
+// // const eq: Eq<string | null>
+// const eq = compile(toEq)(schema)
+
+// assert.deepStrictEqual(decoder.decode('a'), success('a'))
+// assert.deepStrictEqual(decoder.decode(null), success(null))
+// assert.deepStrictEqual(decoder.decode(1), failure(nullableE(stringLE(1))))
+
+// assert.deepStrictEqual(eq.equals('a', 'a'), true)
+// assert.deepStrictEqual(eq.equals(null, null), true)
+// assert.deepStrictEqual(eq.equals('a', 'b'), false)
+
+// -------------------------------------------------------------------------------------
 // use case: fail on any warning
 // -------------------------------------------------------------------------------------
 
@@ -1898,8 +1936,6 @@ const shouldCondemnWhen = <E>(
       case 'RequiredKeyE':
       case 'MemberE':
       case 'NullableE':
-      case 'RefinementE':
-      case 'ParserE':
       case 'OptionalKeyE':
       case 'RequiredIndexE':
       case 'OptionalIndexE':
@@ -2266,9 +2302,10 @@ export type Positive = number & PositiveBrand
 
 const isPositive = (n: number): n is Positive => n > 0 || isNaN(n)
 
-const PositiveD = refinement((n: number) =>
-  isPositive(n) ? success(n) : failure(message(n, `cannot decode ${n}, expected a positive number`))
-)
+const PositiveD = {
+  decode: (n: number) =>
+    isPositive(n) ? success(n) : failure(message(n, `cannot decode ${n}, expected a positive number`))
+}
 
 export interface IntegerBrand {
   readonly Integer: unique symbol
@@ -2277,7 +2314,9 @@ export type Integer = number & IntegerBrand
 
 const isInteger = (n: number): n is Integer => Number.isInteger(n)
 
-const IntegerD = refinement((n: number) => (isInteger(n) ? success(n) : failure(message(n, 'not an integer'))))
+const IntegerD = {
+  decode: (n: number) => (isInteger(n) ? success(n) : failure(message(n, 'not an integer')))
+}
 
 export const PositiveIntD = pipe(PositiveD, intersect(IntegerD))
 export type PositiveIntDI = InputOf<typeof PositiveIntD>
