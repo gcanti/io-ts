@@ -1827,7 +1827,7 @@ export const array = <C extends Mixed>(codec: C, name: string = `Array<${codec.n
     name,
     (u): u is Array<TypeOf<C>> => UnknownArray.is(u) && u.every(codec.is),
     (u, c) =>
-      chain(UnknownArray.validate(u, c), us => ...
+      UnknownArray.validate(u, c).chain(us => ...
 ```
 
 Added in v1.0.0
