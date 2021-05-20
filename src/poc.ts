@@ -127,26 +127,8 @@ export function map<A, B>(f: (a: A) => B): <I, E>(decoder: Decoder<I, E, A>) => 
 }
 
 // -------------------------------------------------------------------------------------
-// Category
+// Semigroupoid
 // -------------------------------------------------------------------------------------
-
-export interface IdentityD<A> extends Decoder<A, never, A> {
-  readonly _tag: 'IdentityD'
-}
-
-export const id = <A = never>(): IdentityD<A> => ({
-  _tag: 'IdentityD',
-  decode: TH.right
-})
-
-export interface stringD extends IdentityD<string> {}
-export const stringD: stringD = id<string>()
-
-export interface numberD extends IdentityD<number> {}
-export const numberD: numberD = id<number>()
-
-export interface booleanD extends IdentityD<boolean> {}
-export const booleanD: booleanD = id<boolean>()
 
 export interface CompositionE<P, N> extends CompoundE<PrevE<ErrorOf<P>> | NextE<ErrorOf<N>>> {}
 export interface CompositionD<P, N> extends Decoder<InputOf<P>, CompositionE<P, N>, TypeOf<N>> {
