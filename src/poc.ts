@@ -127,8 +127,17 @@ export function map<A, B>(f: (a: A) => B): <I, E>(decoder: Decoder<I, E, A>) => 
 }
 
 // -------------------------------------------------------------------------------------
-// Semigroupoid
+// Category
 // -------------------------------------------------------------------------------------
+
+export interface IdentityD<A> extends Decoder<A, never, A> {
+  readonly _tag: 'IdentityD'
+}
+
+export const id = <A = never>(): IdentityD<A> => ({
+  _tag: 'IdentityD',
+  decode: TH.right
+})
 
 export interface CompositionE<P, N> extends CompoundE<PrevE<ErrorOf<P>> | NextE<ErrorOf<N>>> {}
 export interface CompositionD<P, N> extends Decoder<InputOf<P>, CompositionE<P, N>, TypeOf<N>> {
@@ -1073,9 +1082,9 @@ const pruneDifference = <E1, E2>(
   return O.isSome(pde2) ? O.some(intersectionE([memberE(1, pde2.value)])) : O.none
 }
 
-interface IntersecableRecord extends Record<string, Intersecable> {}
-interface IntersecableArray extends Array<Intersecable> {}
-type Intersecable = string | number | IntersecableRecord | IntersecableArray
+export interface IntersecableRecord extends Record<string, Intersecable> {}
+export interface IntersecableArray extends Array<Intersecable> {}
+export type Intersecable = string | number | IntersecableRecord | IntersecableArray
 
 /** @internal */
 export const intersect_ = <A extends Intersecable, B extends Intersecable>(a: A, b: B): A & B => {

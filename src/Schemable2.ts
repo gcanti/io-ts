@@ -1,8 +1,5 @@
 import { HKT, Kind, URIS } from 'fp-ts/lib/HKT'
 import * as D from './poc'
-import * as G from './Guard2'
-import * as E from './Eq2'
-import { Eq, eqStrict } from 'fp-ts/lib/Eq'
 import { ReadonlyNonEmptyArray } from 'fp-ts/lib/ReadonlyNonEmptyArray'
 
 // -------------------------------------------------------------------------------------
@@ -23,12 +20,12 @@ export function memoize<A, B>(f: (a: A) => B): (a: A) => B {
 
 export interface Schemable<S> {
   readonly URI: S
+  readonly literal: <A extends ReadonlyNonEmptyArray<D.Literal>>(...values: A) => HKT<S, D.LiteralD<A>>
   readonly string: HKT<S, D.stringUD>
   readonly number: HKT<S, D.numberUD>
   readonly boolean: HKT<S, D.booleanUD>
   readonly UnknownArray: HKT<S, D.UnknownArrayUD>
   readonly UnknownRecord: HKT<S, D.UnknownRecordUD>
-  readonly literal: <A extends ReadonlyNonEmptyArray<D.Literal>>(...values: A) => HKT<S, D.LiteralD<A>>
   readonly struct: <A extends Record<PropertyKey, D.AnyUD>>(
     properties: { [K in keyof A]: HKT<S, A[K]> }
   ) => HKT<S, D.StructD<A>>
@@ -48,9 +45,6 @@ export interface Schemable<S> {
   readonly sum: <T extends string>(
     tag: T
   ) => <A extends Record<string, D.AnyUD>>(members: { [K in keyof A]: HKT<S, A[K]> }) => HKT<S, D.SumD<T, A>>
-  readonly fromStruct: <A extends Record<PropertyKey, D.AnyD>>(
-    properties: { [K in keyof A]: HKT<S, A[K]> }
-  ) => HKT<S, D.FromStructD<A>>
 }
 
 export interface WithMap<S> {
@@ -61,6 +55,10 @@ export interface WithMapLeft<S> {
   readonly mapLeft: <A extends D.AnyD, E>(
     f: (e: D.ErrorOf<A>, i: D.InputOf<A>) => E
   ) => (sa: HKT<S, A>) => HKT<S, D.MapLeftD<A, E>>
+}
+
+export interface WithId<S> {
+  readonly id: <A>() => HKT<S, D.IdentityD<A>>
 }
 
 export interface WithCompose<S> {
@@ -75,12 +73,12 @@ export interface WithUnion<S> {
 
 export interface Schemable1<S extends URIS> {
   readonly URI: S
+  readonly literal: <A extends ReadonlyNonEmptyArray<D.Literal>>(...values: A) => Kind<S, D.LiteralD<A>>
   readonly string: Kind<S, D.stringUD>
   readonly number: Kind<S, D.numberUD>
   readonly boolean: Kind<S, D.booleanUD>
   readonly UnknownArray: Kind<S, D.UnknownArrayUD>
   readonly UnknownRecord: Kind<S, D.UnknownRecordUD>
-  readonly literal: <A extends ReadonlyNonEmptyArray<D.Literal>>(...values: A) => Kind<S, D.LiteralD<A>>
   readonly struct: <A extends Record<PropertyKey, D.AnyUD>>(
     properties: { [K in keyof A]: Kind<S, A[K]> }
   ) => Kind<S, D.StructD<A>>
@@ -100,9 +98,6 @@ export interface Schemable1<S extends URIS> {
   readonly sum: <T extends string>(
     tag: T
   ) => <A extends Record<string, D.AnyUD>>(members: { [K in keyof A]: Kind<S, A[K]> }) => Kind<S, D.SumD<T, A>>
-  readonly fromStruct: <A extends Record<PropertyKey, D.AnyD>>(
-    properties: { [K in keyof A]: Kind<S, A[K]> }
-  ) => Kind<S, D.FromStructD<A>>
 }
 
 export interface WithMap1<S extends URIS> {
@@ -113,6 +108,10 @@ export interface WithMapLeft1<S extends URIS> {
   readonly mapLeft: <A extends D.AnyD, E>(
     f: (e: D.ErrorOf<A>, i: D.InputOf<A>) => E
   ) => (sa: Kind<S, A>) => Kind<S, D.MapLeftD<A, E>>
+}
+
+export interface WithId1<S extends URIS> {
+  readonly id: <A>() => Kind<S, D.IdentityD<A>>
 }
 
 export interface WithCompose1<S extends URIS> {
@@ -150,14 +149,19 @@ declare module 'fp-ts/lib/HKT' {
   }
 }
 
-export const toDecoder: Schemable1<URI> & WithMap1<URI> & WithMapLeft1<URI> & WithCompose1<URI> & WithUnion1<URI> = {
+export const toDecoder: Schemable1<URI> &
+  WithMap1<URI> &
+  WithMapLeft1<URI> &
+  WithId1<URI> &
+  WithCompose1<URI> &
+  WithUnion1<URI> = {
   URI: 'io-ts/toDecoder',
+  literal: D.literal,
   string: D.string,
   number: D.number,
   boolean: D.boolean,
   UnknownArray: D.UnknownArray,
   UnknownRecord: D.UnknownRecord,
-  literal: D.literal,
   tuple: D.tuple,
   struct: D.struct,
   partial: D.partial,
@@ -167,67 +171,12 @@ export const toDecoder: Schemable1<URI> & WithMap1<URI> & WithMapLeft1<URI> & Wi
   intersect: D.intersect,
   lazy: D.lazy,
   sum: D.sum,
-  fromStruct: D.fromStruct,
 
   map: D.map,
   mapLeft: D.mapLeft,
+  id: D.id,
   compose: D.compose,
   union: D.union
-}
-
-declare module 'fp-ts/lib/HKT' {
-  interface URItoKind<A> {
-    readonly 'io-ts/toGuard': G.Guard<D.InputOf<A>, D.InputOf<A> & D.TypeOf<A>>
-  }
-}
-
-export const toGuard: Schemable1<'io-ts/toGuard'> & WithCompose1<URI> & WithUnion1<'io-ts/toGuard'> = {
-  URI: 'io-ts/toGuard',
-  string: G.string,
-  number: G.number,
-  boolean: G.boolean,
-  UnknownArray: G.UnknownArray,
-  UnknownRecord: G.UnknownRecord,
-  literal: G.literal,
-  tuple: G.tuple as any,
-  struct: G.struct as any,
-  partial: G.partial as any,
-  array: G.array as any,
-  record: G.record as any,
-  nullable: G.nullable,
-  intersect: G.intersect as any,
-  lazy: G.lazy as any,
-  sum: G.sum as any,
-  fromStruct: G.struct as any,
-
-  union: G.union as any,
-  compose: G.compose as any
-}
-
-declare module 'fp-ts/lib/HKT' {
-  interface URItoKind<A> {
-    readonly 'io-ts/toEq': Eq<D.TypeOf<A>>
-  }
-}
-
-export const toEq: Schemable1<'io-ts/toEq'> = {
-  URI: 'io-ts/toEq',
-  string: E.string,
-  number: E.number,
-  boolean: E.boolean,
-  UnknownArray: E.UnknownArray,
-  UnknownRecord: E.UnknownRecord,
-  literal: () => eqStrict,
-  tuple: E.tuple,
-  struct: E.struct as any,
-  partial: E.partial as any,
-  array: E.array,
-  record: E.record,
-  nullable: E.nullable,
-  intersect: E.intersect,
-  lazy: E.lazy as any,
-  sum: E.sum as any,
-  fromStruct: E.struct as any
 }
 
 // -------------------------------------------------------------------------------------
@@ -236,6 +185,8 @@ export const toEq: Schemable1<'io-ts/toEq'> = {
 
 import * as assert from 'assert'
 import { pipe } from 'fp-ts/lib/pipeable'
+import { toEq } from './Eq2'
+import { toGuard } from './Guard2'
 
 const schema = make((S) => S.tuple(S.nullable(S.string)))
 
