@@ -14,6 +14,10 @@ export const printAll = TH.fold(printErrors, printValue, (e, a) => printValue(a)
 
 export const print = flow(_.draw, printAll)
 
+const simplenumber: _.Decoder<unknown, DE.NumberLE, number> = {
+  decode: (u: unknown) => (typeof u === 'number' ? _.success(u) : _.failure(DE.numberLE(u)))
+}
+
 describe('Decoder2', () => {
   // -------------------------------------------------------------------------------------
   // instances
@@ -38,7 +42,11 @@ describe('Decoder2', () => {
       _.string,
       _.mapLeft(() => _.message('not a string'))
     )
-    U.deepStrictEqual(decoder.decode(null), _.failure(DE.messageLE('not a string')))
+    U.deepStrictEqual(
+      pipe(decoder.decode(null), print),
+      `Errors:
+not a string`
+    )
   })
 
   describe('Bifunctor', () => {
@@ -56,6 +64,11 @@ describe('Decoder2', () => {
       U.deepStrictEqual(decoder.decode(' a '), _.success('a'))
       U.deepStrictEqual(decoder.decode(null), _.failure('not a string'))
     })
+  })
+
+  it('id', () => {
+    const decoder = _.id<string>()
+    U.deepStrictEqual(decoder.decode('a'), _.success('a'))
   })
 
   describe('compose', () => {
@@ -529,25 +542,185 @@ Warnings:
   })
 
   describe('intersect', () => {
+    it('failure + success', () => {
+      const I1 = _.struct({ a: _.string })
+      const I2 = _.struct({ b: _.number })
+      const I = pipe(I1, _.intersect(I2))
+      U.deepStrictEqual(
+        pipe(I.decode({ b: 1 }), print),
+        `Errors:
+1 error(s) found while decoding (intersection)
+└─ 1 error(s) found while decoding member 0
+   └─ 2 error(s) found while decoding (composition)
+      ├─ 1 error(s) found while checking keys
+      │  └─ unexpected key \"b\"
+      └─ 1 error(s) found while checking keys
+         └─ missing required key \"a\"`
+      )
+    })
+
+    it('failure + failure', () => {
+      const I1 = _.struct({ a: _.string })
+      const I2 = _.struct({ b: _.number })
+      const I = pipe(I1, _.intersect(I2))
+      U.deepStrictEqual(
+        pipe(I.decode({}), print),
+        `Errors:
+2 error(s) found while decoding (intersection)
+├─ 1 error(s) found while decoding member 0
+│  └─ 1 error(s) found while checking keys
+│     └─ missing required key \"a\"
+└─ 1 error(s) found while decoding member 1
+   └─ 1 error(s) found while checking keys
+      └─ missing required key \"b\"`
+      )
+    })
+
+    it('failure + warning', () => {
+      const I1 = _.struct({ a: _.string })
+      const I2 = _.struct({ b: _.number })
+      const I = pipe(I1, _.intersect(I2))
+      U.deepStrictEqual(
+        pipe(I.decode({ b: 1, c: true }), print),
+        `Errors:
+1 error(s) found while decoding (intersection)
+└─ 1 error(s) found while decoding member 0
+   └─ 2 error(s) found while decoding (composition)
+      ├─ 2 error(s) found while checking keys
+      │  ├─ unexpected key \"b\"
+      │  └─ unexpected key \"c\"
+      └─ 1 error(s) found while checking keys
+         └─ missing required key \"a\"`
+      )
+    })
+
+    it('failure + warnings', () => {
+      const I1 = _.struct({ a: _.string })
+      const I2 = _.struct({ b: _.number })
+      const I = pipe(I1, _.intersect(I2))
+      U.deepStrictEqual(
+        pipe(I.decode({ b: NaN }), print),
+        `Errors:
+2 error(s) found while decoding (intersection)
+├─ 1 error(s) found while decoding member 0
+│  └─ 2 error(s) found while decoding (composition)
+│     ├─ 1 error(s) found while checking keys
+│     │  └─ unexpected key \"b\"
+│     └─ 1 error(s) found while checking keys
+│        └─ missing required key \"a\"
+└─ 1 error(s) found while decoding member 1
+   └─ 1 error(s) found while decoding (struct)
+      └─ 1 error(s) found while decoding required key \"b\"
+         └─ value is NaN`
+      )
+    })
+
+    it('success + success', () => {
+      const I = pipe(_.number, _.intersect(_.number))
+      U.deepStrictEqual(I.decode(1), TH.right(1))
+    })
+
+    it('success + failure', () => {
+      const I = pipe(_.number, _.intersect(_.string))
+      U.deepStrictEqual(
+        pipe(I.decode(1), print),
+        `Errors:
+1 error(s) found while decoding (intersection)
+└─ 1 error(s) found while decoding member 1
+   └─ cannot decode 1, expected a string`
+      )
+    })
+
+    it('success + warning', () => {
+      const I = pipe(simplenumber, _.intersect(_.number))
+      U.deepStrictEqual(
+        pipe(I.decode(NaN), print),
+        `Value:
+NaN
+Warnings:
+1 error(s) found while decoding (intersection)
+└─ 1 error(s) found while decoding member 1
+   └─ value is NaN`
+      )
+    })
+
+    it('success + pruned warning', () => {
+      const I1 = _.struct({ a: _.string, b: _.number })
+      const I2 = _.struct({ b: _.number })
+      const I = pipe(I1, _.intersect(I2))
+      U.deepStrictEqual(I.decode({ a: 'a', b: 1 }), TH.right({ a: 'a', b: 1 }))
+    })
+
+    it('warning + failure', () => {
+      const I1 = _.struct({ b: _.number })
+      const I2 = _.struct({ a: _.string })
+      const I = pipe(I1, _.intersect(I2))
+      U.deepStrictEqual(
+        pipe(I.decode({ b: 1, c: true }), print),
+        `Errors:
+1 error(s) found while decoding (intersection)
+└─ 1 error(s) found while decoding member 1
+   └─ 2 error(s) found while decoding (composition)
+      ├─ 2 error(s) found while checking keys
+      │  ├─ unexpected key \"b\"
+      │  └─ unexpected key \"c\"
+      └─ 1 error(s) found while checking keys
+         └─ missing required key \"a\"`
+      )
+    })
+
+    it('warnings + failure', () => {
+      const I1 = _.struct({ b: _.number })
+      const I2 = _.struct({ a: _.string })
+      const I = pipe(I1, _.intersect(I2))
+      U.deepStrictEqual(
+        pipe(I.decode({ b: NaN }), print),
+        `Errors:
+2 error(s) found while decoding (intersection)
+├─ 1 error(s) found while decoding member 0
+│  └─ 1 error(s) found while decoding (struct)
+│     └─ 1 error(s) found while decoding required key \"b\"
+│        └─ value is NaN
+└─ 1 error(s) found while decoding member 1
+   └─ 2 error(s) found while decoding (composition)
+      ├─ 1 error(s) found while checking keys
+      │  └─ unexpected key \"b\"
+      └─ 1 error(s) found while checking keys
+         └─ missing required key \"a\"`
+      )
+    })
+
+    it('warning + success', () => {
+      const I = pipe(_.number, _.intersect(simplenumber))
+      U.deepStrictEqual(
+        pipe(I.decode(NaN), print),
+        `Value:
+NaN
+Warnings:
+1 error(s) found while decoding (intersection)
+└─ 1 error(s) found while decoding member 0
+   └─ value is NaN`
+      )
+    })
+
+    it('pruned warning + success', () => {
+      const I1 = _.struct({ b: _.number })
+      const I2 = _.struct({ a: _.string, b: _.number })
+      const I = pipe(I1, _.intersect(I2))
+      U.deepStrictEqual(I.decode({ a: 'a', b: 1 }), TH.right({ a: 'a', b: 1 }))
+    })
+
     describe('struct', () => {
       it('should not raise invalid warnings', () => {
-        const I1 = _.struct({
-          a: _.string
-        })
-        const I2 = _.struct({
-          b: _.number
-        })
+        const I1 = _.struct({ a: _.string })
+        const I2 = _.struct({ b: _.number })
         const I = pipe(I1, _.intersect(I2))
         U.deepStrictEqual(I.decode({ a: 'a', b: 1 }), TH.right({ a: 'a', b: 1 }))
       })
 
       it('should raise a warning with an additional key', () => {
-        const I1 = _.struct({
-          a: _.string
-        })
-        const I2 = _.struct({
-          b: _.number
-        })
+        const I1 = _.struct({ a: _.string })
+        const I2 = _.struct({ b: _.number })
         const I = pipe(I1, _.intersect(I2))
         U.deepStrictEqual(
           pipe(I.decode({ a: 'a', b: 1, c: true }), print),
@@ -565,37 +738,37 @@ Warnings:
       })
     })
 
-    it('should raise a warning with an additional key (nested)', () => {
-      const I1 = _.struct({ a: _.struct({ b: _.string }) })
-      const I2 = _.struct({ a: _.struct({ c: _.number }) })
-      const I = pipe(I1, _.intersect(I2))
-      U.deepStrictEqual(
-        pipe(I.decode({ a: { b: 'a', c: 1, d: true } }), print),
-        `Value:
-{ a: { b: 'a', c: 1 } }
-Warnings:
-2 error(s) found while decoding (intersection)
-├─ 1 error(s) found while decoding member 0
-│  └─ 1 error(s) found while decoding (struct)
-│     └─ 1 error(s) found while decoding required key \"a\"
-│        └─ 1 error(s) found while checking keys
-│           └─ unexpected key \"d\"
-└─ 1 error(s) found while decoding member 1
-   └─ 1 error(s) found while decoding (struct)
-      └─ 1 error(s) found while decoding required key \"a\"
-         └─ 1 error(s) found while checking keys
-            └─ unexpected key \"d\"`
-      )
-    })
+    //     it('should raise a warning with an additional key (nested)', () => {
+    //       const I1 = _.struct({ a: _.struct({ b: _.string }) })
+    //       const I2 = _.struct({ a: _.struct({ c: _.number }) })
+    //       const I = pipe(I1, _.intersect(I2))
+    //       U.deepStrictEqual(
+    //         pipe(I.decode({ a: { b: 'a', c: 1, d: true } }), print),
+    //         `Value:
+    // { a: { b: 'a', c: 1 } }
+    // Warnings:
+    // 2 error(s) found while decoding (intersection)
+    // ├─ 1 error(s) found while decoding member 0
+    // │  └─ 1 error(s) found while decoding (struct)
+    // │     └─ 1 error(s) found while decoding required key \"a\"
+    // │        └─ 1 error(s) found while checking keys
+    // │           └─ unexpected key \"d\"
+    // └─ 1 error(s) found while decoding member 1
+    //    └─ 1 error(s) found while decoding (struct)
+    //       └─ 1 error(s) found while decoding required key \"a\"
+    //          └─ 1 error(s) found while checking keys
+    //             └─ unexpected key \"d\"`
+    //       )
+    //     })
 
-    describe('tuple', () => {
-      it('should not raise invalid warnings', () => {
-        const I1 = _.tuple(_.string)
-        const I2 = _.tuple(_.string, _.number)
-        const I = pipe(I1, _.intersect(I2))
-        U.deepStrictEqual(I.decode(['a', 1]), TH.right(['a', 1]))
-      })
-    })
+    // describe('tuple', () => {
+    //   it('should not raise invalid warnings', () => {
+    //     const I1 = _.tuple(_.string)
+    //     const I2 = _.tuple(_.string, _.number)
+    //     const I = pipe(I1, _.intersect(I2))
+    //     U.deepStrictEqual(I.decode(['a', 1]), TH.right(['a', 1]))
+    //   })
+    // })
   })
 
   describe('tuple', () => {

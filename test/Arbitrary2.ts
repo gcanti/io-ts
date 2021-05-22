@@ -3,6 +3,8 @@ import { ReadonlyNonEmptyArray } from 'fp-ts/lib/ReadonlyNonEmptyArray'
 import * as D from '../src/poc'
 import { Schemable1, WithUnion1 } from '../src/Schemable2'
 
+// TODO: move to io-ts-types in v3
+
 // -------------------------------------------------------------------------------------
 // model
 // -------------------------------------------------------------------------------------

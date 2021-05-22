@@ -14,6 +14,8 @@ import { ReadonlyNonEmptyArray } from 'fp-ts/lib/ReadonlyNonEmptyArray'
 import * as D from './poc'
 import { Schemable1, WithCompose1, WithId1, WithUnion1 } from './Schemable2'
 
+// TODO: move to io-ts-types in v3
+
 // -------------------------------------------------------------------------------------
 // model
 // -------------------------------------------------------------------------------------

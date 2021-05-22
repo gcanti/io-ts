@@ -270,10 +270,6 @@ export const UnknownRecord: UnknownRecordUD = {
 // decoder constructors
 // -------------------------------------------------------------------------------------
 
-export const fromDecode = <I, E, A>(decode: (i: I) => These<E, A>): Decoder<I, E, A> => ({
-  decode
-})
-
 export interface LiteralD<A extends ReadonlyNonEmptyArray<DE.Literal>>
   extends Decoder<unknown, DE.LiteralLE<A[number]>, A[number]> {
   readonly _tag: 'LiteralD'

@@ -514,10 +514,6 @@ export const UnknownRecord: UnknownRecordUD = {
 // decoder constructors
 // -------------------------------------------------------------------------------------
 
-export const fromDecode = <I, E, A>(decode: (i: I) => These<E, A>): Decoder<I, E, A> => ({
-  decode
-})
-
 export type Literal = string | number | boolean | null | undefined | symbol
 
 export interface LiteralE<A extends Literal> {
