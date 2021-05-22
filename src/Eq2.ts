@@ -184,10 +184,10 @@ export const toEq: Schemable1<URI> = {
   tuple: tuple as any,
   struct: struct as any,
   partial: partial as any,
-  array,
-  record,
+  array: array as any,
+  record: record as any,
   nullable,
-  intersect,
+  intersect: intersect as any,
   lazy: (_, f) => lazy(f),
   sum: sum as any
 }

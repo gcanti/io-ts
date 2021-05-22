@@ -1,11 +1,15 @@
 import { HKT, Kind, URIS } from 'fp-ts/lib/HKT'
-import * as D from './poc'
+import * as D from './Decoder2'
+import * as DE from './DecodeError2'
 import { ReadonlyNonEmptyArray } from 'fp-ts/lib/ReadonlyNonEmptyArray'
 
 // -------------------------------------------------------------------------------------
 // use case: Schemable
 // -------------------------------------------------------------------------------------
 
+/**
+ * @since 2.2.0
+ */
 export function memoize<A, B>(f: (a: A) => B): (a: A) => B {
   const cache = new Map()
   return (a) => {
@@ -20,7 +24,7 @@ export function memoize<A, B>(f: (a: A) => B): (a: A) => B {
 
 export interface Schemable<S> {
   readonly URI: S
-  readonly literal: <A extends ReadonlyNonEmptyArray<D.Literal>>(...values: A) => HKT<S, D.LiteralD<A>>
+  readonly literal: <A extends ReadonlyNonEmptyArray<DE.Literal>>(...values: A) => HKT<S, D.LiteralD<A>>
   readonly string: HKT<S, D.stringUD>
   readonly number: HKT<S, D.numberUD>
   readonly boolean: HKT<S, D.booleanUD>
@@ -38,9 +42,9 @@ export interface Schemable<S> {
   readonly array: <A extends D.AnyUD>(item: HKT<S, A>) => HKT<S, D.ArrayD<A>>
   readonly record: <A extends D.AnyUD>(codomain: HKT<S, A>) => HKT<S, D.RecordD<A>>
   readonly nullable: <A extends D.AnyD>(or: HKT<S, A>) => HKT<S, D.NullableD<A>>
-  readonly intersect: <B extends D.Decoder<any, D.DecodeError<any>, any>>(
+  readonly intersect: <B extends D.Decoder<any, DE.DecodeError<any>, any>>(
     b: HKT<S, B>
-  ) => <A extends D.Decoder<any, D.DecodeError<any>, any>>(a: HKT<S, A>) => HKT<S, D.IntersectD<A, B>>
+  ) => <A extends D.Decoder<any, DE.DecodeError<any>, any>>(a: HKT<S, A>) => HKT<S, D.IntersectD<A, B>>
   readonly lazy: <I, E, A>(id: string, f: () => HKT<S, D.Decoder<I, E, A>>) => HKT<S, D.LazyD<I, E, A>>
   readonly sum: <T extends string>(
     tag: T
@@ -52,9 +56,7 @@ export interface WithMap<S> {
 }
 
 export interface WithMapLeft<S> {
-  readonly mapLeft: <A extends D.AnyD, E>(
-    f: (e: D.ErrorOf<A>, i: D.InputOf<A>) => E
-  ) => (sa: HKT<S, A>) => HKT<S, D.MapLeftD<A, E>>
+  readonly mapLeft: <A extends D.AnyD, E>(f: (e: D.ErrorOf<A>) => E) => (sa: HKT<S, A>) => HKT<S, D.MapLeftD<A, E>>
 }
 
 export interface WithId<S> {
@@ -73,7 +75,7 @@ export interface WithUnion<S> {
 
 export interface Schemable1<S extends URIS> {
   readonly URI: S
-  readonly literal: <A extends ReadonlyNonEmptyArray<D.Literal>>(...values: A) => Kind<S, D.LiteralD<A>>
+  readonly literal: <A extends ReadonlyNonEmptyArray<DE.Literal>>(...values: A) => Kind<S, D.LiteralD<A>>
   readonly string: Kind<S, D.stringUD>
   readonly number: Kind<S, D.numberUD>
   readonly boolean: Kind<S, D.booleanUD>
@@ -91,9 +93,9 @@ export interface Schemable1<S extends URIS> {
   readonly array: <A extends D.AnyUD>(item: Kind<S, A>) => Kind<S, D.ArrayD<A>>
   readonly record: <A extends D.AnyUD>(codomain: Kind<S, A>) => Kind<S, D.RecordD<A>>
   readonly nullable: <A extends D.AnyD>(or: Kind<S, A>) => Kind<S, D.NullableD<A>>
-  readonly intersect: <B extends D.Decoder<any, D.DecodeError<any>, any>>(
+  readonly intersect: <B extends D.Decoder<any, DE.DecodeError<any>, any>>(
     b: Kind<S, B>
-  ) => <A extends D.Decoder<any, D.DecodeError<any>, any>>(a: Kind<S, A>) => Kind<S, D.IntersectD<A, B>>
+  ) => <A extends D.Decoder<any, DE.DecodeError<any>, any>>(a: Kind<S, A>) => Kind<S, D.IntersectD<A, B>>
   readonly lazy: <I, E, A>(id: string, f: () => Kind<S, D.Decoder<I, E, A>>) => Kind<S, D.LazyD<I, E, A>>
   readonly sum: <T extends string>(
     tag: T
@@ -105,9 +107,7 @@ export interface WithMap1<S extends URIS> {
 }
 
 export interface WithMapLeft1<S extends URIS> {
-  readonly mapLeft: <A extends D.AnyD, E>(
-    f: (e: D.ErrorOf<A>, i: D.InputOf<A>) => E
-  ) => (sa: Kind<S, A>) => Kind<S, D.MapLeftD<A, E>>
+  readonly mapLeft: <A extends D.AnyD, E>(f: (e: D.ErrorOf<A>) => E) => (sa: Kind<S, A>) => Kind<S, D.MapLeftD<A, E>>
 }
 
 export interface WithId1<S extends URIS> {
@@ -184,7 +184,6 @@ export const toDecoder: Schemable1<URI> &
 // -------------------------------------------------------------------------------------
 
 import * as assert from 'assert'
-import { pipe } from 'fp-ts/lib/pipeable'
 import { toEq } from './Eq2'
 import { toGuard } from './Guard2'
 
@@ -193,14 +192,6 @@ const schema = make((S) => S.tuple(S.nullable(S.string)))
 export const decoder = compile(toDecoder)(schema)
 assert.deepStrictEqual(decoder.decode([null]), D.success([null]))
 assert.deepStrictEqual(decoder.decode(['a']), D.success(['a']))
-assert.deepStrictEqual(
-  pipe(decoder.decode([1]), D.draw, D.print),
-  `Errors:
-1 error(s) found while decoding (tuple)
-└─ 1 error(s) found while decoding required component 0
-   └─ 1 error(s) found while decoding a nullable
-      └─ cannot decode 1, expected a string`
-)
 
 export const guard = compile(toGuard)(schema)
 assert.deepStrictEqual(guard.is([null]), true)

@@ -17,6 +17,7 @@ import ReadonlyNonEmptyArray = RNEA.ReadonlyNonEmptyArray
 
   - Either -> These
   - error model
+  - `mapLeftWithInput`
   - `refine`
   - `parse`
 
@@ -50,7 +51,7 @@ export type TypeOf<D> = D extends Decoder<any, any, infer A> ? A : never
 // instances
 // -------------------------------------------------------------------------------------
 
-export const URI = 'io-ts/Decoder-These'
+export const URI = 'io-ts/poc'
 
 export type URI = typeof URI
 
@@ -91,20 +92,14 @@ export const warning = TH.both
 export interface MapLeftD<D, E> extends Decoder<InputOf<D>, E, TypeOf<D>> {
   readonly _tag: 'MapLeftD'
   readonly decoder: D
-  readonly mapLeft: (de: ErrorOf<D>, i: InputOf<D>) => E
+  readonly mapLeft: (de: ErrorOf<D>) => E
 }
 
-export function mapLeft<D extends AnyD, E>(f: (e: ErrorOf<D>, i: InputOf<D>) => E): (decoder: D) => MapLeftD<D, E>
-export function mapLeft<E1, I, E2>(
-  f: (e: E1, i: I) => E2
-): <A>(decoder: Decoder<I, E1, A>) => MapLeftD<typeof decoder, E2> {
+export function mapLeft<D extends AnyD, E>(f: (de: ErrorOf<D>) => E): (decoder: D) => MapLeftD<D, E>
+export function mapLeft<E1, I, E2>(f: (e: E1) => E2): <A>(decoder: Decoder<I, E1, A>) => MapLeftD<typeof decoder, E2> {
   return (decoder) => ({
     _tag: 'MapLeftD',
-    decode: (i) =>
-      pipe(
-        decoder.decode(i),
-        TH.mapLeft((de) => f(de, i))
-      ),
+    decode: flow(decoder.decode, TH.mapLeft(f)),
     decoder,
     mapLeft: f
   })
@@ -301,18 +296,16 @@ export const sumE = <E>(error: E): SumE<E> => ({
   error
 })
 
-export interface MessageE<I> {
+export interface MessageE {
   readonly _tag: 'MessageE'
-  readonly actual: I
   readonly message: string
 }
-export interface MessageLE<I> extends LeafE<MessageE<I>> {}
-export const messageE = <I>(actual: I, message: string): MessageE<I> => ({
+export interface MessageLE extends LeafE<MessageE> {}
+export const messageE = (message: string): MessageE => ({
   _tag: 'MessageE',
-  message,
-  actual
+  message
 })
-export const message: <I>(actual: I, message: string) => MessageLE<I> = flow(messageE, leafE)
+export const message: (message: string) => MessageLE = flow(messageE, leafE)
 
 export interface MissingKeysE {
   readonly _tag: 'MissingKeysE'
@@ -398,7 +391,7 @@ export type BuiltinE =
   | UnknownRecordE
   | UnknownArrayE
   | LiteralE<Literal>
-  | MessageE<unknown>
+  | MessageE
   | NaNE
   | InfinityE
   | TagE
@@ -1576,7 +1569,7 @@ export const debug = flow(toString, console.log)
 
 export const mystring = pipe(
   string,
-  mapLeft((_, i) => message(i, `please insert a string`))
+  mapLeft(() => message(`please insert a string`))
 )
 
 assert.deepStrictEqual(
@@ -1594,8 +1587,8 @@ please insert a string` // <= custom message
 // use case: new decoder, custom error message
 // -------------------------------------------------------------------------------------
 
-export const date: Decoder<unknown, MessageLE<unknown>, Date> = {
-  decode: (u) => (u instanceof Date ? success(u) : failure(message(u, 'not a Date')))
+export const date: Decoder<unknown, MessageLE, Date> = {
+  decode: (u) => (u instanceof Date ? success(u) : failure(message('not a Date')))
 }
 
 assert.deepStrictEqual(
@@ -1621,11 +1614,11 @@ export const Username = pipe(
   compose({
     decode: (s) =>
       s.length < 2
-        ? failure(message(s, 'too short'))
+        ? failure(message('too short'))
         : s.length > 4
-        ? failure(message(s, 'too long'))
+        ? failure(message('too long'))
         : USERNAME_REGEX.test(s)
-        ? failure(message(s, 'bad characters'))
+        ? failure(message('bad characters'))
         : success(s as Username)
   })
 )
@@ -2295,7 +2288,7 @@ const isPositive = (n: number): n is Positive => n > 0 || isNaN(n)
 
 const PositiveD = {
   decode: (n: number) =>
-    isPositive(n) ? success(n) : failure(message(n, `cannot decode ${n}, expected a positive number`))
+    isPositive(n) ? success(n) : failure(message(`cannot decode ${n}, expected a positive number`))
 }
 
 export interface IntegerBrand {
@@ -2306,7 +2299,7 @@ export type Integer = number & IntegerBrand
 const isInteger = (n: number): n is Integer => Number.isInteger(n)
 
 const IntegerD = {
-  decode: (n: number) => (isInteger(n) ? success(n) : failure(message(n, 'not an integer')))
+  decode: (n: number) => (isInteger(n) ? success(n) : failure(message('not an integer')))
 }
 
 export const PositiveIntD = pipe(PositiveD, intersect(IntegerD))

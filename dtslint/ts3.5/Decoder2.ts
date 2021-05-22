@@ -1,6 +1,5 @@
 import { pipe } from 'fp-ts/lib/pipeable'
-import { These } from 'fp-ts/lib/These'
-import * as D from '../../src/poc'
+import * as D from '../../src/Decoder2'
 
 // literal
 export const LDU = D.literal(1, true)
@@ -261,15 +260,3 @@ export type UII = D.InputOf<typeof UI>
 export type UIE = D.ErrorOf<typeof UI>
 // $ExpectType [unknown?, unknown?]
 export type UIA = D.TypeOf<typeof UI>
-
-// option
-export const OSUD = D.option({
-  a: D.string,
-  b: D.number
-})
-// $ExpectType unknown
-export type OSUDI = D.InputOf<typeof OSUD>
-// $ExpectType CompositionE<CompositionD<UnknownRecordUD, UnexpectedKeysD<{ a: stringUD; b: numberUD; }>>, FromOptionD<{ a: stringUD; b: numberUD; }>>
-export type OSUDE = D.ErrorOf<typeof OSUD>
-// $ExpectType { a: Option<string>; b: Option<number>; }
-export type OSUDA = D.TypeOf<typeof OSUD>
