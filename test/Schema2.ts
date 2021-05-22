@@ -1,7 +1,7 @@
 import * as fc from 'fast-check'
 import { isRight } from 'fp-ts/lib/These'
 import { pipe } from 'fp-ts/lib/pipeable'
-import * as D from '../src/poc'
+import * as D from '../src/Decoder2'
 import * as Eq from '../src/Eq2'
 import * as G from '../src/Guard2'
 import { compile, make, Schema, toDecoder } from '../src/Schemable2'

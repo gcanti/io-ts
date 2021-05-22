@@ -7,21 +7,6 @@ import { ReadonlyNonEmptyArray } from 'fp-ts/lib/ReadonlyNonEmptyArray'
 // use case: Schemable
 // -------------------------------------------------------------------------------------
 
-/**
- * @since 2.2.0
- */
-export function memoize<A, B>(f: (a: A) => B): (a: A) => B {
-  const cache = new Map()
-  return (a) => {
-    if (!cache.has(a)) {
-      const b = f(a)
-      cache.set(a, b)
-      return b
-    }
-    return cache.get(a)
-  }
-}
-
 export interface Schemable<S> {
   readonly URI: S
   readonly literal: <A extends ReadonlyNonEmptyArray<DE.Literal>>(...values: A) => HKT<S, D.LiteralD<A>>
@@ -131,7 +116,7 @@ export interface Schema<A> {
 }
 
 export function make<A>(schema: Schema<A>): Schema<A> {
-  return memoize(schema)
+  return D.memoize(schema)
 }
 
 export function compile<S extends URIS>(S: Schemable1<S>): <A>(schema: Schema<A>) => Kind<S, A>

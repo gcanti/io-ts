@@ -6,7 +6,6 @@ import { pipe } from 'fp-ts/lib/pipeable'
 import * as RA from 'fp-ts/lib/ReadonlyArray'
 import * as RNEA from 'fp-ts/lib/ReadonlyNonEmptyArray'
 import * as TH from 'fp-ts/lib/These'
-import { memoize } from './Schemable2'
 import * as DE from './DecodeError2'
 import * as util from 'util'
 
@@ -1022,6 +1021,23 @@ export function sum<T extends string>(
 // -------------------------------------------------------------------------------------
 // utils
 // -------------------------------------------------------------------------------------
+
+export function memoize<A, B>(f: (a: A) => B): (a: A) => B {
+  const cache = new Map()
+  return (a) => {
+    if (!cache.has(a)) {
+      const b = f(a)
+      cache.set(a, b)
+      return b
+    }
+    return cache.get(a)
+  }
+}
+
+/**
+ * @since 2.2.17
+ */
+export const message = DE.messageLE
 
 /**
  * @since 2.2.8

@@ -36,9 +36,9 @@ describe('Decoder2', () => {
   it('mapLeft', () => {
     const decoder = pipe(
       _.string,
-      _.mapLeft(() => DE.message('not a string'))
+      _.mapLeft(() => _.message('not a string'))
     )
-    U.deepStrictEqual(decoder.decode(null), _.failure(DE.leafE(DE.messageE('not a string'))))
+    U.deepStrictEqual(decoder.decode(null), _.failure(DE.messageLE('not a string')))
   })
 
   describe('Bifunctor', () => {

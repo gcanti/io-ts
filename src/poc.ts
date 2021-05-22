@@ -305,7 +305,7 @@ export const messageE = (message: string): MessageE => ({
   _tag: 'MessageE',
   message
 })
-export const message: (message: string) => MessageLE = flow(messageE, leafE)
+export const messageLE: (message: string) => MessageLE = flow(messageE, leafE)
 
 export interface MissingKeysE {
   readonly _tag: 'MissingKeysE'
@@ -1569,7 +1569,7 @@ export const debug = flow(toString, console.log)
 
 export const mystring = pipe(
   string,
-  mapLeft(() => message(`please insert a string`))
+  mapLeft(() => messageLE(`please insert a string`))
 )
 
 assert.deepStrictEqual(
@@ -1588,7 +1588,7 @@ please insert a string` // <= custom message
 // -------------------------------------------------------------------------------------
 
 export const date: Decoder<unknown, MessageLE, Date> = {
-  decode: (u) => (u instanceof Date ? success(u) : failure(message('not a Date')))
+  decode: (u) => (u instanceof Date ? success(u) : failure(messageLE('not a Date')))
 }
 
 assert.deepStrictEqual(
@@ -1614,11 +1614,11 @@ export const Username = pipe(
   compose({
     decode: (s) =>
       s.length < 2
-        ? failure(message('too short'))
+        ? failure(messageLE('too short'))
         : s.length > 4
-        ? failure(message('too long'))
+        ? failure(messageLE('too long'))
         : USERNAME_REGEX.test(s)
-        ? failure(message('bad characters'))
+        ? failure(messageLE('bad characters'))
         : success(s as Username)
   })
 )
@@ -2288,7 +2288,7 @@ const isPositive = (n: number): n is Positive => n > 0 || isNaN(n)
 
 const PositiveD = {
   decode: (n: number) =>
-    isPositive(n) ? success(n) : failure(message(`cannot decode ${n}, expected a positive number`))
+    isPositive(n) ? success(n) : failure(messageLE(`cannot decode ${n}, expected a positive number`))
 }
 
 export interface IntegerBrand {
@@ -2299,7 +2299,7 @@ export type Integer = number & IntegerBrand
 const isInteger = (n: number): n is Integer => Number.isInteger(n)
 
 const IntegerD = {
-  decode: (n: number) => (isInteger(n) ? success(n) : failure(message('not an integer')))
+  decode: (n: number) => (isInteger(n) ? success(n) : failure(messageLE('not an integer')))
 }
 
 export const PositiveIntD = pipe(PositiveD, intersect(IntegerD))

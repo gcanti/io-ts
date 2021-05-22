@@ -128,7 +128,7 @@ export const messageE = (message: string): MessageE => ({
   _tag: 'MessageE',
   message
 })
-export const message: (message: string) => MessageLE = flow(messageE, leafE)
+export const messageLE: (message: string) => MessageLE = flow(messageE, leafE)
 
 export interface MissingKeysE {
   readonly _tag: 'MissingKeysE'
