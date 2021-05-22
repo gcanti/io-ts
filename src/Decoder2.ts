@@ -17,6 +17,7 @@ import ReadonlyNonEmptyArray = RNEA.ReadonlyNonEmptyArray
 // -------------------------------------------------------------------------------------
 
 /**
+ * @category model
  * @since 2.2.17
  */
 export interface Decoder<I, E, A> {

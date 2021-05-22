@@ -178,13 +178,10 @@ export function compose<A, E2, B>(
 // error model
 // -------------------------------------------------------------------------------------
 
-export interface SingleE<E> {
-  readonly error: E
-}
-
-export interface RequiredKeyE<K, E> extends SingleE<E> {
+export interface RequiredKeyE<K, E> {
   readonly _tag: 'RequiredKeyE'
   readonly key: K
+  readonly error: E
 }
 export const requiredKeyE = <K, E>(key: K, error: E): RequiredKeyE<K, E> => ({
   _tag: 'RequiredKeyE',
@@ -192,9 +189,10 @@ export const requiredKeyE = <K, E>(key: K, error: E): RequiredKeyE<K, E> => ({
   error
 })
 
-export interface OptionalKeyE<K, E> extends SingleE<E> {
+export interface OptionalKeyE<K, E> {
   readonly _tag: 'OptionalKeyE'
   readonly key: K
+  readonly error: E
 }
 export const optionalKeyE = <K, E>(key: K, error: E): OptionalKeyE<K, E> => ({
   _tag: 'OptionalKeyE',
@@ -202,9 +200,10 @@ export const optionalKeyE = <K, E>(key: K, error: E): OptionalKeyE<K, E> => ({
   error
 })
 
-export interface RequiredIndexE<I, E> extends SingleE<E> {
+export interface RequiredIndexE<I, E> {
   readonly _tag: 'RequiredIndexE'
   readonly index: I
+  readonly error: E
 }
 export const requiredIndexE = <I, E>(index: I, error: E): RequiredIndexE<I, E> => ({
   _tag: 'RequiredIndexE',
@@ -212,9 +211,10 @@ export const requiredIndexE = <I, E>(index: I, error: E): RequiredIndexE<I, E> =
   error
 })
 
-export interface OptionalIndexE<I, E> extends SingleE<E> {
+export interface OptionalIndexE<I, E> {
   readonly _tag: 'OptionalIndexE'
   readonly index: I
+  readonly error: E
 }
 export const optionalIndexE = <I, E>(index: I, error: E): OptionalIndexE<I, E> => ({
   _tag: 'OptionalIndexE',
@@ -222,20 +222,23 @@ export const optionalIndexE = <I, E>(index: I, error: E): OptionalIndexE<I, E> =
   error
 })
 
-export interface LazyE<E> extends SingleE<E> {
+export interface LazyE<E> {
   readonly _tag: 'LazyE'
   readonly id: string
+  readonly error: E
 }
 export const lazyE = <E>(id: string, error: E): LazyE<E> => ({ _tag: 'LazyE', id, error })
 
-export interface MemberE<M, E> extends SingleE<E> {
+export interface MemberE<M, E> {
   readonly _tag: 'MemberE'
   readonly member: M
+  readonly error: E
 }
 export const memberE = <M, E>(member: M, error: E): MemberE<M, E> => ({ _tag: 'MemberE', member, error })
 
-export interface LeafE<E> extends SingleE<E> {
+export interface LeafE<E> {
   readonly _tag: 'LeafE'
+  readonly error: E
 }
 export const leafE = <E>(error: E): LeafE<E> => ({ _tag: 'LeafE', error })
 
@@ -255,18 +258,21 @@ export const noMembersLE: NoMembersLE = leafE({
   _tag: 'NoMembersE'
 })
 
-export interface NullableE<E> extends SingleE<E> {
+export interface NullableE<E> {
   readonly _tag: 'NullableE'
+  readonly error: E
 }
 export const nullableE = <E>(error: E): NullableE<E> => ({ _tag: 'NullableE', error })
 
-export interface PrevE<E> extends SingleE<E> {
+export interface PrevE<E> {
   readonly _tag: 'PrevE'
+  readonly error: E
 }
 export const prevE = <E>(error: E): PrevE<E> => ({ _tag: 'PrevE', error })
 
-export interface NextE<E> extends SingleE<E> {
+export interface NextE<E> {
   readonly _tag: 'NextE'
+  readonly error: E
 }
 export const nextE = <E>(error: E): NextE<E> => ({ _tag: 'NextE', error })
 
@@ -288,8 +294,9 @@ export const unexpectedIndexesE = (indexes: ReadonlyNonEmptyArray<number>): Unex
   indexes
 })
 
-export interface SumE<E> extends SingleE<E> {
+export interface SumE<E> {
   readonly _tag: 'SumE'
+  readonly error: E
 }
 export const sumE = <E>(error: E): SumE<E> => ({
   _tag: 'SumE',
