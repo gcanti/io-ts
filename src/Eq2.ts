@@ -85,7 +85,7 @@ export const tuple: <A extends ReadonlyArray<unknown>>(
  * @category combinators
  * @since 2.2.15
  */
-export const struct: <A>(eqs: { [K in keyof A]: Eq<A[K]> }) => Eq<{ [K in keyof A]: A[K] }> = E.getStructEq
+export const struct: <A>(properties: { [K in keyof A]: Eq<A[K]> }) => Eq<{ [K in keyof A]: A[K] }> = E.getStructEq
 
 /**
  * @category combinators
@@ -107,7 +107,7 @@ export const partial = <A>(properties: { [K in keyof A]: Eq<A[K]> }): Eq<Partial
  * @category combinators
  * @since 2.2.2
  */
-export const array: <A>(eq: Eq<A>) => Eq<Array<A>> = RA.getEq
+export const array: <A>(item: Eq<A>) => Eq<Array<A>> = RA.getEq
 
 /**
  * @category combinators

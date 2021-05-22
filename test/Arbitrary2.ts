@@ -1,6 +1,3 @@
-/**
- * An instance of `Schemable` for `fast-check` arbitraries that emit valid values
- */
 import * as fc from 'fast-check'
 import { ReadonlyNonEmptyArray } from 'fp-ts/lib/ReadonlyNonEmptyArray'
 import * as D from '../src/poc'
@@ -79,7 +76,7 @@ export const lazy = <A>(f: () => Arbitrary<A>): Arbitrary<A> => {
 
 export function sum<T extends string>(
   _tag: T
-): <A>(members: { [K in keyof A]: Arbitrary<A[K] & Record<T, K>> }) => Arbitrary<A[keyof A]> {
+): <A>(members: { [K in keyof A]: Arbitrary<A[K]> }) => Arbitrary<A[keyof A]> {
   return (members: Record<string, Arbitrary<any>>) => fc.oneof(...Object.keys(members).map((k) => members[k]))
 }
 
