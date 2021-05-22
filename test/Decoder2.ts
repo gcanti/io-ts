@@ -576,7 +576,7 @@ Warnings:
       )
     })
 
-    it('failure + warning', () => {
+    it('failure + prunable warning', () => {
       const I1 = _.struct({ a: _.string })
       const I2 = _.struct({ b: _.number })
       const I = pipe(I1, _.intersect(I2))
@@ -594,7 +594,7 @@ Warnings:
       )
     })
 
-    it('failure + warnings', () => {
+    it('failure + non prunable warning', () => {
       const I1 = _.struct({ a: _.string })
       const I2 = _.struct({ b: _.number })
       const I = pipe(I1, _.intersect(I2))
@@ -631,7 +631,7 @@ Warnings:
       )
     })
 
-    it('success + warning', () => {
+    it('success + non prunable warning', () => {
       const I = pipe(simplenumber, _.intersect(_.number))
       U.deepStrictEqual(
         pipe(I.decode(NaN), print),
@@ -644,14 +644,14 @@ Warnings:
       )
     })
 
-    it('success + pruned warning', () => {
+    it('success + prunable warning', () => {
       const I1 = _.struct({ a: _.string, b: _.number })
       const I2 = _.struct({ b: _.number })
       const I = pipe(I1, _.intersect(I2))
       U.deepStrictEqual(I.decode({ a: 'a', b: 1 }), TH.right({ a: 'a', b: 1 }))
     })
 
-    it('warning + failure', () => {
+    it('prunable warning + failure', () => {
       const I1 = _.struct({ b: _.number })
       const I2 = _.struct({ a: _.string })
       const I = pipe(I1, _.intersect(I2))
@@ -669,7 +669,7 @@ Warnings:
       )
     })
 
-    it('warnings + failure', () => {
+    it('non prunable warning + failure', () => {
       const I1 = _.struct({ b: _.number })
       const I2 = _.struct({ a: _.string })
       const I = pipe(I1, _.intersect(I2))
@@ -690,7 +690,7 @@ Warnings:
       )
     })
 
-    it('warning + success', () => {
+    it('non prunable warning + success', () => {
       const I = pipe(_.number, _.intersect(simplenumber))
       U.deepStrictEqual(
         pipe(I.decode(NaN), print),
@@ -703,11 +703,45 @@ Warnings:
       )
     })
 
-    it('pruned warning + success', () => {
+    it('prunable warning + success', () => {
       const I1 = _.struct({ b: _.number })
       const I2 = _.struct({ a: _.string, b: _.number })
       const I = pipe(I1, _.intersect(I2))
       U.deepStrictEqual(I.decode({ a: 'a', b: 1 }), TH.right({ a: 'a', b: 1 }))
+    })
+
+    it('prunable warning + non prunable warning', () => {
+      const I1 = _.struct({ a: _.string })
+      const I2 = _.struct({ a: _.string, b: _.number })
+      const I = pipe(I1, _.intersect(I2))
+      U.deepStrictEqual(
+        pipe(I.decode({ a: 'a', b: NaN }), print),
+        `Value:
+{ a: 'a', b: NaN }
+Warnings:
+1 error(s) found while decoding (intersection)
+└─ 1 error(s) found while decoding member 1
+   └─ 1 error(s) found while decoding (struct)
+      └─ 1 error(s) found while decoding required key \"b\"
+         └─ value is NaN`
+      )
+    })
+
+    it('non prunable warning + prunable warning', () => {
+      const I1 = _.struct({ a: _.string, b: _.number })
+      const I2 = _.struct({ a: _.string })
+      const I = pipe(I1, _.intersect(I2))
+      U.deepStrictEqual(
+        pipe(I.decode({ a: 'a', b: NaN }), print),
+        `Value:
+{ a: 'a', b: NaN }
+Warnings:
+1 error(s) found while decoding (intersection)
+└─ 1 error(s) found while decoding member 0
+   └─ 1 error(s) found while decoding (struct)
+      └─ 1 error(s) found while decoding required key \"b\"
+         └─ value is NaN`
+      )
     })
 
     describe('struct', () => {
@@ -738,37 +772,37 @@ Warnings:
       })
     })
 
-    //     it('should raise a warning with an additional key (nested)', () => {
-    //       const I1 = _.struct({ a: _.struct({ b: _.string }) })
-    //       const I2 = _.struct({ a: _.struct({ c: _.number }) })
-    //       const I = pipe(I1, _.intersect(I2))
-    //       U.deepStrictEqual(
-    //         pipe(I.decode({ a: { b: 'a', c: 1, d: true } }), print),
-    //         `Value:
-    // { a: { b: 'a', c: 1 } }
-    // Warnings:
-    // 2 error(s) found while decoding (intersection)
-    // ├─ 1 error(s) found while decoding member 0
-    // │  └─ 1 error(s) found while decoding (struct)
-    // │     └─ 1 error(s) found while decoding required key \"a\"
-    // │        └─ 1 error(s) found while checking keys
-    // │           └─ unexpected key \"d\"
-    // └─ 1 error(s) found while decoding member 1
-    //    └─ 1 error(s) found while decoding (struct)
-    //       └─ 1 error(s) found while decoding required key \"a\"
-    //          └─ 1 error(s) found while checking keys
-    //             └─ unexpected key \"d\"`
-    //       )
-    //     })
+    it('should raise a warning with an additional key (nested)', () => {
+      const I1 = _.struct({ a: _.struct({ b: _.string }) })
+      const I2 = _.struct({ a: _.struct({ c: _.number }) })
+      const I = pipe(I1, _.intersect(I2))
+      U.deepStrictEqual(
+        pipe(I.decode({ a: { b: 'a', c: 1, d: true } }), print),
+        `Value:
+{ a: { b: 'a', c: 1 } }
+Warnings:
+2 error(s) found while decoding (intersection)
+├─ 1 error(s) found while decoding member 0
+│  └─ 1 error(s) found while decoding (struct)
+│     └─ 1 error(s) found while decoding required key \"a\"
+│        └─ 1 error(s) found while checking keys
+│           └─ unexpected key \"d\"
+└─ 1 error(s) found while decoding member 1
+   └─ 1 error(s) found while decoding (struct)
+      └─ 1 error(s) found while decoding required key \"a\"
+         └─ 1 error(s) found while checking keys
+            └─ unexpected key \"d\"`
+      )
+    })
 
-    // describe('tuple', () => {
-    //   it('should not raise invalid warnings', () => {
-    //     const I1 = _.tuple(_.string)
-    //     const I2 = _.tuple(_.string, _.number)
-    //     const I = pipe(I1, _.intersect(I2))
-    //     U.deepStrictEqual(I.decode(['a', 1]), TH.right(['a', 1]))
-    //   })
-    // })
+    describe('tuple', () => {
+      it('should not raise invalid warnings', () => {
+        const I1 = _.tuple(_.string)
+        const I2 = _.tuple(_.string, _.number)
+        const I = pipe(I1, _.intersect(I2))
+        U.deepStrictEqual(I.decode(['a', 1]), TH.right(['a', 1]))
+      })
+    })
   })
 
   describe('tuple', () => {
