@@ -1,19 +1,25 @@
 import * as fc from 'fast-check'
-import { isRight } from 'fp-ts/lib/These'
+import { isLeft } from 'fp-ts/lib/These'
 import { pipe } from 'fp-ts/lib/pipeable'
 import * as D from '../src/Decoder2'
 import * as Eq from '../src/Eq2'
 import * as G from '../src/Guard2'
-import { compile, make, Schema, toDecoder } from '../src/Schemable2'
+import { interpreter, make, Schema, toDecoder } from '../src/Schemable2'
 import * as A from './Arbitrary2'
+import * as DE from '../src/DecodeError2'
 
 function check<A extends D.AnyD>(schema: Schema<A>): void {
-  const arb = compile(A.toArbitrary)(schema)
-  const decoder = compile(toDecoder)(schema)
-  const guard = compile(G.toGuard)(schema)
-  const eq = compile(Eq.toEq)(schema)
+  const arb = interpreter(A.toArbitrary)(schema)
+  const decoder = interpreter(toDecoder)(schema)
+  const guard = interpreter(G.toGuard)(schema)
+  const eq = interpreter(Eq.toEq)(schema)
   // decoders, guards and eqs should be aligned
-  fc.assert(fc.property(arb, (a) => isRight(decoder.decode(a)) && guard.is(a as any) && eq.equals(a, a)))
+  fc.assert(
+    fc.property(arb, (a) => {
+      const th = decoder.decode(a)
+      return !isLeft(th) && guard.is(a) && !(typeof a === 'number' && isNaN(a)) === eq.equals(a, a)
+    })
+  )
 }
 describe('Schema', () => {
   it('string', () => {
@@ -84,16 +90,20 @@ describe('Schema', () => {
     check(make((S) => S.sum('_tag')({ A: A(S), B: B(S) })))
   })
 
-  // it('lazy', () => {
-  //   interface A {
-  //     a: string
-  //     b?: A
-  //     c?: number
-  //   }
+  it('lazy', () => {
+    interface A {
+      a: string
+      b?: A
+      c?: number
+    }
 
-  //   const schema: Schema<A> = make((S) =>
-  //     S.lazy('A', () => pipe(S.struct({ a: S.string }), S.intersect(S.partial({ b: schema(S), c: S.number }))))
-  //   )
-  //   check(schema)
-  // })
+    const schema: Schema<D.LazyD<
+      unknown,
+      DE.DecodeError<DE.UnknownRecordE | DE.StringE | DE.NumberE | DE.NaNE | DE.InfinityE>,
+      A
+    >> = make((S) =>
+      S.lazy('A', () => pipe(S.struct({ a: S.string }), S.intersect(S.partial({ b: schema(S), c: S.number }))))
+    )
+    check(schema)
+  })
 })

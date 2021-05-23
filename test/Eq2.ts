@@ -4,6 +4,16 @@ import { Eq } from 'fp-ts/lib/Eq'
 import { pipe } from 'fp-ts/lib/pipeable'
 
 describe('Eq2', () => {
+  it('number', () => {
+    const eq = E.number
+    assert.deepStrictEqual(eq.equals(1, 1), true)
+    assert.deepStrictEqual(eq.equals(1, 2), false)
+    assert.deepStrictEqual(eq.equals(NaN, NaN), false)
+    assert.deepStrictEqual(eq.equals(Infinity, Infinity), true)
+    assert.deepStrictEqual(eq.equals(-Infinity, -Infinity), true)
+    assert.deepStrictEqual(eq.equals(-Infinity, Infinity), false)
+  })
+
   it('literal', () => {
     const eq = E.toEq.literal('a', null)
     assert.deepStrictEqual(eq.equals('a', 'a'), true)

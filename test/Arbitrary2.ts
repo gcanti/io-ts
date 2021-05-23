@@ -23,7 +23,14 @@ export const string: Arbitrary<string> = fc.oneof(
   fc.lorem()
 )
 
-export const number: Arbitrary<number> = fc.oneof(fc.float(), fc.double(), fc.integer())
+export const number: Arbitrary<number> = fc.oneof(
+  fc.float(),
+  fc.double(),
+  fc.integer(),
+  fc.constant(NaN),
+  fc.constant(Infinity),
+  fc.constant(-Infinity)
+)
 
 export const boolean: Arbitrary<boolean> = fc.boolean()
 

@@ -3,6 +3,8 @@ import * as D from './Decoder2'
 import * as DE from './DecodeError2'
 import { ReadonlyNonEmptyArray } from 'fp-ts/lib/ReadonlyNonEmptyArray'
 
+// TODO: move to io-ts-contrib in v3
+
 // -------------------------------------------------------------------------------------
 // use case: Schemable
 // -------------------------------------------------------------------------------------
@@ -119,8 +121,8 @@ export function make<A>(schema: Schema<A>): Schema<A> {
   return D.memoize(schema)
 }
 
-export function compile<S extends URIS>(S: Schemable1<S>): <A>(schema: Schema<A>) => Kind<S, A>
-export function compile<S>(S: Schemable<S>): <A>(schema: Schema<A>) => HKT<S, A> {
+export function interpreter<S extends URIS>(S: Schemable1<S>): <A>(schema: Schema<A>) => Kind<S, A>
+export function interpreter<S>(S: Schemable<S>): <A>(schema: Schema<A>) => HKT<S, A> {
   return (schema) => schema(S)
 }
 
@@ -174,16 +176,16 @@ import { toGuard } from './Guard2'
 
 const schema = make((S) => S.tuple(S.nullable(S.string)))
 
-export const decoder = compile(toDecoder)(schema)
+export const decoder = interpreter(toDecoder)(schema)
 assert.deepStrictEqual(decoder.decode([null]), D.success([null]))
 assert.deepStrictEqual(decoder.decode(['a']), D.success(['a']))
 
-export const guard = compile(toGuard)(schema)
+export const guard = interpreter(toGuard)(schema)
 assert.deepStrictEqual(guard.is([null]), true)
 assert.deepStrictEqual(guard.is(['a']), true)
 assert.deepStrictEqual(guard.is([1]), false)
 
-export const eq = compile(toEq)(schema)
+export const eq = interpreter(toEq)(schema)
 assert.deepStrictEqual(eq.equals([null], [null]), true)
 assert.deepStrictEqual(eq.equals(['a'], ['a']), true)
 assert.deepStrictEqual(eq.equals(['a'], ['b']), false)

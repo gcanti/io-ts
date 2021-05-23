@@ -933,7 +933,7 @@ Warnings:
       name: string
       categories: ReadonlyArray<Category>
     }
-    const Category: _.Decoder<
+    const Category: _.LazyD<
       unknown,
       DE.DecodeError<DE.UnknownRecordE | DE.StringE | DE.UnknownArrayE>,
       Category

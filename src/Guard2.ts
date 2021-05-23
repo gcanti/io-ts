@@ -263,7 +263,7 @@ export type URI = typeof URI
 
 declare module 'fp-ts/lib/HKT' {
   interface URItoKind<A> {
-    readonly [URI]: Guard<D.InputOf<A>, D.InputOf<A> & D.TypeOf<A>>
+    readonly [URI]: Guard<D.InputOf<A> | D.TypeOf<A>, D.TypeOf<A>>
   }
 }
 
