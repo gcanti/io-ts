@@ -15,7 +15,7 @@ import * as D from './poc'
 import { Schemable1 } from './Schemable2'
 import Eq = E.Eq
 
-// TODO: move to io-ts-types in v3
+// TODO: move to io-ts-contrib in v3
 
 // -------------------------------------------------------------------------------------
 // primitives

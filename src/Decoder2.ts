@@ -7,7 +7,6 @@ import * as RA from 'fp-ts/lib/ReadonlyArray'
 import * as RNEA from 'fp-ts/lib/ReadonlyNonEmptyArray'
 import * as TH from 'fp-ts/lib/These'
 import * as DE from './DecodeError2'
-import * as util from 'util'
 
 import These = TH.These
 import ReadonlyNonEmptyArray = RNEA.ReadonlyNonEmptyArray
@@ -23,16 +22,6 @@ import ReadonlyNonEmptyArray = RNEA.ReadonlyNonEmptyArray
 export interface Decoder<I, E, A> {
   readonly decode: (i: I) => These<E, A>
 }
-
-/**
- * @since 2.2.17
- */
-export interface AnyD extends Decoder<any, any, any> {}
-
-/**
- * @since 2.2.17
- */
-export interface AnyUD extends Decoder<unknown, any, any> {}
 
 // -------------------------------------------------------------------------------------
 // instances
@@ -194,7 +183,7 @@ export function compose<A, E2, B>(
 
 /**
  * @category DecodeError
- * @since 2.2.17
+ * @since 2.2.7
  */
 export const success = TH.right
 
@@ -1019,22 +1008,15 @@ export function sum<T extends string>(
 // utils
 // -------------------------------------------------------------------------------------
 
-export function memoize<A, B>(f: (a: A) => B): (a: A) => B {
-  const cache = new Map()
-  return (a) => {
-    if (!cache.has(a)) {
-      const b = f(a)
-      cache.set(a, b)
-      return b
-    }
-    return cache.get(a)
-  }
-}
+/**
+ * @since 2.2.17
+ */
+export interface AnyD extends Decoder<any, any, any> {}
 
 /**
  * @since 2.2.17
  */
-export const message = DE.messageLE
+export interface AnyUD extends Decoder<unknown, any, any> {}
 
 /**
  * @since 2.2.8
@@ -1051,137 +1033,22 @@ export type ErrorOf<D> = D extends Decoder<any, infer E, any> ? E : never
  */
 export type TypeOf<D> = D extends Decoder<any, any, infer A> ? A : never
 
-// -------------------------------------------------------------------------------------
-// draw
-// -------------------------------------------------------------------------------------
-
-export type Forest<A> = ReadonlyArray<Tree<A>>
-
-export interface Tree<A> {
-  readonly value: A
-  readonly forest: Forest<A>
-}
-
-const empty: ReadonlyArray<never> = []
-
-const tree = <A>(value: A, forest: Forest<A> = empty): Tree<A> => ({
-  value,
-  forest
-})
-
-export const toTreeWith = <E>(toTree: (e: E) => Tree<string>): ((de: DE.DecodeError<E>) => Tree<string>) => {
-  const go = (de: DE.DecodeError<E>): Tree<string> => {
-    switch (de._tag) {
-      case 'MissingIndexesE':
-        return tree(
-          `${de.indexes.length} error(s) found while checking indexes`,
-          de.indexes.map((index) => tree(`missing required index ${JSON.stringify(index)}`))
-        )
-      case 'MissingKeysE':
-        return tree(
-          `${de.keys.length} error(s) found while checking keys`,
-          de.keys.map((key) => tree(`missing required key ${JSON.stringify(key)}`))
-        )
-      case 'UnexpectedIndexesE':
-        return tree(
-          `${de.indexes.length} error(s) found while checking indexes`,
-          de.indexes.map((index) => tree(`unexpected index ${JSON.stringify(index)}`))
-        )
-      case 'UnexpectedKeysE':
-        return tree(
-          `${de.keys.length} error(s) found while checking keys`,
-          de.keys.map((key) => tree(`unexpected key ${JSON.stringify(key)}`))
-        )
-      case 'LeafE':
-        return toTree(de.error)
-      case 'NullableE':
-        return tree(`1 error(s) found while decoding a nullable`, [go(de.error)])
-      case 'PrevE':
-      case 'NextE':
-        return go(de.error)
-      case 'RequiredIndexE':
-        return tree(`1 error(s) found while decoding required component ${de.index}`, [go(de.error)])
-      case 'OptionalIndexE':
-        return tree(`1 error(s) found while decoding optional index ${de.index}`, [go(de.error)])
-      case 'RequiredKeyE':
-        return tree(`1 error(s) found while decoding required key ${JSON.stringify(de.key)}`, [go(de.error)])
-      case 'OptionalKeyE':
-        return tree(`1 error(s) found while decoding optional key ${JSON.stringify(de.key)}`, [go(de.error)])
-      case 'MemberE':
-        return tree(`1 error(s) found while decoding member ${JSON.stringify(de.member)}`, [go(de.error)])
-      case 'LazyE':
-        return tree(`1 error(s) found while decoding lazy decoder ${de.id}`, [go(de.error)])
-      case 'SumE':
-        return tree(`1 error(s) found while decoding a sum`, [go(de.error)])
-      case 'CompoundE': {
-        if (de.name === 'composition') {
-          return de.errors.length === 1
-            ? go(de.errors[0]) // less noise in the output if there's only one error
-            : tree(`${de.errors.length} error(s) found while decoding (${de.name})`, de.errors.map(go))
-        }
-        return tree(`${de.errors.length} error(s) found while decoding (${de.name})`, de.errors.map(go))
-      }
+/**
+ * @since 2.2.17
+ */
+export function memoize<A, B>(f: (a: A) => B): (a: A) => B {
+  const cache = new Map()
+  return (a) => {
+    if (!cache.has(a)) {
+      const b = f(a)
+      cache.set(a, b)
+      return b
     }
-  }
-  return go
-}
-
-// this is exported because users may need to define a custom `toTree` function
-export const format = (a: unknown): string => {
-  if (typeof a === 'string') return JSON.stringify(a)
-  return util.format(a)
-}
-
-export const toTreeBuiltin = (de: DE.BuiltinE): Tree<string> => {
-  switch (de._tag) {
-    case 'StringE':
-      return tree(`cannot decode ${format(de.actual)}, expected a string`)
-    case 'NumberE':
-      return tree(`cannot decode ${format(de.actual)}, expected a number`)
-    case 'BooleanE':
-      return tree(`cannot decode ${format(de.actual)}, expected a boolean`)
-    case 'UnknownArrayE':
-      return tree(`cannot decode ${format(de.actual)}, expected an array`)
-    case 'UnknownRecordE':
-      return tree(`cannot decode ${format(de.actual)}, expected an object`)
-    case 'LiteralE':
-      return tree(
-        `cannot decode ${format(de.actual)}, expected one of ${de.literals
-          .map((literal) => JSON.stringify(literal))
-          .join(', ')}`
-      )
-    case 'MessageE':
-      return tree(de.message)
-    case 'NaNE':
-      return tree('value is NaN')
-    case 'InfinityE':
-      return tree('value is Infinity')
-    case 'TagE':
-      return tree(
-        `1 error(s) found while decoding sum tag ${JSON.stringify(
-          de.tag
-        )}, expected one of ${de.literals.map((literal) => JSON.stringify(literal)).join(', ')}`
-      )
-    case 'NoMembersE':
-      return tree('no members')
+    return cache.get(a)
   }
 }
 
-const drawTree = (tree: Tree<string>): string => tree.value + drawForest('\n', tree.forest)
-
-const drawForest = (indentation: string, forest: ReadonlyArray<Tree<string>>): string => {
-  let r = ''
-  const len = forest.length
-  let tree: Tree<string>
-  for (let i = 0; i < len; i++) {
-    tree = forest[i]
-    const isLast = i === len - 1
-    r += indentation + (isLast ? '└' : '├') + '─ ' + tree.value
-    r += drawForest(indentation + (len > 1 && !isLast ? '│  ' : '   '), tree.forest)
-  }
-  return r
-}
-
-const toTree = toTreeWith(toTreeBuiltin)
-
-export const draw = TH.mapLeft(flow(toTree, drawTree))
+/**
+ * @since 2.2.17
+ */
+export const message = DE.messageLE

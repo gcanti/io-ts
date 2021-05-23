@@ -14,6 +14,41 @@
 **Note**: Gaps between patch versions are faulty/broken releases.
 **Note**: A feature tagged as Experimental is in a high state of flux, you're at risk of it changing without notice.
 
+# 2.2.17
+
+- **Experimental**
+  - remove `Kleisli` module
+  - remove `FreeSemigroup` module
+  - remove `TaskDecoder` module
+  - `Decoder`
+    - remove `DecodeError` export
+    - remove `error`
+    - remove `fromRefinement`
+    - remove `fromGuard`
+    - remove `mapLeftWithInput`
+    - remove `withMessage`
+    - remove `refine`
+    - remove `parse`
+    - remove `fromType`
+    - remove `type`
+    - remove `alt`
+    - remove `Alt`
+    - remove `Category`
+    - change `Decoder` definition
+    - change `failure` signature
+    - move `draw` to `TreeReporter` module
+  - `Eq`
+    - remove `URI`
+    - remove `TypeOf`
+    - remove `type`
+  - `Guard`
+    - remove `TypeOf`
+    - remove `InputOf`
+    - remove `refine`
+    - remove `type`
+    - remove `alt`
+    - remove `zero`
+
 # 2.2.16
 
 Experimental modules require `fp-ts@^2.5.0`.

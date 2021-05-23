@@ -5,6 +5,7 @@ import * as util from 'util'
 import * as DE from '../src/DecodeError2'
 import * as _ from '../src/Decoder2'
 import * as U from './util'
+import { draw } from '../src/TreeReporter'
 
 const printValue = (a: unknown): string => 'Value:\n' + util.format(a)
 const printErrors = (s: string): string => 'Errors:\n' + s
@@ -12,7 +13,7 @@ const printWarnings = (s: string): string => 'Warnings:\n' + s
 
 export const printAll = TH.fold(printErrors, printValue, (e, a) => printValue(a) + '\n' + printWarnings(e))
 
-export const print = flow(_.draw, printAll)
+export const print = flow(TH.mapLeft(draw), printAll)
 
 const simplenumber: _.Decoder<unknown, DE.NumberLE, number> = {
   decode: (u: unknown) => (typeof u === 'number' ? _.success(u) : _.failure(DE.numberLE(u)))
