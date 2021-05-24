@@ -7,6 +7,7 @@ import * as RA from 'fp-ts/lib/ReadonlyArray'
 import * as RNEA from 'fp-ts/lib/ReadonlyNonEmptyArray'
 import * as TH from 'fp-ts/lib/These'
 import * as DE from './DecodeError2'
+import { Schemable2C, WithUnknownContainers2C, WithUnion2C } from './Schemable2'
 
 import These = TH.These
 import ReadonlyNonEmptyArray = RNEA.ReadonlyNonEmptyArray
@@ -177,6 +178,58 @@ export function compose<A, E2, B>(
   })
 }
 
+declare module 'fp-ts/lib/HKT' {
+  interface URItoKind2<E, A> {
+    readonly 'io-ts/ToDecoder': Decoder<unknown, E, A>
+  }
+}
+
+// TODO: move to io-ts-contrib in v3
+
+/**
+ * @category instances
+ * @since 2.2.17
+ */
+export const getSchemable = <E = never>(): Schemable2C<'io-ts/ToDecoder', DE.DecodeError<E | DE.BuiltinE>> => {
+  return {
+    URI: 'io-ts/ToDecoder',
+    _E: undefined as any,
+    literal,
+    string,
+    number,
+    boolean,
+    tuple,
+    struct: struct as any,
+    partial: partial as any,
+    array,
+    record,
+    nullable,
+    intersect,
+    lazy,
+    sum: sum as any
+  }
+}
+
+/**
+ * @category instances
+ * @since 2.2.17
+ */
+export const getWithUnknownContainers = <E>(): WithUnknownContainers2C<
+  'io-ts/ToDecoder',
+  DE.DecodeError<E | DE.BuiltinE>
+> => ({
+  UnknownArray,
+  UnknownRecord
+})
+
+/**
+ * @category instances
+ * @since 2.2.17
+ */
+export const getWithUnion = <E>(): WithUnion2C<'io-ts/ToDecoder', DE.DecodeError<E | DE.BuiltinE>> => ({
+  union: union as any
+})
+
 // -------------------------------------------------------------------------------------
 // DecodeError
 // -------------------------------------------------------------------------------------
@@ -245,10 +298,10 @@ export const UnknownArray: UnknownArrayUD = {
   decode: (u) => (Array.isArray(u) ? success(u) : failure(DE.unknownArrayLE(u)))
 }
 
-export interface UnknownRecordUD extends Decoder<unknown, DE.UnknownRecordLE, Record<PropertyKey, unknown>> {
+export interface UnknownRecordUD extends Decoder<unknown, DE.UnknownRecordLE, Record<string, unknown>> {
   readonly _tag: 'UnknownRecordUD'
 }
-const isUnknownRecord = (u: unknown): u is Record<PropertyKey, unknown> =>
+const isUnknownRecord = (u: unknown): u is Record<string, unknown> =>
   u !== null && typeof u === 'object' && !Array.isArray(u)
 export const UnknownRecord: UnknownRecordUD = {
   _tag: 'UnknownRecordUD',
@@ -294,7 +347,7 @@ export interface FromStructD<Properties>
   readonly _tag: 'FromStructD'
   readonly properties: Properties
 }
-export const fromStruct = <Properties extends Record<PropertyKey, AnyD>>(
+export const fromStruct = <Properties extends Record<string, AnyD>>(
   properties: Properties
 ): FromStructD<Properties> => ({
   _tag: 'FromStructD',
@@ -320,7 +373,7 @@ export const fromStruct = <Properties extends Record<PropertyKey, AnyD>>(
 })
 
 export interface UnexpectedKeysD<Properties>
-  extends Decoder<Record<PropertyKey, unknown>, DE.UnexpectedKeysE, Partial<{ [K in keyof Properties]: unknown }>> {
+  extends Decoder<Record<string, unknown>, DE.UnexpectedKeysE, Partial<{ [K in keyof Properties]: unknown }>> {
   readonly _tag: 'UnexpectedKeysD'
   readonly properties: Properties
 }
@@ -381,11 +434,11 @@ export interface StructD<Properties>
     FromStructD<Properties>
   > {}
 
-export function struct<Properties extends Record<PropertyKey, AnyUD>>(properties: Properties): StructD<Properties>
-export function struct(properties: Record<PropertyKey, AnyUD>): StructD<typeof properties> {
+export function struct<Properties extends Record<string, AnyUD>>(properties: Properties): StructD<Properties>
+export function struct(properties: Record<string, AnyUD>): StructD<typeof properties> {
   return pipe(
-    UnknownRecord, // unknown -> Record<PropertyKey, unknown>
-    compose(unexpectedKeys(properties)), // Record<PropertyKey, unknown> -> { a?: unknown, b?: unknown, ... }
+    UnknownRecord, // unknown -> Record<string, unknown>
+    compose(unexpectedKeys(properties)), // Record<string, unknown> -> { a?: unknown, b?: unknown, ... }
     compose(missingKeys(properties)), // { a?: unknown, b?: unknown, ... } -> { a: unknown, b: unknown, ..., }
     compose(fromStruct(properties)) // { a: unknown, b: unknown, ..., } -> { a: string, b: number, ... }
   )
@@ -404,7 +457,7 @@ export interface FromPartialD<Properties>
   readonly _tag: 'FromPartialD'
   readonly properties: Properties
 }
-export const fromPartial = <Properties extends Record<PropertyKey, AnyD>>(
+export const fromPartial = <Properties extends Record<string, AnyD>>(
   properties: Properties
 ): FromPartialD<Properties> => ({
   _tag: 'FromPartialD',
@@ -439,8 +492,8 @@ export const fromPartial = <Properties extends Record<PropertyKey, AnyD>>(
 export interface PartialD<Properties>
   extends CompositionD<CompositionD<UnknownRecordUD, UnexpectedKeysD<Properties>>, FromPartialD<Properties>> {}
 
-export function partial<Properties extends Record<PropertyKey, AnyUD>>(properties: Properties): PartialD<Properties>
-export function partial(properties: Record<PropertyKey, AnyUD>): PartialD<typeof properties> {
+export function partial<Properties extends Record<string, AnyUD>>(properties: Properties): PartialD<Properties>
+export function partial(properties: Record<string, AnyUD>): PartialD<typeof properties> {
   return pipe(UnknownRecord, compose(unexpectedKeys(properties)), compose(fromPartial(properties)))
 }
 
@@ -589,11 +642,7 @@ export function array<E, A>(item: Decoder<unknown, E, A>): ArrayD<typeof item> {
 
 export interface FromRecordE<Codomain> extends DE.CompoundE<DE.OptionalKeyE<string, ErrorOf<Codomain>>> {}
 export interface FromRecordD<Codomain>
-  extends Decoder<
-    Record<PropertyKey, InputOf<Codomain>>,
-    FromRecordE<Codomain>,
-    Record<PropertyKey, TypeOf<Codomain>>
-  > {
+  extends Decoder<Record<string, InputOf<Codomain>>, FromRecordE<Codomain>, Record<string, TypeOf<Codomain>>> {
   readonly _tag: 'FromRecordD'
   readonly codomain: Codomain
 }
@@ -822,12 +871,8 @@ const pruneDifference = <E1, E2>(
   return O.isSome(pde2) ? O.some(DE.intersectionE([DE.memberE(1, pde2.value)])) : O.none
 }
 
-export interface IntersecableRecord extends Record<string, Intersecable> {}
-export interface IntersecableArray extends Array<Intersecable> {}
-export type Intersecable = string | number | IntersecableRecord | IntersecableArray
-
 /** @internal */
-export const intersect_ = <A extends Intersecable, B extends Intersecable>(a: A, b: B): A & B => {
+export const intersect_ = <A, B>(a: A, b: B): A & B => {
   if (isUnknownRecord(a) && isUnknownRecord(b)) {
     const out: any = { ...(a as any) }
     for (const k in b) {
@@ -855,14 +900,10 @@ export const intersect_ = <A extends Intersecable, B extends Intersecable>(a: A,
 export function intersect<S extends Decoder<any, DE.DecodeError<any>, any>>(
   second: S
 ): <F extends Decoder<any, DE.DecodeError<any>, any>>(first: F) => IntersectD<F, S>
-export function intersect<I2, E2, A2 extends Intersecable>(
+export function intersect<I2, E2, A2>(
   second: Decoder<I2, DE.DecodeError<E2>, A2>
-): <I1, E1, A1 extends Intersecable>(
-  first: Decoder<I1, DE.DecodeError<E1>, A1>
-) => IntersectD<typeof first, typeof second> {
-  return <I1, E1, A1 extends Intersecable>(
-    first: Decoder<I1, DE.DecodeError<E1>, A1>
-  ): IntersectD<typeof first, typeof second> => ({
+): <I1, E1, A1>(first: Decoder<I1, DE.DecodeError<E1>, A1>) => IntersectD<typeof first, typeof second> {
+  return <I1, E1, A1>(first: Decoder<I1, DE.DecodeError<E1>, A1>): IntersectD<typeof first, typeof second> => ({
     _tag: 'IntersectD',
     first,
     second,
@@ -964,10 +1005,8 @@ export function fromSum<T extends string>(
 ): <Members extends Record<string, AnyD>>(members: Members) => FromSumD<T, Members>
 export function fromSum<T extends string>(
   tag: T
-): <I extends Record<T, PropertyKey>, E, A>(members: Record<I[T], Decoder<I, E, A>>) => FromSumD<T, typeof members> {
-  return <I extends Record<T, PropertyKey>, E, A>(
-    members: Record<I[T], Decoder<I, E, A>>
-  ): FromSumD<T, typeof members> => {
+): <I extends Record<T, string>, E, A>(members: Record<I[T], Decoder<I, E, A>>) => FromSumD<T, typeof members> {
+  return <I extends Record<T, string>, E, A>(members: Record<I[T], Decoder<I, E, A>>): FromSumD<T, typeof members> => {
     const literals = Object.keys(members)
     return {
       _tag: 'FromSumD',

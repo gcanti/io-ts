@@ -12,7 +12,9 @@ import * as E from 'fp-ts/lib/Eq'
 import * as RA from 'fp-ts/lib/ReadonlyArray'
 import * as RR from 'fp-ts/lib/ReadonlyRecord'
 import * as D from './poc'
+import { WithUnknownContainers1 } from './Schemable'
 import { Schemable1 } from './Schemable2'
+
 import Eq = E.Eq
 
 // TODO: move to io-ts-contrib in v3
@@ -153,43 +155,40 @@ export const sum = <T extends string>(
 // instances
 // -------------------------------------------------------------------------------------
 
-/**
- * @category instances
- * @since 2.2.17
- */
-export const URI = 'io-ts/toEq'
-
-/**
- * @category instances
- * @since 2.2.17
- */
-export type URI = typeof URI
-
 declare module 'fp-ts/lib/HKT' {
   interface URItoKind<A> {
-    readonly [URI]: Eq<D.TypeOf<A>>
+    readonly 'io-ts/ToEq': Eq<A>
   }
+}
+
+// TODO: move to io-ts-contrib in v3
+
+/**
+ * @category instances
+ * @since 2.2.8
+ */
+export const Schemable: Schemable1<'io-ts/ToEq'> = {
+  URI: 'io-ts/ToEq',
+  string,
+  number,
+  boolean,
+  literal: () => E.eqStrict,
+  tuple,
+  struct,
+  partial,
+  array,
+  record,
+  nullable,
+  intersect,
+  lazy: (_, f) => lazy(f),
+  sum
 }
 
 /**
  * @category instances
- * @since 2.2.17
+ * @since 2.2.8
  */
-export const toEq: Schemable1<URI> = {
-  URI: 'io-ts/toEq',
-  string,
-  number,
-  boolean,
+export const WithUnknownContainers: WithUnknownContainers1<'io-ts/ToEq'> = {
   UnknownArray,
-  UnknownRecord,
-  literal: () => E.eqStrict,
-  tuple: tuple as any,
-  struct: struct as any,
-  partial: partial as any,
-  array: array as any,
-  record: record as any,
-  nullable,
-  intersect: intersect as any,
-  lazy: (_, f) => lazy(f),
-  sum: sum as any
+  UnknownRecord
 }

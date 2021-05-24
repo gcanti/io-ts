@@ -7,6 +7,7 @@ import * as RA from 'fp-ts/lib/ReadonlyArray'
 import * as RNEA from 'fp-ts/lib/ReadonlyNonEmptyArray'
 import * as TH from 'fp-ts/lib/These'
 import * as util from 'util'
+import { HKT, Kind2, URIS2 } from 'fp-ts/lib/HKT'
 
 import These = TH.These
 import ReadonlyNonEmptyArray = RNEA.ReadonlyNonEmptyArray
@@ -1080,12 +1081,8 @@ const pruneDifference = <E1, E2>(
   return O.isSome(pde2) ? O.some(intersectionE([memberE(1, pde2.value)])) : O.none
 }
 
-export interface IntersecableRecord extends Record<string, Intersecable> {}
-export interface IntersecableArray extends Array<Intersecable> {}
-export type Intersecable = string | number | IntersecableRecord | IntersecableArray
-
 /** @internal */
-export const intersect_ = <A extends Intersecable, B extends Intersecable>(a: A, b: B): A & B => {
+export const intersect_ = <A, B>(a: A, b: B): A & B => {
   if (isUnknownRecord(a) && isUnknownRecord(b)) {
     const out: any = { ...(a as any) }
     for (const k in b) {
@@ -1113,14 +1110,10 @@ export const intersect_ = <A extends Intersecable, B extends Intersecable>(a: A,
 export function intersect<S extends Decoder<any, DecodeError<any>, any>>(
   second: S
 ): <F extends Decoder<any, DecodeError<any>, any>>(first: F) => IntersectD<F, S>
-export function intersect<I2, E2, A2 extends Intersecable>(
+export function intersect<I2, E2, A2>(
   second: Decoder<I2, DecodeError<E2>, A2>
-): <I1, E1, A1 extends Intersecable>(
-  first: Decoder<I1, DecodeError<E1>, A1>
-) => IntersectD<typeof first, typeof second> {
-  return <I1, E1, A1 extends Intersecable>(
-    first: Decoder<I1, DecodeError<E1>, A1>
-  ): IntersectD<typeof first, typeof second> => ({
+): <I1, E1, A1>(first: Decoder<I1, DecodeError<E1>, A1>) => IntersectD<typeof first, typeof second> {
+  return <I1, E1, A1>(first: Decoder<I1, DecodeError<E1>, A1>): IntersectD<typeof first, typeof second> => ({
     _tag: 'IntersectD',
     first,
     second,
@@ -1264,7 +1257,6 @@ export function sum<T extends string>(
 // -------------------------------------------------------------------------------------
 
 import * as assert from 'assert'
-import { HKT, URIS, Kind } from 'fp-ts/lib/HKT'
 
 // -------------------------------------------------------------------------------------
 // use case: custom errors #578
@@ -1780,100 +1772,6 @@ assert.deepStrictEqual(
 )
 
 // -------------------------------------------------------------------------------------
-// use case: Schemable
-// -------------------------------------------------------------------------------------
-
-export function memoize<A, B>(f: (a: A) => B): (a: A) => B {
-  const cache = new Map()
-  return (a) => {
-    if (!cache.has(a)) {
-      const b = f(a)
-      cache.set(a, b)
-      return b
-    }
-    return cache.get(a)
-  }
-}
-
-export interface Schemable<S> {
-  readonly URI: S
-  //                         v-- this is the actual string decoder
-  readonly string: HKT<S, stringUD>
-  // this is the actual decoder returned by the nullable combinator --v
-  readonly nullable: <A extends AnyD>(or: HKT<S, A>) => HKT<S, NullableD<A>>
-  // etc...
-}
-
-export interface Schemable1<S extends URIS> {
-  readonly URI: S
-  readonly string: Kind<S, stringUD>
-  readonly nullable: <A extends AnyD>(or: Kind<S, A>) => Kind<S, NullableD<A>>
-  // etc...
-}
-
-export interface Schema<A> {
-  <S>(S: Schemable<S>): HKT<S, A>
-}
-
-export function make<A>(schema: Schema<A>): Schema<A> {
-  return memoize(schema)
-}
-
-export function compile<S extends URIS>(S: Schemable1<S>): <A>(schema: Schema<A>) => Kind<S, A>
-export function compile<S>(S: Schemable<S>): <A>(schema: Schema<A>) => HKT<S, A> {
-  return (schema) => schema(S)
-}
-
-// declare module 'fp-ts/lib/HKT' {
-//   interface URItoKind<A> {
-//     readonly 'io-ts/toDecoder': A
-//   }
-// }
-
-// export const toDecoder: Schemable1<'io-ts/toDecoder'> = {
-//   URI: 'io-ts/toDecoder',
-//   string: string,
-//   nullable: nullable
-//   // etc...
-// }
-
-// import { Eq } from 'fp-ts/lib/Eq'
-// import * as E from './Eq'
-
-// declare module 'fp-ts/lib/HKT' {
-//   interface URItoKind<A> {
-//     readonly 'io-ts/toEq': Eq<TypeOf<A>>
-//   }
-// }
-
-// export const toEq: Schemable1<'io-ts/toEq'> = {
-//   URI: 'io-ts/toEq',
-//   string: E.string,
-//   nullable: E.nullable
-//   // etc...
-// }
-
-// // const schema: Schema<NullableD<stringUD>>
-// const schema = make((S) => S.nullable(S.string))
-
-// // const decoder: NullableD<stringUD>
-// const decoder = compile(toDecoder)(schema)
-
-// // you can get access to the meta infos as usual
-// export const referenceToString = decoder.or
-
-// // const eq: Eq<string | null>
-// const eq = compile(toEq)(schema)
-
-// assert.deepStrictEqual(decoder.decode('a'), success('a'))
-// assert.deepStrictEqual(decoder.decode(null), success(null))
-// assert.deepStrictEqual(decoder.decode(1), failure(nullableE(stringLE(1))))
-
-// assert.deepStrictEqual(eq.equals('a', 'a'), true)
-// assert.deepStrictEqual(eq.equals(null, null), true)
-// assert.deepStrictEqual(eq.equals('a', 'b'), false)
-
-// -------------------------------------------------------------------------------------
 // use case: fail on any warning
 // -------------------------------------------------------------------------------------
 
@@ -2315,7 +2213,7 @@ export type PositiveIntDA = TypeOf<typeof PositiveIntD>
 export const PositiveIntUD = pipe(number, compose(PositiveIntD))
 export type PositiveIntUDI = InputOf<typeof PositiveIntUD>
 export type PositiveIntUDE = ErrorOf<typeof PositiveIntUD>
-export type PositiveIntUDA = TypeOf<typeof PositiveIntUD>
+export type PositiveInt = TypeOf<typeof PositiveIntUD>
 
 // pipe(PositiveIntUD.decode(null), debug)
 // pipe(PositiveIntUD.decode(-1), debug)
@@ -2341,3 +2239,96 @@ export type PositiveIntUDA = TypeOf<typeof PositiveIntUD>
 
 // export const NonEmptyStringUD = pipe(string, compose(NonEmptyStringD))
 // export type NonEmptyStringUDE = ErrorOf<typeof NonEmptyStringUD>
+
+// -------------------------------------------------------------------------------------
+// use case: Schemable
+// -------------------------------------------------------------------------------------
+
+export function memoize<A, B>(f: (a: A) => B): (a: A) => B {
+  const cache = new Map()
+  return (a) => {
+    if (!cache.has(a)) {
+      const b = f(a)
+      cache.set(a, b)
+      return b
+    }
+    return cache.get(a)
+  }
+}
+
+export interface Schemable<S> {
+  readonly URI: S
+  readonly string: HKT<S, string>
+  readonly nullable: <A>(or: HKT<S, A>) => HKT<S, null | A>
+}
+
+export interface Schemable2C<S extends URIS2, E> {
+  readonly URI: S
+  readonly string: Kind2<S, E, string>
+  readonly nullable: <A>(or: Kind2<S, E, A>) => Kind2<S, E, null | A>
+}
+
+export interface Schema<A> {
+  <S>(S: Schemable<S>): HKT<S, A>
+}
+
+export function make<A>(schema: Schema<A>): Schema<A> {
+  return memoize(schema)
+}
+
+export function interpreter<S extends URIS2, E>(S: Schemable2C<S, E>): <A>(schema: Schema<A>) => Kind2<S, E, A>
+export function interpreter<S>(S: Schemable<S>): <A>(schema: Schema<A>) => HKT<S, A> {
+  return (schema) => schema(S)
+}
+
+declare module 'fp-ts/lib/HKT' {
+  interface URItoKind2<E, A> {
+    readonly 'io-ts/toDecoder': Decoder<unknown, E, A>
+  }
+}
+
+export const getSchemable = <E = never>(): Schemable2C<'io-ts/toDecoder', DecodeError<E | StringE>> => {
+  return {
+    URI: 'io-ts/toDecoder',
+    string,
+    nullable
+  }
+}
+
+const schema = make((S) => S.nullable(S.string))
+
+export const decoder = interpreter(getSchemable())(schema)
+assert.deepStrictEqual(decoder.decode(null), success(null))
+assert.deepStrictEqual(decoder.decode('a'), success('a'))
+
+export interface MySchemable<S> extends Schemable<S> {
+  readonly boolean: HKT<S, boolean>
+}
+
+export interface MySchemable2C<S extends URIS2, E> extends Schemable2C<S, E> {
+  readonly boolean: Kind2<S, E, boolean>
+}
+
+export interface Schema2<A> {
+  <S>(S: MySchemable<S>): HKT<S, A>
+}
+
+export function make2<A>(schema: Schema2<A>): Schema2<A> {
+  return memoize(schema)
+}
+
+export function interpreter2<S extends URIS2, E>(S: MySchemable2C<S, E>): <A>(schema: Schema2<A>) => Kind2<S, E, A>
+export function interpreter2<S>(S: MySchemable<S>): <A>(schema: Schema2<A>) => HKT<S, A> {
+  return (schema) => schema(S)
+}
+
+export const Schemable2: MySchemable2C<'io-ts/toDecoder', DecodeError<StringE | BooleanE>> = {
+  ...getSchemable(),
+  boolean
+}
+
+const schema2 = make2((S) => S.nullable(S.boolean))
+
+export const decoder2 = interpreter2(Schemable2)(schema2)
+assert.deepStrictEqual(decoder2.decode(null), success(null))
+assert.deepStrictEqual(decoder2.decode(true), success(true))

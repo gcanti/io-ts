@@ -1,7 +1,8 @@
 import * as fc from 'fast-check'
 import { ReadonlyNonEmptyArray } from 'fp-ts/lib/ReadonlyNonEmptyArray'
-import * as D from '../src/poc'
-import { Schemable1, WithUnion1 } from '../src/Schemable2'
+import * as D from '../src/Decoder2'
+import * as DE from '../src/DecodeError2'
+import { Schemable1, WithUnknownContainers1, WithUnion1 } from '../src/Schemable2'
 
 // TODO: move to io-ts-contrib in v3
 
@@ -42,7 +43,7 @@ export const UnknownRecord: Arbitrary<Record<string, unknown>> = fc.dictionary(s
 // constructors
 // -------------------------------------------------------------------------------------
 
-export const literal = <A extends ReadonlyNonEmptyArray<D.Literal>>(...values: A): Arbitrary<A[number]> =>
+export const literal = <A extends ReadonlyNonEmptyArray<DE.Literal>>(...values: A): Arbitrary<A[number]> =>
   fc.oneof(...values.map((v) => fc.constant(v)))
 
 // -------------------------------------------------------------------------------------
@@ -74,9 +75,8 @@ export const union = <A extends ReadonlyArray<unknown>>(
   ...members: { [K in keyof A]: Arbitrary<A[K]> }
 ): Arbitrary<A[number]> => fc.oneof(...members)
 
-export const intersect = <B extends D.Intersecable>(right: Arbitrary<B>) => <A extends D.Intersecable>(
-  left: Arbitrary<A>
-): Arbitrary<A & B> => fc.tuple(left, right).map(([a, b]) => D.intersect_(a, b))
+export const intersect = <B>(right: Arbitrary<B>) => <A>(left: Arbitrary<A>): Arbitrary<A & B> =>
+  fc.tuple(left, right).map(([a, b]) => D.intersect_(a, b))
 
 export const lazy = <A>(f: () => Arbitrary<A>): Arbitrary<A> => {
   const get = D.memoize<void, Arbitrary<A>>(f)
@@ -99,26 +99,40 @@ export type URI = typeof URI
 
 declare module 'fp-ts/lib/HKT' {
   interface URItoKind<A> {
-    readonly [URI]: Arbitrary<D.TypeOf<A>>
+    readonly [URI]: Arbitrary<A>
   }
 }
 
-export const toArbitrary: Schemable1<URI> & WithUnion1<URI> = {
+export const Schemable: Schemable1<URI> = {
   URI: URI,
   literal,
   string,
   number,
   boolean,
-  UnknownArray,
-  UnknownRecord,
   tuple: tuple as any,
-  struct: struct as any,
-  partial: partial as any,
+  struct,
+  partial,
   array,
   record,
   nullable,
   intersect,
   lazy: (_, f) => lazy(f),
-  sum: sum as any,
+  sum
+}
+
+/**
+ * @category instances
+ * @since 2.2.8
+ */
+export const WithUnknownContainers: WithUnknownContainers1<URI> = {
+  UnknownArray,
+  UnknownRecord
+}
+
+/**
+ * @category instances
+ * @since 2.2.8
+ */
+export const WithUnion: WithUnion1<URI> = {
   union
 }

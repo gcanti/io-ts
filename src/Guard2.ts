@@ -12,7 +12,7 @@ import { Refinement } from 'fp-ts/lib/function'
 import { pipe } from 'fp-ts/lib/pipeable'
 import { ReadonlyNonEmptyArray } from 'fp-ts/lib/ReadonlyNonEmptyArray'
 import * as D from './poc'
-import { Schemable1, WithCompose1, WithId1, WithUnion1 } from './Schemable2'
+import { Schemable1, WithUnion1, WithUnknownContainers1 } from './Schemable2'
 
 // TODO: move to io-ts-contrib in v3
 
@@ -249,47 +249,48 @@ export const compose = <I, A extends I, B extends A>(to: Guard<A, B>) => (from: 
 // instances
 // -------------------------------------------------------------------------------------
 
-/**
- * @category instances
- * @since 2.2.17
- */
-export const URI = 'io-ts/toGuard'
-
-/**
- * @category instances
- * @since 2.2.17
- */
-export type URI = typeof URI
+// TODO: move to io-ts-contrib in v3
 
 declare module 'fp-ts/lib/HKT' {
   interface URItoKind<A> {
-    readonly [URI]: Guard<D.InputOf<A> | D.TypeOf<A>, D.TypeOf<A>>
+    readonly 'io-ts/ToGuard': Guard<unknown, A>
   }
 }
 
 /**
  * @category instances
- * @since 2.2.17
+ * @since 2.2.8
  */
-export const toGuard: Schemable1<URI> & WithId1<URI> & WithCompose1<URI> & WithUnion1<URI> = {
-  URI: URI,
+export const Schemable: Schemable1<'io-ts/ToGuard'> = {
+  URI: 'io-ts/ToGuard',
   literal,
   string,
   number,
   boolean,
-  UnknownArray,
-  UnknownRecord,
   tuple: tuple as any,
-  struct: struct as any,
-  partial: partial as any,
-  array: array as any,
-  record: record as any,
+  struct,
+  partial,
+  array,
+  record,
   nullable,
-  intersect: intersect as any,
+  intersect,
   lazy: (_, f) => lazy(f),
-  sum: sum as any,
+  sum
+}
 
-  union: union as any,
-  id,
-  compose: compose as any
+/**
+ * @category instances
+ * @since 2.2.8
+ */
+export const WithUnknownContainers: WithUnknownContainers1<'io-ts/ToGuard'> = {
+  UnknownArray,
+  UnknownRecord
+}
+
+/**
+ * @category instances
+ * @since 2.2.8
+ */
+export const WithUnion: WithUnion1<'io-ts/ToGuard'> = {
+  union
 }

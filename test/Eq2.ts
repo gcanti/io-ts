@@ -15,7 +15,7 @@ describe('Eq2', () => {
   })
 
   it('literal', () => {
-    const eq = E.toEq.literal('a', null)
+    const eq = E.Schemable.literal('a', null)
     assert.deepStrictEqual(eq.equals('a', 'a'), true)
     assert.deepStrictEqual(eq.equals(null, null), true)
     assert.deepStrictEqual(eq.equals('a', null), false)
@@ -73,7 +73,7 @@ describe('Eq2', () => {
       b: Array<A>
     }
 
-    const eq: Eq<A> = E.toEq.lazy('A', () =>
+    const eq: Eq<A> = E.Schemable.lazy('A', () =>
       E.struct({
         a: E.number,
         b: E.array(eq)
@@ -88,8 +88,8 @@ describe('Eq2', () => {
   it('sum', () => {
     const sum = E.sum('_tag')
     const eq = sum({
-      A: E.struct({ _tag: E.toEq.literal('A'), a: E.string }),
-      B: E.struct({ _tag: E.toEq.literal('B'), b: E.number })
+      A: E.struct({ _tag: E.Schemable.literal('A'), a: E.string }),
+      B: E.struct({ _tag: E.Schemable.literal('B'), b: E.number })
     })
     assert.strictEqual(eq.equals({ _tag: 'A', a: 'a' }, { _tag: 'A', a: 'a' }), true)
     assert.strictEqual(eq.equals({ _tag: 'B', b: 1 }, { _tag: 'B', b: 1 }), true)

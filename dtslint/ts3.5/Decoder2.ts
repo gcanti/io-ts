@@ -96,11 +96,11 @@ export type AUDA = D.TypeOf<typeof AUD>
 
 // fromRecord
 export const RD = D.fromRecord(D.number)
-// $ExpectType Record<string | number | symbol, unknown>
+// $ExpectType Record<string, unknown>
 export type RDI = D.InputOf<typeof RD>
 // $ExpectType FromRecordE<numberUD>
 export type RDE = D.ErrorOf<typeof RD>
-// $ExpectType Record<string | number | symbol, number>
+// $ExpectType Record<string, number>
 export type RDA = D.TypeOf<typeof RD>
 
 // record
@@ -109,7 +109,7 @@ export const RUD = D.record(D.number)
 export type RUDI = D.InputOf<typeof RUD>
 // $ExpectType CompositionE<UnknownRecordUD, FromRecordD<numberUD>>
 export type RUDE = D.ErrorOf<typeof RUD>
-// $ExpectType Record<string | number | symbol, number>
+// $ExpectType Record<string, number>
 export type RUDA = D.TypeOf<typeof RUD>
 
 // union
@@ -236,7 +236,7 @@ export type MKA = D.TypeOf<typeof MK>
 
 // unexpectedKeys
 const UK = D.unexpectedKeys({ a: null, b: null })
-// $ExpectType Record<string | number | symbol, unknown>
+// $ExpectType Record<string, unknown>
 export type UKI = D.InputOf<typeof UK>
 // $ExpectType UnexpectedKeysE
 export type UKE = D.ErrorOf<typeof UK>

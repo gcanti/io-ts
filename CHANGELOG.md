@@ -37,10 +37,12 @@
     - change `Decoder` definition
     - change `failure` signature
     - move `draw` to `TreeReporter` module
+    - remove `Schemable`, `WithUnknownContainers`, `WithUnion`, `WithRefine`
   - `Eq`
     - remove `URI`
     - remove `TypeOf`
     - remove `type`
+    - remove `Schemable`, `WithUnknownContainers`, `WithRefine`
   - `Guard`
     - remove `TypeOf`
     - remove `InputOf`
@@ -48,6 +50,7 @@
     - remove `type`
     - remove `alt`
     - remove `zero`
+    - remove `Schemable`, `WithUnknownContainers`, `WithUnion`, `WithRefine`
 
 # 2.2.16
 

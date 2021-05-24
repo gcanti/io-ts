@@ -209,7 +209,7 @@ describe('Guard2', () => {
       b: Array<A>
     }
 
-    const guard: G.Guard<unknown, A> = G.toGuard.lazy<unknown, never, A>('A', () =>
+    const guard: G.Guard<unknown, A> = G.Schemable.lazy<A>('A', () =>
       G.struct({
         a: G.number,
         b: G.array(guard)

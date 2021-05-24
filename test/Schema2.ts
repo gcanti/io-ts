@@ -1,18 +1,17 @@
 import * as fc from 'fast-check'
-import { isLeft } from 'fp-ts/lib/These'
 import { pipe } from 'fp-ts/lib/pipeable'
+import { isLeft } from 'fp-ts/lib/These'
 import * as D from '../src/Decoder2'
 import * as Eq from '../src/Eq2'
 import * as G from '../src/Guard2'
-import { interpreter, make, Schema, toDecoder } from '../src/Schemable2'
+import { interpreter, make, Schema } from '../src/Schema2'
 import * as A from './Arbitrary2'
-import * as DE from '../src/DecodeError2'
 
-function check<A extends D.AnyD>(schema: Schema<A>): void {
-  const arb = interpreter(A.toArbitrary)(schema)
-  const decoder = interpreter(toDecoder)(schema)
-  const guard = interpreter(G.toGuard)(schema)
-  const eq = interpreter(Eq.toEq)(schema)
+function check<A>(schema: Schema<A>): void {
+  const arb = interpreter(A.Schemable)(schema)
+  const decoder = interpreter(D.getSchemable())(schema)
+  const guard = interpreter(G.Schemable)(schema)
+  const eq = interpreter(Eq.Schemable)(schema)
   // decoders, guards and eqs should be aligned
   fc.assert(
     fc.property(arb, (a) => {
@@ -97,11 +96,7 @@ describe('Schema', () => {
       c?: number
     }
 
-    const schema: Schema<D.LazyD<
-      unknown,
-      DE.DecodeError<DE.UnknownRecordE | DE.StringE | DE.NumberE | DE.NaNE | DE.InfinityE>,
-      A
-    >> = make((S) =>
+    const schema: Schema<A> = make((S) =>
       S.lazy('A', () => pipe(S.struct({ a: S.string }), S.intersect(S.partial({ b: schema(S), c: S.number }))))
     )
     check(schema)

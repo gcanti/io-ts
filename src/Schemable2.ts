@@ -1,191 +1,125 @@
-import { HKT, Kind, URIS } from 'fp-ts/lib/HKT'
-import * as D from './Decoder2'
-import * as DE from './DecodeError2'
+import { HKT, Kind, Kind2, URIS, URIS2 } from 'fp-ts/lib/HKT'
 import { ReadonlyNonEmptyArray } from 'fp-ts/lib/ReadonlyNonEmptyArray'
+import * as DE from './DecodeError2'
 
 // TODO: move to io-ts-contrib in v3
 
-// -------------------------------------------------------------------------------------
-// use case: Schemable
-// -------------------------------------------------------------------------------------
-
+/**
+ * @since 2.2.3
+ */
 export interface Schemable<S> {
   readonly URI: S
-  readonly literal: <A extends ReadonlyNonEmptyArray<DE.Literal>>(...values: A) => HKT<S, D.LiteralD<A>>
-  readonly string: HKT<S, D.stringUD>
-  readonly number: HKT<S, D.numberUD>
-  readonly boolean: HKT<S, D.booleanUD>
-  readonly UnknownArray: HKT<S, D.UnknownArrayUD>
-  readonly UnknownRecord: HKT<S, D.UnknownRecordUD>
-  readonly struct: <A extends Record<PropertyKey, D.AnyUD>>(
-    properties: { [K in keyof A]: HKT<S, A[K]> }
-  ) => HKT<S, D.StructD<A>>
-  readonly partial: <A extends Record<PropertyKey, D.AnyUD>>(
-    properties: { [K in keyof A]: HKT<S, A[K]> }
-  ) => HKT<S, D.PartialD<A>>
-  readonly tuple: <A extends ReadonlyArray<D.AnyUD>>(
-    ...components: { [K in keyof A]: HKT<S, A[K]> }
-  ) => HKT<S, D.TupleD<A>>
-  readonly array: <A extends D.AnyUD>(item: HKT<S, A>) => HKT<S, D.ArrayD<A>>
-  readonly record: <A extends D.AnyUD>(codomain: HKT<S, A>) => HKT<S, D.RecordD<A>>
-  readonly nullable: <A extends D.AnyD>(or: HKT<S, A>) => HKT<S, D.NullableD<A>>
-  readonly intersect: <B extends D.Decoder<any, DE.DecodeError<any>, any>>(
-    b: HKT<S, B>
-  ) => <A extends D.Decoder<any, DE.DecodeError<any>, any>>(a: HKT<S, A>) => HKT<S, D.IntersectD<A, B>>
-  readonly lazy: <I, E, A>(id: string, f: () => HKT<S, D.Decoder<I, E, A>>) => HKT<S, D.LazyD<I, E, A>>
+  readonly literal: <A extends ReadonlyNonEmptyArray<DE.Literal>>(...values: A) => HKT<S, A[number]>
+  readonly string: HKT<S, string>
+  readonly number: HKT<S, number>
+  readonly boolean: HKT<S, boolean>
+  readonly struct: <A>(properties: { [K in keyof A]: HKT<S, A[K]> }) => HKT<S, { [K in keyof A]: A[K] }>
+  readonly partial: <A>(properties: { [K in keyof A]: HKT<S, A[K]> }) => HKT<S, Partial<{ [K in keyof A]: A[K] }>>
+  readonly tuple: <A extends ReadonlyArray<unknown>>(...components: { [K in keyof A]: HKT<S, A[K]> }) => HKT<S, A>
+  readonly array: <A>(item: HKT<S, A>) => HKT<S, Array<A>>
+  readonly record: <A>(codomain: HKT<S, A>) => HKT<S, Record<string, A>>
+  readonly nullable: <A>(or: HKT<S, A>) => HKT<S, null | A>
+  readonly intersect: <B>(right: HKT<S, B>) => <A>(left: HKT<S, A>) => HKT<S, A & B>
+  readonly lazy: <A>(id: string, f: () => HKT<S, A>) => HKT<S, A>
   readonly sum: <T extends string>(
     tag: T
-  ) => <A extends Record<string, D.AnyUD>>(members: { [K in keyof A]: HKT<S, A[K]> }) => HKT<S, D.SumD<T, A>>
+  ) => <A>(members: { [K in keyof A]: HKT<S, A[K] & Record<T, K>> }) => HKT<S, A[keyof A]>
 }
 
-export interface WithMap<S> {
-  readonly map: <A extends D.AnyD, B>(f: (a: D.TypeOf<A>) => B) => (sa: HKT<S, A>) => HKT<S, D.MapD<A, B>>
-}
-
-export interface WithMapLeft<S> {
-  readonly mapLeft: <A extends D.AnyD, E>(f: (e: D.ErrorOf<A>) => E) => (sa: HKT<S, A>) => HKT<S, D.MapLeftD<A, E>>
-}
-
-export interface WithId<S> {
-  readonly id: <A>() => HKT<S, D.IdentityD<A>>
-}
-
-export interface WithCompose<S> {
-  readonly compose: <A extends D.AnyD, N extends HKT<S, D.Decoder<D.TypeOf<A>, any, any>>>(
-    next: N
-  ) => (sa: HKT<S, A>) => HKT<S, D.CompositionD<A, N>>
-}
-
-export interface WithUnion<S> {
-  readonly union: <A extends ReadonlyArray<D.AnyD>>(...members: { [K in keyof A]: HKT<S, A[K]> }) => HKT<S, D.UnionD<A>>
-}
-
+/**
+ * @since 2.2.3
+ */
 export interface Schemable1<S extends URIS> {
   readonly URI: S
-  readonly literal: <A extends ReadonlyNonEmptyArray<DE.Literal>>(...values: A) => Kind<S, D.LiteralD<A>>
-  readonly string: Kind<S, D.stringUD>
-  readonly number: Kind<S, D.numberUD>
-  readonly boolean: Kind<S, D.booleanUD>
-  readonly UnknownArray: Kind<S, D.UnknownArrayUD>
-  readonly UnknownRecord: Kind<S, D.UnknownRecordUD>
-  readonly struct: <A extends Record<PropertyKey, D.AnyUD>>(
-    properties: { [K in keyof A]: Kind<S, A[K]> }
-  ) => Kind<S, D.StructD<A>>
-  readonly partial: <A extends Record<PropertyKey, D.AnyUD>>(
-    properties: { [K in keyof A]: Kind<S, A[K]> }
-  ) => Kind<S, D.PartialD<A>>
-  readonly tuple: <A extends ReadonlyArray<D.AnyUD>>(
-    ...components: { [K in keyof A]: Kind<S, A[K]> }
-  ) => Kind<S, D.TupleD<A>>
-  readonly array: <A extends D.AnyUD>(item: Kind<S, A>) => Kind<S, D.ArrayD<A>>
-  readonly record: <A extends D.AnyUD>(codomain: Kind<S, A>) => Kind<S, D.RecordD<A>>
-  readonly nullable: <A extends D.AnyD>(or: Kind<S, A>) => Kind<S, D.NullableD<A>>
-  readonly intersect: <B extends D.Decoder<any, DE.DecodeError<any>, any>>(
-    b: Kind<S, B>
-  ) => <A extends D.Decoder<any, DE.DecodeError<any>, any>>(a: Kind<S, A>) => Kind<S, D.IntersectD<A, B>>
-  readonly lazy: <I, E, A>(id: string, f: () => Kind<S, D.Decoder<I, E, A>>) => Kind<S, D.LazyD<I, E, A>>
+  readonly literal: <A extends ReadonlyNonEmptyArray<DE.Literal>>(...values: A) => Kind<S, A[number]>
+  readonly string: Kind<S, string>
+  readonly number: Kind<S, number>
+  readonly boolean: Kind<S, boolean>
+  readonly struct: <A>(properties: { [K in keyof A]: Kind<S, A[K]> }) => Kind<S, { [K in keyof A]: A[K] }>
+  readonly partial: <A>(properties: { [K in keyof A]: Kind<S, A[K]> }) => Kind<S, Partial<{ [K in keyof A]: A[K] }>>
+  readonly tuple: <A extends ReadonlyArray<unknown>>(...components: { [K in keyof A]: Kind<S, A[K]> }) => Kind<S, A>
+  readonly array: <A>(item: Kind<S, A>) => Kind<S, Array<A>>
+  readonly record: <A>(codomain: Kind<S, A>) => Kind<S, Record<string, A>>
+  readonly nullable: <A>(or: Kind<S, A>) => Kind<S, null | A>
+  readonly intersect: <B>(right: Kind<S, B>) => <A>(left: Kind<S, A>) => Kind<S, A & B>
+  readonly lazy: <A>(id: string, f: () => Kind<S, A>) => Kind<S, A>
   readonly sum: <T extends string>(
     tag: T
-  ) => <A extends Record<string, D.AnyUD>>(members: { [K in keyof A]: Kind<S, A[K]> }) => Kind<S, D.SumD<T, A>>
+  ) => <A>(members: { [K in keyof A]: Kind<S, A[K] & Record<T, K>> }) => Kind<S, A[keyof A]>
 }
 
-export interface WithMap1<S extends URIS> {
-  readonly map: <A extends D.AnyD, B>(f: (a: D.TypeOf<A>) => B) => (sa: Kind<S, A>) => Kind<S, D.MapD<A, B>>
+/**
+ * @since 2.2.8
+ */
+export interface Schemable2C<S extends URIS2, E> {
+  readonly URI: S
+  readonly _E: E
+  readonly literal: <A extends ReadonlyNonEmptyArray<DE.Literal>>(...values: A) => Kind2<S, E, A[number]>
+  readonly string: Kind2<S, E, string>
+  readonly number: Kind2<S, E, number>
+  readonly boolean: Kind2<S, E, boolean>
+  readonly struct: <A>(properties: { [K in keyof A]: Kind2<S, E, A[K]> }) => Kind2<S, E, { [K in keyof A]: A[K] }>
+  readonly partial: <A>(
+    properties: { [K in keyof A]: Kind2<S, E, A[K]> }
+  ) => Kind2<S, E, Partial<{ [K in keyof A]: A[K] }>>
+  readonly tuple: <A extends ReadonlyArray<unknown>>(
+    ...components: { [K in keyof A]: Kind2<S, E, A[K]> }
+  ) => Kind2<S, E, A>
+  readonly array: <A>(item: Kind2<S, E, A>) => Kind2<S, E, Array<A>>
+  readonly record: <A>(codomain: Kind2<S, E, A>) => Kind2<S, E, Record<string, A>>
+  readonly nullable: <A>(or: Kind2<S, E, A>) => Kind2<S, E, null | A>
+  readonly intersect: <B>(right: Kind2<S, E, B>) => <A>(left: Kind2<S, E, A>) => Kind2<S, E, A & B>
+  readonly lazy: <A>(id: string, f: () => Kind2<S, E, A>) => Kind2<S, E, A>
+  readonly sum: <T extends string>(
+    tag: T
+  ) => <A>(members: { [K in keyof A]: Kind2<S, E, A[K] & Record<T, K>> }) => Kind2<S, E, A[keyof A]>
 }
 
-export interface WithMapLeft1<S extends URIS> {
-  readonly mapLeft: <A extends D.AnyD, E>(f: (e: D.ErrorOf<A>) => E) => (sa: Kind<S, A>) => Kind<S, D.MapLeftD<A, E>>
+/**
+ * @since 2.2.3
+ */
+export interface WithUnknownContainers<S> {
+  readonly UnknownArray: HKT<S, Array<unknown>>
+  readonly UnknownRecord: HKT<S, Record<string, unknown>>
 }
 
-export interface WithId1<S extends URIS> {
-  readonly id: <A>() => Kind<S, D.IdentityD<A>>
+/**
+ * @since 2.2.3
+ */
+export interface WithUnknownContainers1<S extends URIS> {
+  readonly UnknownArray: Kind<S, Array<unknown>>
+  readonly UnknownRecord: Kind<S, Record<string, unknown>>
 }
 
-export interface WithCompose1<S extends URIS> {
-  readonly compose: <A extends D.AnyD, N extends Kind<S, D.Decoder<D.TypeOf<A>, any, string>>>(
-    next: N
-  ) => (sa: Kind<S, A>) => Kind<S, D.CompositionD<A, N>>
+/**
+ * @since 2.2.8
+ */
+export interface WithUnknownContainers2C<S extends URIS2, E> {
+  readonly UnknownArray: Kind2<S, E, Array<unknown>>
+  readonly UnknownRecord: Kind2<S, E, Record<string, unknown>>
 }
 
+/**
+ * @since 2.2.3
+ */
+export interface WithUnion<S> {
+  readonly union: <A extends ReadonlyArray<unknown>>(...members: { [K in keyof A]: HKT<S, A[K]> }) => HKT<S, A[number]>
+}
+
+/**
+ * @since 2.2.3
+ */
 export interface WithUnion1<S extends URIS> {
-  readonly union: <A extends ReadonlyArray<D.AnyD>>(
+  readonly union: <A extends ReadonlyArray<unknown>>(
     ...members: { [K in keyof A]: Kind<S, A[K]> }
-  ) => Kind<S, D.UnionD<A>>
+  ) => Kind<S, A[number]>
 }
 
-export interface Schema<A> {
-  <S>(S: Schemable<S>): HKT<S, A>
+/**
+ * @since 2.2.8
+ */
+export interface WithUnion2C<S extends URIS2, E> {
+  readonly union: <A extends ReadonlyArray<unknown>>(
+    ...members: { [K in keyof A]: Kind2<S, E, A[K]> }
+  ) => Kind2<S, E, A[number]>
 }
-
-export function make<A>(schema: Schema<A>): Schema<A> {
-  return D.memoize(schema)
-}
-
-export function interpreter<S extends URIS>(S: Schemable1<S>): <A>(schema: Schema<A>) => Kind<S, A>
-export function interpreter<S>(S: Schemable<S>): <A>(schema: Schema<A>) => HKT<S, A> {
-  return (schema) => schema(S)
-}
-
-const URI = 'io-ts/toDecoder'
-
-type URI = typeof URI
-
-declare module 'fp-ts/lib/HKT' {
-  interface URItoKind<A> {
-    readonly [URI]: A
-  }
-}
-
-export const toDecoder: Schemable1<URI> &
-  WithMap1<URI> &
-  WithMapLeft1<URI> &
-  WithId1<URI> &
-  WithCompose1<URI> &
-  WithUnion1<URI> = {
-  URI: 'io-ts/toDecoder',
-  literal: D.literal,
-  string: D.string,
-  number: D.number,
-  boolean: D.boolean,
-  UnknownArray: D.UnknownArray,
-  UnknownRecord: D.UnknownRecord,
-  tuple: D.tuple,
-  struct: D.struct,
-  partial: D.partial,
-  array: D.array,
-  record: D.record,
-  nullable: D.nullable,
-  intersect: D.intersect,
-  lazy: D.lazy,
-  sum: D.sum,
-
-  map: D.map,
-  mapLeft: D.mapLeft,
-  id: D.id,
-  compose: D.compose,
-  union: D.union
-}
-
-// -------------------------------------------------------------------------------------
-// example
-// -------------------------------------------------------------------------------------
-
-import * as assert from 'assert'
-import { toEq } from './Eq2'
-import { toGuard } from './Guard2'
-
-const schema = make((S) => S.tuple(S.nullable(S.string)))
-
-export const decoder = interpreter(toDecoder)(schema)
-assert.deepStrictEqual(decoder.decode([null]), D.success([null]))
-assert.deepStrictEqual(decoder.decode(['a']), D.success(['a']))
-
-export const guard = interpreter(toGuard)(schema)
-assert.deepStrictEqual(guard.is([null]), true)
-assert.deepStrictEqual(guard.is(['a']), true)
-assert.deepStrictEqual(guard.is([1]), false)
-
-export const eq = interpreter(toEq)(schema)
-assert.deepStrictEqual(eq.equals([null], [null]), true)
-assert.deepStrictEqual(eq.equals(['a'], ['a']), true)
-assert.deepStrictEqual(eq.equals(['a'], ['b']), false)
