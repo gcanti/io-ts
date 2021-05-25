@@ -669,15 +669,6 @@ Warnings:
       U.deepStrictEqual(decoder.decode(1), TH.right(1))
     })
 
-    it('should return a left with zero members', () => {
-      const decoder = _.union()
-      U.deepStrictEqual(
-        pipe(decoder.decode(null), print),
-        `Errors:
-no members`
-      )
-    })
-
     it('should return a both', () => {
       const decoder = _.union(_.string, _.number)
       U.deepStrictEqual(

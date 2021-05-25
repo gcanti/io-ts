@@ -140,8 +140,6 @@ export const toTreeBuiltin = (de: DE.BuiltinE): Tree<string> => {
           de.tag
         )}, expected one of ${de.literals.map((literal) => JSON.stringify(literal)).join(', ')}`
       )
-    case 'NoMembersE':
-      return tree('no members')
   }
 }
 

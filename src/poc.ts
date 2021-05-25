@@ -251,14 +251,6 @@ export interface TagE {
 export interface TagLE extends LeafE<TagE> {}
 export const tagLE = (tag: string, literals: ReadonlyArray<string>): TagLE => leafE({ _tag: 'TagE', tag, literals })
 
-export interface NoMembersE {
-  readonly _tag: 'NoMembersE'
-}
-export interface NoMembersLE extends LeafE<NoMembersE> {}
-export const noMembersLE: NoMembersLE = leafE({
-  _tag: 'NoMembersE'
-})
-
 export interface NullableE<E> {
   readonly _tag: 'NullableE'
   readonly error: E
@@ -405,7 +397,6 @@ export type BuiltinE =
   | NaNE
   | InfinityE
   | TagE
-  | NoMembersE
 
 // -------------------------------------------------------------------------------------
 // decoder primitives
@@ -896,44 +887,42 @@ export function record<E, A>(codomain: Decoder<unknown, E, A>): RecordD<typeof c
 
 type UnionToIntersection<U> = (U extends any ? (k: U) => void : never) extends (k: infer I) => void ? I : never
 
-const append = <A>(end: A) => (init: ReadonlyArray<A>): ReadonlyNonEmptyArray<A> => {
-  if (RA.isNonEmpty(init)) {
-    const tail = init.slice(1)
-    tail.push(end)
-    return [init[0], ...tail]
-  }
-  return [end]
-}
-
-export interface UnionE<Members extends ReadonlyArray<AnyD>>
+export interface UnionE<Members extends ReadonlyNonEmptyArray<AnyD>>
   extends CompoundE<{ [K in keyof Members]: MemberE<K, ErrorOf<Members[K]>> }[number]> {}
-export interface UnionD<Members extends ReadonlyArray<AnyD>>
-  extends Decoder<
-    UnionToIntersection<InputOf<Members[number]>>,
-    NoMembersLE | UnionE<Members>,
-    TypeOf<Members[keyof Members]>
-  > {
+export interface UnionD<Members extends ReadonlyNonEmptyArray<AnyD>>
+  extends Decoder<UnionToIntersection<InputOf<Members[number]>>, UnionE<Members>, TypeOf<Members[keyof Members]>> {
   readonly _tag: 'UnionD'
   readonly members: Members
 }
-export function union<Members extends ReadonlyArray<AnyD>>(...members: Members): UnionD<Members> {
+export function union<Members extends ReadonlyNonEmptyArray<AnyD>>(...members: Members): UnionD<Members> {
   return {
     _tag: 'UnionD',
     members,
     decode: (i) => {
-      const es: Array<MemberE<number, ErrorOf<Members[number]>>> = []
-      for (let m = 0; m < members.length; m++) {
-        const de = members[m].decode(i)
-        if (TH.isLeft(de)) {
-          es.push(memberE(String(m) as any, de.left))
-        } else {
-          return pipe(
-            de,
-            TH.mapLeft((e) => unionE(pipe(es, append(memberE(String(m) as any, e)))))
-          )
+      const de = members[0].decode(i)
+      if (TH.isLeft(de)) {
+        const es: NonEmptyArray<MemberE<number, ErrorOf<Members[number]>>> = [memberE('0' as any, de.left)]
+        for (let m = 1; m < members.length; m++) {
+          const de = members[m].decode(i)
+          if (TH.isLeft(de)) {
+            es.push(memberE(String(m) as any, de.left))
+          } else {
+            return pipe(
+              de,
+              TH.mapLeft((e) => {
+                es.push(memberE(String(m) as any, e))
+                return unionE(es)
+              })
+            )
+          }
         }
+        return failure(unionE(es))
+      } else {
+        return pipe(
+          de,
+          TH.mapLeft((e) => unionE([memberE('0' as any, e)]))
+        )
       }
-      return RA.isNonEmpty(es) ? failure(unionE(es)) : failure(noMembersLE)
     }
   }
 }
@@ -1257,6 +1246,7 @@ export function sum<T extends string>(
 // -------------------------------------------------------------------------------------
 
 import * as assert from 'assert'
+import { NonEmptyArray } from 'fp-ts/lib/NonEmptyArray'
 
 // -------------------------------------------------------------------------------------
 // use case: custom errors #578
@@ -1398,8 +1388,6 @@ export const toTreeBuiltin = (de: BuiltinE): Tree<string> => {
           de.tag
         )}, expected one of ${de.literals.map((literal) => JSON.stringify(literal)).join(', ')}`
       )
-    case 'NoMembersE':
-      return tree('no members')
   }
 }
 
@@ -2169,7 +2157,7 @@ export interface NoFunctionArray extends Array<Value | NoFunctionObject> {}
 
 export const Value: Decoder<
   unknown,
-  DecodeError<StringE | NumberE | NaNE | InfinityE | BooleanE | UnknownRecordE | UnknownArrayE | NoMembersE>,
+  DecodeError<StringE | NumberE | NaNE | InfinityE | BooleanE | UnknownRecordE | UnknownArrayE>,
   Value
 > = lazy('Value', () => {
   const NoFunctionObject = record(Value)

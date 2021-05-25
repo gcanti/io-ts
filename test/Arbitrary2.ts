@@ -71,7 +71,7 @@ export const array = <A>(item: Arbitrary<A>): Arbitrary<Array<A>> => fc.array(it
 
 export const record = <A>(codomain: Arbitrary<A>): Arbitrary<Record<string, A>> => fc.dictionary(string, codomain)
 
-export const union = <A extends ReadonlyArray<unknown>>(
+export const union = <A extends readonly [unknown, ...ReadonlyArray<unknown>]>(
   ...members: { [K in keyof A]: Arbitrary<A[K]> }
 ): Arbitrary<A[number]> => fc.oneof(...members)
 
@@ -134,5 +134,5 @@ export const WithUnknownContainers: WithUnknownContainers1<URI> = {
  * @since 2.2.8
  */
 export const WithUnion: WithUnion1<URI> = {
-  union
+  union: union as any
 }

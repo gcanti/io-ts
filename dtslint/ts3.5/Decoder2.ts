@@ -116,7 +116,7 @@ export type RUDA = D.TypeOf<typeof RUD>
 export const UD = D.union(D.string, D.number)
 // $ExpectType unknown
 export type UDI = D.InputOf<typeof UD>
-// $ExpectType NoMembersLE | UnionE<[stringUD, numberUD]>
+// $ExpectType UnionE<[stringUD, numberUD]>
 export type UDE = D.ErrorOf<typeof UD>
 // $ExpectType string | number
 export type UDA = D.TypeOf<typeof UD>

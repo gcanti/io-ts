@@ -104,20 +104,6 @@ export interface TagLE extends LeafE<TagE> {}
  * @category model
  * @since 2.2.17
  */
-export interface NoMembersE {
-  readonly _tag: 'NoMembersE'
-}
-
-/**
- * @category model
- * @since 2.2.17
- */
-export interface NoMembersLE extends LeafE<NoMembersE> {}
-
-/**
- * @category model
- * @since 2.2.17
- */
 export interface NullableE<E> {
   readonly _tag: 'NullableE'
   readonly error: E
@@ -401,14 +387,6 @@ export const leafE = <E>(error: E): LeafE<E> => ({ _tag: 'LeafE', error })
  * @since 2.2.17
  */
 export const tagLE = (tag: string, literals: ReadonlyArray<string>): TagLE => leafE({ _tag: 'TagE', tag, literals })
-
-/**
- * @category constructors
- * @since 2.2.17
- */
-export const noMembersLE: NoMembersLE = leafE({
-  _tag: 'NoMembersE'
-})
 
 /**
  * @category constructors
@@ -705,4 +683,3 @@ export type BuiltinE =
   | NaNE
   | InfinityE
   | TagE
-  | NoMembersE

@@ -292,5 +292,5 @@ export const WithUnknownContainers: WithUnknownContainers1<'io-ts/ToGuard'> = {
  * @since 2.2.8
  */
 export const WithUnion: WithUnion1<'io-ts/ToGuard'> = {
-  union
+  union: union as any
 }

@@ -1,6 +1,7 @@
 import { Bifunctor3 } from 'fp-ts/lib/Bifunctor'
 import { flow, Lazy } from 'fp-ts/lib/function'
 import { Functor3 } from 'fp-ts/lib/Functor'
+import { NonEmptyArray } from 'fp-ts/lib/NonEmptyArray'
 import * as O from 'fp-ts/lib/Option'
 import { pipe } from 'fp-ts/lib/pipeable'
 import * as RA from 'fp-ts/lib/ReadonlyArray'
@@ -683,44 +684,42 @@ export function record<E, A>(codomain: Decoder<unknown, E, A>): RecordD<typeof c
 
 type UnionToIntersection<U> = (U extends any ? (k: U) => void : never) extends (k: infer I) => void ? I : never
 
-const append = <A>(end: A) => (init: ReadonlyArray<A>): ReadonlyNonEmptyArray<A> => {
-  if (RA.isNonEmpty(init)) {
-    const tail = init.slice(1)
-    tail.push(end)
-    return [init[0], ...tail]
-  }
-  return [end]
-}
-
-export interface UnionE<Members extends ReadonlyArray<AnyD>>
+export interface UnionE<Members extends ReadonlyNonEmptyArray<AnyD>>
   extends DE.CompoundE<{ [K in keyof Members]: DE.MemberE<K, ErrorOf<Members[K]>> }[number]> {}
-export interface UnionD<Members extends ReadonlyArray<AnyD>>
-  extends Decoder<
-    UnionToIntersection<InputOf<Members[number]>>,
-    DE.NoMembersLE | UnionE<Members>,
-    TypeOf<Members[keyof Members]>
-  > {
+export interface UnionD<Members extends ReadonlyNonEmptyArray<AnyD>>
+  extends Decoder<UnionToIntersection<InputOf<Members[number]>>, UnionE<Members>, TypeOf<Members[keyof Members]>> {
   readonly _tag: 'UnionD'
   readonly members: Members
 }
-export function union<Members extends ReadonlyArray<AnyD>>(...members: Members): UnionD<Members> {
+export function union<Members extends ReadonlyNonEmptyArray<AnyD>>(...members: Members): UnionD<Members> {
   return {
     _tag: 'UnionD',
     members,
     decode: (i) => {
-      const es: Array<DE.MemberE<number, ErrorOf<Members[number]>>> = []
-      for (let m = 0; m < members.length; m++) {
-        const de = members[m].decode(i)
-        if (TH.isLeft(de)) {
-          es.push(DE.memberE(String(m) as any, de.left))
-        } else {
-          return pipe(
-            de,
-            TH.mapLeft((e) => DE.unionE(pipe(es, append(DE.memberE(String(m) as any, e)))))
-          )
+      const de = members[0].decode(i)
+      if (TH.isLeft(de)) {
+        const es: NonEmptyArray<DE.MemberE<number, ErrorOf<Members[number]>>> = [DE.memberE('0' as any, de.left)]
+        for (let m = 1; m < members.length; m++) {
+          const de = members[m].decode(i)
+          if (TH.isLeft(de)) {
+            es.push(DE.memberE(String(m) as any, de.left))
+          } else {
+            return pipe(
+              de,
+              TH.mapLeft((e) => {
+                es.push(DE.memberE(String(m) as any, e))
+                return DE.unionE(es)
+              })
+            )
+          }
         }
+        return failure(DE.unionE(es))
+      } else {
+        return pipe(
+          de,
+          TH.mapLeft((e) => DE.unionE([DE.memberE('0' as any, e)]))
+        )
       }
-      return RA.isNonEmpty(es) ? failure(DE.unionE(es)) : failure(DE.noMembersLE)
     }
   }
 }

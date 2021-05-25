@@ -103,14 +103,16 @@ export interface WithUnknownContainers2C<S extends URIS2, E> {
  * @since 2.2.3
  */
 export interface WithUnion<S> {
-  readonly union: <A extends ReadonlyArray<unknown>>(...members: { [K in keyof A]: HKT<S, A[K]> }) => HKT<S, A[number]>
+  readonly union: <A extends readonly [unknown, ...ReadonlyArray<unknown>]>(
+    ...members: { [K in keyof A]: HKT<S, A[K]> }
+  ) => HKT<S, A[number]>
 }
 
 /**
  * @since 2.2.3
  */
 export interface WithUnion1<S extends URIS> {
-  readonly union: <A extends ReadonlyArray<unknown>>(
+  readonly union: <A extends readonly [unknown, ...ReadonlyArray<unknown>]>(
     ...members: { [K in keyof A]: Kind<S, A[K]> }
   ) => Kind<S, A[number]>
 }
@@ -119,7 +121,7 @@ export interface WithUnion1<S extends URIS> {
  * @since 2.2.8
  */
 export interface WithUnion2C<S extends URIS2, E> {
-  readonly union: <A extends ReadonlyArray<unknown>>(
+  readonly union: <A extends readonly [unknown, ...ReadonlyArray<unknown>]>(
     ...members: { [K in keyof A]: Kind2<S, E, A[K]> }
   ) => Kind2<S, E, A[number]>
 }
