@@ -1,10 +1,10 @@
 ---
-title: Eq.ts
-nav_order: 7
+title: Eq2.ts
+nav_order: 8
 parent: Modules
 ---
 
-## Eq overview
+## Eq2 overview
 
 **This module is experimental**
 
@@ -25,15 +25,12 @@ Added in v2.2.2
   - [lazy](#lazy)
   - [nullable](#nullable)
   - [partial](#partial)
-  - [readonly](#readonly)
   - [record](#record)
   - [struct](#struct)
   - [sum](#sum)
   - [tuple](#tuple)
-  - [~~type~~](#type)
 - [instances](#instances)
   - [Schemable](#schemable)
-  - [WithRefine](#withrefine)
   - [WithUnknownContainers](#withunknowncontainers)
 - [primitives](#primitives)
   - [UnknownArray](#unknownarray)
@@ -41,9 +38,6 @@ Added in v2.2.2
   - [boolean](#boolean)
   - [number](#number)
   - [string](#string)
-- [utils](#utils)
-  - [TypeOf (type alias)](#typeof-type-alias)
-  - [URI (type alias)](#uri-type-alias)
 
 ---
 
@@ -54,7 +48,7 @@ Added in v2.2.2
 **Signature**
 
 ```ts
-export declare const array: <A>(eq: E.Eq<A>) => E.Eq<A[]>
+export declare const array: <A>(item: E.Eq<A>) => E.Eq<A[]>
 ```
 
 Added in v2.2.2
@@ -84,7 +78,7 @@ Added in v2.2.2
 **Signature**
 
 ```ts
-export declare function nullable<A>(or: Eq<A>): Eq<null | A>
+export declare const nullable: <A>(or: E.Eq<A>) => E.Eq<A>
 ```
 
 Added in v2.2.2
@@ -94,20 +88,10 @@ Added in v2.2.2
 **Signature**
 
 ```ts
-export declare function partial<A>(properties: { [K in keyof A]: Eq<A[K]> }): Eq<Partial<{ [K in keyof A]: A[K] }>>
+export declare const partial: <A>(properties: { [K in keyof A]: E.Eq<A[K]> }) => E.Eq<Partial<{ [K in keyof A]: A[K] }>>
 ```
 
 Added in v2.2.2
-
-## readonly
-
-**Signature**
-
-```ts
-export declare const readonly: <A>(eq: E.Eq<A>) => E.Eq<Readonly<A>>
-```
-
-Added in v2.2.15
 
 ## record
 
@@ -124,7 +108,7 @@ Added in v2.2.2
 **Signature**
 
 ```ts
-export declare const struct: <A>(eqs: { [K in keyof A]: E.Eq<A[K]> }) => E.Eq<{ [K in keyof A]: A[K] }>
+export declare const struct: <A>(properties: { [K in keyof A]: E.Eq<A[K]> }) => E.Eq<{ [K in keyof A]: A[K] }>
 ```
 
 Added in v2.2.15
@@ -134,9 +118,9 @@ Added in v2.2.15
 **Signature**
 
 ```ts
-export declare function sum<T extends string>(
+export declare const sum: <T extends string>(
   tag: T
-): <A>(members: { [K in keyof A]: Eq<A[K] & Record<T, K>> }) => Eq<A[keyof A]>
+) => <A>(members: { [K in keyof A]: E.Eq<A[K] & Record<T, K>> }) => E.Eq<A[keyof A]>
 ```
 
 Added in v2.2.2
@@ -151,18 +135,6 @@ export declare const tuple: <A extends readonly unknown[]>(...components: { [K i
 
 Added in v2.2.2
 
-## ~~type~~
-
-Use `struct` instead.
-
-**Signature**
-
-```ts
-export declare const type: <A>(eqs: { [K in keyof A]: E.Eq<A[K]> }) => E.Eq<{ [K in keyof A]: A[K] }>
-```
-
-Added in v2.2.2
-
 # instances
 
 ## Schemable
@@ -170,17 +142,7 @@ Added in v2.2.2
 **Signature**
 
 ```ts
-export declare const Schemable: Schemable1<'Eq'>
-```
-
-Added in v2.2.8
-
-## WithRefine
-
-**Signature**
-
-```ts
-export declare const WithRefine: WithRefine1<'Eq'>
+export declare const Schemable: Schemable1<'io-ts/ToEq'>
 ```
 
 Added in v2.2.8
@@ -190,7 +152,7 @@ Added in v2.2.8
 **Signature**
 
 ```ts
-export declare const WithUnknownContainers: WithUnknownContainers1<'Eq'>
+export declare const WithUnknownContainers: WithUnknownContainers1<'io-ts/ToEq'>
 ```
 
 Added in v2.2.8
@@ -246,25 +208,3 @@ export declare const string: E.Eq<string>
 ```
 
 Added in v2.2.2
-
-# utils
-
-## TypeOf (type alias)
-
-**Signature**
-
-```ts
-export type TypeOf<E> = E extends Eq<infer A> ? A : never
-```
-
-Added in v2.2.2
-
-## URI (type alias)
-
-**Signature**
-
-```ts
-export type URI = E.URI
-```
-
-Added in v2.2.3

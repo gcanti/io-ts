@@ -1,0 +1,3 @@
+{
+  "exclude": ["src/poc.ts", "src/Codec2.ts"]
+}

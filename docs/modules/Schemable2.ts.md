@@ -1,22 +1,44 @@
-/**
- * **This module is experimental**
- *
- * Experimental features are published in order to get early feedback from the community, see these tracking
- * [issues](https://github.com/gcanti/io-ts/issues?q=label%3Av2.2+) for further discussions and enhancements.
- *
- * A feature tagged as _Experimental_ is in a high state of flux, you're at risk of it changing without notice.
- *
- * @since 2.2.0
- */
-import { HKT, Kind, Kind2, URIS, URIS2 } from 'fp-ts/lib/HKT'
-import { ReadonlyNonEmptyArray } from 'fp-ts/lib/ReadonlyNonEmptyArray'
-import * as DE from './DecodeError2'
+---
+title: Schemable2.ts
+nav_order: 19
+parent: Modules
+---
 
-// TODO: move to io-ts-contrib in v3
+## Schemable2 overview
 
-/**
- * @since 2.2.3
- */
+**This module is experimental**
+
+Experimental features are published in order to get early feedback from the community, see these tracking
+[issues](https://github.com/gcanti/io-ts/issues?q=label%3Av2.2+) for further discussions and enhancements.
+
+A feature tagged as _Experimental_ is in a high state of flux, you're at risk of it changing without notice.
+
+Added in v2.2.0
+
+---
+
+<h2 class="text-delta">Table of contents</h2>
+
+- [utils](#utils)
+  - [Schemable (interface)](#schemable-interface)
+  - [Schemable1 (interface)](#schemable1-interface)
+  - [Schemable2C (interface)](#schemable2c-interface)
+  - [WithUnion (interface)](#withunion-interface)
+  - [WithUnion1 (interface)](#withunion1-interface)
+  - [WithUnion2C (interface)](#withunion2c-interface)
+  - [WithUnknownContainers (interface)](#withunknowncontainers-interface)
+  - [WithUnknownContainers1 (interface)](#withunknowncontainers1-interface)
+  - [WithUnknownContainers2C (interface)](#withunknowncontainers2c-interface)
+
+---
+
+# utils
+
+## Schemable (interface)
+
+**Signature**
+
+```ts
 export interface Schemable<S> {
   readonly URI: S
   readonly literal: <A extends ReadonlyNonEmptyArray<DE.Literal>>(...values: A) => HKT<S, A[number]>
@@ -35,10 +57,15 @@ export interface Schemable<S> {
     tag: T
   ) => <A>(members: { [K in keyof A]: HKT<S, A[K] & Record<T, K>> }) => HKT<S, A[keyof A]>
 }
+```
 
-/**
- * @since 2.2.3
- */
+Added in v2.2.3
+
+## Schemable1 (interface)
+
+**Signature**
+
+```ts
 export interface Schemable1<S extends URIS> {
   readonly URI: S
   readonly literal: <A extends ReadonlyNonEmptyArray<DE.Literal>>(...values: A) => Kind<S, A[number]>
@@ -57,10 +84,15 @@ export interface Schemable1<S extends URIS> {
     tag: T
   ) => <A>(members: { [K in keyof A]: Kind<S, A[K] & Record<T, K>> }) => Kind<S, A[keyof A]>
 }
+```
 
-/**
- * @since 2.2.8
- */
+Added in v2.2.3
+
+## Schemable2C (interface)
+
+**Signature**
+
+```ts
 export interface Schemable2C<S extends URIS2, E> {
   readonly URI: S
   readonly _E: E
@@ -84,54 +116,87 @@ export interface Schemable2C<S extends URIS2, E> {
     tag: T
   ) => <A>(members: { [K in keyof A]: Kind2<S, E, A[K] & Record<T, K>> }) => Kind2<S, E, A[keyof A]>
 }
+```
 
-/**
- * @since 2.2.3
- */
-export interface WithUnknownContainers<S> {
-  readonly UnknownArray: HKT<S, Array<unknown>>
-  readonly UnknownRecord: HKT<S, Record<string, unknown>>
-}
+Added in v2.2.8
 
-/**
- * @since 2.2.3
- */
-export interface WithUnknownContainers1<S extends URIS> {
-  readonly UnknownArray: Kind<S, Array<unknown>>
-  readonly UnknownRecord: Kind<S, Record<string, unknown>>
-}
+## WithUnion (interface)
 
-/**
- * @since 2.2.8
- */
-export interface WithUnknownContainers2C<S extends URIS2, E> {
-  readonly UnknownArray: Kind2<S, E, Array<unknown>>
-  readonly UnknownRecord: Kind2<S, E, Record<string, unknown>>
-}
+**Signature**
 
-/**
- * @since 2.2.3
- */
+```ts
 export interface WithUnion<S> {
   readonly union: <A extends readonly [unknown, ...ReadonlyArray<unknown>]>(
     ...members: { [K in keyof A]: HKT<S, A[K]> }
   ) => HKT<S, A[number]>
 }
+```
 
-/**
- * @since 2.2.3
- */
+Added in v2.2.3
+
+## WithUnion1 (interface)
+
+**Signature**
+
+```ts
 export interface WithUnion1<S extends URIS> {
   readonly union: <A extends readonly [unknown, ...ReadonlyArray<unknown>]>(
     ...members: { [K in keyof A]: Kind<S, A[K]> }
   ) => Kind<S, A[number]>
 }
+```
 
-/**
- * @since 2.2.8
- */
+Added in v2.2.3
+
+## WithUnion2C (interface)
+
+**Signature**
+
+```ts
 export interface WithUnion2C<S extends URIS2, E> {
   readonly union: <A extends readonly [unknown, ...ReadonlyArray<unknown>]>(
     ...members: { [K in keyof A]: Kind2<S, E, A[K]> }
   ) => Kind2<S, E, A[number]>
 }
+```
+
+Added in v2.2.8
+
+## WithUnknownContainers (interface)
+
+**Signature**
+
+```ts
+export interface WithUnknownContainers<S> {
+  readonly UnknownArray: HKT<S, Array<unknown>>
+  readonly UnknownRecord: HKT<S, Record<string, unknown>>
+}
+```
+
+Added in v2.2.3
+
+## WithUnknownContainers1 (interface)
+
+**Signature**
+
+```ts
+export interface WithUnknownContainers1<S extends URIS> {
+  readonly UnknownArray: Kind<S, Array<unknown>>
+  readonly UnknownRecord: Kind<S, Record<string, unknown>>
+}
+```
+
+Added in v2.2.3
+
+## WithUnknownContainers2C (interface)
+
+**Signature**
+
+```ts
+export interface WithUnknownContainers2C<S extends URIS2, E> {
+  readonly UnknownArray: Kind2<S, E, Array<unknown>>
+  readonly UnknownRecord: Kind2<S, E, Record<string, unknown>>
+}
+```
+
+Added in v2.2.8

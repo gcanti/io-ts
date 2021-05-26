@@ -1,10 +1,10 @@
 ---
-title: Guard.ts
-nav_order: 10
+title: Guard2.ts
+nav_order: 11
 parent: Modules
 ---
 
-## Guard overview
+## Guard2 overview
 
 **This module is experimental**
 
@@ -20,30 +20,23 @@ Added in v2.2.0
 <h2 class="text-delta">Table of contents</h2>
 
 - [combinators](#combinators)
-  - [alt](#alt)
   - [array](#array)
-  - [compose](#compose)
-  - [id](#id)
   - [intersect](#intersect)
   - [lazy](#lazy)
   - [nullable](#nullable)
   - [partial](#partial)
-  - [readonly](#readonly)
   - [record](#record)
-  - [refine](#refine)
   - [struct](#struct)
   - [sum](#sum)
   - [tuple](#tuple)
   - [union](#union)
-  - [zero](#zero)
-  - [~~type~~](#type)
 - [constructors](#constructors)
   - [literal](#literal)
+- [instance operations](#instance-operations)
+  - [compose](#compose)
+  - [id](#id)
 - [instances](#instances)
   - [Schemable](#schemable)
-  - [URI](#uri)
-  - [URI (type alias)](#uri-type-alias)
-  - [WithRefine](#withrefine)
   - [WithUnion](#withunion)
   - [WithUnknownContainers](#withunknowncontainers)
 - [model](#model)
@@ -54,23 +47,10 @@ Added in v2.2.0
   - [boolean](#boolean)
   - [number](#number)
   - [string](#string)
-- [utils](#utils)
-  - [InputOf (type alias)](#inputof-type-alias)
-  - [TypeOf (type alias)](#typeof-type-alias)
 
 ---
 
 # combinators
-
-## alt
-
-**Signature**
-
-```ts
-export declare const alt: <I, A extends I>(that: () => Guard<I, A>) => (me: Guard<I, A>) => Guard<I, A>
-```
-
-Added in v2.2.8
 
 ## array
 
@@ -81,26 +61,6 @@ export declare const array: <A>(item: Guard<unknown, A>) => Guard<unknown, A[]>
 ```
 
 Added in v2.2.0
-
-## compose
-
-**Signature**
-
-```ts
-export declare const compose: <I, A extends I, B extends A>(to: Guard<A, B>) => (from: Guard<I, A>) => Guard<I, B>
-```
-
-Added in v2.2.8
-
-## id
-
-**Signature**
-
-```ts
-export declare const id: <A>() => Guard<A, A>
-```
-
-Added in v2.2.8
 
 ## intersect
 
@@ -117,7 +77,7 @@ Added in v2.2.0
 **Signature**
 
 ```ts
-export declare const lazy: <A>(f: () => Guard<unknown, A>) => Guard<unknown, A>
+export declare const lazy: <I, A extends I>(f: () => Guard<I, A>) => Guard<I, A>
 ```
 
 Added in v2.2.0
@@ -144,34 +104,12 @@ export declare const partial: <A>(
 
 Added in v2.2.0
 
-## readonly
-
-**Signature**
-
-```ts
-export declare const readonly: <I, A extends I>(guard: Guard<I, A>) => Guard<I, Readonly<A>>
-```
-
-Added in v2.2.15
-
 ## record
 
 **Signature**
 
 ```ts
 export declare const record: <A>(codomain: Guard<unknown, A>) => Guard<unknown, Record<string, A>>
-```
-
-Added in v2.2.0
-
-## refine
-
-**Signature**
-
-```ts
-export declare const refine: <I, A extends I, B extends A>(
-  refinement: Refinement<A, B>
-) => (from: Guard<I, A>) => Guard<I, B>
 ```
 
 Added in v2.2.0
@@ -217,33 +155,9 @@ Added in v2.2.0
 **Signature**
 
 ```ts
-export declare const union: <A extends readonly [unknown, ...unknown[]]>(
+export declare const union: <A extends readonly unknown[]>(
   ...members: { [K in keyof A]: Guard<unknown, A[K]> }
 ) => Guard<unknown, A[number]>
-```
-
-Added in v2.2.0
-
-## zero
-
-**Signature**
-
-```ts
-export declare const zero: <I, A extends I>() => Guard<I, A>
-```
-
-Added in v2.2.8
-
-## ~~type~~
-
-Use `struct` instead.
-
-**Signature**
-
-```ts
-export declare const type: <A>(
-  properties: { [K in keyof A]: Guard<unknown, A[K]> }
-) => Guard<unknown, { [K in keyof A]: A[K] }>
 ```
 
 Added in v2.2.0
@@ -255,10 +169,32 @@ Added in v2.2.0
 **Signature**
 
 ```ts
-export declare const literal: <A extends readonly [Literal, ...Literal[]]>(...values: A) => Guard<unknown, A[number]>
+export declare const literal: <A extends ReadonlyNonEmptyArray<Literal>>(...values: A) => Guard<unknown, A[number]>
 ```
 
 Added in v2.2.0
+
+# instance operations
+
+## compose
+
+**Signature**
+
+```ts
+export declare const compose: <I, A extends I, B extends A>(to: Guard<A, B>) => (from: Guard<I, A>) => Guard<I, B>
+```
+
+Added in v2.2.8
+
+## id
+
+**Signature**
+
+```ts
+export declare const id: <A>() => Guard<A, A>
+```
+
+Added in v2.2.8
 
 # instances
 
@@ -267,37 +203,7 @@ Added in v2.2.0
 **Signature**
 
 ```ts
-export declare const Schemable: Schemable1<'io-ts/Guard'>
-```
-
-Added in v2.2.8
-
-## URI
-
-**Signature**
-
-```ts
-export declare const URI: 'io-ts/Guard'
-```
-
-Added in v2.2.0
-
-## URI (type alias)
-
-**Signature**
-
-```ts
-export type URI = typeof URI
-```
-
-Added in v2.2.0
-
-## WithRefine
-
-**Signature**
-
-```ts
-export declare const WithRefine: WithRefine1<'io-ts/Guard'>
+export declare const Schemable: Schemable1<'io-ts/ToGuard'>
 ```
 
 Added in v2.2.8
@@ -307,7 +213,7 @@ Added in v2.2.8
 **Signature**
 
 ```ts
-export declare const WithUnion: WithUnion1<'io-ts/Guard'>
+export declare const WithUnion: WithUnion1<'io-ts/ToGuard'>
 ```
 
 Added in v2.2.8
@@ -317,7 +223,7 @@ Added in v2.2.8
 **Signature**
 
 ```ts
-export declare const WithUnknownContainers: WithUnknownContainers1<'io-ts/Guard'>
+export declare const WithUnknownContainers: WithUnknownContainers1<'io-ts/ToGuard'>
 ```
 
 Added in v2.2.8
@@ -370,8 +276,6 @@ Added in v2.2.0
 
 ## number
 
-Note: `NaN` is excluded.
-
 **Signature**
 
 ```ts
@@ -389,25 +293,3 @@ export declare const string: Guard<unknown, string>
 ```
 
 Added in v2.2.0
-
-# utils
-
-## InputOf (type alias)
-
-**Signature**
-
-```ts
-export type InputOf<G> = G extends Guard<infer I, any> ? I : never
-```
-
-Added in v2.2.8
-
-## TypeOf (type alias)
-
-**Signature**
-
-```ts
-export type TypeOf<G> = G extends Guard<any, infer A> ? A : never
-```
-
-Added in v2.2.2

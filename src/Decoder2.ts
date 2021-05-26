@@ -1,3 +1,13 @@
+/**
+ * **This module is experimental**
+ *
+ * Experimental features are published in order to get early feedback from the community, see these tracking
+ * [issues](https://github.com/gcanti/io-ts/issues?q=label%3Av2.2+) for further discussions and enhancements.
+ *
+ * A feature tagged as _Experimental_ is in a high state of flux, you're at risk of it changing without notice.
+ *
+ * @since 2.2.7
+ */
 import { Bifunctor3 } from 'fp-ts/lib/Bifunctor'
 import { flow, Lazy } from 'fp-ts/lib/function'
 import { Functor3 } from 'fp-ts/lib/Functor'
@@ -132,10 +142,14 @@ export const id = <A = never>(): IdentityD<A> => ({
 })
 
 /**
- * @category meta
  * @since 2.2.17
  */
 export interface CompositionE<P, N> extends DE.CompoundE<DE.PrevE<ErrorOf<P>> | DE.NextE<ErrorOf<N>>> {}
+
+/**
+ * @category meta
+ * @since 2.2.17
+ */
 export interface CompositionD<P, N> extends Decoder<InputOf<P>, CompositionE<P, N>, TypeOf<N>> {
   readonly _tag: 'CompositionD'
   readonly prev: P
@@ -215,7 +229,7 @@ export const getSchemable = <E = never>(): Schemable2C<'io-ts/ToDecoder', DE.Dec
  * @category instances
  * @since 2.2.17
  */
-export const getWithUnknownContainers = <E>(): WithUnknownContainers2C<
+export const getWithUnknownContainers = <E = never>(): WithUnknownContainers2C<
   'io-ts/ToDecoder',
   DE.DecodeError<E | DE.BuiltinE>
 > => ({
@@ -227,7 +241,7 @@ export const getWithUnknownContainers = <E>(): WithUnknownContainers2C<
  * @category instances
  * @since 2.2.17
  */
-export const getWithUnion = <E>(): WithUnion2C<'io-ts/ToDecoder', DE.DecodeError<E | DE.BuiltinE>> => ({
+export const getWithUnion = <E = never>(): WithUnion2C<'io-ts/ToDecoder', DE.DecodeError<E | DE.BuiltinE>> => ({
   union: union as any
 })
 
@@ -257,19 +271,39 @@ export const warning = TH.both
 // primitives
 // -------------------------------------------------------------------------------------
 
+/**
+ * @category meta
+ * @since 2.2.17
+ */
 export interface stringUD extends Decoder<unknown, DE.StringLE, string> {
   readonly _tag: 'stringUD'
 }
+
 const isString = (u: unknown): u is string => typeof u === 'string'
+
+/**
+ * @category primitives
+ * @since 2.2.7
+ */
 export const string: stringUD = {
   _tag: 'stringUD',
   decode: (u) => (isString(u) ? success(u) : failure(DE.stringLE(u)))
 }
 
+/**
+ * @category meta
+ * @since 2.2.17
+ */
 export interface numberUD extends Decoder<unknown, DE.NumberLE | DE.NaNLE | DE.InfinityLE, number> {
   readonly _tag: 'numberUD'
 }
+
 const isNumber = (u: unknown): u is number => typeof u === 'number'
+
+/**
+ * @category primitives
+ * @since 2.2.7
+ */
 export const number: numberUD = {
   _tag: 'numberUD',
   decode: (u) =>
@@ -282,37 +316,70 @@ export const number: numberUD = {
       : failure(DE.numberLE(u))
 }
 
+/**
+ * @category meta
+ * @since 2.2.17
+ */
 export interface booleanUD extends Decoder<unknown, DE.BooleanLE, boolean> {
   readonly _tag: 'booleanUD'
 }
+
 const isBoolean = (u: unknown): u is boolean => typeof u === 'boolean'
+
+/**
+ * @category primitives
+ * @since 2.2.7
+ */
 export const boolean: booleanUD = {
   _tag: 'booleanUD',
   decode: (u) => (isBoolean(u) ? success(u) : failure(DE.booleanLE(u)))
 }
 
+/**
+ * @category meta
+ * @since 2.2.17
+ */
 export interface UnknownArrayUD extends Decoder<unknown, DE.UnknownArrayLE, Array<unknown>> {
   readonly _tag: 'UnknownArrayUD'
 }
+
+/**
+ * @category primitives
+ * @since 2.2.7
+ */
 export const UnknownArray: UnknownArrayUD = {
   _tag: 'UnknownArrayUD',
   decode: (u) => (Array.isArray(u) ? success(u) : failure(DE.unknownArrayLE(u)))
 }
 
+/**
+ * @category meta
+ * @since 2.2.17
+ */
 export interface UnknownRecordUD extends Decoder<unknown, DE.UnknownRecordLE, Record<string, unknown>> {
   readonly _tag: 'UnknownRecordUD'
 }
+
 const isUnknownRecord = (u: unknown): u is Record<string, unknown> =>
   u !== null && typeof u === 'object' && !Array.isArray(u)
+
+/**
+ * @category primitives
+ * @since 2.2.7
+ */
 export const UnknownRecord: UnknownRecordUD = {
   _tag: 'UnknownRecordUD',
   decode: (u) => (isUnknownRecord(u) ? success(u) : failure(DE.unknownRecordLE(u)))
 }
 
 // -------------------------------------------------------------------------------------
-// decoder constructors
+// constructors
 // -------------------------------------------------------------------------------------
 
+/**
+ * @category meta
+ * @since 2.2.17
+ */
 export interface LiteralD<A extends ReadonlyNonEmptyArray<DE.Literal>>
   extends Decoder<unknown, DE.LiteralLE<A[number]>, A[number]> {
   readonly _tag: 'LiteralD'
@@ -322,6 +389,10 @@ export interface LiteralD<A extends ReadonlyNonEmptyArray<DE.Literal>>
 const isLiteral = <A extends ReadonlyNonEmptyArray<DE.Literal>>(...literals: A) => (u: unknown): u is A[number] =>
   literals.findIndex((literal) => literal === u) !== -1
 
+/**
+ * @category constructors
+ * @since 2.2.7
+ */
 export const literal = <A extends ReadonlyNonEmptyArray<DE.Literal>>(...literals: A): LiteralD<A> => {
   const is = isLiteral(...literals)
   return {
@@ -335,10 +406,18 @@ export const literal = <A extends ReadonlyNonEmptyArray<DE.Literal>>(...literals
 // decoder combinators
 // -------------------------------------------------------------------------------------
 
+/**
+ * @since 2.2.17
+ */
 export interface FromStructE<Properties>
   extends DE.CompoundE<
     { readonly [K in keyof Properties]: DE.RequiredKeyE<K, ErrorOf<Properties[K]>> }[keyof Properties]
   > {}
+
+/**
+ * @category meta
+ * @since 2.2.17
+ */
 export interface FromStructD<Properties>
   extends Decoder<
     { [K in keyof Properties]: InputOf<Properties[K]> },
@@ -348,6 +427,11 @@ export interface FromStructD<Properties>
   readonly _tag: 'FromStructD'
   readonly properties: Properties
 }
+
+/**
+ * @category combinators
+ * @since 2.2.15
+ */
 export const fromStruct = <Properties extends Record<string, AnyD>>(
   properties: Properties
 ): FromStructD<Properties> => ({
@@ -373,11 +457,20 @@ export const fromStruct = <Properties extends Record<string, AnyD>>(
   }
 })
 
+/**
+ * @category meta
+ * @since 2.2.17
+ */
 export interface UnexpectedKeysD<Properties>
   extends Decoder<Record<string, unknown>, DE.UnexpectedKeysE, Partial<{ [K in keyof Properties]: unknown }>> {
   readonly _tag: 'UnexpectedKeysD'
   readonly properties: Properties
 }
+
+/**
+ * @category combinators
+ * @since 2.2.17
+ */
 export const unexpectedKeys = <Properties extends Record<string, unknown>>(
   properties: Properties
 ): UnexpectedKeysD<Properties> => {
@@ -402,6 +495,10 @@ export const unexpectedKeys = <Properties extends Record<string, unknown>>(
   }
 }
 
+/**
+ * @category meta
+ * @since 2.2.17
+ */
 export interface MissingKeysD<Properties>
   extends Decoder<
     Partial<{ [K in keyof Properties]: unknown }>,
@@ -411,6 +508,11 @@ export interface MissingKeysD<Properties>
   readonly _tag: 'MissingKeysD'
   readonly properties: Properties
 }
+
+/**
+ * @category combinators
+ * @since 2.2.17
+ */
 export const missingKeys = <Properties extends Record<string, unknown>>(
   properties: Properties
 ): MissingKeysD<Properties> => {
@@ -429,12 +531,20 @@ export const missingKeys = <Properties extends Record<string, unknown>>(
   }
 }
 
+/**
+ * @category meta
+ * @since 2.2.17
+ */
 export interface StructD<Properties>
   extends CompositionD<
     CompositionD<CompositionD<UnknownRecordUD, UnexpectedKeysD<Properties>>, MissingKeysD<Properties>>,
     FromStructD<Properties>
   > {}
 
+/**
+ * @category combinators
+ * @since 2.2.15
+ */
 export function struct<Properties extends Record<string, AnyUD>>(properties: Properties): StructD<Properties>
 export function struct(properties: Record<string, AnyUD>): StructD<typeof properties> {
   return pipe(
@@ -445,10 +555,18 @@ export function struct(properties: Record<string, AnyUD>): StructD<typeof proper
   )
 }
 
+/**
+ * @since 2.2.17
+ */
 export interface FromPartialE<Properties>
   extends DE.CompoundE<
     { readonly [K in keyof Properties]: DE.OptionalKeyE<K, ErrorOf<Properties[K]>> }[keyof Properties]
   > {}
+
+/**
+ * @category meta
+ * @since 2.2.17
+ */
 export interface FromPartialD<Properties>
   extends Decoder<
     Partial<{ [K in keyof Properties]: InputOf<Properties[K]> }>,
@@ -458,6 +576,11 @@ export interface FromPartialD<Properties>
   readonly _tag: 'FromPartialD'
   readonly properties: Properties
 }
+
+/**
+ * @category combinators
+ * @since 2.2.8
+ */
 export const fromPartial = <Properties extends Record<string, AnyD>>(
   properties: Properties
 ): FromPartialD<Properties> => ({
@@ -490,16 +613,32 @@ export const fromPartial = <Properties extends Record<string, AnyD>>(
   }
 })
 
+/**
+ * @category meta
+ * @since 2.2.17
+ */
 export interface PartialD<Properties>
   extends CompositionD<CompositionD<UnknownRecordUD, UnexpectedKeysD<Properties>>, FromPartialD<Properties>> {}
 
+/**
+ * @category combinators
+ * @since 2.2.7
+ */
 export function partial<Properties extends Record<string, AnyUD>>(properties: Properties): PartialD<Properties>
 export function partial(properties: Record<string, AnyUD>): PartialD<typeof properties> {
   return pipe(UnknownRecord, compose(unexpectedKeys(properties)), compose(fromPartial(properties)))
 }
 
+/**
+ * @since 2.2.17
+ */
 export interface FromTupleE<Components extends ReadonlyArray<unknown>>
   extends DE.CompoundE<{ [K in keyof Components]: DE.RequiredIndexE<K, ErrorOf<Components[K]>> }[number]> {}
+
+/**
+ * @category meta
+ * @since 2.2.17
+ */
 export interface FromTupleD<Components extends ReadonlyArray<unknown>>
   extends Decoder<
     { readonly [K in keyof Components]: InputOf<Components[K]> },
@@ -509,6 +648,11 @@ export interface FromTupleD<Components extends ReadonlyArray<unknown>>
   readonly _tag: 'FromTupleD'
   readonly components: Components
 }
+
+/**
+ * @category combinators
+ * @since 2.2.8
+ */
 export const fromTuple = <Components extends ReadonlyArray<AnyD>>(
   ...components: Components
 ): FromTupleD<Components> => ({
@@ -534,12 +678,20 @@ export const fromTuple = <Components extends ReadonlyArray<AnyD>>(
   }
 })
 
+/**
+ * @category meta
+ * @since 2.2.17
+ */
 export interface UnexpectedIndexesD<Components>
   extends Decoder<Array<unknown>, DE.UnexpectedIndexesE, { [K in keyof Components]?: unknown }> {
   readonly _tag: 'UnexpectedIndexesD'
   readonly components: Components
 }
 
+/**
+ * @category combinators
+ * @since 2.2.17
+ */
 export const unexpectedIndexes = <Components extends ReadonlyArray<unknown>>(
   ...components: Components
 ): UnexpectedIndexesD<Components> => {
@@ -556,6 +708,10 @@ export const unexpectedIndexes = <Components extends ReadonlyArray<unknown>>(
   }
 }
 
+/**
+ * @category meta
+ * @since 2.2.17
+ */
 export interface MissingIndexesD<Components>
   extends Decoder<
     { readonly [K in keyof Components]?: unknown },
@@ -565,6 +721,11 @@ export interface MissingIndexesD<Components>
   readonly _tag: 'MissingIndexesD'
   readonly components: Components
 }
+
+/**
+ * @category combinators
+ * @since 2.2.17
+ */
 export const missingIndexes = <Components extends ReadonlyArray<unknown>>(
   ...components: Components
 ): MissingIndexesD<Components> => {
@@ -584,12 +745,20 @@ export const missingIndexes = <Components extends ReadonlyArray<unknown>>(
   }
 }
 
+/**
+ * @category meta
+ * @since 2.2.17
+ */
 export interface TupleD<Components extends ReadonlyArray<unknown>>
   extends CompositionD<
     CompositionD<CompositionD<UnknownArrayUD, UnexpectedIndexesD<Components>>, MissingIndexesD<Components>>,
     FromTupleD<Components>
   > {}
 
+/**
+ * @category combinators
+ * @since 2.2.7
+ */
 export function tuple<Components extends ReadonlyArray<AnyUD>>(...cs: Components): TupleD<Components>
 export function tuple(...cs: ReadonlyArray<AnyUD>): TupleD<typeof cs> {
   return pipe(
@@ -600,12 +769,24 @@ export function tuple(...cs: ReadonlyArray<AnyUD>): TupleD<typeof cs> {
   )
 }
 
+/**
+ * @since 2.2.17
+ */
 export interface FromArrayE<Item> extends DE.CompoundE<DE.OptionalIndexE<number, ErrorOf<Item>>> {}
+
+/**
+ * @category meta
+ * @since 2.2.17
+ */
 export interface FromArrayD<Item> extends Decoder<Array<InputOf<Item>>, FromArrayE<Item>, Array<TypeOf<Item>>> {
   readonly _tag: 'FromArrayD'
   readonly item: Item
 }
 
+/**
+ * @category combinators
+ * @since 2.2.8
+ */
 export function fromArray<Item extends AnyD>(item: Item): FromArrayD<Item>
 export function fromArray<I, E, A>(item: Decoder<I, E, A>): FromArrayD<typeof item> {
   return {
@@ -635,18 +816,40 @@ export function fromArray<I, E, A>(item: Decoder<I, E, A>): FromArrayD<typeof it
   }
 }
 
+/**
+ * @category meta
+ * @since 2.2.17
+ */
 export interface ArrayD<Item> extends CompositionD<UnknownArrayUD, FromArrayD<Item>> {}
+
+/**
+ * @category combinators
+ * @since 2.2.7
+ */
 export function array<Item extends AnyUD>(item: Item): ArrayD<Item>
 export function array<E, A>(item: Decoder<unknown, E, A>): ArrayD<typeof item> {
   return pipe(UnknownArray, compose(fromArray(item)))
 }
 
+/**
+ * @since 2.2.17
+ */
 export interface FromRecordE<Codomain> extends DE.CompoundE<DE.OptionalKeyE<string, ErrorOf<Codomain>>> {}
+
+/**
+ * @category meta
+ * @since 2.2.17
+ */
 export interface FromRecordD<Codomain>
   extends Decoder<Record<string, InputOf<Codomain>>, FromRecordE<Codomain>, Record<string, TypeOf<Codomain>>> {
   readonly _tag: 'FromRecordD'
   readonly codomain: Codomain
 }
+
+/**
+ * @category combinators
+ * @since 2.2.8
+ */
 export function fromRecord<Codomain extends AnyD>(codomain: Codomain): FromRecordD<Codomain>
 export function fromRecord<I, E, A>(codomain: Decoder<I, E, A>): FromRecordD<typeof codomain> {
   return {
@@ -676,21 +879,46 @@ export function fromRecord<I, E, A>(codomain: Decoder<I, E, A>): FromRecordD<typ
   }
 }
 
+/**
+ * @category meta
+ * @since 2.2.17
+ */
 export interface RecordD<Codomain> extends CompositionD<UnknownRecordUD, FromRecordD<Codomain>> {}
+
+/**
+ * @category combinators
+ * @since 2.2.7
+ */
 export function record<Codomain extends AnyUD>(codomain: Codomain): RecordD<Codomain>
 export function record<E, A>(codomain: Decoder<unknown, E, A>): RecordD<typeof codomain> {
   return pipe(UnknownRecord, compose(fromRecord(codomain)))
 }
 
-type UnionToIntersection<U> = (U extends any ? (k: U) => void : never) extends (k: infer I) => void ? I : never
+/**
+ * @since 2.2.17
+ */
+export type UnionToIntersection<U> = (U extends any ? (k: U) => void : never) extends (k: infer I) => void ? I : never
 
+/**
+ * @since 2.2.17
+ */
 export interface UnionE<Members extends ReadonlyNonEmptyArray<AnyD>>
   extends DE.CompoundE<{ [K in keyof Members]: DE.MemberE<K, ErrorOf<Members[K]>> }[number]> {}
+
+/**
+ * @category meta
+ * @since 2.2.17
+ */
 export interface UnionD<Members extends ReadonlyNonEmptyArray<AnyD>>
   extends Decoder<UnionToIntersection<InputOf<Members[number]>>, UnionE<Members>, TypeOf<Members[keyof Members]>> {
   readonly _tag: 'UnionD'
   readonly members: Members
 }
+
+/**
+ * @category combinators
+ * @since 2.2.7
+ */
 export function union<Members extends ReadonlyNonEmptyArray<AnyD>>(...members: Members): UnionD<Members> {
   return {
     _tag: 'UnionD',
@@ -724,10 +952,19 @@ export function union<Members extends ReadonlyNonEmptyArray<AnyD>>(...members: M
   }
 }
 
+/**
+ * @category meta
+ * @since 2.2.17
+ */
 export interface NullableD<D> extends Decoder<null | InputOf<D>, DE.NullableE<ErrorOf<D>>, null | TypeOf<D>> {
   readonly _tag: 'NullableD'
   readonly or: D
 }
+
+/**
+ * @category combinators
+ * @since 2.2.7
+ */
 export function nullable<D extends AnyD>(or: D): NullableD<D> {
   return {
     _tag: 'NullableD',
@@ -736,7 +973,15 @@ export function nullable<D extends AnyD>(or: D): NullableD<D> {
   }
 }
 
+/**
+ * @since 2.2.17
+ */
 export interface IntersectE<F, S> extends DE.CompoundE<DE.MemberE<0, ErrorOf<F>> | DE.MemberE<1, ErrorOf<S>>> {}
+
+/**
+ * @category meta
+ * @since 2.2.17
+ */
 export interface IntersectD<F, S> extends Decoder<InputOf<F> & InputOf<S>, IntersectE<F, S>, TypeOf<F> & TypeOf<S>> {
   readonly _tag: 'IntersectD'
   readonly first: F
@@ -745,6 +990,7 @@ export interface IntersectD<F, S> extends Decoder<InputOf<F> & InputOf<S>, Inter
 
 type Prunable = ReadonlyArray<string>
 
+/* istanbul ignore next */
 const collectPrunable = <E>(de: DE.DecodeError<E>): Prunable => {
   const go = (de: DE.DecodeError<E>): Prunable => {
     switch (de._tag) {
@@ -778,6 +1024,7 @@ const collectPrunable = <E>(de: DE.DecodeError<E>): Prunable => {
   return go(de)
 }
 
+/* istanbul ignore next */
 const prune = (
   prunable: Prunable,
   anticollision: string
@@ -896,6 +1143,10 @@ export const intersect_ = <A, B>(a: A, b: B): A & B => {
   return b as any
 }
 
+/**
+ * @category combinators
+ * @since 2.2.7
+ */
 export function intersect<S extends Decoder<any, DE.DecodeError<any>, any>>(
   second: S
 ): <F extends Decoder<any, DE.DecodeError<any>, any>>(first: F) => IntersectD<F, S>
@@ -972,11 +1223,20 @@ export function intersect<I2, E2, A2>(
   })
 }
 
+/**
+ * @category meta
+ * @since 2.2.17
+ */
 export interface LazyD<I, E, A> extends Decoder<I, DE.LazyE<E>, A> {
   readonly _tag: 'LazyD'
   readonly id: string
   readonly f: Lazy<Decoder<I, E, A>>
 }
+
+/**
+ * @category combinators
+ * @since 2.2.7
+ */
 export const lazy = <I, E, A>(id: string, f: Lazy<Decoder<I, E, A>>): LazyD<I, E, A> => {
   const get = memoize<void, Decoder<I, E, A>>(f)
   return {
@@ -991,14 +1251,27 @@ export const lazy = <I, E, A>(id: string, f: Lazy<Decoder<I, E, A>>): LazyD<I, E
   }
 }
 
+/**
+ * @since 2.2.17
+ */
 export interface FromSumE<Members>
   extends DE.SumE<{ [K in keyof Members]: DE.MemberE<K, ErrorOf<Members[K]>> }[keyof Members]> {}
+
+/**
+ * @category meta
+ * @since 2.2.17
+ */
 export interface FromSumD<T extends string, Members>
   extends Decoder<InputOf<Members[keyof Members]>, DE.TagLE | FromSumE<Members>, TypeOf<Members[keyof Members]>> {
   readonly _tag: 'FromSumD'
   readonly tag: T
   readonly members: Members
 }
+
+/**
+ * @category combinators
+ * @since 2.2.8
+ */
 export function fromSum<T extends string>(
   tag: T
 ): <Members extends Record<string, AnyD>>(members: Members) => FromSumD<T, Members>
@@ -1026,12 +1299,20 @@ export function fromSum<T extends string>(
   }
 }
 
+/**
+ * @category meta
+ * @since 2.2.17
+ */
 export interface SumD<T extends string, Members>
   extends CompositionD<UnionD<[UnknownRecordUD, UnknownArrayUD]>, FromSumD<T, Members>> {}
 
 //                    tagged objects --v             v-- tagged tuples
 const UnknownRecordArray = union(UnknownRecord, UnknownArray)
 
+/**
+ * @category combinators
+ * @since 2.2.7
+ */
 export function sum<T extends string>(
   tag: T
 ): <Members extends Record<string, AnyUD>>(members: Members) => SumD<T, Members>

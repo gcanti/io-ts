@@ -1,10 +1,10 @@
 ---
-title: Schema.ts
-nav_order: 16
+title: Schema2.ts
+nav_order: 17
 parent: Modules
 ---
 
-## Schema overview
+## Schema2 overview
 
 **This module is experimental**
 
@@ -19,27 +19,14 @@ Added in v2.2.0
 
 <h2 class="text-delta">Table of contents</h2>
 
-- [constructors](#constructors)
-  - [make](#make)
 - [model](#model)
   - [Schema (interface)](#schema-interface)
+  - [make](#make)
 - [utils](#utils)
   - [TypeOf (type alias)](#typeof-type-alias)
   - [interpreter](#interpreter)
 
 ---
-
-# constructors
-
-## make
-
-**Signature**
-
-```ts
-export declare function make<A>(schema: Schema<A>): Schema<A>
-```
-
-Added in v2.2.0
 
 # model
 
@@ -51,6 +38,16 @@ Added in v2.2.0
 export interface Schema<A> {
   <S>(S: Schemable<S>): HKT<S, A>
 }
+```
+
+Added in v2.2.0
+
+## make
+
+**Signature**
+
+```ts
+export declare function make<A>(schema: Schema<A>): Schema<A>
 ```
 
 Added in v2.2.0
@@ -72,9 +69,7 @@ Added in v2.2.0
 **Signature**
 
 ```ts
-export declare function interpreter<S extends URIS2>(
-  S: Schemable2C<S, unknown>
-): <A>(schema: Schema<A>) => Kind2<S, unknown, A>
+export declare function interpreter<S extends URIS2, E>(S: Schemable2C<S, E>): <A>(schema: Schema<A>) => Kind2<S, E, A>
 export declare function interpreter<S extends URIS>(S: Schemable1<S>): <A>(schema: Schema<A>) => Kind<S, A>
 ```
 

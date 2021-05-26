@@ -148,18 +148,20 @@ cannot decode null, expected a boolean`
   })
 
   it('UnknownArray', async () => {
-    U.deepStrictEqual(_.UnknownArray.decode([1, 'a']), _.success([1, 'a']))
+    const decoder = _.getWithUnknownContainers().UnknownArray
+    U.deepStrictEqual(decoder.decode([1, 'a']), _.success([1, 'a']))
     U.deepStrictEqual(
-      pipe(_.UnknownArray.decode(null), print),
+      pipe(decoder.decode(null), print),
       `Errors:
 cannot decode null, expected an array`
     )
   })
 
   it('UnknownRecord', async () => {
-    U.deepStrictEqual(_.UnknownRecord.decode({ a: 1, b: 'b' }), _.success({ a: 1, b: 'b' }))
+    const decoder = _.getWithUnknownContainers().UnknownRecord
+    U.deepStrictEqual(decoder.decode({ a: 1, b: 'b' }), _.success({ a: 1, b: 'b' }))
     U.deepStrictEqual(
-      pipe(_.UnknownRecord.decode(null), print),
+      pipe(decoder.decode(null), print),
       `Errors:
 cannot decode null, expected an object`
     )
@@ -879,7 +881,7 @@ Warnings:
 
   describe('union', () => {
     it('should return a right', () => {
-      const decoder = _.union(_.string, _.number)
+      const decoder = _.getWithUnion().union(_.string, _.number)
       U.deepStrictEqual(decoder.decode('a'), TH.right('a'))
       U.deepStrictEqual(decoder.decode(1), TH.right(1))
     })
