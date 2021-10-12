@@ -993,7 +993,7 @@ export class AnyDictionaryType extends Type<{ [key: string]: unknown }> {
       'UnknownRecord',
       (u): u is { [key: string]: unknown } => {
         const s = Object.prototype.toString.call(u)
-        return s === '[object Object]' || s === '[object Window]'
+        return s === '[object Object]' || s === '[object Window]' || s === '[object Error]'
       },
       (u, c) => (this.is(u) ? success(u) : failure(u, c)),
       identity

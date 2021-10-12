@@ -84,11 +84,17 @@ describe('Type', () => {
     )
   })
 
-  it('UnknownRecord', () => {
-    check(
-      make((S) => S.UnknownRecord),
-      t.UnknownRecord
-    )
+  describe('UnknownRecord', () => {
+    test('UnknownRecord', () => {
+      check(
+        make((S) => S.UnknownRecord),
+        t.UnknownRecord
+      )
+    })
+
+    test('it can decode Error', () => {
+      assert.deepStrictEqual(isRight(_.UnknownRecord.decode(new Error())), true)
+    })
   })
 
   it('literal', () => {
@@ -206,6 +212,7 @@ describe('Type', () => {
     interface NonEmptyStringBrand {
       readonly NonEmptyString: unique symbol
     }
+
     type NonEmptyString = string & NonEmptyStringBrand
     const type = pipe(
       _.string,
