@@ -87,7 +87,7 @@ We can combine these primitive decoders through _combinators_ to build composite
 
 The `literal` constructor describes one or more literals.
 
-```ts
+```ts 
 export const MyLiteral: D.Decoder<unknown, 'a'> = D.literal('a')
 export const MyLiterals: D.Decoder<unknown, 'a' | 'b'> = D.literal('a', 'b')
 ```
