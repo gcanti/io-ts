@@ -43,10 +43,13 @@ Added in v2.2.7
   - [intersect](#intersect)
   - [lazy](#lazy)
   - [mapLeftWithInput](#mapleftwithinput)
+  - [nonEmptyArray](#nonemptyarray)
   - [nullable](#nullable)
   - [parse](#parse)
   - [partial](#partial)
   - [readonly](#readonly)
+  - [readonlyArray](#readonlyarray)
+  - [readonlyNonEmptyArray](#readonlynonemptyarray)
   - [record](#record)
   - [refine](#refine)
   - [struct](#struct)
@@ -297,6 +300,16 @@ export declare const mapLeftWithInput: <I>(
 
 Added in v2.2.7
 
+## nonEmptyArray
+
+**Signature**
+
+```ts
+export declare const nonEmptyArray: <A>(item: Decoder<unknown, A>) => Decoder<unknown, NonEmptyArray<A>>
+```
+
+Added in v2.2.17
+
 ## nullable
 
 **Signature**
@@ -340,6 +353,26 @@ export declare const readonly: <I, A>(decoder: Decoder<I, A>) => Decoder<I, Read
 ```
 
 Added in v2.2.15
+
+## readonlyArray
+
+**Signature**
+
+```ts
+export declare const readonlyArray: <A>(item: Decoder<unknown, A>) => Decoder<unknown, readonly A[]>
+```
+
+Added in v2.2.17
+
+## readonlyNonEmptyArray
+
+**Signature**
+
+```ts
+export declare const readonlyNonEmptyArray: <A>(item: Decoder<unknown, A>) => Decoder<unknown, ReadonlyNonEmptyArray<A>>
+```
+
+Added in v2.2.17
 
 ## record
 

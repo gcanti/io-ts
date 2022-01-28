@@ -47,6 +47,21 @@ E.record(NumberToString) // $ExpectType Encoder<Record<string, string>, Record<s
 E.array(NumberToString) // $ExpectType Encoder<string[], number[]>
 
 //
+// readonlyArray
+//
+E.readonlyArray(NumberToString) // $ExpectType Encoder<ReadonlyArray<string>, ReadonlyArray<number>>
+
+//
+// nonEmptyArray
+//
+E.nonEmptyArray(NumberToString) // $ExpectType Encoder<NonEmptyArray<string>, NonEmptyArray<number>>
+
+//
+// readonlyNonEmptyArray
+//
+E.readonlyNonEmptyArray(NumberToString) // $ExpectType Encoder<ReadonlyNonEmptyArray<string>, ReadonlyNonEmptyArray<number>>
+
+//
 // tuple
 //
 E.tuple() // $ExpectType Encoder<[], []>

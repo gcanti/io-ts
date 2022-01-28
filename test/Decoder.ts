@@ -291,6 +291,87 @@ describe('Decoder', () => {
     })
   })
 
+  describe('readonlyArray', () => {
+    it('should decode a valid input', async () => {
+      const decoder = _.readonlyArray(_.string)
+      assert.deepStrictEqual(decoder.decode([]), _.success([]))
+      assert.deepStrictEqual(decoder.decode(['a']), _.success(['a']))
+    })
+
+    it('should reject an invalid input', async () => {
+      const decoder = _.readonlyArray(_.string)
+      assert.deepStrictEqual(decoder.decode(undefined), E.left(FS.of(DE.leaf(undefined, 'Array<unknown>'))))
+      assert.deepStrictEqual(decoder.decode([1]), E.left(FS.of(DE.index(0, DE.optional, FS.of(DE.leaf(1, 'string'))))))
+    })
+
+    it('should collect all errors', async () => {
+      const decoder = _.readonlyArray(_.string)
+      assert.deepStrictEqual(
+        decoder.decode([1, 2]),
+        E.left(
+          FS.concat(
+            FS.of(DE.index(0, DE.optional, FS.of(DE.leaf(1, 'string')))),
+            FS.of(DE.index(1, DE.optional, FS.of(DE.leaf(2, 'string'))))
+          )
+        )
+      )
+    })
+  })
+
+  describe('nonEmptyArray', () => {
+    it('should decode a valid input', async () => {
+      const decoder = _.nonEmptyArray(_.string)
+      assert.deepStrictEqual(decoder.decode(['a']), _.success(['a']))
+    })
+
+    it('should reject an invalid input', async () => {
+      const decoder = _.nonEmptyArray(_.string)
+      assert.deepStrictEqual(decoder.decode(undefined), E.left(FS.of(DE.leaf(undefined, 'Array<unknown>'))))
+      assert.deepStrictEqual(decoder.decode([]), E.left(FS.of(DE.leaf([], 'NonEmptyArray<unknown>'))))
+      assert.deepStrictEqual(decoder.decode([1]), E.left(FS.of(DE.index(0, DE.optional, FS.of(DE.leaf(1, 'string'))))))
+    })
+
+    it('should collect all errors', async () => {
+      const decoder = _.nonEmptyArray(_.string)
+      assert.deepStrictEqual(
+        decoder.decode([1, 2]),
+        E.left(
+          FS.concat(
+            FS.of(DE.index(0, DE.optional, FS.of(DE.leaf(1, 'string')))),
+            FS.of(DE.index(1, DE.optional, FS.of(DE.leaf(2, 'string'))))
+          )
+        )
+      )
+    })
+  })
+
+  describe('readonlyNonEmptyArray', () => {
+    it('should decode a valid input', async () => {
+      const decoder = _.readonlyNonEmptyArray(_.string)
+      assert.deepStrictEqual(decoder.decode(['a']), _.success(['a']))
+    })
+
+    it('should reject an invalid input', async () => {
+      const decoder = _.readonlyNonEmptyArray(_.string)
+      assert.deepStrictEqual(decoder.decode(undefined), E.left(FS.of(DE.leaf(undefined, 'Array<unknown>'))))
+      assert.deepStrictEqual(decoder.decode([]), E.left(FS.of(DE.leaf([], 'ReadonlyNonEmptyArray<unknown>'))))
+      assert.deepStrictEqual(decoder.decode([1]), E.left(FS.of(DE.index(0, DE.optional, FS.of(DE.leaf(1, 'string'))))))
+    })
+
+    it('should collect all errors', async () => {
+      const decoder = _.readonlyNonEmptyArray(_.string)
+      assert.deepStrictEqual(
+        decoder.decode([1, 2]),
+        E.left(
+          FS.concat(
+            FS.of(DE.index(0, DE.optional, FS.of(DE.leaf(1, 'string')))),
+            FS.of(DE.index(1, DE.optional, FS.of(DE.leaf(2, 'string'))))
+          )
+        )
+      )
+    })
+  })
+
   describe('record', () => {
     it('should decode a valid value', async () => {
       const decoder = _.record(_.number)

@@ -445,6 +445,114 @@ describe('Codec', () => {
     })
   })
 
+  describe('readonlyArray', () => {
+    describe('decode', () => {
+      it('should decode a valid input', () => {
+        const codec = _.readonlyArray(_.string)
+        assert.deepStrictEqual(codec.decode([]), D.success([]))
+        assert.deepStrictEqual(codec.decode(['a']), D.success(['a']))
+      })
+
+      it('should reject an invalid input', () => {
+        const codec = _.readonlyArray(_.string)
+        assert.deepStrictEqual(codec.decode(undefined), D.failure(undefined, 'Array<unknown>'))
+        assert.deepStrictEqual(codec.decode([1]), E.left(FS.of(DE.index(0, DE.optional, FS.of(DE.leaf(1, 'string'))))))
+      })
+
+      it('should collect all errors', () => {
+        const codec = _.readonlyArray(_.string)
+        assert.deepStrictEqual(
+          codec.decode([1, 2]),
+          E.left(
+            FS.concat(
+              FS.of(DE.index(0, DE.optional, FS.of(DE.leaf(1, 'string')))),
+              FS.of(DE.index(1, DE.optional, FS.of(DE.leaf(2, 'string'))))
+            )
+          )
+        )
+      })
+    })
+
+    describe('encode', () => {
+      it('should encode a value', () => {
+        const codec = _.readonlyArray(codecNumber)
+        assert.deepStrictEqual(codec.encode([1, 2]), ['1', '2'])
+      })
+    })
+  })
+
+  describe('nonEmptyArray', () => {
+    describe('decode', () => {
+      it('should decode a valid input', () => {
+        const codec = _.nonEmptyArray(_.string)
+        assert.deepStrictEqual(codec.decode(['a']), D.success(['a']))
+      })
+
+      it('should reject an invalid input', () => {
+        const codec = _.nonEmptyArray(_.string)
+        assert.deepStrictEqual(codec.decode(undefined), D.failure(undefined, 'Array<unknown>'))
+        assert.deepStrictEqual(codec.decode([]), D.failure([], 'NonEmptyArray<unknown>'))
+        assert.deepStrictEqual(codec.decode([1]), E.left(FS.of(DE.index(0, DE.optional, FS.of(DE.leaf(1, 'string'))))))
+      })
+
+      it('should collect all errors', () => {
+        const codec = _.nonEmptyArray(_.string)
+        assert.deepStrictEqual(
+          codec.decode([1, 2]),
+          E.left(
+            FS.concat(
+              FS.of(DE.index(0, DE.optional, FS.of(DE.leaf(1, 'string')))),
+              FS.of(DE.index(1, DE.optional, FS.of(DE.leaf(2, 'string'))))
+            )
+          )
+        )
+      })
+    })
+
+    describe('encode', () => {
+      it('should encode a value', () => {
+        const codec = _.nonEmptyArray(codecNumber)
+        assert.deepStrictEqual(codec.encode([1, 2]), ['1', '2'])
+      })
+    })
+  })
+
+  describe('readonlyNonEmptyArray', () => {
+    describe('decode', () => {
+      it('should decode a valid input', () => {
+        const codec = _.readonlyNonEmptyArray(_.string)
+        assert.deepStrictEqual(codec.decode(['a']), D.success(['a']))
+      })
+
+      it('should reject an invalid input', () => {
+        const codec = _.readonlyNonEmptyArray(_.string)
+        assert.deepStrictEqual(codec.decode(undefined), D.failure(undefined, 'Array<unknown>'))
+        assert.deepStrictEqual(codec.decode([]), D.failure([], 'ReadonlyNonEmptyArray<unknown>'))
+        assert.deepStrictEqual(codec.decode([1]), E.left(FS.of(DE.index(0, DE.optional, FS.of(DE.leaf(1, 'string'))))))
+      })
+
+      it('should collect all errors', () => {
+        const codec = _.readonlyNonEmptyArray(_.string)
+        assert.deepStrictEqual(
+          codec.decode([1, 2]),
+          E.left(
+            FS.concat(
+              FS.of(DE.index(0, DE.optional, FS.of(DE.leaf(1, 'string')))),
+              FS.of(DE.index(1, DE.optional, FS.of(DE.leaf(2, 'string'))))
+            )
+          )
+        )
+      })
+    })
+
+    describe('encode', () => {
+      it('should encode a value', () => {
+        const codec = _.readonlyNonEmptyArray(codecNumber)
+        assert.deepStrictEqual(codec.encode([1, 2]), ['1', '2'])
+      })
+    })
+  })
+
   describe('tuple', () => {
     describe('decode', () => {
       it('should decode a valid input', () => {
