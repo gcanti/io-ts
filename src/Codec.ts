@@ -11,6 +11,7 @@
 import { identity, Refinement } from 'fp-ts/lib/function'
 import { Invariant3 } from 'fp-ts/lib/Invariant'
 import { pipe } from 'fp-ts/lib/pipeable'
+import { Option } from 'fp-ts/lib/Option'
 import * as D from './Decoder'
 import * as E from './Encoder'
 import { Literal } from './Schemable'
@@ -309,6 +310,13 @@ export function lazy<I, O, A>(id: string, f: () => Codec<I, O, A>): Codec<I, O, 
  * @since 2.2.16
  */
 export const readonly: <I, O, A>(codec: Codec<I, O, A>) => Codec<I, O, Readonly<A>> = identity
+
+/**
+ * @category combinators
+ * @since 2.2.17
+ */
+export const optional: <I, O, A>(codec: Codec<I, O, A>) => Codec<I | undefined, O | undefined, Option<A>> = (codec) =>
+  make(D.optional(codec), E.optional(codec))
 
 /**
  * @category combinators

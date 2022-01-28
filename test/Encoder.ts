@@ -1,6 +1,7 @@
 import * as assert from 'assert'
 import * as E from '../src/Encoder'
 import { pipe } from 'fp-ts/lib/pipeable'
+import * as O from 'fp-ts/lib/Option'
 import * as H from './helpers'
 
 describe('Encoder', () => {
@@ -102,5 +103,11 @@ describe('Encoder', () => {
       a: '1',
       bs: [{ b: 1, as: [{ a: '2', bs: [] }] }]
     })
+  })
+
+  it('optional', () => {
+    const encoder = pipe(H.encoderNumberToString, E.optional)
+    assert.deepStrictEqual(encoder.encode(O.none), undefined)
+    assert.deepStrictEqual(encoder.encode(O.some(1)), '1')
   })
 })

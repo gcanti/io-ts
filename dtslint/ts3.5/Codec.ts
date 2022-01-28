@@ -113,3 +113,10 @@ const S2 = _.struct({ _tag: _.literal('B'), b: _.number })
 _.sum('_tag')({ A: S1, B: S2 })
 // // $ExpectError
 // _.sum('_tag')({ A: S1, B: S1 })
+
+//
+// optional
+//
+
+// $ExpectType Codec<string | undefined, string | undefined, Option<number>>
+_.optional(NumberFromString)

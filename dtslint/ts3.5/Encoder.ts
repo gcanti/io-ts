@@ -102,3 +102,10 @@ const B: E.Encoder<BOut, B> = E.lazy(() =>
     as: E.array(A)
   })
 )
+
+//
+// optional
+//
+
+// $ExpectType Encoder<string | undefined, Option<number>>
+E.optional(NumberToString)

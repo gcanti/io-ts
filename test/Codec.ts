@@ -5,6 +5,7 @@ import { pipe } from 'fp-ts/lib/pipeable'
 import * as DE from '../src/DecodeError'
 import * as FS from '../src/FreeSemigroup'
 import * as E from 'fp-ts/lib/Either'
+import * as O from 'fp-ts/lib/Option'
 import * as H from './helpers'
 
 const codecNumberFromString: _.Codec<string, string, number> = _.make(
@@ -622,6 +623,29 @@ describe('Codec', () => {
       it('should encode a value', () => {
         assert.deepStrictEqual(lazyCodec.encode({ a: 1 }), { a: '1' })
         assert.deepStrictEqual(lazyCodec.encode({ a: 1, b: { a: 2 } }), { a: '1', b: { a: '2' } })
+      })
+    })
+  })
+
+  describe('optional', () => {
+    describe('decode', () => {
+      it('should decode a valid input', () => {
+        const codec = _.optional(codecNumberFromString)
+        assert.deepStrictEqual(codec.decode(undefined), D.success(O.none))
+        assert.deepStrictEqual(codec.decode('1'), D.success(O.some(1)))
+      })
+
+      it('should reject an invalid input', () => {
+        const codec = _.optional(codecNumberFromString)
+        assert.deepStrictEqual(codec.decode('a'), D.failure('a', 'parsable to a number'))
+      })
+    })
+
+    describe('encode', () => {
+      it('should encode a value', () => {
+        const codec = _.optional(codecNumberFromString)
+        assert.deepStrictEqual(codec.encode(O.some(1)), '1')
+        assert.deepStrictEqual(codec.encode(O.none), undefined)
       })
     })
   })

@@ -1,5 +1,6 @@
 import * as assert from 'assert'
 import * as E from 'fp-ts/lib/Either'
+import * as O from 'fp-ts/lib/Option'
 import { pipe } from 'fp-ts/lib/pipeable'
 import * as DE from '../src/DecodeError'
 import * as FS from '../src/FreeSemigroup'
@@ -526,6 +527,19 @@ describe('Decoder', () => {
           )
         )
       )
+    })
+  })
+
+  describe('optional', () => {
+    it('should decode a valid input', () => {
+      const decoder = pipe(H.decoderNumberFromString, _.optional)
+      assert.deepStrictEqual(decoder.decode(undefined), _.success(O.none))
+      assert.deepStrictEqual(decoder.decode('1'), _.success(O.some(1)))
+    })
+
+    it('should reject an invalid input', () => {
+      const decoder = pipe(H.decoderNumberFromString, _.optional)
+      assert.deepStrictEqual(decoder.decode('a'), E.left(FS.of(DE.leaf('a', 'parsable to a number'))))
     })
   })
 
