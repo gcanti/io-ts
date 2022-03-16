@@ -22,3 +22,10 @@ _.readonly(
     a: _.string
   })
 )
+
+//
+// tryCatch
+//
+
+// $ExpectType TaskDecoder<string, number>
+_.tryCatch(async (a: string) => a.length, 'Length')

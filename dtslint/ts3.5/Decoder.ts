@@ -158,3 +158,10 @@ _.readonly(
     a: _.string
   })
 )
+
+//
+// tryCatch
+//
+
+// $ExpectType Decoder<string, number>
+_.tryCatch((a: string) => a.length, 'Length')

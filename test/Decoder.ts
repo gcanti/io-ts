@@ -530,6 +530,26 @@ describe('Decoder', () => {
   })
 
   // -------------------------------------------------------------------------------------
+  // interop
+  // -------------------------------------------------------------------------------------
+
+  describe('tryCatch', () => {
+    it('should decode when the function returns a value', () => {
+      const f = (value: number) => value + 1
+
+      assert.deepStrictEqual(_.tryCatch(f, 'Number').decode(1), _.success(2))
+    })
+
+    it('should reject when the function throws', () => {
+      const f = () => {
+        throw new Error('Some error')
+      }
+
+      assert.deepStrictEqual(_.tryCatch(f, 'Number').decode(1), E.left(FS.of(DE.leaf(1, 'Number'))))
+    })
+  })
+
+  // -------------------------------------------------------------------------------------
   // utils
   // -------------------------------------------------------------------------------------
 

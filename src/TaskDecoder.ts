@@ -387,6 +387,24 @@ export const lazy: <I, A>(id: string, f: () => TaskDecoder<I, A>) => TaskDecoder
 export const readonly: <I, A>(decoder: TaskDecoder<I, A>) => TaskDecoder<I, Readonly<A>> = identity
 
 // -------------------------------------------------------------------------------------
+// interop
+// -------------------------------------------------------------------------------------
+
+/**
+ * Constructs a new `Decoder` from a function that returns a `Promise`.
+ *
+ * @category interop
+ * @since 2.2.17
+ */
+export const tryCatch: <I, A>(f: (i: I) => Promise<A>, id: string) => TaskDecoder<I, A> = (f, id) => ({
+  decode: (i) =>
+    TE.tryCatch(
+      () => f(i),
+      () => error(i, id)
+    )
+})
+
+// -------------------------------------------------------------------------------------
 // non-pipeables
 // -------------------------------------------------------------------------------------
 
