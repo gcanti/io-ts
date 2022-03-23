@@ -99,7 +99,7 @@ export const readonly: <A>(arb: Arbitrary<A>) => Arbitrary<Readonly<A>> = identi
 export function union<A extends [Arbitrary<unknown>, ...Array<Arbitrary<unknown>>]>(
   ...members: { [K in keyof A]: Arbitrary<A[K]> }
 ): Arbitrary<A[number]> {
-  return fc.oneof(...members)
+  return fc.oneof(...members) as any
 }
 
 // -------------------------------------------------------------------------------------
