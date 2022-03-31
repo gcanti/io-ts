@@ -12,7 +12,8 @@ import { Alt2, Alt2C } from 'fp-ts/lib/Alt'
 import { Bifunctor2 } from 'fp-ts/lib/Bifunctor'
 import { Category2 } from 'fp-ts/lib/Category'
 import * as E from 'fp-ts/lib/Either'
-import { identity, Refinement } from 'fp-ts/lib/function'
+import { flow, identity, Refinement } from 'fp-ts/lib/function'
+import * as J from 'fp-ts/lib/Json'
 import { Functor2 } from 'fp-ts/lib/Functor'
 import { MonadThrow2C } from 'fp-ts/lib/MonadThrow'
 import { pipe } from 'fp-ts/lib/pipeable'
@@ -21,6 +22,7 @@ import * as FS from './FreeSemigroup'
 import * as G from './Guard'
 import * as K from './Kleisli'
 import * as S from './Schemable'
+import Json = J.Json
 
 // -------------------------------------------------------------------------------------
 // Kleisli config
@@ -225,6 +227,23 @@ export const parse: <A, B>(parser: (a: A) => E.Either<DecodeError, B>) => <I>(fr
 export const nullable: <I, A>(or: Decoder<I, A>) => Decoder<null | I, null | A> =
   /*#__PURE__*/
   K.nullable(M)((u, e) => FS.concat(FS.of(DE.member(0, error(u, 'null'))), FS.of(DE.member(1, e))))
+
+/**
+ * @category combinators
+ * @since 2.2.17
+ */
+export const json: Decoder<unknown, Json> = {
+  decode: (i) =>
+    pipe(
+      string.decode(i),
+      E.chain(
+        flow(
+          J.parse,
+          E.altW(() => failure(i, 'JSON'))
+        )
+      )
+    )
+}
 
 /**
  * @category combinators

@@ -153,6 +153,19 @@ describe('Decoder', () => {
     })
   })
 
+  describe('json', () => {
+    it('should decode valid JSON', () => {
+      assert.deepStrictEqual(_.json.decode('null'), _.success(null))
+      assert.deepStrictEqual(_.json.decode('"a"'), _.success('a'))
+      assert.deepStrictEqual(_.json.decode('{"a":1}'), _.success({ a: 1 }))
+    })
+
+    it('should reject invalid JSON', () => {
+      assert.deepStrictEqual(_.json.decode(undefined), _.failure(undefined, 'string'))
+      assert.deepStrictEqual(_.json.decode('{"a":}'), _.failure('{"a":}', 'JSON'))
+    })
+  })
+
   describe('struct', () => {
     it('should decode a valid input', async () => {
       const decoder = _.struct({

@@ -10,8 +10,10 @@
  */
 import { Contravariant2 } from 'fp-ts/lib/Contravariant'
 import { Category2 } from 'fp-ts/lib/Category'
+import { Json } from 'fp-ts/lib/Json'
 import { memoize, intersect_ } from './Schemable'
 import { identity } from 'fp-ts/lib/function'
+import safeStringify from 'safe-stable-stringify'
 
 // -------------------------------------------------------------------------------------
 // model
@@ -37,6 +39,14 @@ export function nullable<O, A>(or: Encoder<O, A>): Encoder<null | O, null | A> {
   return {
     encode: (a) => (a === null ? null : or.encode(a))
   }
+}
+
+/**
+ * @category combinators
+ * @since 2.2.17
+ */
+export const json: Encoder<string, Json> = {
+  encode: safeStringify
 }
 
 /**

@@ -20,6 +20,16 @@ describe('Encoder', () => {
     assert.deepStrictEqual(encoder.encode(null), null)
   })
 
+  it('json', () => {
+    const circular: any = { ref: null }
+    circular.ref = circular
+
+    assert.deepStrictEqual(E.json.encode(null), 'null')
+    assert.deepStrictEqual(E.json.encode('a'), '"a"')
+    assert.deepStrictEqual(E.json.encode({ a: 1 }), '{"a":1}')
+    assert.deepStrictEqual(E.json.encode(circular), '{"ref":"[Circular]"}')
+  })
+
   it('struct', () => {
     const encoder = E.struct({ a: H.encoderNumberToString, b: H.encoderBooleanToNumber })
     assert.deepStrictEqual(encoder.encode({ a: 1, b: true }), { a: '1', b: 1 })
