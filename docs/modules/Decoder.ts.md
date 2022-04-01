@@ -232,7 +232,21 @@ Added in v2.2.8
 ```ts
 export declare const fromStruct: <P extends Record<string, Decoder<any, any>>>(
   properties: P
-) => Decoder<{ [K in keyof P]: K.InputOf<'Either', P[K]> }, { [K in keyof P]: K.TypeOf<'Either', P[K]> }>
+) => Decoder<
+  { [K in keyof P]: K.InputOf<'Either', P[K]> },
+  Merge<
+    Pick<
+      { [K in keyof P]: K.TypeOf<'Either', P[K]> },
+      Exclude<keyof P, UndefinedProperties<{ [K in keyof P]: K.TypeOf<'Either', P[K]> }>>
+    > &
+      Partial<
+        Pick<
+          { [K in keyof P]: K.TypeOf<'Either', P[K]> },
+          UndefinedProperties<{ [K in keyof P]: K.TypeOf<'Either', P[K]> }>
+        >
+      >
+  >
+>
 ```
 
 Added in v2.2.15
@@ -371,7 +385,13 @@ Added in v2.2.7
 ```ts
 export declare const struct: <A>(
   properties: { [K in keyof A]: Decoder<unknown, A[K]> }
-) => Decoder<unknown, { [K in keyof A]: A[K] }>
+) => Decoder<
+  unknown,
+  Merge<
+    Pick<{ [K in keyof A]: A[K] }, Exclude<keyof A, UndefinedProperties<{ [K in keyof A]: A[K] }>>> &
+      Partial<Pick<{ [K in keyof A]: A[K] }, UndefinedProperties<{ [K in keyof A]: A[K] }>>>
+  >
+>
 ```
 
 Added in v2.2.15
@@ -433,7 +453,21 @@ Use `fromStruct` instead.
 ```ts
 export declare const fromType: <P extends Record<string, Decoder<any, any>>>(
   properties: P
-) => Decoder<{ [K in keyof P]: K.InputOf<'Either', P[K]> }, { [K in keyof P]: K.TypeOf<'Either', P[K]> }>
+) => Decoder<
+  { [K in keyof P]: K.InputOf<'Either', P[K]> },
+  Merge<
+    Pick<
+      { [K in keyof P]: K.TypeOf<'Either', P[K]> },
+      Exclude<keyof P, UndefinedProperties<{ [K in keyof P]: K.TypeOf<'Either', P[K]> }>>
+    > &
+      Partial<
+        Pick<
+          { [K in keyof P]: K.TypeOf<'Either', P[K]> },
+          UndefinedProperties<{ [K in keyof P]: K.TypeOf<'Either', P[K]> }>
+        >
+      >
+  >
+>
 ```
 
 Added in v2.2.8
@@ -447,7 +481,13 @@ Use `struct` instead.
 ```ts
 export declare const type: <A>(
   properties: { [K in keyof A]: Decoder<unknown, A[K]> }
-) => Decoder<unknown, { [K in keyof A]: A[K] }>
+) => Decoder<
+  unknown,
+  Merge<
+    Pick<{ [K in keyof A]: A[K] }, Exclude<keyof A, UndefinedProperties<{ [K in keyof A]: A[K] }>>> &
+      Partial<Pick<{ [K in keyof A]: A[K] }, UndefinedProperties<{ [K in keyof A]: A[K] }>>>
+  >
+>
 ```
 
 Added in v2.2.7

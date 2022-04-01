@@ -3,6 +3,8 @@ import * as DE from '../../src/DecodeError'
 import * as _ from '../../src/Decoder'
 import * as FS from '../../src/FreeSemigroup'
 
+declare const Optional: <I, A>(decoder: _.Decoder<I, A>) => _.Decoder<I, A | undefined>
+
 declare const NumberFromString: _.Decoder<string, number>
 
 //
@@ -40,6 +42,14 @@ _.struct({
   a: _.string,
   b: _.struct({
     c: _.number
+  })
+})
+
+// $ExpectType Decoder<unknown, { b: { c?: number | undefined; }; a?: string | undefined; }>
+_.struct({
+  a: Optional(_.string),
+  b: _.struct({
+    c: Optional(_.number)
   })
 })
 
@@ -113,7 +123,7 @@ _.tuple(_.string, _.number, _.boolean)
 // fromSum
 //
 
-// $ExpectType Decoder<{ _tag: unknown; a: unknown; } | { _tag: unknown; b: string; }, { _tag: "A"; a: string; } | { _tag: "B"; b: number; }>
+// $ExpectType Decoder<{ _tag: unknown; a: unknown; } | { _tag: unknown; b: string; }, { a: string; _tag: "A"; } | { b: number; _tag: "B"; }>
 _.fromSum('_tag')({
   A: _.fromStruct({ _tag: _.literal('A'), a: _.string }),
   B: _.fromStruct({ _tag: _.literal('B'), b: NumberFromString })
@@ -126,7 +136,7 @@ _.fromSum('_tag')({
 const S1 = _.struct({ _tag: _.literal('A'), a: _.string })
 const S2 = _.struct({ _tag: _.literal('B'), b: _.number })
 
-// $ExpectType Decoder<unknown, { _tag: "A"; a: string; } | { _tag: "B"; b: number; }>
+// $ExpectType Decoder<unknown, { a: string; _tag: "A"; } | { b: number; _tag: "B"; }>
 _.sum('_tag')({ A: S1, B: S2 })
 // $ExpectError
 _.sum('_tag')({ A: S1, B: S1 })

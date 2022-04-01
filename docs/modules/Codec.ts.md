@@ -147,7 +147,11 @@ Added in v2.2.3
 ```ts
 export declare function fromStruct<P extends Record<string, Codec<any, any, any>>>(
   properties: P
-): Codec<{ [K in keyof P]: InputOf<P[K]> }, { [K in keyof P]: OutputOf<P[K]> }, { [K in keyof P]: TypeOf<P[K]> }>
+): Codec<
+  ToOptional<{ [K in keyof P]: InputOf<P[K]> }>,
+  ToOptional<{ [K in keyof P]: OutputOf<P[K]> }>,
+  ToOptional<{ [K in keyof P]: TypeOf<P[K]> }>
+>
 ```
 
 Added in v2.2.15
@@ -280,7 +284,7 @@ Added in v2.2.3
 ```ts
 export declare function struct<P extends Record<string, Codec<unknown, any, any>>>(
   properties: P
-): Codec<unknown, { [K in keyof P]: OutputOf<P[K]> }, { [K in keyof P]: TypeOf<P[K]> }>
+): Codec<unknown, ToOptional<{ [K in keyof P]: OutputOf<P[K]> }>, ToOptional<{ [K in keyof P]: TypeOf<P[K]> }>>
 ```
 
 Added in v2.2.15

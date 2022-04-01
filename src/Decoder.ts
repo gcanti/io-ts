@@ -232,8 +232,8 @@ export const nullable: <I, A>(or: Decoder<I, A>) => Decoder<null | I, null | A> 
  */
 export const fromStruct = <P extends Record<string, Decoder<any, any>>>(
   properties: P
-): Decoder<{ [K in keyof P]: InputOf<P[K]> }, { [K in keyof P]: TypeOf<P[K]> }> =>
-  K.fromStruct(M)((k, e) => FS.of(DE.key(k, DE.required, e)))(properties)
+): Decoder<{ [K in keyof P]: InputOf<P[K]> }, ToOptional<{ [K in keyof P]: TypeOf<P[K]> }>> =>
+  K.fromStruct(M)((k, e) => FS.of(DE.key(k, DE.required, e)))(properties) as any
 
 /**
  * Use `fromStruct` instead.
@@ -250,7 +250,8 @@ export const fromType = fromStruct
  */
 export const struct = <A>(
   properties: { [K in keyof A]: Decoder<unknown, A[K]> }
-): Decoder<unknown, { [K in keyof A]: A[K] }> => pipe(UnknownRecord as any, compose(fromStruct(properties)))
+): Decoder<unknown, ToOptional<{ [K in keyof A]: A[K] }>> =>
+  pipe(UnknownRecord as any, compose(fromStruct(properties))) as any
 
 /**
  * Use `struct` instead.
@@ -488,8 +489,8 @@ export const Schemable: S.Schemable2C<URI, unknown> = {
   number,
   boolean,
   nullable,
-  type,
-  struct,
+  type: type as S.Schemable2C<URI, unknown>['type'], // tslint:disable-line:deprecation
+  struct: struct as S.Schemable2C<URI, unknown>['struct'],
   partial,
   record,
   array,
@@ -609,3 +610,10 @@ export const draw = (e: DecodeError): string => toForest(e).map(drawTree).join('
 export const stringify: <A>(e: E.Either<DecodeError, A>) => string =
   /*#__PURE__*/
   E.fold(draw, (a) => JSON.stringify(a, null, 2))
+
+type UndefinedProperties<T> = {
+  [P in keyof T]-?: undefined extends T[P] ? P : never
+}[keyof T]
+type ToOptional<T> = Merge<Pick<T, Exclude<keyof T, UndefinedProperties<T>>> & Partial<Pick<T, UndefinedProperties<T>>>>
+type Identity<T> = T
+type Merge<T> = T extends any ? Identity<{ [k in keyof T]: T[k] }> : never

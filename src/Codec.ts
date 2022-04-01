@@ -148,8 +148,12 @@ export function nullable<I, O, A>(or: Codec<I, O, A>): Codec<null | I, null | O,
  */
 export function fromStruct<P extends Record<string, Codec<any, any, any>>>(
   properties: P
-): Codec<{ [K in keyof P]: InputOf<P[K]> }, { [K in keyof P]: OutputOf<P[K]> }, { [K in keyof P]: TypeOf<P[K]> }> {
-  return make(D.fromStruct(properties) as any, E.struct(properties))
+): Codec<
+  ToOptional<{ [K in keyof P]: InputOf<P[K]> }>,
+  ToOptional<{ [K in keyof P]: OutputOf<P[K]> }>,
+  ToOptional<{ [K in keyof P]: TypeOf<P[K]> }>
+> {
+  return make(D.fromStruct(properties) as any, E.struct(properties) as any)
 }
 
 /**
@@ -167,7 +171,7 @@ export const fromType = fromStruct
  */
 export function struct<P extends Record<string, Codec<unknown, any, any>>>(
   properties: P
-): Codec<unknown, { [K in keyof P]: OutputOf<P[K]> }, { [K in keyof P]: TypeOf<P[K]> }> {
+): Codec<unknown, ToOptional<{ [K in keyof P]: OutputOf<P[K]> }>, ToOptional<{ [K in keyof P]: TypeOf<P[K]> }>> {
   return pipe(UnknownRecord, compose(fromStruct(properties as any))) as any
 }
 
@@ -385,3 +389,10 @@ export type OutputOf<C> = E.OutputOf<C>
  * @since 2.2.3
  */
 export type TypeOf<C> = E.TypeOf<C>
+
+type UndefinedProperties<T> = {
+  [P in keyof T]-?: undefined extends T[P] ? P : never
+}[keyof T]
+type ToOptional<T> = Merge<Pick<T, Exclude<keyof T, UndefinedProperties<T>>> & Partial<Pick<T, UndefinedProperties<T>>>>
+type Identity<T> = T
+type Merge<T> = T extends any ? Identity<{ [k in keyof T]: T[k] }> : never

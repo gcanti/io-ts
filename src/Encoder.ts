@@ -45,14 +45,14 @@ export function nullable<O, A>(or: Encoder<O, A>): Encoder<null | O, null | A> {
  */
 export function struct<P extends Record<string, Encoder<any, any>>>(
   properties: P
-): Encoder<{ [K in keyof P]: OutputOf<P[K]> }, { [K in keyof P]: TypeOf<P[K]> }> {
+): Encoder<ToOptional<{ [K in keyof P]: OutputOf<P[K]> }>, { [K in keyof P]: TypeOf<P[K]> }> {
   return {
     encode: (a) => {
       const o: Record<keyof P, any> = {} as any
       for (const k in properties) {
         o[k] = properties[k].encode(a[k])
       }
-      return o
+      return o as any
     }
   }
 }
@@ -260,3 +260,10 @@ export type TypeOf<E> = E extends Encoder<any, infer A> ? A : never
  * @since 2.2.3
  */
 export type OutputOf<E> = E extends Encoder<infer O, any> ? O : never
+
+type UndefinedProperties<T> = {
+  [P in keyof T]-?: undefined extends T[P] ? P : never
+}[keyof T]
+type ToOptional<T> = Merge<Pick<T, Exclude<keyof T, UndefinedProperties<T>>> & Partial<Pick<T, UndefinedProperties<T>>>>
+type Identity<T> = T
+type Merge<T> = T extends any ? Identity<{ [k in keyof T]: T[k] }> : never

@@ -167,7 +167,7 @@ Added in v2.2.3
 ```ts
 export declare function struct<P extends Record<string, Encoder<any, any>>>(
   properties: P
-): Encoder<{ [K in keyof P]: OutputOf<P[K]> }, { [K in keyof P]: TypeOf<P[K]> }>
+): Encoder<ToOptional<{ [K in keyof P]: OutputOf<P[K]> }>, { [K in keyof P]: TypeOf<P[K]> }>
 ```
 
 Added in v2.2.15
