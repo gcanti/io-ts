@@ -1,31 +1,101 @@
-import * as E from 'fp-ts/lib/Either'
+import { flow, tuple } from 'fp-ts/lib/function'
 import { pipe } from 'fp-ts/lib/pipeable'
+import * as TH from 'fp-ts/lib/These'
+import * as util from 'util'
 import * as DE from '../src/DecodeError'
-import * as FS from '../src/FreeSemigroup'
 import * as _ from '../src/Decoder'
-import * as H from './helpers'
 import * as U from './util'
+import { draw } from '../src/TreeReporter'
+
+const printValue = (a: unknown): string => 'Value:\n' + util.format(a)
+const printErrors = (s: string): string => 'Errors:\n' + s
+const printWarnings = (s: string): string => 'Warnings:\n' + s
+
+export const printAll = TH.fold(printErrors, printValue, (e, a) => printValue(a) + '\n' + printWarnings(e))
+
+export const print = flow(TH.mapLeft(draw), printAll)
+
+const simplenumber: _.Decoder<unknown, DE.NumberLE, number> = {
+  decode: (u: unknown) => (typeof u === 'number' ? _.success(u) : _.failure(DE.numberLE(u)))
+}
 
 describe('Decoder', () => {
   // -------------------------------------------------------------------------------------
   // instances
   // -------------------------------------------------------------------------------------
 
+  it('map', () => {
+    const decoder = pipe(
+      _.string,
+      _.map((s) => s.trim())
+    )
+    U.deepStrictEqual(decoder.decode('a'), _.success('a'))
+    U.deepStrictEqual(decoder.decode(' a '), _.success('a'))
+  })
+
   it('Functor', () => {
-    const decoder = _.Functor.map(_.string, (s) => s + '!')
-    U.deepStrictEqual(decoder.decode('a'), _.success('a!'))
+    const decoder = _.Functor.map(_.string, (s) => s.trim())
+    U.deepStrictEqual(decoder.decode(' a '), _.success('a'))
   })
 
-  it('Alt', () => {
-    const decoder = _.Alt.alt<unknown, string | number>(_.string, () => _.number)
-    U.deepStrictEqual(decoder.decode('a'), _.success('a'))
-    U.deepStrictEqual(decoder.decode(1), _.success(1))
+  it('mapLeft', () => {
+    const decoder = pipe(
+      _.string,
+      _.mapLeft(() => _.message('not a string'))
+    )
+    U.deepStrictEqual(
+      pipe(decoder.decode(null), print),
+      `Errors:
+not a string`
+    )
   })
 
-  it('Category', () => {
-    const decoder = _.Category.compose(_.id<unknown>(), _.string)
+  describe('Bifunctor', () => {
+    it('mapLeft', () => {
+      const decoder = _.Bifunctor.mapLeft(_.string, () => 'not a string')
+      U.deepStrictEqual(decoder.decode(null), _.failure('not a string'))
+    })
+
+    it('bimap', () => {
+      const decoder = _.Bifunctor.bimap(
+        _.string,
+        () => 'not a string',
+        (s) => s.trim()
+      )
+      U.deepStrictEqual(decoder.decode(' a '), _.success('a'))
+      U.deepStrictEqual(decoder.decode(null), _.failure('not a string'))
+    })
+  })
+
+  it('id', () => {
+    const decoder = _.id<string>()
     U.deepStrictEqual(decoder.decode('a'), _.success('a'))
-    U.deepStrictEqual(decoder.decode(1), _.failure(1, 'string'))
+  })
+
+  describe('compose', () => {
+    it('should accumulate warnings', () => {
+      const decoder = pipe(_.number, _.compose(_.number))
+      U.deepStrictEqual(
+        pipe(decoder.decode(NaN), print),
+        `Value:
+NaN
+Warnings:
+2 error(s) found while decoding (composition)
+├─ value is NaN
+└─ value is NaN`
+      )
+    })
+
+    it('should accumulate warnings and errors', () => {
+      const decoder = pipe(_.number, _.compose(_.string))
+      U.deepStrictEqual(
+        pipe(decoder.decode(NaN), print),
+        `Errors:
+2 error(s) found while decoding (composition)
+├─ value is NaN
+└─ cannot decode NaN, expected a string`
+      )
+    })
   })
 
   // -------------------------------------------------------------------------------------
@@ -34,33 +104,67 @@ describe('Decoder', () => {
 
   it('string', async () => {
     U.deepStrictEqual(_.string.decode('a'), _.success('a'))
-    U.deepStrictEqual(_.string.decode(null), E.left(FS.of(DE.leaf(null, 'string'))))
+    U.deepStrictEqual(
+      pipe(_.string.decode(null), print),
+      `Errors:
+cannot decode null, expected a string`
+    )
   })
 
   describe('number', () => {
     it('number', async () => {
       U.deepStrictEqual(_.number.decode(1), _.success(1))
-      U.deepStrictEqual(_.number.decode(null), E.left(FS.of(DE.leaf(null, 'number'))))
+      U.deepStrictEqual(
+        pipe(_.number.decode(null), print),
+        `Errors:
+cannot decode null, expected a number`
+      )
     })
 
-    it('should exclude NaN', () => {
-      U.deepStrictEqual(_.number.decode(NaN), E.left(FS.of(DE.leaf(NaN, 'number'))))
+    it('should warn NaN', () => {
+      U.deepStrictEqual(_.number.decode(NaN), _.warning(DE.naNLE, NaN))
+    })
+
+    it('should warn Infinity', () => {
+      U.deepStrictEqual(_.number.decode(Infinity), _.warning(DE.infinityLE, Infinity))
+      U.deepStrictEqual(_.number.decode(-Infinity), _.warning(DE.infinityLE, -Infinity))
+      U.deepStrictEqual(
+        pipe(_.number.decode(Infinity), print),
+        `Value:
+Infinity
+Warnings:
+value is Infinity`
+      )
     })
   })
 
   it('boolean', async () => {
     U.deepStrictEqual(_.boolean.decode(true), _.success(true))
-    U.deepStrictEqual(_.boolean.decode(null), E.left(FS.of(DE.leaf(null, 'boolean'))))
+    U.deepStrictEqual(
+      pipe(_.boolean.decode(null), print),
+      `Errors:
+cannot decode null, expected a boolean`
+    )
   })
 
   it('UnknownArray', async () => {
-    U.deepStrictEqual(_.UnknownArray.decode([1, 'a']), _.success([1, 'a']))
-    U.deepStrictEqual(_.UnknownArray.decode(null), E.left(FS.of(DE.leaf(null, 'Array<unknown>'))))
+    const decoder = _.getWithUnknownContainers().UnknownArray
+    U.deepStrictEqual(decoder.decode([1, 'a']), _.success([1, 'a']))
+    U.deepStrictEqual(
+      pipe(decoder.decode(null), print),
+      `Errors:
+cannot decode null, expected an array`
+    )
   })
 
   it('UnknownRecord', async () => {
-    U.deepStrictEqual(_.UnknownRecord.decode({ a: 1, b: 'b' }), _.success({ a: 1, b: 'b' }))
-    U.deepStrictEqual(_.UnknownRecord.decode(null), E.left(FS.of(DE.leaf(null, 'Record<string, unknown>'))))
+    const decoder = _.getWithUnknownContainers().UnknownRecord
+    U.deepStrictEqual(decoder.decode({ a: 1, b: 'b' }), _.success({ a: 1, b: 'b' }))
+    U.deepStrictEqual(
+      pipe(decoder.decode(null), print),
+      `Errors:
+cannot decode null, expected an object`
+    )
   })
 
   // -------------------------------------------------------------------------------------
@@ -76,7 +180,11 @@ describe('Decoder', () => {
 
     it('should reject an invalid input', async () => {
       const decoder = _.literal('a', null)
-      U.deepStrictEqual(decoder.decode('b'), E.left(FS.of(DE.leaf('b', '"a" | null'))))
+      U.deepStrictEqual(
+        pipe(decoder.decode('b'), print),
+        `Errors:
+cannot decode \"b\", expected one of \"a\", null`
+      )
     })
   })
 
@@ -84,71 +192,20 @@ describe('Decoder', () => {
   // combinators
   // -------------------------------------------------------------------------------------
 
-  it('mapLeftWithInput', () => {
-    const decoder = pipe(
-      _.number,
-      _.mapLeftWithInput((u) => FS.of(DE.leaf(u, 'not a number')))
-    )
-    U.deepStrictEqual(decoder.decode('a'), E.left(FS.of(DE.leaf('a', 'not a number'))))
-  })
-
-  it('withMessage', () => {
-    const decoder = pipe(
-      _.struct({
-        name: _.string,
-        age: _.number
-      }),
-      _.withMessage(() => 'Person')
-    )
-    U.deepStrictEqual(
-      pipe(decoder.decode({}), E.mapLeft(_.draw)),
-      E.left(`Person
-├─ required property "name"
-│  └─ cannot decode undefined, should be string
-└─ required property "age"
-   └─ cannot decode undefined, should be number`)
-    )
-  })
-
-  it('compose', () => {
-    interface IntBrand {
-      readonly Int: unique symbol
-    }
-
-    type Int = number & IntBrand
-
-    const decoder = pipe(_.number, _.compose(_.fromRefinement((n): n is Int => Number.isInteger(n), 'IntFromNumber')))
-    U.deepStrictEqual(decoder.decode(1), _.success(1))
-    U.deepStrictEqual(decoder.decode('a'), _.failure('a', 'number'))
-    U.deepStrictEqual(decoder.decode(1.2), _.failure(1.2, 'IntFromNumber'))
-  })
-
   describe('nullable', () => {
     it('should decode a valid input', () => {
-      const decoder = _.nullable(H.decoderNumberFromUnknownString)
+      const decoder = _.nullable(_.string)
       U.deepStrictEqual(decoder.decode(null), _.success(null))
-      U.deepStrictEqual(decoder.decode('1'), _.success(1))
+      U.deepStrictEqual(decoder.decode('a'), _.success('a'))
     })
 
     it('should reject an invalid input', () => {
-      const decoder = _.nullable(H.decoderNumberFromUnknownString)
+      const decoder = _.nullable(_.string)
       U.deepStrictEqual(
-        decoder.decode(undefined),
-        E.left(
-          FS.concat(
-            FS.of(DE.member(0, FS.of(DE.leaf(undefined, 'null')))),
-            FS.of(DE.member(1, FS.of(DE.leaf(undefined, 'string'))))
-          )
-        )
-      )
-      U.deepStrictEqual(
-        decoder.decode('a'),
-        E.left(
-          FS.concat(
-            FS.of(DE.member(0, FS.of(DE.leaf('a', 'null')))),
-            FS.of(DE.member(1, FS.of(DE.leaf('a', 'parsable to a number'))))
-          )
-        )
+        pipe(decoder.decode(undefined), print),
+        `Errors:
+1 error(s) found while decoding a nullable
+└─ cannot decode undefined, expected a string`
       )
     })
   })
@@ -165,12 +222,26 @@ describe('Decoder', () => {
       const decoder = _.struct({
         a: _.string
       })
-      U.deepStrictEqual(decoder.decode({ a: 'a', b: 1 }), _.success({ a: 'a' }))
+      U.deepStrictEqual(
+        pipe(decoder.decode({ a: 'a', b: 1 }), print),
+        `Value:
+{ a: 'a' }
+Warnings:
+1 error(s) found while checking keys
+└─ unexpected key \"b\"`
+      )
     })
 
     it('should not strip fields corresponding to undefined values', async () => {
       const decoder = _.struct({
-        a: H.decoderUndefined
+        a: _.literal(undefined)
+      })
+      U.deepStrictEqual(decoder.decode({ a: undefined }), _.success({ a: undefined }))
+    })
+
+    it.skip('should not error on missing keys with undefined values', async () => {
+      const decoder = _.struct({
+        a: _.literal(undefined)
       })
       U.deepStrictEqual(decoder.decode({}), _.success({ a: undefined }))
     })
@@ -179,8 +250,18 @@ describe('Decoder', () => {
       const decoder = _.struct({
         a: _.string
       })
-      U.deepStrictEqual(decoder.decode(undefined), E.left(FS.of(DE.leaf(undefined, 'Record<string, unknown>'))))
-      U.deepStrictEqual(decoder.decode({ a: 1 }), E.left(FS.of(DE.key('a', DE.required, FS.of(DE.leaf(1, 'string'))))))
+      U.deepStrictEqual(
+        pipe(decoder.decode(undefined), print),
+        `Errors:
+cannot decode undefined, expected an object`
+      )
+      U.deepStrictEqual(
+        pipe(decoder.decode({ a: 1 }), print),
+        `Errors:
+1 error(s) found while decoding (struct)
+└─ 1 error(s) found while decoding required key \"a\"
+   └─ cannot decode 1, expected a string`
+      )
     })
 
     it('should collect all errors', async () => {
@@ -189,13 +270,11 @@ describe('Decoder', () => {
         b: _.number
       })
       U.deepStrictEqual(
-        decoder.decode({}),
-        E.left(
-          FS.concat(
-            FS.of(DE.key('a', DE.required, FS.of(DE.leaf(undefined, 'string')))),
-            FS.of(DE.key('b', DE.required, FS.of(DE.leaf(undefined, 'number'))))
-          )
-        )
+        pipe(decoder.decode({}), print),
+        `Errors:
+2 error(s) found while checking keys
+├─ missing required key \"a\"
+└─ missing required key \"b\"`
       )
     })
 
@@ -222,7 +301,14 @@ describe('Decoder', () => {
 
     it('should strip additional fields', async () => {
       const decoder = _.partial({ a: _.string })
-      U.deepStrictEqual(decoder.decode({ a: 'a', b: 1 }), _.success({ a: 'a' }))
+      U.deepStrictEqual(
+        pipe(decoder.decode({ a: 'a', b: 1 }), print),
+        `Value:
+{ a: 'a' }
+Warnings:
+1 error(s) found while checking keys
+└─ unexpected key \"b\"`
+      )
     })
 
     it('should not add missing fields', async () => {
@@ -237,8 +323,18 @@ describe('Decoder', () => {
 
     it('should reject an invalid input', async () => {
       const decoder = _.partial({ a: _.string })
-      U.deepStrictEqual(decoder.decode(undefined), E.left(FS.of(DE.leaf(undefined, 'Record<string, unknown>'))))
-      U.deepStrictEqual(decoder.decode({ a: 1 }), E.left(FS.of(DE.key('a', DE.optional, FS.of(DE.leaf(1, 'string'))))))
+      U.deepStrictEqual(
+        pipe(decoder.decode(undefined), print),
+        `Errors:
+cannot decode undefined, expected an object`
+      )
+      U.deepStrictEqual(
+        pipe(decoder.decode({ a: 1 }), print),
+        `Errors:
+1 error(s) found while decoding (partial)
+└─ 1 error(s) found while decoding optional key \"a\"
+   └─ cannot decode 1, expected a string`
+      )
     })
 
     it('should collect all errors', async () => {
@@ -247,13 +343,28 @@ describe('Decoder', () => {
         b: _.number
       })
       U.deepStrictEqual(
-        decoder.decode({ a: 1, b: 'b' }),
-        E.left(
-          FS.concat(
-            FS.of(DE.key('a', DE.optional, FS.of(DE.leaf(1, 'string')))),
-            FS.of(DE.key('b', DE.optional, FS.of(DE.leaf('b', 'number'))))
-          )
-        )
+        pipe(decoder.decode({ a: 1, b: 'b' }), print),
+        `Errors:
+2 error(s) found while decoding (partial)
+├─ 1 error(s) found while decoding optional key \"a\"
+│  └─ cannot decode 1, expected a string
+└─ 1 error(s) found while decoding optional key \"b\"
+   └─ cannot decode \"b\", expected a number`
+      )
+    })
+
+    it('should accumulate warnings', async () => {
+      const decoder = _.partial({
+        a: _.number
+      })
+      U.deepStrictEqual(
+        pipe(decoder.decode({ a: NaN }), print),
+        `Value:
+{ a: NaN }
+Warnings:
+1 error(s) found while decoding (partial)
+└─ 1 error(s) found while decoding optional key \"a\"
+   └─ value is NaN`
       )
     })
   })
@@ -265,22 +376,45 @@ describe('Decoder', () => {
       U.deepStrictEqual(decoder.decode(['a']), _.success(['a']))
     })
 
+    it('should accumulate warnings', async () => {
+      const decoder = _.array(_.number)
+      U.deepStrictEqual(
+        pipe(decoder.decode([1, NaN]), print),
+        `Value:
+[ 1, NaN ]
+Warnings:
+1 error(s) found while decoding (array)
+└─ 1 error(s) found while decoding optional index 1
+   └─ value is NaN`
+      )
+    })
+
     it('should reject an invalid input', async () => {
       const decoder = _.array(_.string)
-      U.deepStrictEqual(decoder.decode(undefined), E.left(FS.of(DE.leaf(undefined, 'Array<unknown>'))))
-      U.deepStrictEqual(decoder.decode([1]), E.left(FS.of(DE.index(0, DE.optional, FS.of(DE.leaf(1, 'string'))))))
+      U.deepStrictEqual(
+        pipe(decoder.decode(undefined), print),
+        `Errors:
+cannot decode undefined, expected an array`
+      )
+      U.deepStrictEqual(
+        pipe(decoder.decode([1]), print),
+        `Errors:
+1 error(s) found while decoding (array)
+└─ 1 error(s) found while decoding optional index 0
+   └─ cannot decode 1, expected a string`
+      )
     })
 
     it('should collect all errors', async () => {
       const decoder = _.array(_.string)
       U.deepStrictEqual(
-        decoder.decode([1, 2]),
-        E.left(
-          FS.concat(
-            FS.of(DE.index(0, DE.optional, FS.of(DE.leaf(1, 'string')))),
-            FS.of(DE.index(1, DE.optional, FS.of(DE.leaf(2, 'string'))))
-          )
-        )
+        pipe(decoder.decode([1, 2]), print),
+        `Errors:
+2 error(s) found while decoding (array)
+├─ 1 error(s) found while decoding optional index 0
+│  └─ cannot decode 1, expected a string
+└─ 1 error(s) found while decoding optional index 1
+   └─ cannot decode 2, expected a string`
       )
     })
   })
@@ -294,24 +428,383 @@ describe('Decoder', () => {
 
     it('should reject an invalid value', async () => {
       const decoder = _.record(_.number)
-      U.deepStrictEqual(decoder.decode(undefined), E.left(FS.of(DE.leaf(undefined, 'Record<string, unknown>'))))
       U.deepStrictEqual(
-        decoder.decode({ a: 'a' }),
-        E.left(FS.of(DE.key('a', DE.optional, FS.of(DE.leaf('a', 'number')))))
+        pipe(decoder.decode(undefined), print),
+        `Errors:
+cannot decode undefined, expected an object`
+      )
+      U.deepStrictEqual(
+        pipe(decoder.decode({ a: 'a' }), print),
+        `Errors:
+1 error(s) found while decoding (record)
+└─ 1 error(s) found while decoding optional key \"a\"
+   └─ cannot decode \"a\", expected a number`
       )
     })
 
     it('should collect all errors', async () => {
       const decoder = _.record(_.number)
       U.deepStrictEqual(
-        decoder.decode({ a: 'a', b: 'b' }),
-        E.left(
-          FS.concat(
-            FS.of(DE.key('a', DE.optional, FS.of(DE.leaf('a', 'number')))),
-            FS.of(DE.key('b', DE.optional, FS.of(DE.leaf('b', 'number'))))
-          )
-        )
+        pipe(decoder.decode({ a: 'a', b: 'b' }), print),
+        `Errors:
+2 error(s) found while decoding (record)
+├─ 1 error(s) found while decoding optional key \"a\"
+│  └─ cannot decode \"a\", expected a number
+└─ 1 error(s) found while decoding optional key \"b\"
+   └─ cannot decode \"b\", expected a number`
       )
+    })
+
+    it('should accumulate warnings', async () => {
+      const decoder = _.record(_.number)
+      U.deepStrictEqual(
+        pipe(decoder.decode({ a: NaN }), print),
+        `Value:
+{ a: NaN }
+Warnings:
+1 error(s) found while decoding (record)
+└─ 1 error(s) found while decoding optional key \"a\"
+   └─ value is NaN`
+      )
+    })
+  })
+
+  describe('fromSum', () => {
+    it('should return a right', () => {
+      const decoder = _.fromSum('type')({
+        1: _.fromStruct({ type: _.literal(1), a: _.string }),
+        2: _.fromStruct({ type: _.literal(2), b: _.number })
+      })
+      U.deepStrictEqual(decoder.decode({ type: 1, a: 'a' }), TH.right({ type: 1, a: 'a' } as const))
+      U.deepStrictEqual(decoder.decode({ type: 2, b: 1 }), TH.right({ type: 2, b: 1 } as const))
+    })
+
+    it('should return a left', () => {
+      const decoder = _.fromSum('type')({
+        1: _.fromStruct({ type: _.literal(1), a: _.string }),
+        2: _.fromStruct({ type: _.literal(2), b: _.number })
+      })
+      U.deepStrictEqual(
+        pipe(decoder.decode({ type: 1, a: 1 }), print),
+        `Errors:
+1 error(s) found while decoding a sum
+└─ 1 error(s) found while decoding member 1
+   └─ 1 error(s) found while decoding (struct)
+      └─ 1 error(s) found while decoding required key \"a\"
+         └─ cannot decode 1, expected a string`
+      )
+      U.deepStrictEqual(
+        pipe(decoder.decode({ type: 3, a: 1 }), print),
+        `Errors:
+1 error(s) found while decoding sum tag \"type\", expected one of \"1\", \"2\"`
+      )
+    })
+
+    it('should handle tuples', () => {
+      const decoder = _.fromSum('0')({
+        A: _.tuple(_.literal('A'), _.string),
+        B: _.tuple(_.literal('B'), _.number)
+      })
+      U.deepStrictEqual(decoder.decode(['A', 'a']), TH.right(tuple('A' as const, 'a')))
+    })
+  })
+
+  describe('sum', () => {
+    it('should return a right', () => {
+      const decoder = _.sum('type')({
+        1: _.struct({ type: _.literal(1), a: _.string }),
+        2: _.struct({ type: _.literal(2), b: _.number })
+      })
+      U.deepStrictEqual(decoder.decode({ type: 1, a: 'a' }), TH.right({ type: 1, a: 'a' } as const))
+      U.deepStrictEqual(decoder.decode({ type: 2, b: 1 }), TH.right({ type: 2, b: 1 } as const))
+    })
+
+    it('should return a left', () => {
+      const decoder = _.sum('type')({
+        1: _.struct({ type: _.literal(1), a: _.string }),
+        2: _.struct({ type: _.literal(2), b: _.number })
+      })
+      U.deepStrictEqual(
+        pipe(decoder.decode({ type: 1, a: 1 }), print),
+        `Errors:
+1 error(s) found while decoding a sum
+└─ 1 error(s) found while decoding member 1
+   └─ 1 error(s) found while decoding (struct)
+      └─ 1 error(s) found while decoding required key \"a\"
+         └─ cannot decode 1, expected a string`
+      )
+    })
+
+    it('should handle tuples', () => {
+      const decoder = _.sum('0')({
+        A: _.tuple(_.literal('A'), _.string),
+        B: _.tuple(_.literal('B'), _.number)
+      })
+      U.deepStrictEqual(decoder.decode(['A', 'a']), TH.right(tuple('A' as const, 'a')))
+    })
+  })
+
+  describe('intersect', () => {
+    it('failure + success', () => {
+      const I1 = _.struct({ a: _.string })
+      const I2 = _.struct({ b: _.number })
+      const I = pipe(I1, _.intersect(I2))
+      U.deepStrictEqual(
+        pipe(I.decode({ b: 1 }), print),
+        `Errors:
+1 error(s) found while decoding (intersection)
+└─ 1 error(s) found while decoding member 0
+   └─ 2 error(s) found while decoding (composition)
+      ├─ 1 error(s) found while checking keys
+      │  └─ unexpected key \"b\"
+      └─ 1 error(s) found while checking keys
+         └─ missing required key \"a\"`
+      )
+    })
+
+    it('failure + failure', () => {
+      const I1 = _.struct({ a: _.string })
+      const I2 = _.struct({ b: _.number })
+      const I = pipe(I1, _.intersect(I2))
+      U.deepStrictEqual(
+        pipe(I.decode({}), print),
+        `Errors:
+2 error(s) found while decoding (intersection)
+├─ 1 error(s) found while decoding member 0
+│  └─ 1 error(s) found while checking keys
+│     └─ missing required key \"a\"
+└─ 1 error(s) found while decoding member 1
+   └─ 1 error(s) found while checking keys
+      └─ missing required key \"b\"`
+      )
+    })
+
+    it('failure + prunable warning', () => {
+      const I1 = _.struct({ a: _.string })
+      const I2 = _.struct({ b: _.number })
+      const I = pipe(I1, _.intersect(I2))
+      U.deepStrictEqual(
+        pipe(I.decode({ b: 1, c: true }), print),
+        `Errors:
+1 error(s) found while decoding (intersection)
+└─ 1 error(s) found while decoding member 0
+   └─ 2 error(s) found while decoding (composition)
+      ├─ 2 error(s) found while checking keys
+      │  ├─ unexpected key \"b\"
+      │  └─ unexpected key \"c\"
+      └─ 1 error(s) found while checking keys
+         └─ missing required key \"a\"`
+      )
+    })
+
+    it('failure + non prunable warning', () => {
+      const I1 = _.struct({ a: _.string })
+      const I2 = _.struct({ b: _.number })
+      const I = pipe(I1, _.intersect(I2))
+      U.deepStrictEqual(
+        pipe(I.decode({ b: NaN }), print),
+        `Errors:
+2 error(s) found while decoding (intersection)
+├─ 1 error(s) found while decoding member 0
+│  └─ 2 error(s) found while decoding (composition)
+│     ├─ 1 error(s) found while checking keys
+│     │  └─ unexpected key \"b\"
+│     └─ 1 error(s) found while checking keys
+│        └─ missing required key \"a\"
+└─ 1 error(s) found while decoding member 1
+   └─ 1 error(s) found while decoding (struct)
+      └─ 1 error(s) found while decoding required key \"b\"
+         └─ value is NaN`
+      )
+    })
+
+    it('success + success', () => {
+      const I = pipe(_.number, _.intersect(_.number))
+      U.deepStrictEqual(I.decode(1), TH.right(1))
+    })
+
+    it('success + failure', () => {
+      const I = pipe(_.number, _.intersect(_.string))
+      U.deepStrictEqual(
+        pipe(I.decode(1), print),
+        `Errors:
+1 error(s) found while decoding (intersection)
+└─ 1 error(s) found while decoding member 1
+   └─ cannot decode 1, expected a string`
+      )
+    })
+
+    it('success + non prunable warning', () => {
+      const I = pipe(simplenumber, _.intersect(_.number))
+      U.deepStrictEqual(
+        pipe(I.decode(NaN), print),
+        `Value:
+NaN
+Warnings:
+1 error(s) found while decoding (intersection)
+└─ 1 error(s) found while decoding member 1
+   └─ value is NaN`
+      )
+    })
+
+    it('success + prunable warning', () => {
+      const I1 = _.struct({ a: _.string, b: _.number })
+      const I2 = _.struct({ b: _.number })
+      const I = pipe(I1, _.intersect(I2))
+      U.deepStrictEqual(I.decode({ a: 'a', b: 1 }), TH.right({ a: 'a', b: 1 }))
+    })
+
+    it('prunable warning + failure', () => {
+      const I1 = _.struct({ b: _.number })
+      const I2 = _.struct({ a: _.string })
+      const I = pipe(I1, _.intersect(I2))
+      U.deepStrictEqual(
+        pipe(I.decode({ b: 1, c: true }), print),
+        `Errors:
+1 error(s) found while decoding (intersection)
+└─ 1 error(s) found while decoding member 1
+   └─ 2 error(s) found while decoding (composition)
+      ├─ 2 error(s) found while checking keys
+      │  ├─ unexpected key \"b\"
+      │  └─ unexpected key \"c\"
+      └─ 1 error(s) found while checking keys
+         └─ missing required key \"a\"`
+      )
+    })
+
+    it('non prunable warning + failure', () => {
+      const I1 = _.struct({ b: _.number })
+      const I2 = _.struct({ a: _.string })
+      const I = pipe(I1, _.intersect(I2))
+      U.deepStrictEqual(
+        pipe(I.decode({ b: NaN }), print),
+        `Errors:
+2 error(s) found while decoding (intersection)
+├─ 1 error(s) found while decoding member 0
+│  └─ 1 error(s) found while decoding (struct)
+│     └─ 1 error(s) found while decoding required key \"b\"
+│        └─ value is NaN
+└─ 1 error(s) found while decoding member 1
+   └─ 2 error(s) found while decoding (composition)
+      ├─ 1 error(s) found while checking keys
+      │  └─ unexpected key \"b\"
+      └─ 1 error(s) found while checking keys
+         └─ missing required key \"a\"`
+      )
+    })
+
+    it('non prunable warning + success', () => {
+      const I = pipe(_.number, _.intersect(simplenumber))
+      U.deepStrictEqual(
+        pipe(I.decode(NaN), print),
+        `Value:
+NaN
+Warnings:
+1 error(s) found while decoding (intersection)
+└─ 1 error(s) found while decoding member 0
+   └─ value is NaN`
+      )
+    })
+
+    it('prunable warning + success', () => {
+      const I1 = _.struct({ b: _.number })
+      const I2 = _.struct({ a: _.string, b: _.number })
+      const I = pipe(I1, _.intersect(I2))
+      U.deepStrictEqual(I.decode({ a: 'a', b: 1 }), TH.right({ a: 'a', b: 1 }))
+    })
+
+    it('prunable warning + non prunable warning', () => {
+      const I1 = _.struct({ a: _.string })
+      const I2 = _.struct({ a: _.string, b: _.number })
+      const I = pipe(I1, _.intersect(I2))
+      U.deepStrictEqual(
+        pipe(I.decode({ a: 'a', b: NaN }), print),
+        `Value:
+{ a: 'a', b: NaN }
+Warnings:
+1 error(s) found while decoding (intersection)
+└─ 1 error(s) found while decoding member 1
+   └─ 1 error(s) found while decoding (struct)
+      └─ 1 error(s) found while decoding required key \"b\"
+         └─ value is NaN`
+      )
+    })
+
+    it('non prunable warning + prunable warning', () => {
+      const I1 = _.struct({ a: _.string, b: _.number })
+      const I2 = _.struct({ a: _.string })
+      const I = pipe(I1, _.intersect(I2))
+      U.deepStrictEqual(
+        pipe(I.decode({ a: 'a', b: NaN }), print),
+        `Value:
+{ a: 'a', b: NaN }
+Warnings:
+1 error(s) found while decoding (intersection)
+└─ 1 error(s) found while decoding member 0
+   └─ 1 error(s) found while decoding (struct)
+      └─ 1 error(s) found while decoding required key \"b\"
+         └─ value is NaN`
+      )
+    })
+
+    describe('struct', () => {
+      it('should not raise invalid warnings', () => {
+        const I1 = _.struct({ a: _.string })
+        const I2 = _.struct({ b: _.number })
+        const I = pipe(I1, _.intersect(I2))
+        U.deepStrictEqual(I.decode({ a: 'a', b: 1 }), TH.right({ a: 'a', b: 1 }))
+      })
+
+      it('should raise a warning with an additional key', () => {
+        const I1 = _.struct({ a: _.string })
+        const I2 = _.struct({ b: _.number })
+        const I = pipe(I1, _.intersect(I2))
+        U.deepStrictEqual(
+          pipe(I.decode({ a: 'a', b: 1, c: true }), print),
+          `Value:
+{ a: 'a', b: 1 }
+Warnings:
+2 error(s) found while decoding (intersection)
+├─ 1 error(s) found while decoding member 0
+│  └─ 1 error(s) found while checking keys
+│     └─ unexpected key \"c\"
+└─ 1 error(s) found while decoding member 1
+   └─ 1 error(s) found while checking keys
+      └─ unexpected key \"c\"`
+        )
+      })
+    })
+
+    it('should raise a warning with an additional key (nested)', () => {
+      const I1 = _.struct({ a: _.struct({ b: _.string }) })
+      const I2 = _.struct({ a: _.struct({ c: _.number }) })
+      const I = pipe(I1, _.intersect(I2))
+      U.deepStrictEqual(
+        pipe(I.decode({ a: { b: 'a', c: 1, d: true } }), print),
+        `Value:
+{ a: { b: 'a', c: 1 } }
+Warnings:
+2 error(s) found while decoding (intersection)
+├─ 1 error(s) found while decoding member 0
+│  └─ 1 error(s) found while decoding (struct)
+│     └─ 1 error(s) found while decoding required key \"a\"
+│        └─ 1 error(s) found while checking keys
+│           └─ unexpected key \"d\"
+└─ 1 error(s) found while decoding member 1
+   └─ 1 error(s) found while decoding (struct)
+      └─ 1 error(s) found while decoding required key \"a\"
+         └─ 1 error(s) found while checking keys
+            └─ unexpected key \"d\"`
+      )
+    })
+
+    describe('tuple', () => {
+      it('should not raise invalid warnings', () => {
+        const I1 = _.tuple(_.string)
+        const I2 = _.tuple(_.string, _.number)
+        const I = pipe(I1, _.intersect(I2))
+        U.deepStrictEqual(I.decode(['a', 1]), TH.right(['a', 1]))
+      })
     })
   })
 
@@ -327,273 +820,150 @@ describe('Decoder', () => {
 
     it('should reject an invalid input', async () => {
       const decoder = _.tuple(_.string, _.number)
-      U.deepStrictEqual(decoder.decode(undefined), E.left(FS.of(DE.leaf(undefined, 'Array<unknown>'))))
       U.deepStrictEqual(
-        decoder.decode(['a']),
-        E.left(FS.of(DE.index(1, DE.required, FS.of(DE.leaf(undefined, 'number')))))
+        pipe(decoder.decode(undefined), print),
+        `Errors:
+cannot decode undefined, expected an array`
       )
-      U.deepStrictEqual(decoder.decode([1, 2]), E.left(FS.of(DE.index(0, DE.required, FS.of(DE.leaf(1, 'string'))))))
+      U.deepStrictEqual(
+        pipe(decoder.decode(['a']), print),
+        `Errors:
+1 error(s) found while checking indexes
+└─ missing required index 1`
+      )
+      U.deepStrictEqual(
+        pipe(decoder.decode([1, 2]), print),
+        `Errors:
+1 error(s) found while decoding (tuple)
+└─ 1 error(s) found while decoding required component 0
+   └─ cannot decode 1, expected a string`
+      )
     })
 
     it('should collect all errors', async () => {
       const decoder = _.tuple(_.string, _.number)
       U.deepStrictEqual(
-        decoder.decode([1, 'a']),
-        E.left(
-          FS.concat(
-            FS.of(DE.index(0, DE.required, FS.of(DE.leaf(1, 'string')))),
-            FS.of(DE.index(1, DE.required, FS.of(DE.leaf('a', 'number'))))
-          )
-        )
+        pipe(decoder.decode([1, 'a']), print),
+        `Errors:
+2 error(s) found while decoding (tuple)
+├─ 1 error(s) found while decoding required component 0
+│  └─ cannot decode 1, expected a string
+└─ 1 error(s) found while decoding required component 1
+   └─ cannot decode \"a\", expected a number`
       )
     })
 
     it('should strip additional components', async () => {
       const decoder = _.tuple(_.string, _.number)
-      U.deepStrictEqual(decoder.decode(['a', 1, true]), _.success(['a', 1]))
+      U.deepStrictEqual(
+        pipe(decoder.decode(['a', 1, true]), print),
+        `Value:
+[ 'a', 1 ]
+Warnings:
+1 error(s) found while checking indexes
+└─ unexpected index 2`
+      )
+    })
+
+    it('should accumulate warnings', async () => {
+      const decoder = _.tuple(_.number)
+      U.deepStrictEqual(
+        pipe(decoder.decode([NaN]), print),
+        `Value:
+[ NaN ]
+Warnings:
+1 error(s) found while decoding (tuple)
+└─ 1 error(s) found while decoding required component 0
+   └─ value is NaN`
+      )
     })
   })
 
   describe('union', () => {
-    it('should decode a valid input', () => {
-      U.deepStrictEqual(_.union(_.string).decode('a'), _.success('a'))
+    it('should return a right', () => {
+      const decoder = _.getWithUnion().union(_.string, _.number)
+      U.deepStrictEqual(decoder.decode('a'), TH.right('a'))
+      U.deepStrictEqual(decoder.decode(1), TH.right(1))
+    })
+
+    it('should return a both', () => {
       const decoder = _.union(_.string, _.number)
-      U.deepStrictEqual(decoder.decode('a'), _.success('a'))
-      U.deepStrictEqual(decoder.decode(1), _.success(1))
+      U.deepStrictEqual(
+        decoder.decode(NaN),
+        TH.both(DE.unionE([DE.memberE('0' as const, DE.stringLE(NaN)), DE.memberE('1' as const, DE.naNLE)]), NaN)
+      )
     })
 
-    it('should reject an invalid input', () => {
+    it('should return a left', () => {
       const decoder = _.union(_.string, _.number)
       U.deepStrictEqual(
-        decoder.decode(true),
-        E.left(
-          FS.concat(
-            FS.of(DE.member(0, FS.of(DE.leaf(true, 'string')))),
-            FS.of(DE.member(1, FS.of(DE.leaf(true, 'number'))))
-          )
-        )
+        pipe(decoder.decode(null), print),
+        `Errors:
+2 error(s) found while decoding (union)
+├─ 1 error(s) found while decoding member "0"
+│  └─ cannot decode null, expected a string
+└─ 1 error(s) found while decoding member "1"
+   └─ cannot decode null, expected a number`
       )
     })
 
-    // it('bug!', () => {
-    //   const trim = pipe(
-    //     _.id<string>(),
-    //     _.map((s) => s.trim())
-    //   )
-    //   const decoder = _.union(trim, _.id<number>())
-    //   U.deepStrictEqual(decoder.decode(1), _.success(1))
-    // })
-  })
-
-  describe('refine', () => {
-    it('should decode a valid input', () => {
-      const decoder = pipe(
-        _.string,
-        _.refine((s): s is string => s.length > 0, 'NonEmptyString')
-      )
-      U.deepStrictEqual(decoder.decode('a'), _.success('a'))
-    })
-
-    it('should reject an invalid input', () => {
-      const decoder = pipe(
-        _.string,
-        _.refine((s): s is string => s.length > 0, 'NonEmptyString')
-      )
-      U.deepStrictEqual(decoder.decode(undefined), E.left(FS.of(DE.leaf(undefined, 'string'))))
-      U.deepStrictEqual(decoder.decode(''), E.left(FS.of(DE.leaf('', 'NonEmptyString'))))
-    })
-  })
-
-  describe('intersect', () => {
-    it('should decode a valid input', () => {
-      const decoder = pipe(_.struct({ a: _.string }), _.intersect(_.struct({ b: _.number })))
-      U.deepStrictEqual(decoder.decode({ a: 'a', b: 1 }), _.success({ a: 'a', b: 1 }))
-    })
-
-    it('should handle primitives', () => {
-      const decoder = pipe(H.decoderInt, _.intersect(H.decoderPositive))
-      U.deepStrictEqual(decoder.decode(1), _.success(1))
-    })
-
-    it('should accumulate all errors', () => {
-      const decoder = pipe(_.struct({ a: _.string }), _.intersect(_.struct({ b: _.number })))
+    it('should accumulate warnings', async () => {
+      const decoder = _.union(_.number)
       U.deepStrictEqual(
-        decoder.decode({ a: 'a' }),
-        E.left(FS.of(DE.key('b', DE.required, FS.of(DE.leaf(undefined, 'number')))))
-      )
-      U.deepStrictEqual(
-        decoder.decode({ b: 1 }),
-        E.left(FS.of(DE.key('a', DE.required, FS.of(DE.leaf(undefined, 'string')))))
-      )
-      U.deepStrictEqual(
-        decoder.decode({}),
-        E.left(
-          FS.concat(
-            FS.of(DE.key('a', DE.required, FS.of(DE.leaf(undefined, 'string')))),
-            FS.of(DE.key('b', DE.required, FS.of(DE.leaf(undefined, 'number'))))
-          )
-        )
+        pipe(decoder.decode(NaN), print),
+        `Value:
+NaN
+Warnings:
+1 error(s) found while decoding (union)
+└─ 1 error(s) found while decoding member \"0\"
+   └─ value is NaN`
       )
     })
   })
-
-  describe('sum', () => {
-    const sum = _.sum('_tag')
-
-    it('should decode a valid input', () => {
-      const A = _.struct({ _tag: _.literal('A'), a: _.string })
-      const B = _.struct({ _tag: _.literal('B'), b: _.number })
-      const decoder = sum({ A, B })
-      U.deepStrictEqual(decoder.decode({ _tag: 'A', a: 'a' }), _.success({ _tag: 'A', a: 'a' } as const))
-      U.deepStrictEqual(decoder.decode({ _tag: 'B', b: 1 }), _.success({ _tag: 'B', b: 1 } as const))
-    })
-
-    it('should reject an invalid input', () => {
-      const A = _.struct({ _tag: _.literal('A'), a: _.string })
-      const B = _.struct({ _tag: _.literal('B'), b: _.number })
-      const decoder = sum({ A, B })
-      U.deepStrictEqual(decoder.decode(null), E.left(FS.of(DE.leaf(null, 'Record<string, unknown>'))))
-      U.deepStrictEqual(
-        decoder.decode({}),
-        E.left(FS.of(DE.key('_tag', DE.required, FS.of(DE.leaf(undefined, '"A" | "B"')))))
-      )
-      U.deepStrictEqual(
-        decoder.decode({ _tag: 'A', a: 1 }),
-        E.left(FS.of(DE.key('a', DE.required, FS.of(DE.leaf(1, 'string')))))
-      )
-    })
-
-    it('should support empty records', () => {
-      const decoder = sum({})
-      U.deepStrictEqual(
-        decoder.decode({}),
-        E.left(FS.of(DE.key('_tag', DE.required, FS.of(DE.leaf(undefined, 'never')))))
-      )
-    })
-
-    it('should support non-`string` tag values', () => {
-      const decoder = _.sum('_tag')({
-        [1]: _.struct({ _tag: _.literal(1), a: _.string }),
-        [2]: _.struct({ _tag: _.literal(2), b: _.number })
-      })
-      U.deepStrictEqual(decoder.decode({ _tag: 1, a: 'a' }), E.right({ _tag: 1, a: 'a' } as const))
-      U.deepStrictEqual(decoder.decode({ _tag: 2, b: 1 }), E.right({ _tag: 2, b: 1 } as const))
-      U.deepStrictEqual(
-        decoder.decode({ _tag: 2, b: 'a' }),
-        E.left(FS.of(DE.key('b', DE.required, FS.of(DE.leaf('a', 'number')))))
-      )
-    })
-  })
-
-  interface A {
-    a: number
-    b?: A
-  }
-
-  const lazyDecoder: _.Decoder<unknown, A> = _.lazy('A', () =>
-    pipe(_.struct({ a: H.decoderNumberFromUnknownString }), _.intersect(_.partial({ b: lazyDecoder })))
-  )
 
   describe('lazy', () => {
-    it('should decode a valid input', () => {
-      U.deepStrictEqual(lazyDecoder.decode({ a: '1' }), _.success({ a: 1 }))
-      U.deepStrictEqual(lazyDecoder.decode({ a: '1', b: { a: '2' } }), _.success({ a: 1, b: { a: 2 } }))
-    })
-
-    it('should reject an invalid input', () => {
-      U.deepStrictEqual(
-        lazyDecoder.decode({ a: 1 }),
-        E.left(FS.of(DE.lazy('A', FS.of(DE.key('a', DE.required, FS.of(DE.leaf(1, 'string')))))))
-      )
-      U.deepStrictEqual(
-        lazyDecoder.decode({ a: 'a' }),
-        E.left(FS.of(DE.lazy('A', FS.of(DE.key('a', DE.required, FS.of(DE.leaf('a', 'parsable to a number')))))))
-      )
-      U.deepStrictEqual(
-        lazyDecoder.decode({ a: '1', b: {} }),
-        E.left(
-          FS.of(
-            DE.lazy(
-              'A',
-              FS.of(
-                DE.key(
-                  'b',
-                  DE.optional,
-                  FS.of(DE.lazy('A', FS.of(DE.key('a', DE.required, FS.of(DE.leaf(undefined, 'string'))))))
-                )
-              )
-            )
-          )
-        )
-      )
-    })
-  })
-
-  // -------------------------------------------------------------------------------------
-  // utils
-  // -------------------------------------------------------------------------------------
-
-  describe('draw', () => {
-    it('is stack safe', () => {
-      expect(() => {
-        E.mapLeft(_.draw)(
-          _.record(_.struct({ done: _.boolean })).decode(
-            new Array(10000)
-              .fill({})
-              .map((v, k) => [k, v])
-              .reduce((acc, [k, v]) => {
-                acc[k] = v
-                return acc
-              }, {} as Record<string, unknown>)
-          )
-        )
-      }).not.toThrow()
-    })
-
-    it('draw', () => {
-      const decoder = _.struct({
-        a: _.string,
-        b: _.number,
-        c: _.array(_.boolean),
-        d: _.nullable(_.string)
+    interface Category {
+      name: string
+      categories: ReadonlyArray<Category>
+    }
+    const Category: _.LazyD<
+      unknown,
+      DE.DecodeError<DE.UnknownRecordE | DE.StringE | DE.UnknownArrayE>,
+      Category
+    > = _.lazy('Category', () =>
+      _.struct({
+        name: _.string,
+        categories: _.array(Category)
       })
-      U.deepStrictEqual(
-        pipe(decoder.decode({ c: [1] }), E.mapLeft(_.draw)),
-        E.left(`required property "a"
-└─ cannot decode undefined, should be string
-required property "b"
-└─ cannot decode undefined, should be number
-required property "c"
-└─ optional index 0
-   └─ cannot decode 1, should be boolean
-required property "d"
-├─ member 0
-│  └─ cannot decode undefined, should be null
-└─ member 1
-   └─ cannot decode undefined, should be string`)
-      )
+    )
+
+    it('should return a right', () => {
+      const i1 = { name: 'a', categories: [] }
+      U.deepStrictEqual(Category.decode(i1), TH.right(i1))
+      const i2 = {
+        name: 'a',
+        categories: [
+          { name: 'b', categories: [] },
+          { name: 'c', categories: [{ name: 'd', categories: [] }] }
+        ]
+      }
+      U.deepStrictEqual(Category.decode(i2), TH.right(i2))
     })
 
-    it('should support lazy combinators', () => {
+    it('should return a left', () => {
       U.deepStrictEqual(
-        pipe(lazyDecoder.decode({ a: '1', b: {} }), E.mapLeft(_.draw)),
-        E.left(`lazy type A
-└─ optional property \"b\"
-   └─ lazy type A
-      └─ required property \"a\"
-         └─ cannot decode undefined, should be string`)
+        pipe(Category.decode({ name: 'a', categories: [{}] }), print),
+        `Errors:
+1 error(s) found while decoding lazy decoder Category
+└─ 1 error(s) found while decoding (struct)
+   └─ 1 error(s) found while decoding required key \"categories\"
+      └─ 1 error(s) found while decoding (array)
+         └─ 1 error(s) found while decoding optional index 0
+            └─ 1 error(s) found while decoding lazy decoder Category
+               └─ 2 error(s) found while checking keys
+                  ├─ missing required key \"name\"
+                  └─ missing required key \"categories\"`
       )
     })
-  })
-
-  it('stringify', () => {
-    U.deepStrictEqual(_.stringify(_.string.decode('a')), '"a"')
-    U.deepStrictEqual(_.stringify(_.string.decode(null)), 'cannot decode null, should be string')
-  })
-
-  it('fromRefinement', () => {
-    const IntFromNumber = _.fromRefinement((n: number): n is H.Int => Number.isInteger(n), 'IntFromNumber')
-    U.deepStrictEqual(IntFromNumber.decode(1), _.success(1))
-    U.deepStrictEqual(IntFromNumber.decode(1.2), _.failure(1.2, 'IntFromNumber'))
   })
 })

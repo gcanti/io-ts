@@ -3,7 +3,7 @@
  */
 import { flow } from 'fp-ts/lib/function'
 import * as util from 'util'
-import * as DE from './DecodeError2'
+import * as DE from './DecodeError'
 
 // -------------------------------------------------------------------------------------
 // Tree
