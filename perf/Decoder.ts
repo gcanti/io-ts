@@ -2,7 +2,6 @@ import * as Benchmark from 'benchmark'
 import * as E from 'fp-ts/lib/Either'
 import { pipe } from 'fp-ts/lib/pipeable'
 import * as D from '../src/Decoder'
-import * as G from '../src/Guard'
 
 /*
 
@@ -14,14 +13,9 @@ Decoder (draw) x 365,279 ops/sec ±1.17% (82 runs sampled)
 
 */
 
-const decoder = D.type({
+const decoder = D.struct({
   name: D.string,
   age: D.number
-})
-
-const guard = G.type({
-  name: G.string,
-  age: G.number
 })
 
 const good = {
@@ -37,14 +31,8 @@ const bad = {}
 const suite = new Benchmark.Suite()
 
 suite
-  .add('Guard (good)', function () {
-    guard.is(bad)
-  })
   .add('Decoder (good)', function () {
     decoder.decode(good)
-  })
-  .add('Guard (bad)', function () {
-    guard.is(bad)
   })
   .add('Decoder (bad)', function () {
     decoder.decode(bad)

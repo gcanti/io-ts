@@ -12,7 +12,7 @@ import * as E from 'fp-ts/lib/Either'
 import { identity, Refinement } from 'fp-ts/lib/function'
 import { pipe } from 'fp-ts/lib/pipeable'
 import * as t from './index'
-import * as S from './Schemable'
+import * as DE from './DecodeError'
 
 // -------------------------------------------------------------------------------------
 // model
@@ -32,7 +32,7 @@ export interface Type<A> extends t.Type<A, unknown, unknown> {}
  * @category constructors
  * @since 2.2.3
  */
-export const literal = <A extends readonly [S.Literal, ...Array<S.Literal>]>(...values: A): Type<A[number]> =>
+export const literal = <A extends readonly [DE.Literal, ...Array<DE.Literal>]>(...values: A): Type<A[number]> =>
   t.union(values.map((v) => t.literal(v as any)) as any)
 
 // -------------------------------------------------------------------------------------
@@ -171,73 +171,3 @@ export const sum = <T extends string>(_tag: T) => <A>(
 export const union = <A extends readonly [unknown, ...Array<unknown>]>(
   ...members: { [K in keyof A]: Type<A[K]> }
 ): Type<A[number]> => t.union(members as any)
-
-// -------------------------------------------------------------------------------------
-// instances
-// -------------------------------------------------------------------------------------
-
-/**
- * @category instances
- * @since 2.2.3
- */
-export const URI = 'io-ts/Type'
-
-/**
- * @category instances
- * @since 2.2.3
- */
-export type URI = typeof URI
-
-declare module 'fp-ts/lib/HKT' {
-  interface URItoKind<A> {
-    readonly [URI]: Type<A>
-  }
-}
-
-/**
- * @category instances
- * @since 2.2.8
- */
-export const Schemable: S.Schemable1<URI> = {
-  URI,
-  literal,
-  string,
-  number,
-  boolean,
-  nullable,
-  type,
-  struct,
-  partial,
-  record,
-  array,
-  tuple: tuple as S.Schemable1<URI>['tuple'],
-  intersect,
-  sum,
-  lazy,
-  readonly
-}
-
-/**
- * @category instances
- * @since 2.2.8
- */
-export const WithUnknownContainers: S.WithUnknownContainers1<URI> = {
-  UnknownArray,
-  UnknownRecord
-}
-
-/**
- * @category instances
- * @since 2.2.8
- */
-export const WithUnion: S.WithUnion1<URI> = {
-  union: union as S.WithUnion1<URI>['union']
-}
-
-/**
- * @category instances
- * @since 2.2.8
- */
-export const WithRefine: S.WithRefine1<URI> = {
-  refine: refine as S.WithRefine1<URI>['refine']
-}
