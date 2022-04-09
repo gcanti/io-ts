@@ -148,7 +148,7 @@ cannot decode null, expected a boolean`
   })
 
   it('UnknownArray', async () => {
-    const decoder = _.getWithUnknownContainers().UnknownArray
+    const decoder = _.UnknownArray
     U.deepStrictEqual(decoder.decode([1, 'a']), _.success([1, 'a']))
     U.deepStrictEqual(
       pipe(decoder.decode(null), print),
@@ -158,7 +158,7 @@ cannot decode null, expected an array`
   })
 
   it('UnknownRecord', async () => {
-    const decoder = _.getWithUnknownContainers().UnknownRecord
+    const decoder = _.UnknownRecord
     U.deepStrictEqual(decoder.decode({ a: 1, b: 'b' }), _.success({ a: 1, b: 'b' }))
     U.deepStrictEqual(
       pipe(decoder.decode(null), print),
@@ -881,7 +881,7 @@ Warnings:
 
   describe('union', () => {
     it('should return a right', () => {
-      const decoder = _.getWithUnion().union(_.string, _.number)
+      const decoder = _.union(_.string, _.number)
       U.deepStrictEqual(decoder.decode('a'), TH.right('a'))
       U.deepStrictEqual(decoder.decode(1), TH.right(1))
     })

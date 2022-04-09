@@ -1,106 +1,56 @@
 import * as Benchmark from 'benchmark'
-import * as t from '../src/Decoder'
+import * as E from 'fp-ts/lib/Either'
+import { pipe } from 'fp-ts/lib/pipeable'
+import * as D from '../src/Decoder'
+import * as G from '../src/Guard'
 
 /*
-space-object (good) x 662,359 ops/sec ±0.65% (88 runs sampled)
-space-object (bad) x 379,528 ops/sec ±0.56% (89 runs sampled)
 
-space-object (good) x 295,284 ops/sec ±0.67% (85 runs sampled)
-space-object (bad) x 295,530 ops/sec ±0.53% (88 runs sampled)
+Guard (good) x 36,163,576 ops/sec ±1.45% (86 runs sampled)
+Decoder (good) x 2,365,294 ops/sec ±0.70% (87 runs sampled)
+Guard (bad) x 34,845,843 ops/sec ±1.27% (84 runs sampled)
+Decoder (bad) x 1,977,286 ops/sec ±0.86% (86 runs sampled)
+Decoder (draw) x 365,279 ops/sec ±1.17% (82 runs sampled)
+
 */
 
-const suite = new Benchmark.Suite()
-
-const Vector = t.tuple(t.number, t.number, t.number)
-
-const Asteroid = t.type({
-  type: t.literal('asteroid'),
-  location: Vector,
-  mass: t.number
+const decoder = D.type({
+  name: D.string,
+  age: D.number
 })
 
-const Planet = t.type({
-  type: t.literal('planet'),
-  location: Vector,
-  mass: t.number,
-  population: t.number,
-  habitable: t.boolean
-})
-
-const Rank = t.literal('captain', 'first mate', 'officer', 'ensign')
-
-const CrewMember = t.type({
-  name: t.string,
-  age: t.number,
-  rank: Rank,
-  home: Planet
-})
-
-const Ship = t.type({
-  type: t.literal('ship'),
-  location: Vector,
-  mass: t.number,
-  name: t.string,
-  crew: t.array(CrewMember)
-})
-
-const T = t.sum('type')({
-  asteroid: Asteroid,
-  planet: Planet,
-  ship: Ship
+const guard = G.type({
+  name: G.string,
+  age: G.number
 })
 
 const good = {
-  type: 'ship',
-  location: [1, 2, 3],
-  mass: 4,
-  name: 'foo',
-  crew: [
-    {
-      name: 'bar',
-      age: 44,
-      rank: 'captain',
-      home: {
-        type: 'planet',
-        location: [5, 6, 7],
-        mass: 8,
-        population: 1000,
-        habitable: true
-      }
-    }
-  ]
+  name: 'name',
+  age: 18
 }
 
-const bad = {
-  type: 'ship',
-  location: [1, 2, 'a'],
-  mass: 4,
-  name: 'foo',
-  crew: [
-    {
-      name: 'bar',
-      age: 44,
-      rank: 'captain',
-      home: {
-        type: 'planet',
-        location: [5, 6, 7],
-        mass: 8,
-        population: 'a',
-        habitable: true
-      }
-    }
-  ]
-}
+const bad = {}
 
-// console.log(T.decode(good))
-// console.log(T.decode(bad))
+// console.log(decoder.decode(bad))
+// console.log(JSON.stringify(freeDecoder.decode(bad), null, 2))
+
+const suite = new Benchmark.Suite()
 
 suite
-  .add('space-object (good)', function () {
-    T.decode(good)
+  .add('Guard (good)', function () {
+    guard.is(bad)
   })
-  .add('space-object (bad)', function () {
-    T.decode(bad)
+  .add('Decoder (good)', function () {
+    decoder.decode(good)
+  })
+  .add('Guard (bad)', function () {
+    guard.is(bad)
+  })
+  .add('Decoder (bad)', function () {
+    decoder.decode(bad)
+  })
+  .add('Decoder (draw)', function () {
+    pipe(decoder.decode(bad), E.mapLeft(D.draw))
   })
   .on('cycle', function (event: any) {
     console.log(String(event.target))

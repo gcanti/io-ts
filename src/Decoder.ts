@@ -9,7 +9,7 @@
  * @since 2.2.7
  */
 import { Bifunctor3 } from 'fp-ts/lib/Bifunctor'
-import { flow, Lazy } from 'fp-ts/lib/function'
+import { flow, identity, Lazy, Refinement } from 'fp-ts/lib/function'
 import { Functor3 } from 'fp-ts/lib/Functor'
 import { NonEmptyArray } from 'fp-ts/lib/NonEmptyArray'
 import * as O from 'fp-ts/lib/Option'
@@ -18,7 +18,6 @@ import * as RA from 'fp-ts/lib/ReadonlyArray'
 import * as RNEA from 'fp-ts/lib/ReadonlyNonEmptyArray'
 import * as TH from 'fp-ts/lib/These'
 import * as DE from './DecodeError'
-import { Schemable2C, WithUnknownContainers2C, WithUnion2C } from './Schemable'
 
 import These = TH.These
 import ReadonlyNonEmptyArray = RNEA.ReadonlyNonEmptyArray
@@ -43,7 +42,7 @@ export interface Decoder<I, E, A> {
  * @category instances
  * @since 2.2.7
  */
-export const URI = 'io-ts/Decoder2'
+export const URI = 'io-ts/Decoder'
 
 /**
  * @category instances
@@ -192,58 +191,6 @@ export function compose<A, E2, B>(
     )
   })
 }
-
-declare module 'fp-ts/lib/HKT' {
-  interface URItoKind2<E, A> {
-    readonly 'io-ts/ToDecoder': Decoder<unknown, E, A>
-  }
-}
-
-// TODO: move to io-ts-contrib in v3
-
-/**
- * @category instances
- * @since 2.2.17
- */
-export const getSchemable = <E = never>(): Schemable2C<'io-ts/ToDecoder', DE.DecodeError<E | DE.BuiltinE>> => {
-  return {
-    URI: 'io-ts/ToDecoder',
-    _E: undefined as any,
-    literal,
-    string,
-    number,
-    boolean,
-    tuple,
-    struct: struct as any,
-    partial: partial as any,
-    array,
-    record,
-    nullable,
-    intersect,
-    lazy,
-    sum: sum as any
-  }
-}
-
-/**
- * @category instances
- * @since 2.2.17
- */
-export const getWithUnknownContainers = <E = never>(): WithUnknownContainers2C<
-  'io-ts/ToDecoder',
-  DE.DecodeError<E | DE.BuiltinE>
-> => ({
-  UnknownArray,
-  UnknownRecord
-})
-
-/**
- * @category instances
- * @since 2.2.17
- */
-export const getWithUnion = <E = never>(): WithUnion2C<'io-ts/ToDecoder', DE.DecodeError<E | DE.BuiltinE>> => ({
-  union: union as any
-})
 
 // -------------------------------------------------------------------------------------
 // DecodeError
@@ -952,6 +899,68 @@ export function union<Members extends ReadonlyNonEmptyArray<AnyD>>(...members: M
   }
 }
 
+export type RefinementError<E, A, B> = 
+  | DE.RefinementE<E> 
+  | DE.RefinementLE<Exclude<A, B>> 
+  | DE.CompoundE<DE.RefinementE<E> | DE.RefinementLE<Exclude<A, B>>>
+
+/**
+ * @category combinators
+ * @since 2.2.7
+ */
+export const refine = <A, B extends A>(
+  refinement: Refinement<A, B>,
+) => <I, E>(from: Decoder<I, E, A>): Decoder<I, RefinementError<E, A, B>, B> => 
+  /*#__PURE__*/
+  ({
+    decode: (i) => pipe(
+      from.decode(i),
+      TH.fold<E, A, TH.These<RefinementError<E, A, B>, B>>(
+        flow(DE.refinementE, TH.left),
+        (a) => refinement(a) ? TH.right(a) : TH.left(DE.refinementLE(a as Exclude<A, B>)),
+        (e, a) => refinement(a) 
+          ? TH.both(DE.refinementE(e), a) 
+          : TH.left(
+            DE.compoundE('refinement')([
+              DE.refinementE(e), 
+              DE.refinementLE(a as Exclude<A, B>)
+            ])
+          )
+      ),
+    ),
+  })
+
+export type ParseError<E, E2> = 
+  | DE.ParseE<E> 
+  | DE.ParseE<E2> 
+  | DE.CompoundE<DE.ParseE<E> | DE.ParseE<E2>>
+
+/**
+ * @category combinators
+ * @since 2.2.7
+ */
+export const parse = <A, B, E2>(
+  parser: (a: A) => TH.These<E2, B>
+) => <I, E>(
+  from: Decoder<I, E, A>
+): Decoder<I, ParseError<E, E2>, B> =>
+  /*#__PURE__*/
+  ({
+    decode: (i) => {
+      const { chain } = TH.getMonad<ParseError<E, E2>>({
+        concat: (x, y) => x._tag === 'CompoundE' 
+          ? x
+          : y._tag === 'CompoundE' 
+          ? y 
+          : DE.compoundE('parse')([x, y])
+      })
+      return chain(
+        pipe(from.decode(i), TH.mapLeft(DE.parseE)), 
+        flow(parser, TH.mapLeft(DE.parseE))
+      );
+    }
+  })
+
 /**
  * @category meta
  * @since 2.2.17
@@ -972,6 +981,8 @@ export function nullable<D extends AnyD>(or: D): NullableD<D> {
     decode: (i) => (i === null ? success(null) : pipe(or.decode(i), TH.mapLeft(DE.nullableE)))
   }
 }
+
+export const readonly: <I, E, A>(codec: Decoder<I, E, A>) => Decoder<I, E, Readonly<A>> = identity
 
 /**
  * @since 2.2.17
@@ -1002,6 +1013,8 @@ const collectPrunable = <E>(de: DE.DecodeError<E>): Prunable => {
       case 'NullableE':
       case 'PrevE':
       case 'SumE':
+      case 'RefinementE':
+      case 'ParseE':
         return go(de.error)
       case 'LeafE':
       case 'MissingIndexesE':
@@ -1049,6 +1062,10 @@ const prune = (
           prune(prunable, anticollision),
           O.map((pde) => DE.lazyE(de.id, pde))
         )
+        case 'RefinementE':
+          return pipe(de.error, prune(prunable, anticollision), O.map(DE.refinementE))
+        case 'ParseE':
+          return pipe(de.error, prune(prunable, anticollision), O.map(DE.parseE))
       case 'LeafE':
       case 'MissingIndexesE':
       case 'MissingKeysE':
@@ -1087,9 +1104,10 @@ const prune = (
           O.map((pde) => DE.requiredKeyE(de.key, pde))
         )
       }
-      case 'UnexpectedIndexesE':
+      case 'UnexpectedIndexesE': {
         const pindexes = de.indexes.filter((index) => prunable.indexOf(anticollision + String(index)) !== -1)
         return RA.isNonEmpty(pindexes) ? O.some(DE.unexpectedIndexesE(pindexes)) : O.none
+      }
       case 'UnexpectedKeysE': {
         const pkeys = de.keys.filter((key) => prunable.indexOf(anticollision + key) !== -1)
         return RA.isNonEmpty(pkeys) ? O.some(DE.unexpectedKeysE(pkeys)) : O.none

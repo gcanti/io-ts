@@ -104,6 +104,49 @@ export interface TagLE extends LeafE<TagE> {}
  * @category model
  * @since 2.2.17
  */
+export interface RefinementE<E> {
+  readonly _tag: 'RefinementE'
+  readonly error: E
+}
+/**
+ * @category model
+ * @since 2.2.17
+ */
+export interface RefinementRE<E> extends RefinementE<DecodeError<E>> {}
+
+/**
+ * @category model
+ * @since 2.2.17
+ */
+export interface RefinementL<A> {
+  readonly _tag: 'RefinementL'
+  readonly actual: A
+}
+
+/**
+ * @category model
+ * @since 2.2.17
+ */
+export interface RefinementLE<A> extends LeafE<RefinementL<A>> {}
+
+/**
+ * @category model
+ * @since 2.2.17
+ */
+ export interface ParseE<E> {
+  readonly _tag: 'ParseE'
+  readonly error: E
+}
+/**
+ * @category model
+ * @since 2.2.17
+ */
+export interface ParseRE<E> extends ParseE<DecodeError<E>> {}
+
+/**
+ * @category model
+ * @since 2.2.17
+ */
 export interface NullableE<E> {
   readonly _tag: 'NullableE'
   readonly error: E
@@ -392,6 +435,27 @@ export const tagLE = (tag: string, literals: ReadonlyArray<string>): TagLE => le
  * @category constructors
  * @since 2.2.17
  */
+export const refinementE = <E>(error: E): RefinementE<E> => ({ _tag: 'RefinementE', error })
+
+/**
+ * @category constructors
+ * @since 2.2.17
+ */
+export const refinementLE = <A>(actual: A): RefinementLE<A> => leafE({
+  _tag: 'RefinementL',
+  actual
+})
+
+/**
+ * @category constructors
+ * @since 2.2.17
+ */
+ export const parseE = <E>(error: E): ParseE<E> => ({ _tag: 'ParseE', error })
+
+/**
+ * @category constructors
+ * @since 2.2.17
+ */
 export const nullableE = <E>(error: E): NullableE<E> => ({ _tag: 'NullableE', error })
 
 /**
@@ -656,6 +720,8 @@ export type DecodeError<E> =
   | UnexpectedIndexesE
   | MissingIndexesE
   | LeafE<E>
+  | RefinementRE<E>
+  | ParseRE<E>
   | NullableRE<E>
   | PrevRE<E>
   | NextRE<E>
