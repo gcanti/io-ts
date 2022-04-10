@@ -1118,10 +1118,11 @@ const prune = (
 }
 
 const emptyString = ''
+/** @internal */
+export const pruneAllUnexpected: <E>(de: DE.DecodeError<E>) => O.Option<DE.DecodeError<E>> = prune(RA.empty, emptyString)
 
-const pruneAllUnexpected: <E>(de: DE.DecodeError<E>) => O.Option<DE.DecodeError<E>> = prune(RA.empty, emptyString)
-
-const pruneDifference = <E1, E2>(
+/** @internal */
+export const pruneDifference = <E1, E2>(
   de1: DE.DecodeError<E1>,
   de2: DE.DecodeError<E2>
 ): O.Option<DE.CompoundE<DE.MemberE<0, DE.DecodeError<E1>> | DE.MemberE<1, DE.DecodeError<E2>>>> => {
