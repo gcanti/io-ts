@@ -1,7 +1,19 @@
 import * as Benchmark from 'benchmark'
-import * as E from 'fp-ts/lib/Either'
 import { pipe } from 'fp-ts/lib/pipeable'
 import * as D from '../src/Decoder'
+import { flow } from 'fp-ts/lib/function'
+import * as TH from 'fp-ts/lib/These'
+import * as util from 'util'
+import * as _ from '../src/Decoder'
+import { draw } from '../src/TreeReporter'
+
+const printValue = (a: unknown): string => 'Value:\n' + util.format(a)
+const printErrors = (s: string): string => 'Errors:\n' + s
+const printWarnings = (s: string): string => 'Warnings:\n' + s
+
+export const printAll = TH.fold(printErrors, printValue, (e, a) => printValue(a) + '\n' + printWarnings(e))
+
+export const print = flow(TH.mapLeft(draw), printAll)
 
 /*
 
@@ -38,7 +50,7 @@ suite
     decoder.decode(bad)
   })
   .add('Decoder (draw)', function () {
-    pipe(decoder.decode(bad), E.mapLeft(D.draw))
+    pipe(decoder.decode(bad), print)
   })
   .on('cycle', function (event: any) {
     console.log(String(event.target))
