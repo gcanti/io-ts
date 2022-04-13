@@ -899,65 +899,50 @@ export function union<Members extends ReadonlyNonEmptyArray<AnyD>>(...members: M
   }
 }
 
-export type RefinementError<E, A, B> = 
-  | DE.RefinementE<E> 
-  | DE.RefinementLE<Exclude<A, B>> 
+export type RefinementError<E, A, B> =
+  | DE.RefinementE<E>
+  | DE.RefinementLE<Exclude<A, B>>
   | DE.CompoundE<DE.RefinementE<E> | DE.RefinementLE<Exclude<A, B>>>
 
 /**
  * @category combinators
  * @since 2.2.7
  */
-export const refine = <A, B extends A>(
-  refinement: Refinement<A, B>,
-) => <I, E>(from: Decoder<I, E, A>): Decoder<I, RefinementError<E, A, B>, B> => 
+export const refine = <A, B extends A>(refinement: Refinement<A, B>) => <I, E>(
+  from: Decoder<I, E, A>
+): Decoder<I, RefinementError<E, A, B>, B> =>
   /*#__PURE__*/
   ({
-    decode: (i) => pipe(
-      from.decode(i),
-      TH.fold<E, A, TH.These<RefinementError<E, A, B>, B>>(
-        flow(DE.refinementE, TH.left),
-        (a) => refinement(a) ? TH.right(a) : TH.left(DE.refinementLE(a as Exclude<A, B>)),
-        (e, a) => refinement(a) 
-          ? TH.both(DE.refinementE(e), a) 
-          : TH.left(
-            DE.compoundE('refinement')([
-              DE.refinementE(e), 
-              DE.refinementLE(a as Exclude<A, B>)
-            ])
-          )
-      ),
-    ),
+    decode: (i) =>
+      pipe(
+        from.decode(i),
+        TH.fold<E, A, TH.These<RefinementError<E, A, B>, B>>(
+          flow(DE.refinementE, TH.left),
+          (a) => (refinement(a) ? TH.right(a) : TH.left(DE.refinementLE(a as Exclude<A, B>))),
+          (e, a) =>
+            refinement(a)
+              ? TH.both(DE.refinementE(e), a)
+              : TH.left(DE.compoundE('refinement')([DE.refinementE(e), DE.refinementLE(a as Exclude<A, B>)]))
+        )
+      )
   })
 
-export type ParseError<E, E2> = 
-  | DE.ParseE<E> 
-  | DE.ParseE<E2> 
-  | DE.CompoundE<DE.ParseE<E> | DE.ParseE<E2>>
+export type ParseError<E, E2> = DE.ParseE<E> | DE.ParseE<E2> | DE.CompoundE<DE.ParseE<E> | DE.ParseE<E2>>
 
 /**
  * @category combinators
  * @since 2.2.7
  */
-export const parse = <A, B, E2>(
-  parser: (a: A) => TH.These<E2, B>
-) => <I, E>(
+export const parse = <A, B, E2>(parser: (a: A) => TH.These<E2, B>) => <I, E>(
   from: Decoder<I, E, A>
 ): Decoder<I, ParseError<E, E2>, B> =>
   /*#__PURE__*/
   ({
     decode: (i) => {
       const { chain } = TH.getMonad<ParseError<E, E2>>({
-        concat: (x, y) => x._tag === 'CompoundE' 
-          ? x
-          : y._tag === 'CompoundE' 
-          ? y 
-          : DE.compoundE('parse')([x, y])
+        concat: (x, y) => (x._tag === 'CompoundE' ? x : y._tag === 'CompoundE' ? y : DE.compoundE('parse')([x, y]))
       })
-      return chain(
-        pipe(from.decode(i), TH.mapLeft(DE.parseE)), 
-        flow(parser, TH.mapLeft(DE.parseE))
-      );
+      return chain(pipe(from.decode(i), TH.mapLeft(DE.parseE)), flow(parser, TH.mapLeft(DE.parseE)))
     }
   })
 
@@ -1062,10 +1047,10 @@ const prune = (
           prune(prunable, anticollision),
           O.map((pde) => DE.lazyE(de.id, pde))
         )
-        case 'RefinementE':
-          return pipe(de.error, prune(prunable, anticollision), O.map(DE.refinementE))
-        case 'ParseE':
-          return pipe(de.error, prune(prunable, anticollision), O.map(DE.parseE))
+      case 'RefinementE':
+        return pipe(de.error, prune(prunable, anticollision), O.map(DE.refinementE))
+      case 'ParseE':
+        return pipe(de.error, prune(prunable, anticollision), O.map(DE.parseE))
       case 'LeafE':
       case 'MissingIndexesE':
       case 'MissingKeysE':
@@ -1119,7 +1104,10 @@ const prune = (
 
 const emptyString = ''
 /** @internal */
-export const pruneAllUnexpected: <E>(de: DE.DecodeError<E>) => O.Option<DE.DecodeError<E>> = prune(RA.empty, emptyString)
+export const pruneAllUnexpected: <E>(de: DE.DecodeError<E>) => O.Option<DE.DecodeError<E>> = prune(
+  RA.empty,
+  emptyString
+)
 
 /** @internal */
 export const pruneDifference = <E1, E2>(

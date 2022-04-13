@@ -15,9 +15,7 @@ export interface UndefinedE {
 export interface UndefinedLE extends DE.LeafE<UndefinedE> {}
 
 export const decoderUndefined: D.Decoder<unknown, UndefinedLE, undefined> = {
-  decode: (i) => typeof i === 'undefined' 
-    ? D.success(i) 
-    : D.failure(DE.leafE({ _tag: "UndefinedE", actual: i }))
+  decode: (i) => (typeof i === 'undefined' ? D.success(i) : D.failure(DE.leafE({ _tag: 'UndefinedE', actual: i })))
 }
 
 export interface NumFromStrLE extends DE.LeafE<{ _tag: 'NumFromStrE'; actual: string }> {}
@@ -25,16 +23,11 @@ export interface NumFromStrLE extends DE.LeafE<{ _tag: 'NumFromStrE'; actual: st
 export const decoderNumberFromString: D.Decoder<string, NumFromStrLE, number> = {
   decode: (s) => {
     const n = parseFloat(s)
-    return isNaN(n)
-      ? D.failure(DE.leafE({ _tag: 'NumFromStrE', actual: s })) 
-      : D.success(n)
+    return isNaN(n) ? D.failure(DE.leafE({ _tag: 'NumFromStrE', actual: s })) : D.success(n)
   }
 }
 
-export const decoderNumberFromUnknownString = pipe(
-  D.string,
-  D.compose(decoderNumberFromString)
-)
+export const decoderNumberFromUnknownString = pipe(D.string, D.compose(decoderNumberFromString))
 
 export interface PositiveBrand {
   readonly Positive: unique symbol

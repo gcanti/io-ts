@@ -1,19 +1,45 @@
 import * as assert from 'assert'
 import * as E from 'fp-ts/lib/Either'
 import { pipe } from 'fp-ts/lib/pipeable'
-import * as TE from 'fp-ts/lib/TaskEither'
+import { flow } from 'fp-ts/lib/function'
+import * as T from 'fp-ts/lib/Task'
+import * as TH from 'fp-ts/lib/These'
+import * as TT from 'fp-ts/lib/TaskThese'
+import * as util from 'util'
+import { ordString } from 'fp-ts/lib/Ord'
 import * as DE from '../src/DecodeError'
-import * as FS from '../src/FreeSemigroup'
 import * as D from '../src/Decoder'
 import * as _ from '../src/TaskDecoder'
+import { draw } from '../src/TreeReporter'
+import * as U from './util'
 
-const undef: _.TaskDecoder<unknown, undefined> = _.fromGuard(undefinedGuard, 'undefined')
+const printValue = (a: unknown): string => 'Value:\n' + util.format(a)
+const printErrors = (s: string): string => 'Errors:\n' + s
+const printWarnings = (s: string): string => 'Warnings:\n' + s
 
-const NumberFromString: _.TaskDecoder<unknown, number> = pipe(
+export const printAll = TH.fold(printErrors, printValue, (e, a) => printValue(a) + '\n' + printWarnings(e))
+
+export const print = flow(TH.mapLeft(draw), printAll)
+
+interface UndefinedE {
+  _tag: 'UndefinedE'
+  actual: unknown
+}
+interface UndefinedLE extends DE.LeafE<UndefinedE> {}
+const undef: _.TaskDecoder<unknown, UndefinedLE, undefined> = _.fromDecoder({
+  decode: (i) => (typeof i === 'undefined' ? D.success(i) : D.failure(DE.leafE({ _tag: 'UndefinedE', actual: i })))
+})
+
+interface NumberFromStringE {
+  _tag: 'NumberFromStringE'
+  actual: unknown
+}
+interface NumberFromStringLE extends DE.LeafE<NumberFromStringE> {}
+const NumberFromString: _.TaskDecoder<unknown, D.ParseError<DE.StringLE, NumberFromStringLE>, number> = pipe(
   _.string,
   _.parse((s) => {
     const n = parseFloat(s)
-    return isNaN(n) ? _.failure(s, 'parsable to a number') : _.success(n)
+    return isNaN(n) ? _.failure(DE.leafE({ _tag: 'NumberFromStringE', actual: s })) : _.success(n)
   })
 )
 
@@ -21,18 +47,22 @@ interface PositiveBrand {
   readonly Positive: unique symbol
 }
 type Positive = number & PositiveBrand
-const Positive: _.TaskDecoder<unknown, Positive> = pipe(
+const Positive: _.TaskDecoder<
+  unknown,
+  D.RefinementError<DE.NumberLE | DE.NaNLE | DE.InfinityLE, number, Positive>,
+  Positive
+> = pipe(
   _.number,
-  _.refine((n): n is Positive => n > 0, 'Positive')
+  _.refine((n): n is Positive => n > 0)
 )
 
 interface IntBrand {
   readonly Int: unique symbol
 }
 type Int = number & IntBrand
-const Int: _.TaskDecoder<unknown, Int> = pipe(
+const Int: _.TaskDecoder<unknown, D.RefinementError<DE.NumberLE | DE.NaNLE | DE.InfinityLE, number, Int>, Int> = pipe(
   _.number,
-  _.refine((n): n is Int => Number.isInteger(n), 'Int')
+  _.refine((n): n is Int => Number.isInteger(n))
 )
 
 describe('UnknownTaskDecoder', () => {
@@ -45,66 +75,38 @@ describe('UnknownTaskDecoder', () => {
     assert.deepStrictEqual(await decoder.decode('a')(), D.success('a!'))
   })
 
-  it('Alt', async () => {
-    const decoder = _.Alt.alt<unknown, string | number>(_.string, () => _.number)
-    assert.deepStrictEqual(await decoder.decode('a')(), D.success('a'))
-    assert.deepStrictEqual(await decoder.decode(1)(), D.success(1))
-  })
-
-  it('Category', async () => {
-    const decoder = _.Category.compose(_.id<unknown>(), _.string)
-    assert.deepStrictEqual(await decoder.decode('a')(), D.success('a'))
-    assert.deepStrictEqual(await decoder.decode(1)(), D.failure(1, 'string'))
-  })
-
-  // -------------------------------------------------------------------------------------
-  // constructors
-  // -------------------------------------------------------------------------------------
-
-  it('fromRefinement', async () => {
-    const IntFromNumber = _.fromRefinement((n: number): n is Int => Number.isInteger(n), 'IntFromNumber')
-    assert.deepStrictEqual(await IntFromNumber.decode(1)(), D.success(1))
-    assert.deepStrictEqual(await IntFromNumber.decode(1.2)(), D.failure(1.2, 'IntFromNumber'))
-  })
-
   // -------------------------------------------------------------------------------------
   // primitives
   // -------------------------------------------------------------------------------------
 
   it('string', async () => {
     assert.deepStrictEqual(await _.string.decode('a')(), D.success('a'))
-    assert.deepStrictEqual(await _.string.decode(null)(), D.failure(null, 'string'))
+    assert.deepStrictEqual(await _.string.decode(null)(), D.failure('string'))
   })
 
   it('number', async () => {
     assert.deepStrictEqual(await _.number.decode(1)(), D.success(1))
-    assert.deepStrictEqual(await _.number.decode(null)(), D.failure(null, 'number'))
+    assert.deepStrictEqual(await _.number.decode(null)(), D.failure('number'))
   })
 
   it('boolean', async () => {
     assert.deepStrictEqual(await _.boolean.decode(true)(), D.success(true))
-    assert.deepStrictEqual(await _.boolean.decode(null)(), D.failure(null, 'boolean'))
+    assert.deepStrictEqual(await _.boolean.decode(null)(), D.failure('boolean'))
   })
 
   it('UnknownArray', async () => {
     assert.deepStrictEqual(await _.UnknownArray.decode([1, 'a'])(), D.success([1, 'a']))
-    assert.deepStrictEqual(await _.UnknownArray.decode(null)(), D.failure(null, 'Array<unknown>'))
+    assert.deepStrictEqual(await _.UnknownArray.decode(null)(), D.failure('Array<unknown>'))
   })
 
   it('UnknownRecord', async () => {
     assert.deepStrictEqual(await _.UnknownRecord.decode({ a: 1, b: 'b' })(), D.success({ a: 1, b: 'b' }))
-    assert.deepStrictEqual(await _.UnknownRecord.decode(null)(), D.failure(null, 'Record<string, unknown>'))
+    assert.deepStrictEqual(await _.UnknownRecord.decode(null)(), D.failure('Record<string, unknown>'))
   })
 
   // -------------------------------------------------------------------------------------
   // constructors
   // -------------------------------------------------------------------------------------
-
-  it('fromGuard', async () => {
-    const decoder = _.fromGuard(G.string, 'string')
-    assert.deepStrictEqual(await decoder.decode('a')(), D.success('a'))
-    assert.deepStrictEqual(await decoder.decode(null)(), D.failure(null, 'string'))
-  })
 
   describe('literal', () => {
     it('should decode a valid input', async () => {
@@ -115,7 +117,7 @@ describe('UnknownTaskDecoder', () => {
 
     it('should reject an invalid input', async () => {
       const decoder = _.literal('a', null)
-      assert.deepStrictEqual(await decoder.decode('b')(), D.failure('b', '"a" | null'))
+      assert.deepStrictEqual(await decoder.decode('b')(), D.failure('"a" | null'))
     })
   })
 
@@ -123,43 +125,38 @@ describe('UnknownTaskDecoder', () => {
   // combinators
   // -------------------------------------------------------------------------------------
 
-  it('mapLeftWithInput', async () => {
+  it('mapLeft', async () => {
     const decoder = pipe(
       _.number,
-      _.mapLeftWithInput((u) => FS.of(DE.leaf(u, 'not a number')))
+      _.mapLeft((u) => DE.leafE(u))
     )
-    assert.deepStrictEqual(await decoder.decode('a')(), D.failure('a', 'not a number'))
-  })
-
-  it('withMessage', async () => {
-    const decoder = pipe(
-      _.struct({
-        name: _.string,
-        age: _.number
-      }),
-      _.withMessage(() => 'Person')
-    )
-    assert.deepStrictEqual(
-      await pipe(decoder.decode({}), TE.mapLeft(_.draw))(),
-      E.left(`Person
-├─ required property "name"
-│  └─ cannot decode undefined, should be string
-└─ required property "age"
-   └─ cannot decode undefined, should be number`)
-    )
+    assert.deepStrictEqual(await decoder.decode('a')(), D.failure('not a number'))
   })
 
   it('compose', async () => {
-    interface IntBrand {
-      readonly Int: unique symbol
-    }
+    it('should accumulate warnings', async () => {
+      const decoder = pipe(_.number, _.compose(_.number))
+      U.deepStrictEqual(
+        pipe(await decoder.decode(NaN)(), print),
+        `Value:
+NaN
+Warnings:
+2 error(s) found while decoding (composition)
+├─ value is NaN
+└─ value is NaN`
+      )
+    })
 
-    type Int = number & IntBrand
-
-    const decoder = pipe(_.number, _.compose(_.fromRefinement((n): n is Int => Number.isInteger(n), 'IntFromNumber')))
-    assert.deepStrictEqual(await decoder.decode(1)(), D.success(1))
-    assert.deepStrictEqual(await decoder.decode('a')(), D.failure('a', 'number'))
-    assert.deepStrictEqual(await decoder.decode(1.2)(), D.failure(1.2, 'IntFromNumber'))
+    it('should accumulate warnings and errors', async () => {
+      const decoder = pipe(_.number, _.compose(_.string))
+      U.deepStrictEqual(
+        pipe(await decoder.decode(NaN)(), print),
+        `Errors:
+2 error(s) found while decoding (composition)
+├─ value is NaN
+└─ cannot decode NaN, expected a string`
+      )
+    })
   })
 
   describe('nullable', () => {
@@ -171,74 +168,47 @@ describe('UnknownTaskDecoder', () => {
 
     it('should reject an invalid input', async () => {
       const decoder = _.nullable(NumberFromString)
-      assert.deepStrictEqual(
-        await decoder.decode(undefined)(),
-        E.left(
-          FS.concat(
-            FS.of(DE.member(0, FS.of(DE.leaf(undefined, 'null')))),
-            FS.of(DE.member(1, FS.of(DE.leaf(undefined, 'string'))))
-          )
-        )
-      )
-      assert.deepStrictEqual(
-        await decoder.decode('a')(),
-        E.left(
-          FS.concat(
-            FS.of(DE.member(0, FS.of(DE.leaf('a', 'null')))),
-            FS.of(DE.member(1, FS.of(DE.leaf('a', 'parsable to a number'))))
-          )
-        )
-      )
+      expect(await decoder.decode(undefined)()).toMatchSnapshot()
+      expect(await decoder.decode('a')()).toMatchSnapshot()
     })
   })
 
   describe('struct', () => {
     it('should decode a valid input', async () => {
-      const decoder = _.struct({
+      const decoder = _.struct(ordString)(T.ApplicativePar)({
         a: _.string
       })
       assert.deepStrictEqual(await decoder.decode({ a: 'a' })(), D.success({ a: 'a' }))
     })
 
     it('should strip additional fields', async () => {
-      const decoder = _.struct({
+      const decoder = _.struct(ordString)(T.ApplicativePar)({
         a: _.string
       })
       assert.deepStrictEqual(await decoder.decode({ a: 'a', b: 1 })(), D.success({ a: 'a' }))
     })
 
     it('should not strip fields corresponding to undefined values', async () => {
-      const decoder = _.struct({
+      const decoder = _.struct(ordString)(T.ApplicativePar)({
         a: undef
       })
       assert.deepStrictEqual(await decoder.decode({})(), D.success({ a: undefined }))
     })
 
     it('should reject an invalid input', async () => {
-      const decoder = _.struct({
+      const decoder = _.struct(ordString)(T.ApplicativePar)({
         a: _.string
       })
-      assert.deepStrictEqual(await decoder.decode(undefined)(), D.failure(undefined, 'Record<string, unknown>'))
-      assert.deepStrictEqual(
-        await decoder.decode({ a: 1 })(),
-        E.left(FS.of(DE.key('a', DE.required, FS.of(DE.leaf(1, 'string')))))
-      )
+      assert.deepStrictEqual(await decoder.decode(undefined)(), D.failure('Record<string, unknown>'))
+      expect(await decoder.decode({ a: 1 })()).toMatchSnapshot()
     })
 
     it('should collect all errors', async () => {
-      const decoder = _.struct({
+      const decoder = _.struct(ordString)(T.ApplicativePar)({
         a: _.string,
         b: _.number
       })
-      assert.deepStrictEqual(
-        await decoder.decode({})(),
-        E.left(
-          FS.concat(
-            FS.of(DE.key('a', DE.required, FS.of(DE.leaf(undefined, 'string')))),
-            FS.of(DE.key('b', DE.required, FS.of(DE.leaf(undefined, 'number'))))
-          )
-        )
-      )
+      expect(await decoder.decode({})()).toMatchSnapshot()
     })
 
     it('should support getters', async () => {
@@ -250,56 +220,45 @@ describe('UnknownTaskDecoder', () => {
           return 'b'
         }
       }
-      const decoder = _.struct({ a: _.string, b: _.string })
+      const decoder = _.struct(ordString)(T.ApplicativePar)({ a: _.string, b: _.string })
       assert.deepStrictEqual(await decoder.decode(new A())(), D.success({ a: 'a', b: 'b' }))
     })
   })
 
   describe('partial', () => {
     it('should decode a valid input', async () => {
-      const decoder = _.partial({ a: _.string })
+      const decoder = _.partial(ordString)(T.ApplicativePar)({ a: _.string })
       assert.deepStrictEqual(await decoder.decode({ a: 'a' })(), D.success({ a: 'a' }))
       assert.deepStrictEqual(await decoder.decode({})(), D.success({}))
     })
 
     it('should strip additional fields', async () => {
-      const decoder = _.partial({ a: _.string })
+      const decoder = _.partial(ordString)(T.ApplicativePar)({ a: _.string })
       assert.deepStrictEqual(await decoder.decode({ a: 'a', b: 1 })(), D.success({ a: 'a' }))
     })
 
     it('should not add missing fields', async () => {
-      const decoder = _.partial({ a: _.string })
+      const decoder = _.partial(ordString)(T.ApplicativePar)({ a: _.string })
       assert.deepStrictEqual(await decoder.decode({})(), D.success({}))
     })
 
     it('should not strip fields corresponding to undefined values', async () => {
-      const decoder = _.partial({ a: _.string })
+      const decoder = _.partial(ordString)(T.ApplicativePar)({ a: _.string })
       assert.deepStrictEqual(await decoder.decode({ a: undefined })(), D.success({ a: undefined }))
     })
 
     it('should reject an invalid input', async () => {
-      const decoder = _.partial({ a: _.string })
-      assert.deepStrictEqual(await decoder.decode(undefined)(), D.failure(undefined, 'Record<string, unknown>'))
-      assert.deepStrictEqual(
-        await decoder.decode({ a: 1 })(),
-        E.left(FS.of(DE.key('a', DE.optional, FS.of(DE.leaf(1, 'string')))))
-      )
+      const decoder = _.partial(ordString)(T.ApplicativePar)({ a: _.string })
+      assert.deepStrictEqual(await decoder.decode(undefined)(), D.failure('Record<string, unknown>'))
+      expect(await decoder.decode({ a: 1 })()).toMatchSnapshot()
     })
 
     it('should collect all errors', async () => {
-      const decoder = _.partial({
+      const decoder = _.partial(ordString)(T.ApplicativePar)({
         a: _.string,
         b: _.number
       })
-      assert.deepStrictEqual(
-        await decoder.decode({ a: 1, b: 'b' })(),
-        E.left(
-          FS.concat(
-            FS.of(DE.key('a', DE.optional, FS.of(DE.leaf(1, 'string')))),
-            FS.of(DE.key('b', DE.optional, FS.of(DE.leaf('b', 'number'))))
-          )
-        )
-      )
+      expect(await decoder.decode({ a: 1, b: 'b' })()).toMatchSnapshot()
     })
 
     it('should support getters', async () => {
@@ -311,109 +270,73 @@ describe('UnknownTaskDecoder', () => {
           return 'b'
         }
       }
-      const decoder = _.partial({ a: _.string, b: _.string })
+      const decoder = _.partial(ordString)(T.ApplicativePar)({ a: _.string, b: _.string })
       assert.deepStrictEqual(await decoder.decode(new A())(), D.success({ a: 'a', b: 'b' }))
     })
   })
 
   describe('array', () => {
     it('should decode a valid input', async () => {
-      const decoder = _.array(_.string)
+      const decoder = _.array(T.ApplicativePar)(_.string)
       assert.deepStrictEqual(await decoder.decode([])(), D.success([]))
       assert.deepStrictEqual(await decoder.decode(['a'])(), D.success(['a']))
     })
 
     it('should reject an invalid input', async () => {
-      const decoder = _.array(_.string)
-      assert.deepStrictEqual(await decoder.decode(undefined)(), D.failure(undefined, 'Array<unknown>'))
-      assert.deepStrictEqual(
-        await decoder.decode([1])(),
-        E.left(FS.of(DE.index(0, DE.optional, FS.of(DE.leaf(1, 'string')))))
-      )
+      const decoder = _.array(T.ApplicativePar)(_.string)
+      assert.deepStrictEqual(await decoder.decode(undefined)(), D.failure('Array<unknown>'))
+      expect(await decoder.decode([1])()).toMatchSnapshot()
     })
 
     it('should collect all errors', async () => {
-      const decoder = _.array(_.string)
-      assert.deepStrictEqual(
-        await decoder.decode([1, 2])(),
-        E.left(
-          FS.concat(
-            FS.of(DE.index(0, DE.optional, FS.of(DE.leaf(1, 'string')))),
-            FS.of(DE.index(1, DE.optional, FS.of(DE.leaf(2, 'string'))))
-          )
-        )
-      )
+      const decoder = _.array(T.ApplicativePar)(_.string)
+      expect(await decoder.decode([1, 2])()).toMatchSnapshot()
     })
   })
 
   describe('record', () => {
     it('should decode a valid value', async () => {
-      const decoder = _.record(_.number)
+      const decoder = _.record(ordString)(T.ApplicativePar)(_.number)
       assert.deepStrictEqual(await decoder.decode({})(), D.success({}))
       assert.deepStrictEqual(await decoder.decode({ a: 1 })(), D.success({ a: 1 }))
     })
 
     it('should reject an invalid value', async () => {
-      const decoder = _.record(_.number)
-      assert.deepStrictEqual(await decoder.decode(undefined)(), D.failure(undefined, 'Record<string, unknown>'))
-      assert.deepStrictEqual(
-        await decoder.decode({ a: 'a' })(),
-        E.left(FS.of(DE.key('a', DE.optional, FS.of(DE.leaf('a', 'number')))))
-      )
+      const decoder = _.record(ordString)(T.ApplicativePar)(_.number)
+      assert.deepStrictEqual(await decoder.decode(undefined)(), D.failure('Record<string, unknown>'))
+      expect(await decoder.decode({ a: 'a' })()).toMatchSnapshot()
     })
 
     it('should collect all errors', async () => {
-      const decoder = _.record(_.number)
-      assert.deepStrictEqual(
-        await decoder.decode({ a: 'a', b: 'b' })(),
-        E.left(
-          FS.concat(
-            FS.of(DE.key('a', DE.optional, FS.of(DE.leaf('a', 'number')))),
-            FS.of(DE.key('b', DE.optional, FS.of(DE.leaf('b', 'number'))))
-          )
-        )
-      )
+      const decoder = _.record(ordString)(T.ApplicativePar)(_.number)
+      expect(await decoder.decode({ a: 'a', b: 'b' })()).toMatchSnapshot()
     })
   })
 
   describe('tuple', () => {
     it('should decode a valid input', async () => {
-      const decoder = _.tuple(_.string, _.number)
+      const decoder = _.tuple(T.ApplicativePar)(_.string, _.number)
       assert.deepStrictEqual(await decoder.decode(['a', 1])(), D.success(['a', 1]))
     })
 
     it('should handle zero components', async () => {
-      assert.deepStrictEqual(await _.tuple().decode([])(), D.success([]))
+      assert.deepStrictEqual(await _.tuple(T.ApplicativePar)().decode([])(), D.success([]))
     })
 
     it('should reject an invalid input', async () => {
-      const decoder = _.tuple(_.string, _.number)
-      assert.deepStrictEqual(await decoder.decode(undefined)(), D.failure(undefined, 'Array<unknown>'))
-      assert.deepStrictEqual(
-        await decoder.decode(['a'])(),
-        E.left(FS.of(DE.index(1, DE.required, FS.of(DE.leaf(undefined, 'number')))))
-      )
-      assert.deepStrictEqual(
-        await decoder.decode([1, 2])(),
-        E.left(FS.of(DE.index(0, DE.required, FS.of(DE.leaf(1, 'string')))))
-      )
+      const decoder = _.tuple(T.ApplicativePar)(_.string, _.number)
+      assert.deepStrictEqual(await decoder.decode(undefined)(), D.failure('Array<unknown>'))
+      expect(await decoder.decode(['a'])()).toMatchSnapshot()
+      expect(await decoder.decode([1, 2])()).toMatchSnapshot()
     })
 
     it('should collect all errors', async () => {
-      const decoder = _.tuple(_.string, _.number)
-      assert.deepStrictEqual(
-        await decoder.decode([1, 'a'])(),
-        E.left(
-          FS.concat(
-            FS.of(DE.index(0, DE.required, FS.of(DE.leaf(1, 'string')))),
-            FS.of(DE.index(1, DE.required, FS.of(DE.leaf('a', 'number'))))
-          )
-        )
-      )
+      const decoder = _.tuple(T.ApplicativePar)(_.string, _.number)
+      expect(await decoder.decode([1, 'a'])()).toMatchSnapshot()
     })
 
     it('should strip additional components', async () => {
-      const decoder = _.tuple(_.string, _.number)
+      const decoder = _.tuple(T.ApplicativePar)(_.string, _.number)
       assert.deepStrictEqual(await decoder.decode(['a', 1, true])(), D.success(['a', 1]))
     })
   })
@@ -428,15 +351,7 @@ describe('UnknownTaskDecoder', () => {
 
     it('should reject an invalid input', async () => {
       const decoder = _.union(_.string, _.number)
-      assert.deepStrictEqual(
-        await decoder.decode(true)(),
-        E.left(
-          FS.concat(
-            FS.of(DE.member(0, FS.of(DE.leaf(true, 'string')))),
-            FS.of(DE.member(1, FS.of(DE.leaf(true, 'number'))))
-          )
-        )
-      )
+      expect(await decoder.decode(true)()).toMatchSnapshot()
     })
   })
 
@@ -444,7 +359,7 @@ describe('UnknownTaskDecoder', () => {
     it('should decode a valid input', async () => {
       const decoder = pipe(
         _.string,
-        _.refine((s): s is string => s.length > 0, 'NonEmptyString')
+        _.refine((s): s is string => s.length > 0)
       )
       assert.deepStrictEqual(await decoder.decode('a')(), D.success('a'))
     })
@@ -452,16 +367,19 @@ describe('UnknownTaskDecoder', () => {
     it('should reject an invalid input', async () => {
       const decoder = pipe(
         _.string,
-        _.refine((s): s is string => s.length > 0, 'NonEmptyString')
+        _.refine((s): s is string => s.length > 0)
       )
-      assert.deepStrictEqual(await decoder.decode(undefined)(), D.failure(undefined, 'string'))
-      assert.deepStrictEqual(await decoder.decode('')(), D.failure('', 'NonEmptyString'))
+      assert.deepStrictEqual(await decoder.decode(undefined)(), D.failure('string'))
+      assert.deepStrictEqual(await decoder.decode('')(), D.failure(''))
     })
   })
 
   describe('intersect', () => {
     it('should decode a valid input', async () => {
-      const decoder = pipe(_.struct({ a: _.string }), _.intersect(_.struct({ b: _.number })))
+      const decoder = pipe(
+        _.struct(ordString)(T.ApplicativePar)({ a: _.string }),
+        _.intersect(_.struct(ordString)(T.ApplicativePar)({ b: _.number }))
+      )
       assert.deepStrictEqual(await decoder.decode({ a: 'a', b: 1 })(), D.success({ a: 'a', b: 1 }))
     })
 
@@ -471,24 +389,13 @@ describe('UnknownTaskDecoder', () => {
     })
 
     it('should accumulate all errors', async () => {
-      const decoder = pipe(_.struct({ a: _.string }), _.intersect(_.struct({ b: _.number })))
-      assert.deepStrictEqual(
-        await decoder.decode({ a: 'a' })(),
-        E.left(FS.of(DE.key('b', DE.required, FS.of(DE.leaf(undefined, 'number')))))
+      const decoder = pipe(
+        _.struct(ordString)(T.ApplicativePar)({ a: _.string }),
+        _.intersect(_.struct(ordString)(T.ApplicativePar)({ b: _.number }))
       )
-      assert.deepStrictEqual(
-        await decoder.decode({ b: 1 })(),
-        E.left(FS.of(DE.key('a', DE.required, FS.of(DE.leaf(undefined, 'string')))))
-      )
-      assert.deepStrictEqual(
-        await decoder.decode({})(),
-        E.left(
-          FS.concat(
-            FS.of(DE.key('a', DE.required, FS.of(DE.leaf(undefined, 'string')))),
-            FS.of(DE.key('b', DE.required, FS.of(DE.leaf(undefined, 'number'))))
-          )
-        )
-      )
+      expect(await decoder.decode({ a: 'a' })()).toMatchSnapshot()
+      expect(await decoder.decode({ b: 1 })()).toMatchSnapshot()
+      expect(await decoder.decode({})()).toMatchSnapshot()
     })
   })
 
@@ -496,77 +403,68 @@ describe('UnknownTaskDecoder', () => {
     const sum = _.sum('_tag')
 
     it('should decode a valid input', async () => {
-      const A = _.struct({ _tag: _.literal('A'), a: _.string })
-      const B = _.struct({ _tag: _.literal('B'), b: _.number })
+      const A = _.struct(ordString)(T.ApplicativePar)({ _tag: _.literal('A'), a: _.string })
+      const B = _.struct(ordString)(T.ApplicativePar)({ _tag: _.literal('B'), b: _.number })
       const decoder = sum({ A, B })
       assert.deepStrictEqual(await decoder.decode({ _tag: 'A', a: 'a' })(), D.success({ _tag: 'A', a: 'a' }))
       assert.deepStrictEqual(await decoder.decode({ _tag: 'B', b: 1 })(), D.success({ _tag: 'B', b: 1 }))
     })
 
     it('should reject an invalid input', async () => {
-      const A = _.struct({ _tag: _.literal('A'), a: _.string })
-      const B = _.struct({ _tag: _.literal('B'), b: _.number })
+      const A = _.struct(ordString)(T.ApplicativePar)({ _tag: _.literal('A'), a: _.string })
+      const B = _.struct(ordString)(T.ApplicativePar)({ _tag: _.literal('B'), b: _.number })
       const decoder = sum({ A, B })
-      assert.deepStrictEqual(await decoder.decode(null)(), D.failure(null, 'Record<string, unknown>'))
-      assert.deepStrictEqual(
-        await decoder.decode({})(),
-        E.left(FS.of(DE.key('_tag', DE.required, FS.of(DE.leaf(undefined, '"A" | "B"')))))
-      )
-      assert.deepStrictEqual(
-        await decoder.decode({ _tag: 'A', a: 1 })(),
-        E.left(FS.of(DE.key('a', DE.required, FS.of(DE.leaf(1, 'string')))))
-      )
+      assert.deepStrictEqual(await decoder.decode(null)(), D.failure('Record<string, unknown>'))
+      expect(await decoder.decode({})()).toMatchSnapshot()
+      expect(await decoder.decode({ _tag: 'A', a: 1 })()).toMatchSnapshot()
     })
 
     it('should support empty records', async () => {
       const decoder = sum({})
-      assert.deepStrictEqual(
-        await decoder.decode({})(),
-        E.left(FS.of(DE.key('_tag', DE.required, FS.of(DE.leaf(undefined, 'never')))))
-      )
+      expect(await decoder.decode({})()).toMatchSnapshot()
     })
   })
 
-  interface A {
-    a: number
-    b?: A
+  interface Category {
+    name: string
+    categories: ReadonlyArray<Category>
   }
 
-  const lazyDecoder: _.TaskDecoder<unknown, A> = _.lazy('A', () =>
-    pipe(_.struct({ a: NumberFromString }), _.intersect(_.partial({ b: lazyDecoder })))
+  const Category: _.TaskDecoder<unknown, any, { name: string; categories: Category[] }> = _.lazy('Category', () =>
+    // @ts-expect-error: desc
+    _.struct(ordString)(T.ApplicativePar)({
+      name: _.string,
+      categories: _.array(T.ApplicativePar)(Category)
+    })
   )
 
   describe('lazy', () => {
-    it('should decode a valid input', async () => {
-      assert.deepStrictEqual(await lazyDecoder.decode({ a: '1' })(), D.success({ a: 1 }))
-      assert.deepStrictEqual(await lazyDecoder.decode({ a: '1', b: { a: '2' } })(), D.success({ a: 1, b: { a: 2 } }))
+    it('should return a right', async () => {
+      const i1 = { name: 'a', categories: [] }
+      U.deepStrictEqual(await Category.decode(i1)(), TH.right(i1))
+      const i2 = {
+        name: 'a',
+        categories: [
+          { name: 'b', categories: [] },
+          { name: 'c', categories: [{ name: 'd', categories: [] }] }
+        ]
+      }
+      U.deepStrictEqual(await Category.decode(i2)(), TH.right(i2))
     })
 
-    it('should reject an invalid input', async () => {
-      assert.deepStrictEqual(
-        await lazyDecoder.decode({ a: 1 })(),
-        E.left(FS.of(DE.lazy('A', FS.of(DE.key('a', DE.required, FS.of(DE.leaf(1, 'string')))))))
-      )
-      assert.deepStrictEqual(
-        await lazyDecoder.decode({ a: 'a' })(),
-        E.left(FS.of(DE.lazy('A', FS.of(DE.key('a', DE.required, FS.of(DE.leaf('a', 'parsable to a number')))))))
-      )
-      assert.deepStrictEqual(
-        await lazyDecoder.decode({ a: '1', b: {} })(),
-        E.left(
-          FS.of(
-            DE.lazy(
-              'A',
-              FS.of(
-                DE.key(
-                  'b',
-                  DE.optional,
-                  FS.of(DE.lazy('A', FS.of(DE.key('a', DE.required, FS.of(DE.leaf(undefined, 'string'))))))
-                )
-              )
-            )
-          )
-        )
+    it('should return a left', async () => {
+      U.deepStrictEqual(
+        pipe(await Category.decode({ name: 'a', categories: [{}] })(), print),
+        `Errors:
+1 error(s) found while decoding lazy decoder Category
+└─ 1 error(s) found while decoding (struct)
+   └─ 1 error(s) found while decoding required key \"categories\"
+      └─ 1 error(s) found while decoding (array)
+         └─ 1 error(s) found while decoding optional index 0
+            └─ 1 error(s) found while decoding lazy decoder Category
+               └─ 2 error(s) found while checking keys
+                  ├─ missing required key \"name\"
+                  └─ missing required key \"categories\"`
       )
     })
   })
@@ -577,14 +475,14 @@ describe('UnknownTaskDecoder', () => {
 
   describe('draw', () => {
     it('draw', async () => {
-      const decoder = _.struct({
+      const decoder = _.struct(ordString)(T.ApplicativePar)({
         a: _.string,
         b: _.number,
-        c: _.array(_.boolean),
+        c: _.array(T.ApplicativePar)(_.boolean),
         d: _.nullable(_.string)
       })
       assert.deepStrictEqual(
-        await pipe(decoder.decode({ c: [1] }), TE.mapLeft(_.draw))(),
+        await pipe(decoder.decode({ c: [1] }), TT.mapLeft(draw))(),
         E.left(`required property "a"
 └─ cannot decode undefined, should be string
 required property "b"
@@ -599,21 +497,5 @@ required property "d"
    └─ cannot decode undefined, should be string`)
       )
     })
-
-    it('should support lazy combinators', async () => {
-      assert.deepStrictEqual(
-        await pipe(lazyDecoder.decode({ a: '1', b: {} }), TE.mapLeft(_.draw))(),
-        E.left(`lazy type A
-└─ optional property \"b\"
-   └─ lazy type A
-      └─ required property \"a\"
-         └─ cannot decode undefined, should be string`)
-      )
-    })
-  })
-
-  it('stringify', async () => {
-    assert.deepStrictEqual(await _.stringify(_.string.decode('a'))(), '"a"')
-    assert.deepStrictEqual(await _.stringify(_.string.decode(null))(), 'cannot decode null, should be string')
   })
 })

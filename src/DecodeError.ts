@@ -133,7 +133,7 @@ export interface RefinementLE<A> extends LeafE<RefinementL<A>> {}
  * @category model
  * @since 2.2.17
  */
- export interface ParseE<E> {
+export interface ParseE<E> {
   readonly _tag: 'ParseE'
   readonly error: E
 }
@@ -441,16 +441,17 @@ export const refinementE = <E>(error: E): RefinementE<E> => ({ _tag: 'Refinement
  * @category constructors
  * @since 2.2.17
  */
-export const refinementLE = <A>(actual: A): RefinementLE<A> => leafE({
-  _tag: 'RefinementL',
-  actual
-})
+export const refinementLE = <A>(actual: A): RefinementLE<A> =>
+  leafE({
+    _tag: 'RefinementL',
+    actual
+  })
 
 /**
  * @category constructors
  * @since 2.2.17
  */
- export const parseE = <E>(error: E): ParseE<E> => ({ _tag: 'ParseE', error })
+export const parseE = <E>(error: E): ParseE<E> => ({ _tag: 'ParseE', error })
 
 /**
  * @category constructors
