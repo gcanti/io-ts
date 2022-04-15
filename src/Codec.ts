@@ -93,12 +93,12 @@ export const fromStruct = <Properties extends Record<string, AnyC>>(
       components,
       R.map((c) => c.decoder),
       D.fromStruct
-    ) as D.FromStructD<{ [K in keyof Properties]: Properties[K]['decoder'] }>,
+    ) as unknown as D.FromStructD<{ [K in keyof Properties]: Properties[K]['decoder'] }>,
     pipe(
       components,
       R.map((c) => c.encoder),
       D.fromStruct
-    ) as D.FromStructD<{ [K in keyof Properties]: Properties[K]['encoder'] }>
+    ) as unknown as D.FromStructD<{ [K in keyof Properties]: Properties[K]['encoder'] }>
   )
 
 export const unexpectedKeys = flow(D.unexpectedKeys, fromDecoder)
@@ -120,12 +120,12 @@ export const struct = <Properties extends Record<string, AnyUC>>(
       components,
       R.map((c) => c.decoder),
       D.struct
-    ) as D.StructD<{ [K in keyof Properties]: Properties[K]['decoder'] }>,
+    ) as unknown as D.StructD<{ [K in keyof Properties]: Properties[K]['decoder'] }>,
     pipe(
       components,
       R.map((c) => c.encoder),
       D.struct
-    ) as D.StructD<{ [K in keyof Properties]: Properties[K]['encoder'] }>
+    ) as unknown as D.StructD<{ [K in keyof Properties]: Properties[K]['encoder'] }>
   )
 
 /**
@@ -143,12 +143,12 @@ export const fromPartial = <Properties extends Record<string, AnyC>>(
       components,
       R.map((c) => c.decoder),
       D.fromPartial
-    ) as D.FromPartialD<{ [K in keyof Properties]: Properties[K]['decoder'] }>,
+    ) as unknown as D.FromPartialD<{ [K in keyof Properties]: Properties[K]['decoder'] }>,
     pipe(
       components,
       R.map((c) => c.encoder),
       D.fromPartial
-    ) as D.FromPartialD<{ [K in keyof Properties]: Properties[K]['encoder'] }>
+    ) as unknown as D.FromPartialD<{ [K in keyof Properties]: Properties[K]['encoder'] }>
   )
 
 /**
@@ -166,12 +166,12 @@ export const partial = <Properties extends Record<string, AnyUC>>(
       components,
       R.map((c) => c.decoder),
       D.partial
-    ) as D.PartialD<{ [K in keyof Properties]: Properties[K]['decoder'] }>,
+    ) as unknown as D.PartialD<{ [K in keyof Properties]: Properties[K]['decoder'] }>,
     pipe(
       components,
       R.map((c) => c.encoder),
       D.partial
-    ) as D.PartialD<{ [K in keyof Properties]: Properties[K]['encoder'] }>
+    ) as unknown as D.PartialD<{ [K in keyof Properties]: Properties[K]['encoder'] }>
   )
 
 /**
@@ -361,12 +361,12 @@ export const fromSum = <T extends string>(t: T) => <Members extends Record<strin
     members,
     R.map((a) => a.decoder),
     D.fromSum(t)
-  ) as D.FromSumD<T, { [K in keyof Members]: Members[K]['decoder'] }>,
+  ) as unknown as D.FromSumD<T, { [K in keyof Members]: Members[K]['decoder'] }>,
   encoder: pipe(
     members,
     R.map((a) => a.encoder),
     D.fromSum(t)
-  ) as D.FromSumD<T, { [K in keyof Members]: Members[K]['encoder'] }>
+  ) as unknown as D.FromSumD<T, { [K in keyof Members]: Members[K]['encoder'] }>
 })
 
 export interface AnyUCD extends Codec<D.Decoder<unknown, any, any>, D.Decoder<any, any, unknown>> {}
@@ -385,12 +385,12 @@ export const sum = <T extends string>(t: T) => <Members extends Record<string, A
       members,
       R.map((a) => a.decoder),
       D.sum(t)
-    ) as D.SumD<T, { [K in keyof Members]: Members[K]['decoder'] }>,
+    ) as unknown as D.SumD<T, { [K in keyof Members]: Members[K]['decoder'] }>,
     pipe(
       members,
       R.map((a) => a.encoder),
       D.sum(t)
-    ) as D.SumD<T, { [K in keyof Members]: Members[K]['encoder'] }>
+    ) as unknown as D.SumD<T, { [K in keyof Members]: Members[K]['encoder'] }>
   )
 
 /**

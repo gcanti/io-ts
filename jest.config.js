@@ -22,6 +22,7 @@ module.exports = {
     'Arbitrary2.ts',
     'helpers.ts',
     'JsonSchema.ts',
-    'util.ts'
+    'util.ts',
+    "__snapshots__"
   ]
 }

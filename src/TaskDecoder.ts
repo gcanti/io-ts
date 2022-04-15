@@ -8,7 +8,7 @@
  *
  * @since 2.2.7
  */
-import { flow, Refinement } from 'fp-ts/lib/function'
+import { flow, Lazy, Refinement } from 'fp-ts/lib/function'
 import { Functor3 } from 'fp-ts/lib/Functor'
 import * as TT from 'fp-ts/lib/TaskThese'
 import { pipe } from 'fp-ts/lib/pipeable'
@@ -27,6 +27,7 @@ import TaskThese = TT.TaskThese
 import Decoder = D.Decoder
 import ReadonlyNonEmpty = RNEA.ReadonlyNonEmptyArray
 import { Applicative1 } from 'fp-ts/lib/Applicative'
+import { memoize } from './Decoder'
 
 // -------------------------------------------------------------------------------------
 // model
@@ -629,30 +630,33 @@ export interface UnionTD<Members extends ReadonlyNonEmpty<AnyTD>>
 export interface UnionE<Members extends ReadonlyNonEmpty<AnyTD>>
   extends DE.CompoundE<{ [K in keyof Members]: DE.MemberE<K, ErrorOf<Members[K]>> }[number]> {}
 
-export const union = <Members extends ReadonlyNonEmpty<AnyTD>>(...members: Members): UnionTD<Members> => {
+export const union = (applicative: Applicative1<T.URI>) => <Members extends ReadonlyNonEmpty<AnyTD>>(...members: Members): UnionTD<Members> => {
   return {
     _tag: 'UnionD',
     members,
-    decode: (i) => {
-      const a = pipe(
-        members,
-        RNEA.traverseWithIndex(
-          TT.getApplicative<ReadonlyNonEmpty<DE.MemberE<number, ErrorOf<Members[keyof Members]>>>>(
-            T.ApplicativeSeq,
-            RNEA.getSemigroup()
-          )
-        )((index, td) =>
-          pipe(
-            td.decode(i),
-            TT.mapLeft((de) => DE.memberE(Number(index), de)),
-            TT.mapLeft(RNEA.of)
-          )
+    decode: (i) => pipe(
+      members,
+      RNEA.traverse(applicative)(td => td.decode(i)),
+      T.map(x => pipe(
+        x,
+        RNEA.mapWithIndex((index, th) => [index, th] as const),
+        RA.findFirst(th => !TH.isLeft(th[1])),
+        O.fold(
+          () => pipe(
+            x,
+            RNEA.traverseWithIndex(
+              TH.getApplicative(RNEA.getSemigroup<DE.MemberE<number, ErrorOf<Members[number]>>>())
+            )((index, th) => pipe(
+              th, 
+              TH.mapLeft(e => DE.memberE(index, e)),
+              TH.mapLeft(RNEA.of)
+            )),
+            TH.mapLeft(DE.unionE),
+          ),
+          ([index, th]) => pipe(th, TH.mapLeft((e) => DE.unionE([DE.memberE(index, e)]))),
         ),
-        TT.mapLeft(DE.unionE),
-        TT.map((a) => a as TypeOf<Members[keyof Members]>)
-      )
-      return a
-    }
+      )),
+    )
   }
 }
 
@@ -811,10 +815,32 @@ export function intersect<I2, E2, A2>(
 }
 
 /**
- * @category combinators
- * @since 2.2.3
+ * @category meta
+ * @since 2.2.17
  */
-export const lazy = flow(D.lazy, fromDecoder)
+ export interface LazyTD<I, E, A> extends TaskDecoder<I, DE.LazyE<E>, A> {
+  readonly _tag: 'LazyTD'
+  readonly id: string
+  readonly f: Lazy<TaskDecoder<I, E, A>>
+}
+
+/**
+ * @category combinators
+ * @since 2.2.7
+ */
+export const lazy = <I, E, A>(id: string, f: Lazy<TaskDecoder<I, E, A>>): LazyTD<I, E, A> => {
+  const get = memoize<void, TaskDecoder<I, E, A>>(f)
+  return {
+    _tag: 'LazyTD',
+    id,
+    f,
+    decode: (i) =>
+      pipe(
+        get().decode(i),
+        TT.mapLeft((e) => DE.lazyE(id, e))
+      )
+  }
+}
 /**
  * @since 2.2.17
  */
@@ -869,20 +895,22 @@ export interface SumTD<T extends string, Members>
   extends CompositionTD<UnionTD<[UnknownRecordUTD, UnknownArrayUTD]>, FromSumTD<T, Members>> {}
 
 //                    tagged objects --v             v-- tagged tuples
-const UnknownRecordArray = union(UnknownRecord, UnknownArray)
+const UnknownRecordArray = (applicative: Applicative1<T.URI>) => union(applicative)(UnknownRecord, UnknownArray)
 
 /**
  * @category combinators
  * @since 2.2.3
  */
-export function sum<T extends string>(
+export function sum(applicative: Applicative1<T.URI>): <T extends string>(
   tag: T
-): <Members extends Record<string, AnyUTD>>(members: Members) => SumTD<T, Members>
-export function sum<T extends string>(
+) => <Members extends Record<string, AnyUTD>>(members: Members) => SumTD<T, Members>
+export function sum(applicative: Applicative1<T.URI>): <T extends string>(
   tag: T
-): <E, A>(members: Record<string, TaskDecoder<unknown, E, A>>) => SumTD<T, typeof members> {
-  const fromSumTag = fromSum(tag)
-  return (members) => pipe(UnknownRecordArray, compose(fromSumTag(members)))
+) => <E, A>(members: Record<string, TaskDecoder<unknown, E, A>>) => SumTD<T, typeof members> {
+  return (tag) => {
+    const fromSumTag = fromSum(tag)
+    return (members) => pipe(UnknownRecordArray(applicative), compose(fromSumTag(members)))
+  }
 }
 
 /**

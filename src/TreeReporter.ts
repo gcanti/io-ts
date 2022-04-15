@@ -68,6 +68,10 @@ export const toTreeWith = <E>(toTree: (e: E) => Tree<string>): ((de: DE.DecodeEr
           `${de.keys.length} error(s) found while checking keys`,
           de.keys.map((key) => tree(`unexpected key ${JSON.stringify(key)}`))
         )
+      case 'RefinementE':
+        return tree(`1 error(s) found while decoding a refinement`, [go(de.error)])
+      case 'ParseE':
+        return tree(`1 error(s) found while decoding a refinement`, [go(de.error)])
       case 'LeafE':
         return toTree(de.error)
       case 'NullableE':

@@ -1,0 +1,1249 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`Codec Invariant #453 1`] = `
+Object {
+  "_tag": "Left",
+  "left": Object {
+    "_tag": "CompoundE",
+    "errors": Array [
+      Object {
+        "_tag": "PrevE",
+        "error": Object {
+          "_tag": "CompoundE",
+          "errors": Array [
+            Object {
+              "_tag": "PrevE",
+              "error": Object {
+                "_tag": "CompoundE",
+                "errors": Array [
+                  Object {
+                    "_tag": "PrevE",
+                    "error": Object {
+                      "_tag": "LeafE",
+                      "error": Object {
+                        "_tag": "StringE",
+                        "actual": Object {
+                          "_tag": "Right",
+                          "right": "eyJhIjoiYSIsImIiOiJNb24gRGVjIDMxIDE5NzkgMTk6MDA6MDAgR01ULTA1MDAgKEVhc3Rlcm4gU3RhbmRhcmQgVGltZSkifQ==",
+                        },
+                      },
+                    },
+                  },
+                ],
+                "name": "composition",
+              },
+            },
+          ],
+          "name": "composition",
+        },
+      },
+    ],
+    "name": "composition",
+  },
+}
+`;
+
+exports[`Codec Invariant array decode should collect all errors 1`] = `
+Object {
+  "_tag": "Left",
+  "left": Object {
+    "_tag": "CompoundE",
+    "errors": Array [
+      Object {
+        "_tag": "NextE",
+        "error": Object {
+          "_tag": "CompoundE",
+          "errors": Array [
+            Object {
+              "_tag": "OptionalIndexE",
+              "error": Object {
+                "_tag": "LeafE",
+                "error": Object {
+                  "_tag": "StringE",
+                  "actual": 1,
+                },
+              },
+              "index": 0,
+            },
+            Object {
+              "_tag": "OptionalIndexE",
+              "error": Object {
+                "_tag": "LeafE",
+                "error": Object {
+                  "_tag": "StringE",
+                  "actual": 2,
+                },
+              },
+              "index": 1,
+            },
+          ],
+          "name": "array",
+        },
+      },
+    ],
+    "name": "composition",
+  },
+}
+`;
+
+exports[`Codec Invariant array decode should reject an invalid input 1`] = `
+Object {
+  "_tag": "Left",
+  "left": Object {
+    "_tag": "CompoundE",
+    "errors": Array [
+      Object {
+        "_tag": "PrevE",
+        "error": Object {
+          "_tag": "LeafE",
+          "error": Object {
+            "_tag": "UnknownArrayE",
+            "actual": undefined,
+          },
+        },
+      },
+    ],
+    "name": "composition",
+  },
+}
+`;
+
+exports[`Codec Invariant array decode should reject an invalid input 2`] = `
+Object {
+  "_tag": "Left",
+  "left": Object {
+    "_tag": "CompoundE",
+    "errors": Array [
+      Object {
+        "_tag": "NextE",
+        "error": Object {
+          "_tag": "CompoundE",
+          "errors": Array [
+            Object {
+              "_tag": "OptionalIndexE",
+              "error": Object {
+                "_tag": "LeafE",
+                "error": Object {
+                  "_tag": "StringE",
+                  "actual": 1,
+                },
+              },
+              "index": 0,
+            },
+          ],
+          "name": "array",
+        },
+      },
+    ],
+    "name": "composition",
+  },
+}
+`;
+
+exports[`Codec Invariant boolean decode should reject an invalid input 1`] = `
+Object {
+  "_tag": "Left",
+  "left": Object {
+    "_tag": "LeafE",
+    "error": Object {
+      "_tag": "BooleanE",
+      "actual": null,
+    },
+  },
+}
+`;
+
+exports[`Codec Invariant lazy decode should reject an invalid input 1`] = `
+Object {
+  "_tag": "Left",
+  "left": Object {
+    "_tag": "LazyE",
+    "error": Object {
+      "_tag": "CompoundE",
+      "errors": Array [
+        Object {
+          "_tag": "MemberE",
+          "error": Object {
+            "_tag": "CompoundE",
+            "errors": Array [
+              Object {
+                "_tag": "NextE",
+                "error": Object {
+                  "_tag": "CompoundE",
+                  "errors": Array [
+                    Object {
+                      "_tag": "RequiredKeyE",
+                      "error": Object {
+                        "_tag": "CompoundE",
+                        "errors": Array [
+                          Object {
+                            "_tag": "PrevE",
+                            "error": Object {
+                              "_tag": "LeafE",
+                              "error": Object {
+                                "_tag": "StringE",
+                                "actual": 1,
+                              },
+                            },
+                          },
+                        ],
+                        "name": "composition",
+                      },
+                      "key": "a",
+                    },
+                  ],
+                  "name": "struct",
+                },
+              },
+            ],
+            "name": "composition",
+          },
+          "member": 0,
+        },
+      ],
+      "name": "intersection",
+    },
+    "id": "A",
+  },
+}
+`;
+
+exports[`Codec Invariant lazy decode should reject an invalid input 2`] = `
+Object {
+  "_tag": "Left",
+  "left": Object {
+    "_tag": "LazyE",
+    "error": Object {
+      "_tag": "CompoundE",
+      "errors": Array [
+        Object {
+          "_tag": "MemberE",
+          "error": Object {
+            "_tag": "CompoundE",
+            "errors": Array [
+              Object {
+                "_tag": "NextE",
+                "error": Object {
+                  "_tag": "CompoundE",
+                  "errors": Array [
+                    Object {
+                      "_tag": "RequiredKeyE",
+                      "error": Object {
+                        "_tag": "CompoundE",
+                        "errors": Array [
+                          Object {
+                            "_tag": "NextE",
+                            "error": Object {
+                              "_tag": "LeafE",
+                              "error": Object {
+                                "_tag": "NumFromStrE",
+                                "actual": "a",
+                              },
+                            },
+                          },
+                        ],
+                        "name": "composition",
+                      },
+                      "key": "a",
+                    },
+                  ],
+                  "name": "struct",
+                },
+              },
+            ],
+            "name": "composition",
+          },
+          "member": 0,
+        },
+      ],
+      "name": "intersection",
+    },
+    "id": "A",
+  },
+}
+`;
+
+exports[`Codec Invariant lazy decode should reject an invalid input 3`] = `
+Object {
+  "_tag": "Left",
+  "left": Object {
+    "_tag": "LazyE",
+    "error": Object {
+      "_tag": "CompoundE",
+      "errors": Array [
+        Object {
+          "_tag": "MemberE",
+          "error": Object {
+            "_tag": "CompoundE",
+            "errors": Array [
+              Object {
+                "_tag": "PrevE",
+                "error": Object {
+                  "_tag": "CompoundE",
+                  "errors": Array [
+                    Object {
+                      "_tag": "NextE",
+                      "error": Object {
+                        "_tag": "UnexpectedKeysE",
+                        "keys": Array [
+                          "a",
+                        ],
+                      },
+                    },
+                  ],
+                  "name": "composition",
+                },
+              },
+              Object {
+                "_tag": "NextE",
+                "error": Object {
+                  "_tag": "CompoundE",
+                  "errors": Array [
+                    Object {
+                      "_tag": "OptionalKeyE",
+                      "error": Object {
+                        "_tag": "LazyE",
+                        "error": Object {
+                          "_tag": "CompoundE",
+                          "errors": Array [
+                            Object {
+                              "_tag": "MemberE",
+                              "error": Object {
+                                "_tag": "CompoundE",
+                                "errors": Array [
+                                  Object {
+                                    "_tag": "PrevE",
+                                    "error": Object {
+                                      "_tag": "CompoundE",
+                                      "errors": Array [
+                                        Object {
+                                          "_tag": "NextE",
+                                          "error": Object {
+                                            "_tag": "MissingKeysE",
+                                            "keys": Array [
+                                              "a",
+                                            ],
+                                          },
+                                        },
+                                      ],
+                                      "name": "composition",
+                                    },
+                                  },
+                                ],
+                                "name": "composition",
+                              },
+                              "member": 0,
+                            },
+                          ],
+                          "name": "intersection",
+                        },
+                        "id": "A",
+                      },
+                      "key": "b",
+                    },
+                  ],
+                  "name": "partial",
+                },
+              },
+            ],
+            "name": "composition",
+          },
+          "member": 1,
+        },
+      ],
+      "name": "intersection",
+    },
+    "id": "A",
+  },
+}
+`;
+
+exports[`Codec Invariant literal decode should reject an invalid input 1`] = `
+Object {
+  "_tag": "Left",
+  "left": Object {
+    "_tag": "LeafE",
+    "error": Object {
+      "_tag": "LiteralE",
+      "actual": "b",
+      "literals": Array [
+        "a",
+        null,
+      ],
+    },
+  },
+}
+`;
+
+exports[`Codec Invariant nullable decode should reject an invalid input 1`] = `
+Object {
+  "_tag": "Left",
+  "left": Object {
+    "_tag": "NullableE",
+    "error": Object {
+      "_tag": "CompoundE",
+      "errors": Array [
+        Object {
+          "_tag": "PrevE",
+          "error": Object {
+            "_tag": "LeafE",
+            "error": Object {
+              "_tag": "StringE",
+              "actual": undefined,
+            },
+          },
+        },
+      ],
+      "name": "composition",
+    },
+  },
+}
+`;
+
+exports[`Codec Invariant nullable decode should reject an invalid input 2`] = `
+Object {
+  "_tag": "Left",
+  "left": Object {
+    "_tag": "NullableE",
+    "error": Object {
+      "_tag": "CompoundE",
+      "errors": Array [
+        Object {
+          "_tag": "NextE",
+          "error": Object {
+            "_tag": "LeafE",
+            "error": Object {
+              "_tag": "NumFromStrE",
+              "actual": "a",
+            },
+          },
+        },
+      ],
+      "name": "composition",
+    },
+  },
+}
+`;
+
+exports[`Codec Invariant partial decode should collect all errors 1`] = `
+Object {
+  "_tag": "Left",
+  "left": Object {
+    "_tag": "CompoundE",
+    "errors": Array [
+      Object {
+        "_tag": "NextE",
+        "error": Object {
+          "_tag": "CompoundE",
+          "errors": Array [
+            Object {
+              "_tag": "OptionalKeyE",
+              "error": Object {
+                "_tag": "LeafE",
+                "error": Object {
+                  "_tag": "StringE",
+                  "actual": 1,
+                },
+              },
+              "key": "a",
+            },
+            Object {
+              "_tag": "OptionalKeyE",
+              "error": Object {
+                "_tag": "LeafE",
+                "error": Object {
+                  "_tag": "NumberE",
+                  "actual": "b",
+                },
+              },
+              "key": "b",
+            },
+          ],
+          "name": "partial",
+        },
+      },
+    ],
+    "name": "composition",
+  },
+}
+`;
+
+exports[`Codec Invariant partial decode should reject an invalid input 1`] = `
+Object {
+  "_tag": "Left",
+  "left": Object {
+    "_tag": "CompoundE",
+    "errors": Array [
+      Object {
+        "_tag": "PrevE",
+        "error": Object {
+          "_tag": "CompoundE",
+          "errors": Array [
+            Object {
+              "_tag": "PrevE",
+              "error": Object {
+                "_tag": "LeafE",
+                "error": Object {
+                  "_tag": "UnknownRecordE",
+                  "actual": undefined,
+                },
+              },
+            },
+          ],
+          "name": "composition",
+        },
+      },
+    ],
+    "name": "composition",
+  },
+}
+`;
+
+exports[`Codec Invariant partial decode should reject an invalid input 2`] = `
+Object {
+  "_tag": "Left",
+  "left": Object {
+    "_tag": "CompoundE",
+    "errors": Array [
+      Object {
+        "_tag": "NextE",
+        "error": Object {
+          "_tag": "CompoundE",
+          "errors": Array [
+            Object {
+              "_tag": "OptionalKeyE",
+              "error": Object {
+                "_tag": "LeafE",
+                "error": Object {
+                  "_tag": "StringE",
+                  "actual": 1,
+                },
+              },
+              "key": "a",
+            },
+          ],
+          "name": "partial",
+        },
+      },
+    ],
+    "name": "composition",
+  },
+}
+`;
+
+exports[`Codec Invariant partial decode should strip additional fields 1`] = `
+Object {
+  "_tag": "Both",
+  "left": Object {
+    "_tag": "CompoundE",
+    "errors": Array [
+      Object {
+        "_tag": "PrevE",
+        "error": Object {
+          "_tag": "CompoundE",
+          "errors": Array [
+            Object {
+              "_tag": "NextE",
+              "error": Object {
+                "_tag": "UnexpectedKeysE",
+                "keys": Array [
+                  "b",
+                ],
+              },
+            },
+          ],
+          "name": "composition",
+        },
+      },
+    ],
+    "name": "composition",
+  },
+  "right": Object {
+    "a": "a",
+  },
+}
+`;
+
+exports[`Codec Invariant partial decode should support getters 1`] = `
+Object {
+  "_tag": "Right",
+  "right": Object {
+    "a": "a",
+    "b": "b",
+  },
+}
+`;
+
+exports[`Codec Invariant partial encode should strip additional fields 1`] = `
+Object {
+  "_tag": "Both",
+  "left": Object {
+    "_tag": "CompoundE",
+    "errors": Array [
+      Object {
+        "_tag": "PrevE",
+        "error": Object {
+          "_tag": "CompoundE",
+          "errors": Array [
+            Object {
+              "_tag": "NextE",
+              "error": Object {
+                "_tag": "UnexpectedKeysE",
+                "keys": Array [
+                  "b",
+                ],
+              },
+            },
+          ],
+          "name": "composition",
+        },
+      },
+    ],
+    "name": "composition",
+  },
+  "right": Object {
+    "a": "a",
+  },
+}
+`;
+
+exports[`Codec Invariant record decode should collect all errors 1`] = `
+Object {
+  "_tag": "Left",
+  "left": Object {
+    "_tag": "CompoundE",
+    "errors": Array [
+      Object {
+        "_tag": "NextE",
+        "error": Object {
+          "_tag": "CompoundE",
+          "errors": Array [
+            Object {
+              "_tag": "OptionalKeyE",
+              "error": Object {
+                "_tag": "LeafE",
+                "error": Object {
+                  "_tag": "NumberE",
+                  "actual": "a",
+                },
+              },
+              "key": "a",
+            },
+            Object {
+              "_tag": "OptionalKeyE",
+              "error": Object {
+                "_tag": "LeafE",
+                "error": Object {
+                  "_tag": "NumberE",
+                  "actual": "b",
+                },
+              },
+              "key": "b",
+            },
+          ],
+          "name": "record",
+        },
+      },
+    ],
+    "name": "composition",
+  },
+}
+`;
+
+exports[`Codec Invariant record decode should reject an invalid value 1`] = `
+Object {
+  "_tag": "Left",
+  "left": Object {
+    "_tag": "CompoundE",
+    "errors": Array [
+      Object {
+        "_tag": "PrevE",
+        "error": Object {
+          "_tag": "LeafE",
+          "error": Object {
+            "_tag": "UnknownRecordE",
+            "actual": undefined,
+          },
+        },
+      },
+    ],
+    "name": "composition",
+  },
+}
+`;
+
+exports[`Codec Invariant record decode should reject an invalid value 2`] = `
+Object {
+  "_tag": "Left",
+  "left": Object {
+    "_tag": "CompoundE",
+    "errors": Array [
+      Object {
+        "_tag": "NextE",
+        "error": Object {
+          "_tag": "CompoundE",
+          "errors": Array [
+            Object {
+              "_tag": "OptionalKeyE",
+              "error": Object {
+                "_tag": "LeafE",
+                "error": Object {
+                  "_tag": "NumberE",
+                  "actual": "a",
+                },
+              },
+              "key": "a",
+            },
+          ],
+          "name": "record",
+        },
+      },
+    ],
+    "name": "composition",
+  },
+}
+`;
+
+exports[`Codec Invariant refine decode should reject an invalid input 1`] = `
+Object {
+  "_tag": "Left",
+  "left": Object {
+    "_tag": "RefinementE",
+    "error": Object {
+      "_tag": "LeafE",
+      "error": Object {
+        "_tag": "StringE",
+        "actual": undefined,
+      },
+    },
+  },
+}
+`;
+
+exports[`Codec Invariant refine decode should reject an invalid input 2`] = `
+Object {
+  "_tag": "Left",
+  "left": Object {
+    "_tag": "LeafE",
+    "error": Object {
+      "_tag": "RefinementL",
+      "actual": "",
+    },
+  },
+}
+`;
+
+exports[`Codec Invariant struct decode should collect all errors 1`] = `
+Object {
+  "_tag": "Left",
+  "left": Object {
+    "_tag": "CompoundE",
+    "errors": Array [
+      Object {
+        "_tag": "PrevE",
+        "error": Object {
+          "_tag": "CompoundE",
+          "errors": Array [
+            Object {
+              "_tag": "NextE",
+              "error": Object {
+                "_tag": "MissingKeysE",
+                "keys": Array [
+                  "a",
+                  "b",
+                ],
+              },
+            },
+          ],
+          "name": "composition",
+        },
+      },
+    ],
+    "name": "composition",
+  },
+}
+`;
+
+exports[`Codec Invariant struct decode should reject an invalid input 1`] = `
+Object {
+  "_tag": "Left",
+  "left": Object {
+    "_tag": "CompoundE",
+    "errors": Array [
+      Object {
+        "_tag": "PrevE",
+        "error": Object {
+          "_tag": "CompoundE",
+          "errors": Array [
+            Object {
+              "_tag": "PrevE",
+              "error": Object {
+                "_tag": "CompoundE",
+                "errors": Array [
+                  Object {
+                    "_tag": "PrevE",
+                    "error": Object {
+                      "_tag": "LeafE",
+                      "error": Object {
+                        "_tag": "UnknownRecordE",
+                        "actual": undefined,
+                      },
+                    },
+                  },
+                ],
+                "name": "composition",
+              },
+            },
+          ],
+          "name": "composition",
+        },
+      },
+    ],
+    "name": "composition",
+  },
+}
+`;
+
+exports[`Codec Invariant struct decode should reject an invalid input 2`] = `
+Object {
+  "_tag": "Left",
+  "left": Object {
+    "_tag": "CompoundE",
+    "errors": Array [
+      Object {
+        "_tag": "NextE",
+        "error": Object {
+          "_tag": "CompoundE",
+          "errors": Array [
+            Object {
+              "_tag": "RequiredKeyE",
+              "error": Object {
+                "_tag": "LeafE",
+                "error": Object {
+                  "_tag": "StringE",
+                  "actual": 1,
+                },
+              },
+              "key": "a",
+            },
+          ],
+          "name": "struct",
+        },
+      },
+    ],
+    "name": "composition",
+  },
+}
+`;
+
+exports[`Codec Invariant struct decode should strip additional fields 1`] = `
+Object {
+  "_tag": "Both",
+  "left": Object {
+    "_tag": "CompoundE",
+    "errors": Array [
+      Object {
+        "_tag": "PrevE",
+        "error": Object {
+          "_tag": "CompoundE",
+          "errors": Array [
+            Object {
+              "_tag": "PrevE",
+              "error": Object {
+                "_tag": "CompoundE",
+                "errors": Array [
+                  Object {
+                    "_tag": "NextE",
+                    "error": Object {
+                      "_tag": "UnexpectedKeysE",
+                      "keys": Array [
+                        "b",
+                      ],
+                    },
+                  },
+                ],
+                "name": "composition",
+              },
+            },
+          ],
+          "name": "composition",
+        },
+      },
+    ],
+    "name": "composition",
+  },
+  "right": Object {
+    "a": "a",
+  },
+}
+`;
+
+exports[`Codec Invariant struct encode should strip additional fields 1`] = `
+Object {
+  "_tag": "Both",
+  "left": Object {
+    "_tag": "CompoundE",
+    "errors": Array [
+      Object {
+        "_tag": "PrevE",
+        "error": Object {
+          "_tag": "CompoundE",
+          "errors": Array [
+            Object {
+              "_tag": "PrevE",
+              "error": Object {
+                "_tag": "CompoundE",
+                "errors": Array [
+                  Object {
+                    "_tag": "NextE",
+                    "error": Object {
+                      "_tag": "UnexpectedKeysE",
+                      "keys": Array [
+                        "b",
+                      ],
+                    },
+                  },
+                ],
+                "name": "composition",
+              },
+            },
+          ],
+          "name": "composition",
+        },
+      },
+    ],
+    "name": "composition",
+  },
+  "right": Object {
+    "a": 1,
+  },
+}
+`;
+
+exports[`Codec Invariant sum decode should reject an invalid input 1`] = `
+Object {
+  "_tag": "Left",
+  "left": Object {
+    "_tag": "CompoundE",
+    "errors": Array [
+      Object {
+        "_tag": "PrevE",
+        "error": Object {
+          "_tag": "CompoundE",
+          "errors": Array [
+            Object {
+              "_tag": "MemberE",
+              "error": Object {
+                "_tag": "LeafE",
+                "error": Object {
+                  "_tag": "UnknownRecordE",
+                  "actual": null,
+                },
+              },
+              "member": "0",
+            },
+            Object {
+              "_tag": "MemberE",
+              "error": Object {
+                "_tag": "LeafE",
+                "error": Object {
+                  "_tag": "UnknownArrayE",
+                  "actual": null,
+                },
+              },
+              "member": "1",
+            },
+          ],
+          "name": "union",
+        },
+      },
+    ],
+    "name": "composition",
+  },
+}
+`;
+
+exports[`Codec Invariant sum decode should reject an invalid input 2`] = `
+Object {
+  "_tag": "Left",
+  "left": Object {
+    "_tag": "CompoundE",
+    "errors": Array [
+      Object {
+        "_tag": "NextE",
+        "error": Object {
+          "_tag": "LeafE",
+          "error": Object {
+            "_tag": "TagE",
+            "literals": Array [
+              "A",
+              "B",
+            ],
+            "tag": "_tag",
+          },
+        },
+      },
+    ],
+    "name": "composition",
+  },
+}
+`;
+
+exports[`Codec Invariant sum decode should reject an invalid input 3`] = `
+Object {
+  "_tag": "Left",
+  "left": Object {
+    "_tag": "CompoundE",
+    "errors": Array [
+      Object {
+        "_tag": "NextE",
+        "error": Object {
+          "_tag": "SumE",
+          "error": Object {
+            "_tag": "MemberE",
+            "error": Object {
+              "_tag": "CompoundE",
+              "errors": Array [
+                Object {
+                  "_tag": "NextE",
+                  "error": Object {
+                    "_tag": "CompoundE",
+                    "errors": Array [
+                      Object {
+                        "_tag": "RequiredKeyE",
+                        "error": Object {
+                          "_tag": "LeafE",
+                          "error": Object {
+                            "_tag": "StringE",
+                            "actual": 1,
+                          },
+                        },
+                        "key": "a",
+                      },
+                    ],
+                    "name": "struct",
+                  },
+                },
+              ],
+              "name": "composition",
+            },
+            "member": "A",
+          },
+        },
+      },
+    ],
+    "name": "composition",
+  },
+}
+`;
+
+exports[`Codec Invariant sum decode should support empty records 1`] = `
+Object {
+  "_tag": "Left",
+  "left": Object {
+    "_tag": "CompoundE",
+    "errors": Array [
+      Object {
+        "_tag": "NextE",
+        "error": Object {
+          "_tag": "LeafE",
+          "error": Object {
+            "_tag": "TagE",
+            "literals": Array [],
+            "tag": "_tag",
+          },
+        },
+      },
+    ],
+    "name": "composition",
+  },
+}
+`;
+
+exports[`Codec Invariant tuple decode should collect all errors 1`] = `
+Object {
+  "_tag": "Left",
+  "left": Object {
+    "_tag": "CompoundE",
+    "errors": Array [
+      Object {
+        "_tag": "NextE",
+        "error": Object {
+          "_tag": "CompoundE",
+          "errors": Array [
+            Object {
+              "_tag": "RequiredIndexE",
+              "error": Object {
+                "_tag": "LeafE",
+                "error": Object {
+                  "_tag": "StringE",
+                  "actual": 1,
+                },
+              },
+              "index": 0,
+            },
+            Object {
+              "_tag": "RequiredIndexE",
+              "error": Object {
+                "_tag": "LeafE",
+                "error": Object {
+                  "_tag": "NumberE",
+                  "actual": "a",
+                },
+              },
+              "index": 1,
+            },
+          ],
+          "name": "tuple",
+        },
+      },
+    ],
+    "name": "composition",
+  },
+}
+`;
+
+exports[`Codec Invariant tuple decode should reject an invalid input 1`] = `
+Object {
+  "_tag": "Left",
+  "left": Object {
+    "_tag": "CompoundE",
+    "errors": Array [
+      Object {
+        "_tag": "PrevE",
+        "error": Object {
+          "_tag": "CompoundE",
+          "errors": Array [
+            Object {
+              "_tag": "PrevE",
+              "error": Object {
+                "_tag": "CompoundE",
+                "errors": Array [
+                  Object {
+                    "_tag": "PrevE",
+                    "error": Object {
+                      "_tag": "LeafE",
+                      "error": Object {
+                        "_tag": "UnknownArrayE",
+                        "actual": undefined,
+                      },
+                    },
+                  },
+                ],
+                "name": "composition",
+              },
+            },
+          ],
+          "name": "composition",
+        },
+      },
+    ],
+    "name": "composition",
+  },
+}
+`;
+
+exports[`Codec Invariant tuple decode should reject an invalid input 2`] = `
+Object {
+  "_tag": "Left",
+  "left": Object {
+    "_tag": "CompoundE",
+    "errors": Array [
+      Object {
+        "_tag": "PrevE",
+        "error": Object {
+          "_tag": "CompoundE",
+          "errors": Array [
+            Object {
+              "_tag": "NextE",
+              "error": Object {
+                "_tag": "MissingIndexesE",
+                "indexes": Array [
+                  1,
+                ],
+              },
+            },
+          ],
+          "name": "composition",
+        },
+      },
+    ],
+    "name": "composition",
+  },
+}
+`;
+
+exports[`Codec Invariant tuple decode should reject an invalid input 3`] = `
+Object {
+  "_tag": "Left",
+  "left": Object {
+    "_tag": "CompoundE",
+    "errors": Array [
+      Object {
+        "_tag": "NextE",
+        "error": Object {
+          "_tag": "CompoundE",
+          "errors": Array [
+            Object {
+              "_tag": "RequiredIndexE",
+              "error": Object {
+                "_tag": "LeafE",
+                "error": Object {
+                  "_tag": "StringE",
+                  "actual": 1,
+                },
+              },
+              "index": 0,
+            },
+          ],
+          "name": "tuple",
+        },
+      },
+    ],
+    "name": "composition",
+  },
+}
+`;
+
+exports[`Codec Invariant tuple decode should strip additional components 1`] = `
+Object {
+  "_tag": "Both",
+  "left": Object {
+    "_tag": "CompoundE",
+    "errors": Array [
+      Object {
+        "_tag": "PrevE",
+        "error": Object {
+          "_tag": "CompoundE",
+          "errors": Array [
+            Object {
+              "_tag": "PrevE",
+              "error": Object {
+                "_tag": "CompoundE",
+                "errors": Array [
+                  Object {
+                    "_tag": "NextE",
+                    "error": Object {
+                      "_tag": "UnexpectedIndexesE",
+                      "indexes": Array [
+                        2,
+                      ],
+                    },
+                  },
+                ],
+                "name": "composition",
+              },
+            },
+          ],
+          "name": "composition",
+        },
+      },
+    ],
+    "name": "composition",
+  },
+  "right": Array [
+    "a",
+    1,
+  ],
+}
+`;

@@ -18,8 +18,6 @@ const codecPositive = _.fromDecoder(H.decoderPositive)
 
 const codecInt = _.fromDecoder(H.decoderInt)
 
-const codecUndefined = _.fromDecoder(H.decoderUndefined)
-
 export type Json = boolean | number | string | null | JsonArray | JsonRecord
 
 export interface JsonRecord {
@@ -72,7 +70,7 @@ describe('Codec', () => {
 
         it('should reject an invalid input', () => {
           const codec = _.number
-          assert.deepStrictEqual(codec.decoder.decode(null), D.failure(DE.leafE({ _tag: 'StringE', actual: null })))
+          assert.deepStrictEqual(codec.decoder.decode(null), D.failure(DE.leafE({ _tag: 'NumberE', actual: null })))
         })
       })
     })
@@ -87,7 +85,7 @@ describe('Codec', () => {
 
         it('should reject an invalid input', () => {
           const codec = _.boolean
-          assert.deepStrictEqual(codec.decoder.decode(null), D.failure(null))
+          expect(codec.decoder.decode(null)).toMatchSnapshot()
         })
       })
     })
@@ -102,7 +100,7 @@ describe('Codec', () => {
 
         it('should reject an invalid input', () => {
           const codec = _.literal('a', null)
-          assert.deepStrictEqual(codec.decoder.decode('b'), D.failure('b'))
+          expect(codec.decoder.decode('b')).toMatchSnapshot()
         })
       })
 
@@ -129,8 +127,8 @@ describe('Codec', () => {
             _.string,
             _.refine((s): s is string => s.length > 0, refineIdentity)
           )
-          assert.deepStrictEqual(codec.decoder.decode(undefined), D.failure(undefined))
-          assert.deepStrictEqual(codec.decoder.decode(''), D.failure(''))
+          expect(codec.decoder.decode(undefined)).toMatchSnapshot()
+          expect(codec.decoder.decode('')).toMatchSnapshot()
         })
       })
 
@@ -140,9 +138,7 @@ describe('Codec', () => {
             _.string,
             _.refine((s): s is string => s.length > 0, refineIdentity)
           )
-          assert.strictEqual(codec.encoder.decode('a'), 'a')
-        })
-      })
+          assert.strictEqual(JSON.stringify(codec.encoder.decode('a')), JSON.stringify(D.success('a'))) }) })
     })
 
     describe('nullable', () => {
@@ -155,16 +151,16 @@ describe('Codec', () => {
 
         it('should reject an invalid input', () => {
           const codec = _.nullable(codecNumber)
-          assert.deepStrictEqual(codec.decoder.decode(undefined), undefined)
-          assert.deepStrictEqual(codec.decoder.decode('a'), undefined)
+          expect(codec.decoder.decode(undefined)).toMatchSnapshot()
+          expect(codec.decoder.decode('a')).toMatchSnapshot()
         })
       })
 
       describe('encode', () => {
         it('should encode a value', () => {
           const codec = _.nullable(codecNumber)
-          assert.strictEqual(codec.encoder.decode(null), null)
-          assert.strictEqual(codec.encoder.decode(1), '1')
+          assert.strictEqual(JSON.stringify(codec.encoder.decode(null)), JSON.stringify(D.success(null)))
+          assert.strictEqual(JSON.stringify(codec.encoder.decode(1)), JSON.stringify(D.success('1')))
         })
       })
     })
@@ -182,21 +178,14 @@ describe('Codec', () => {
           const codec = _.struct({
             a: _.string
           })
-          assert.deepStrictEqual(codec.decoder.decode({ a: 'a', b: 1 }), D.success({ a: 'a' }))
-        })
-
-        it('should not strip fields corresponding to undefined values', () => {
-          const codec = _.struct({
-            a: codecUndefined
-          })
-          assert.deepStrictEqual(codec.decoder.decode({}), D.success({ a: undefined }))
+          expect(codec.decoder.decode({ a: 'a', b: 1 })).toMatchSnapshot()
         })
 
         it('should reject an invalid input', () => {
           const codec = _.struct({
             a: _.string
           })
-          assert.deepStrictEqual(codec.decoder.decode(undefined), D.failure('Record<string, unknown>'))
+          expect(codec.decoder.decode(undefined)).toMatchSnapshot()
           expect(codec.decoder.decode({ a: 1 })).toMatchSnapshot()
         })
 
@@ -225,13 +214,13 @@ describe('Codec', () => {
       describe('encode', () => {
         it('should encode a value', () => {
           const codec = _.struct({ a: codecNumber })
-          assert.deepStrictEqual(codec.encoder.decode({ a: 1 }), { a: '1' })
+          assert.deepStrictEqual(codec.encoder.decode({ a: 1 }), D.success({ a: '1' }))
         })
 
         it('should strip additional fields', () => {
           const codec = _.struct({ a: _.number })
           const a = { a: 1, b: true }
-          assert.deepStrictEqual(codec.encoder.decode(a), { a: 1 })
+          expect(codec.encoder.decode(a)).toMatchSnapshot()
         })
       })
     })
@@ -246,7 +235,7 @@ describe('Codec', () => {
 
         it('should strip additional fields', () => {
           const codec = _.partial({ a: _.string })
-          assert.deepStrictEqual(codec.decoder.decode({ a: 'a', b: 1 }), D.success({ a: 'a' }))
+          expect(codec.decoder.decode({ a: 'a', b: 1 })).toMatchSnapshot()
         })
 
         it('should not add missing fields', () => {
@@ -261,7 +250,7 @@ describe('Codec', () => {
 
         it('should reject an invalid input', () => {
           const codec = _.partial({ a: _.string })
-          assert.deepStrictEqual(codec.decoder.decode(undefined), D.failure('Record<string, unknown>'))
+          expect(codec.decoder.decode(undefined)).toMatchSnapshot()
           expect(codec.decoder.decode({ a: 1 })).toMatchSnapshot()
         })
 
@@ -290,24 +279,24 @@ describe('Codec', () => {
       describe('encode', () => {
         it('should encode a value', () => {
           const codec = _.partial({ a: codecNumber })
-          assert.deepStrictEqual(codec.encoder.decode({}), {})
-          assert.deepStrictEqual(codec.encoder.decode({ a: 1 }), { a: '1' })
+          assert.deepStrictEqual(codec.encoder.decode({}), D.success({}))
+          assert.deepStrictEqual(codec.encoder.decode({ a: 1 }), D.success({ a: '1' }))
         })
 
         it('should strip additional fields', () => {
           const codec = _.partial({ a: _.string })
           const a = { a: 'a', b: true }
-          assert.deepStrictEqual(codec.encoder.decode(a), { a: 'a' })
+          expect(codec.encoder.decode(a)).toMatchSnapshot()
         })
 
         it('should not add missing fields', () => {
           const codec = _.partial({ a: _.string })
-          assert.deepStrictEqual(codec.encoder.decode({}), {})
+          assert.deepStrictEqual(codec.encoder.decode({}), D.success({}))
         })
 
         it('should not strip fields corresponding to undefined values', () => {
           const codec = _.partial({ a: _.string })
-          assert.deepStrictEqual(codec.encoder.decode({ a: undefined }), { a: undefined })
+          assert.deepStrictEqual(codec.encoder.decode({ a: undefined }), D.success({ a: undefined }))
         })
       })
     })
@@ -322,7 +311,7 @@ describe('Codec', () => {
 
         it('should reject an invalid value', () => {
           const codec = _.record(_.number)
-          assert.deepStrictEqual(codec.decoder.decode(undefined), D.failure('Record<string, unknown>'))
+          expect(codec.decoder.decode(undefined)).toMatchSnapshot()
           expect(codec.decoder.decode({ a: 'a' })).toMatchSnapshot()
         })
 
@@ -335,7 +324,7 @@ describe('Codec', () => {
       describe('encode', () => {
         it('should encode a value', () => {
           const codec = _.record(codecNumber)
-          assert.deepStrictEqual(codec.encoder.decode({ a: 1, b: 2 }), { a: '1', b: '2' })
+          assert.deepStrictEqual(codec.encoder.decode({ a: 1, b: 2 }), D.success({ a: '1', b: '2' }))
         })
       })
     })
@@ -350,7 +339,7 @@ describe('Codec', () => {
 
         it('should reject an invalid input', () => {
           const codec = _.array(_.string)
-          assert.deepStrictEqual(codec.decoder.decode(undefined), D.failure(undefined))
+          expect(codec.decoder.decode(undefined)).toMatchSnapshot()
           expect(codec.decoder.decode([1])).toMatchSnapshot()
         })
 
@@ -363,7 +352,7 @@ describe('Codec', () => {
       describe('encode', () => {
         it('should encode a value', () => {
           const codec = _.array(codecNumber)
-          assert.deepStrictEqual(codec.encoder.decode([1, 2]), ['1', '2'])
+          assert.deepStrictEqual(codec.encoder.decode([1, 2]), D.success(['1', '2']))
         })
       })
     })
@@ -381,7 +370,7 @@ describe('Codec', () => {
 
         it('should reject an invalid input', () => {
           const codec = _.tuple(_.string, _.number)
-          assert.deepStrictEqual(codec.decoder.decode(undefined), D.failure('Array<unknown>'))
+          expect(codec.decoder.decode(undefined)).toMatchSnapshot()
           expect(codec.decoder.decode(['a'])).toMatchSnapshot()
           expect(codec.decoder.decode([1, 2])).toMatchSnapshot()
         })
@@ -393,14 +382,14 @@ describe('Codec', () => {
 
         it('should strip additional components', () => {
           const codec = _.tuple(_.string, _.number)
-          assert.deepStrictEqual(codec.decoder.decode(['a', 1, true]), D.success(['a', 1]))
+          expect(codec.decoder.decode(['a', 1, true])).toMatchSnapshot()
         })
       })
 
       describe('encode', () => {
         it('should encode a value', () => {
           const codec = _.tuple(codecNumber, _.string)
-          assert.deepStrictEqual(codec.encoder.decode([1, 'a']), ['1', 'a'])
+          assert.deepStrictEqual(codec.encoder.decode([1, 'a']), D.success(['1', 'a']))
         })
       })
     })
@@ -421,12 +410,12 @@ describe('Codec', () => {
       describe('encode', () => {
         it('should encode a value', () => {
           const codec = pipe(_.struct({ a: _.string }), _.intersect(_.struct({ b: codecNumber })))
-          assert.deepStrictEqual(codec.encoder.decode({ a: 'a', b: 1 }), { a: 'a', b: '1' })
+          assert.deepStrictEqual(codec.encoder.decode({ a: 'a', b: 1 }), D.success({ a: 'a', b: '1' }))
         })
 
         it('should handle primitives', () => {
           const codec = pipe(codecInt, _.intersect(codecPositive))
-          assert.deepStrictEqual(codec.encoder.decode(1 as any), 1)
+          assert.deepStrictEqual(codec.encoder.decode(1 as any), D.success(1))
         })
       })
     })
@@ -447,7 +436,7 @@ describe('Codec', () => {
           const A = _.struct({ _tag: _.literal('A'), a: _.string })
           const B = _.struct({ _tag: _.literal('B'), b: _.number })
           const codec = sum({ A, B })
-          assert.deepStrictEqual(codec.decoder.decode(null), D.failure('Record<string, unknown>'))
+          expect(codec.decoder.decode(null)).toMatchSnapshot()
           expect(codec.decoder.decode({})).toMatchSnapshot()
           expect(codec.decoder.decode({ _tag: 'A', a: 1 })).toMatchSnapshot()
         })
@@ -463,8 +452,8 @@ describe('Codec', () => {
           const A = _.struct({ _tag: _.literal('A'), a: _.string })
           const B = _.struct({ _tag: _.literal('B'), b: codecNumber })
           const codec = sum({ A, B })
-          assert.deepStrictEqual(codec.encoder.decode({ _tag: 'A', a: 'a' }), { _tag: 'A', a: 'a' })
-          assert.deepStrictEqual(codec.encoder.decode({ _tag: 'B', b: 1 }), { _tag: 'B', b: '1' })
+          assert.deepStrictEqual(codec.encoder.decode({ _tag: 'A', a: 'a' }), D.success({ _tag: 'A', a: 'a' }))
+          assert.deepStrictEqual(codec.encoder.decode({ _tag: 'B', b: 1 }), D.success({ _tag: 'B', b: '1' }))
         })
       })
     })
@@ -502,8 +491,8 @@ describe('Codec', () => {
 
       describe('encode', () => {
         it('should encode a value', () => {
-          assert.deepStrictEqual(lazyCodec.encoder.decode({ a: 1 }), { a: '1' })
-          assert.deepStrictEqual(lazyCodec.encoder.decode({ a: 1, b: { a: 2 } }), { a: '1', b: { a: '2' } })
+          assert.deepStrictEqual(lazyCodec.encoder.decode({ a: 1 }), D.success({ a: '1' }))
+          assert.deepStrictEqual(lazyCodec.encoder.decode({ a: 1, b: { a: 2 } }), D.success({ a: '1', b: { a: '2' } }))
         })
       })
     })
@@ -541,13 +530,7 @@ describe('Codec', () => {
 
       const codec = pipe(_.string, _.compose(Base64), _.compose(Json), _.compose(User))
 
-      assert.deepStrictEqual(
-        codec.decoder.decode(codec.encoder.decode({ a: 'a', b: new Date('1980') })),
-        E.right({
-          a: 'a',
-          b: new Date('1980')
-        })
-      )
+      expect(codec.decoder.decode(codec.encoder.decode({ a: 'a', b: new Date('1980') }))).toMatchSnapshot()
     })
   })
 })
