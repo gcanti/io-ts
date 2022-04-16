@@ -8,7 +8,7 @@
  *
  * @since 2.2.7
  */
-import { flow, Lazy, Refinement } from 'fp-ts/lib/function'
+import { flow, identity, Lazy, Refinement } from 'fp-ts/lib/function'
 import { Functor3 } from 'fp-ts/lib/Functor'
 import * as TT from 'fp-ts/lib/TaskThese'
 import { pipe } from 'fp-ts/lib/pipeable'
@@ -717,7 +717,7 @@ export const nullable = <TD extends AnyTD>(or: TD): NullableTD<TD> => ({
  * @category combinators
  * @since 2.2.16
  */
-export const readonly = flow(D.readonly, fromDecoder)
+export const readonly: <I, E, A>(codec: TaskDecoder<I, E, A>) => TaskDecoder<I, E, Readonly<A>> = identity
 
 /**
  * @since 2.2.17
