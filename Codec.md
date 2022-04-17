@@ -8,7 +8,10 @@
 # Codec interface
 
 ```ts
-export interface Codec<I, O, A> extends D.Decoder<I, A>, E.Encoder<O, A> {}
+export interface Codec<D, E> {
+  readonly decoder: D
+  readonly encoder: E
+}
 ```
 
 A `Codec` is just a `Decoder` and its dual packed together
