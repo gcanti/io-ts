@@ -353,7 +353,7 @@ The `parse` combinator is more powerful than `refine` in that you can change the
 
 ```ts
 import { pipe } from 'fp-ts/function'
-import { isRight } from 'fp-ts/Either'
+import { isRight } from 'fp-ts/These'
 
 export interface NumberFromStringE {
   readonly _tag: 'NumberFromStringE'
