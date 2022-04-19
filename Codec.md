@@ -14,7 +14,7 @@ export interface Codec<D, E> {
 }
 ```
 
-A `Codec` is just a `Decoder` and its dual packed together
+A `Codec` is two decoders packed together, the second often reversing the change made by the first
 
 You can build a new codec using the `codec` helper
 
