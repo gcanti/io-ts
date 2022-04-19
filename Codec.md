@@ -8,39 +8,66 @@
 # Codec interface
 
 ```ts
-export interface Codec<I, O, A> extends D.Decoder<I, A>, E.Encoder<O, A> {}
+export interface Codec<D, E> {
+  readonly decoder: D
+  readonly encoder: E
+}
 ```
 
-A codec is just a decoder and an encoder packed together.
+A `Codec` is two decoders packed together, the second often reversing the change made by the first
 
-The following laws must hold
-
-1. `pipe(codec.decode(u), E.fold(() => u, codec.encode) = u` for all `u` in `unknown`
-2. `codec.decode(codec.encode(a)) = E.right(a)` for all `a` in `A`
-
-You can build a new codec using the `make` helper
+You can build a new codec using the `codec` helper
 
 **Example**
 
 ```ts
 import * as C from 'io-ts/Codec'
 import * as D from 'io-ts/Decoder'
-import * as E from 'io-ts/Encoder'
 import { pipe } from 'fp-ts/function'
 
-const decoder: D.Decoder<unknown, number> = pipe(
+export interface NumberFromStringE {
+  readonly _tag: 'NumberFromStringE'
+  readonly actual: unknown
+}
+export interface NumberFromStringLE extends LeafE<NumberFromStringE> {}
+
+export const decoder: D.Decoder<
+  unknown,
+  D.ParseError<DE.StringLE, NumberFromStringLE>,
+  number
+> = pipe(
   D.string,
   D.parse((s) => {
     const n = parseFloat(s)
-    return isNaN(n)
-      ? D.failure(s, `cannot decode ${JSON.stringify(s)}, should be parsable into a number`)
+    return isNaN(n) 
+      ? D.failure(
+        DE.leafE({ 
+          _tag: "NumberFromStringE" as const, 
+          actual: n
+        }) as NumberFromStringLE
+      )
       : D.success(n)
   })
 )
 
-const encoder: E.Encoder<string, unknown> = {
-  encode: String
+const encoder: D.Decoder<
+  number, 
+  never, 
+  string
+> = {
+  encode: flow(String, D.success)
 }
 
-export const NumberFromString: C.Codec<unknown, string, number> = C.make(decoder, encoder)
+export const NumberFromString: C.Codec<
+  D.Decoder<
+    unknown,
+    D.ParseError<DE.StringLE, NumberFromStringLE>,
+    number
+  >,
+  D.Decoder<
+    number, 
+    never, 
+    string
+  >
+> = C.codec(decoder, encoder)
 ```

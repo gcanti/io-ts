@@ -1,33 +1,33 @@
-import * as G from '../src/Guard'
 import * as D from '../src/Decoder'
-import * as E from '../src/Encoder'
+import * as DE from '../src/DecodeError'
 import { pipe } from 'fp-ts/lib/pipeable'
-
-// -------------------------------------------------------------------------------------
-// guards
-// -------------------------------------------------------------------------------------
-
-export const guardUndefined: G.Guard<unknown, undefined> = {
-  is: (u): u is undefined => u === undefined
-}
+import { flow } from 'fp-ts/lib/function'
 
 // -------------------------------------------------------------------------------------
 // decoders
 // -------------------------------------------------------------------------------------
 
-export const decoderUndefined: D.Decoder<unknown, undefined> = D.fromGuard(guardUndefined, 'undefined')
+export interface UndefinedE {
+  readonly _tag: 'UndefinedE'
+  readonly actual: unknown
+}
 
-export const decoderNumberFromString: D.Decoder<string, number> = {
+export interface UndefinedLE extends DE.LeafE<UndefinedE> {}
+
+export const decoderUndefined: D.Decoder<unknown, UndefinedLE, undefined> = {
+  decode: (i) => (typeof i === 'undefined' ? D.success(i) : D.failure(DE.leafE({ _tag: 'UndefinedE', actual: i })))
+}
+
+export interface NumFromStrLE extends DE.LeafE<{ _tag: 'NumFromStrE'; actual: string }> {}
+
+export const decoderNumberFromString: D.Decoder<string, NumFromStrLE, number> = {
   decode: (s) => {
     const n = parseFloat(s)
-    return isNaN(n) ? D.failure(s, 'parsable to a number') : D.success(n)
+    return isNaN(n) ? D.failure(DE.leafE({ _tag: 'NumFromStrE', actual: s })) : D.success(n)
   }
 }
 
-export const decoderNumberFromUnknownString: D.Decoder<unknown, number> = pipe(
-  D.string,
-  D.compose(decoderNumberFromString)
-)
+export const decoderNumberFromUnknownString = pipe(D.string, D.compose(decoderNumberFromString))
 
 export interface PositiveBrand {
   readonly Positive: unique symbol
@@ -35,9 +35,9 @@ export interface PositiveBrand {
 
 export type Positive = number & PositiveBrand
 
-export const decoderPositive: D.Decoder<unknown, Positive> = pipe(
+export const decoderPositive = pipe(
   D.number,
-  D.refine((n): n is Positive => n > 0, 'Positive')
+  D.refine((n): n is Positive => n > 0)
 )
 
 export interface IntBrand {
@@ -46,19 +46,19 @@ export interface IntBrand {
 
 export type Int = number & IntBrand
 
-export const decoderInt: D.Decoder<unknown, Int> = pipe(
+export const decoderInt = pipe(
   D.number,
-  D.refine((n): n is Int => Number.isInteger(n), 'Int')
+  D.refine((n): n is Int => Number.isInteger(n))
 )
 
 // -------------------------------------------------------------------------------------
 // encoders
 // -------------------------------------------------------------------------------------
 
-export const encoderNumberToString: E.Encoder<string, number> = {
-  encode: String
+export const encoderNumberToString: D.Decoder<number, never, string> = {
+  decode: flow(String, D.success)
 }
 
-export const encoderBooleanToNumber: E.Encoder<number, boolean> = {
-  encode: (b) => (b ? 1 : 0)
+export const encoderBooleanToNumber: D.Decoder<boolean, never, number> = {
+  decode: (b) => D.success(b ? 1 : 0)
 }

@@ -35,9 +35,8 @@ Experimental modules (\*) are published in order to get early feedback from the 
 The experimental modules are **independent and backward-incompatible** with stable ones.
 
 - [`Decoder.ts` module](Decoder.md)
-- [`Encoder.ts` module](Encoder.md)
 - [`Codec.ts` module](Codec.md)
-- [`Eq.ts` module](Eq.md)
-- [`Schema.ts` module (advanced feature)](Schema.md)
+- [`TaskDecoder.ts` module](TaskDecoder.md)
+- [`Type.ts` module](Type.md)
 
 (\*) A feature tagged as _Experimental_ is in a high state of flux, you're at risk of it changing without notice.

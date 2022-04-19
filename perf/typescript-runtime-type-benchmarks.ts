@@ -1,6 +1,5 @@
 import * as Benchmark from 'benchmark'
 import * as t from '../src/Decoder'
-import * as G from '../src/Guard'
 
 /*
 decode x 1,138,915 ops/sec ±0.44% (87 runs sampled)
@@ -9,31 +8,17 @@ is x 1,975,690 ops/sec ±0.44% (91 runs sampled)
 
 const suite = new Benchmark.Suite()
 
-const decoder = t.type({
+const decoder = t.struct({
   number: t.number,
   negNumber: t.number,
   maxNumber: t.number,
   string: t.string,
   longString: t.string,
   boolean: t.boolean,
-  deeplyNested: t.type({
+  deeplyNested: t.struct({
     foo: t.string,
     num: t.number,
     bool: t.boolean
-  })
-})
-
-const guard = G.type({
-  number: G.number,
-  negNumber: G.number,
-  maxNumber: G.number,
-  string: G.string,
-  longString: G.string,
-  boolean: G.boolean,
-  deeplyNested: G.type({
-    foo: G.string,
-    num: G.number,
-    bool: G.boolean
   })
 })
 
@@ -58,9 +43,6 @@ export const good = {
 suite
   .add('decode', function () {
     decoder.decode(good)
-  })
-  .add('is', function () {
-    guard.is(good)
   })
   .on('cycle', function (event: any) {
     console.log(String(event.target))

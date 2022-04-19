@@ -8,107 +8,71 @@
  *
  * @since 2.2.3
  */
-import { identity, Refinement } from 'fp-ts/lib/function'
-import { Invariant3 } from 'fp-ts/lib/Invariant'
+import { flow, Lazy, Refinement } from 'fp-ts/lib/function'
 import { pipe } from 'fp-ts/lib/pipeable'
+import * as R from 'fp-ts/lib/Record'
 import * as D from './Decoder'
-import * as E from './Encoder'
-import { Literal } from './Schemable'
+import * as DE from './DecodeError'
+import * as TH from 'fp-ts/lib/These'
+import * as RNEA from 'fp-ts/lib/ReadonlyNonEmptyArray'
 
 // -------------------------------------------------------------------------------------
 // model
 // -------------------------------------------------------------------------------------
 
-/**
- * Laws:
- *
- * 1. `pipe(codec.decode(u), E.fold(() => u, codec.encode)) = u` for all `u` in `unknown`
- * 2. `codec.decode(codec.encode(a)) = E.right(a)` for all `a` in `A`
- *
- * @category model
- * @since 2.2.3
- */
-export interface Codec<I, O, A> extends D.Decoder<I, A>, E.Encoder<O, A> {}
-
-// -------------------------------------------------------------------------------------
-// constructors
-// -------------------------------------------------------------------------------------
-
-/**
- * @category constructors
- * @since 2.2.3
- */
-export function make<I, O, A>(decoder: D.Decoder<I, A>, encoder: E.Encoder<O, A>): Codec<I, O, A> {
-  return {
-    decode: decoder.decode,
-    encode: encoder.encode
-  }
+export interface Codec<D, E> {
+  readonly decoder: D
+  readonly encoder: E
 }
 
-/**
- * @category constructors
- * @since 2.2.3
- */
-export function fromDecoder<I, A>(decoder: D.Decoder<I, A>): Codec<I, A, A> {
-  return {
-    decode: decoder.decode,
-    encode: identity
-  }
-}
-
-/**
- * @category constructors
- * @since 2.2.3
- */
-export function literal<A extends readonly [Literal, ...Array<Literal>]>(
-  ...values: A
-): Codec<unknown, A[number], A[number]> {
-  return fromDecoder(D.literal(...values))
-}
+export const codec = <D extends D.AnyD, E extends D.AnyD>(decoder: D, encoder: E): Codec<D, E> => ({
+  decoder,
+  encoder
+})
 
 // -------------------------------------------------------------------------------------
 // primitives
 // -------------------------------------------------------------------------------------
 
-/**
- * @category primitives
- * @since 2.2.3
- */
-export const string: Codec<unknown, string, string> =
-  /*#__PURE__*/
-  fromDecoder(D.string)
+export const string = fromDecoder(D.string)
 
 /**
  * @category primitives
  * @since 2.2.3
  */
-export const number: Codec<unknown, number, number> =
-  /*#__PURE__*/
-  fromDecoder(D.number)
+export const number = fromDecoder(D.number)
 
 /**
  * @category primitives
  * @since 2.2.3
  */
-export const boolean: Codec<unknown, boolean, boolean> =
-  /*#__PURE__*/
-  fromDecoder(D.boolean)
+export const boolean = fromDecoder(D.boolean)
 
 /**
  * @category primitives
  * @since 2.2.3
  */
-export const UnknownArray: Codec<unknown, Array<unknown>, Array<unknown>> =
-  /*#__PURE__*/
-  fromDecoder(D.UnknownArray)
+export const UnknownArray = fromDecoder(D.UnknownArray)
 
 /**
  * @category primitives
  * @since 2.2.3
  */
-export const UnknownRecord: Codec<unknown, Record<string, unknown>, Record<string, unknown>> =
-  /*#__PURE__*/
-  fromDecoder(D.UnknownRecord)
+export const UnknownRecord = fromDecoder(D.UnknownRecord)
+
+// -------------------------------------------------------------------------------------
+// constructors
+// -------------------------------------------------------------------------------------
+
+export function fromDecoder<D extends D.AnyD>(decoder: D): Codec<D, D.IdentityD<D.TypeOf<D>>> {
+  return codec(decoder, D.id<D.TypeOf<D>>())
+}
+
+/**
+ * @category constructors
+ * @since 2.2.3
+ */
+export const literal = flow(D.literal, fromDecoder)
 
 // -------------------------------------------------------------------------------------
 // combinators
@@ -116,256 +80,353 @@ export const UnknownRecord: Codec<unknown, Record<string, unknown>, Record<strin
 
 /**
  * @category combinators
- * @since 2.2.3
- */
-export const mapLeftWithInput = <I>(f: (i: I, e: D.DecodeError) => D.DecodeError) => <O, A>(
-  codec: Codec<I, O, A>
-): Codec<I, O, A> => make(pipe(codec, D.mapLeftWithInput(f)), codec)
-
-/**
- * @category combinators
- * @since 2.2.3
- */
-export const refine = <A, B extends A>(
-  refinement: Refinement<A, B>,
-  id: string
-): (<I, O>(from: Codec<I, O, A>) => Codec<I, O, B>) => {
-  const refine = D.refine(refinement, id)
-  return (from) => make(refine(from), from)
-}
-
-/**
- * @category combinators
- * @since 2.2.3
- */
-export function nullable<I, O, A>(or: Codec<I, O, A>): Codec<null | I, null | O, null | A> {
-  return make(D.nullable(or), E.nullable(or))
-}
-
-/**
- * @category combinators
  * @since 2.2.15
  */
-export function fromStruct<P extends Record<string, Codec<any, any, any>>>(
-  properties: P
-): Codec<{ [K in keyof P]: InputOf<P[K]> }, { [K in keyof P]: OutputOf<P[K]> }, { [K in keyof P]: TypeOf<P[K]> }> {
-  return make(D.fromStruct(properties) as any, E.struct(properties))
-}
-
-/**
- * Use `fromStruct` instead.
- *
- * @category combinators
- * @since 2.2.8
- * @deprecated
- */
-export const fromType = fromStruct
-
-/**
- * @category combinators
- * @since 2.2.15
- */
-export function struct<P extends Record<string, Codec<unknown, any, any>>>(
-  properties: P
-): Codec<unknown, { [K in keyof P]: OutputOf<P[K]> }, { [K in keyof P]: TypeOf<P[K]> }> {
-  return pipe(UnknownRecord, compose(fromStruct(properties as any))) as any
-}
-
-/**
- * Use `struct` instead.
- *
- * @category combinators
- * @since 2.2.3
- * @deprecated
- */
-export const type = struct
-
-/**
- * @category combinators
- * @since 2.2.8
- */
-export function fromPartial<P extends Record<string, Codec<any, any, any>>>(
-  properties: P
+export const fromStruct = <Properties extends Record<string, AnyC>>(
+  components: Properties
 ): Codec<
-  Partial<{ [K in keyof P]: InputOf<P[K]> }>,
-  Partial<{ [K in keyof P]: OutputOf<P[K]> }>,
-  Partial<{ [K in keyof P]: TypeOf<P[K]> }>
-> {
-  return make(D.fromPartial(properties), E.partial(properties))
-}
+  D.FromStructD<{ [K in keyof Properties]: Properties[K]['decoder'] }>,
+  D.FromStructD<{ [K in keyof Properties]: Properties[K]['encoder'] }>
+> =>
+  codec(
+    pipe(
+      components,
+      R.map((c) => c.decoder),
+      D.fromStruct
+    ) as unknown as D.FromStructD<{ [K in keyof Properties]: Properties[K]['decoder'] }>,
+    pipe(
+      components,
+      R.map((c) => c.encoder),
+      D.fromStruct
+    ) as unknown as D.FromStructD<{ [K in keyof Properties]: Properties[K]['encoder'] }>
+  )
+
+export const unexpectedKeys = flow(D.unexpectedKeys, fromDecoder)
+
+export const missingKeys = flow(D.missingKeys, fromDecoder)
 
 /**
  * @category combinators
- * @since 2.2.3
+ * @since 2.2.15
  */
-export function partial<P extends Record<string, Codec<unknown, any, any>>>(
-  properties: P
-): Codec<unknown, Partial<{ [K in keyof P]: OutputOf<P[K]> }>, Partial<{ [K in keyof P]: TypeOf<P[K]> }>> {
-  return pipe(UnknownRecord, compose(fromPartial(properties as any))) as any
-}
-
-/**
- * @category combinators
- * @since 2.2.3
- */
-export function fromArray<I, O, A>(item: Codec<I, O, A>): Codec<Array<I>, Array<O>, Array<A>> {
-  return make(D.fromArray(item), E.array(item))
-}
-
-/**
- * @category combinators
- * @since 2.2.3
- */
-export function array<O, A>(item: Codec<unknown, O, A>): Codec<unknown, Array<O>, Array<A>> {
-  return pipe(UnknownArray, compose(fromArray(item))) as any
-}
-
-/**
- * @category combinators
- * @since 2.2.3
- */
-export function fromRecord<I, O, A>(
-  codomain: Codec<I, O, A>
-): Codec<Record<string, I>, Record<string, O>, Record<string, A>> {
-  return make(D.fromRecord(codomain), E.record(codomain))
-}
-
-/**
- * @category combinators
- * @since 2.2.3
- */
-export function record<O, A>(codomain: Codec<unknown, O, A>): Codec<unknown, Record<string, O>, Record<string, A>> {
-  return pipe(UnknownRecord, compose(fromRecord(codomain))) as any
-}
+export const struct = <Properties extends Record<string, AnyUC>>(
+  components: Properties
+): Codec<
+  D.StructD<{ [K in keyof Properties]: Properties[K]['decoder'] }>,
+  D.StructD<{ [K in keyof Properties]: Properties[K]['encoder'] }>
+> =>
+  codec(
+    pipe(
+      components,
+      R.map((c) => c.decoder),
+      D.struct
+    ) as unknown as D.StructD<{ [K in keyof Properties]: Properties[K]['decoder'] }>,
+    pipe(
+      components,
+      R.map((c) => c.encoder),
+      D.struct
+    ) as unknown as D.StructD<{ [K in keyof Properties]: Properties[K]['encoder'] }>
+  )
 
 /**
  * @category combinators
  * @since 2.2.8
  */
-export const fromTuple = <C extends ReadonlyArray<Codec<any, any, any>>>(
-  ...components: C
-): Codec<{ [K in keyof C]: InputOf<C[K]> }, { [K in keyof C]: OutputOf<C[K]> }, { [K in keyof C]: TypeOf<C[K]> }> =>
-  make(D.fromTuple(...components) as any, E.tuple(...components)) as any
+export const fromPartial = <Properties extends Record<string, AnyC>>(
+  components: Properties
+): Codec<
+  D.FromPartialD<{ [K in keyof Properties]: Properties[K]['decoder'] }>,
+  D.FromPartialD<{ [K in keyof Properties]: Properties[K]['encoder'] }>
+> =>
+  codec(
+    pipe(
+      components,
+      R.map((c) => c.decoder),
+      D.fromPartial
+    ) as unknown as D.FromPartialD<{ [K in keyof Properties]: Properties[K]['decoder'] }>,
+    pipe(
+      components,
+      R.map((c) => c.encoder),
+      D.fromPartial
+    ) as unknown as D.FromPartialD<{ [K in keyof Properties]: Properties[K]['encoder'] }>
+  )
 
 /**
  * @category combinators
  * @since 2.2.3
  */
-export function tuple<C extends ReadonlyArray<Codec<unknown, any, any>>>(
-  ...components: C
-): Codec<unknown, { [K in keyof C]: OutputOf<C[K]> }, { [K in keyof C]: TypeOf<C[K]> }> {
-  return pipe(UnknownArray as any, compose(fromTuple(...components) as any)) as any
-}
-
-/**
- * @category combinators
- * @since 2.2.3
- */
-export const intersect = <IB, OB, B>(
-  right: Codec<IB, OB, B>
-): (<IA, OA, A>(left: Codec<IA, OA, A>) => Codec<IA & IB, OA & OB, A & B>) => {
-  const intersectD = D.intersect(right)
-  const intersectE = E.intersect(right)
-  return (left) => make(intersectD(left), intersectE(left))
-}
+export const partial = <Properties extends Record<string, AnyUC>>(
+  components: Properties
+): Codec<
+  D.PartialD<{ [K in keyof Properties]: Properties[K]['decoder'] }>,
+  D.PartialD<{ [K in keyof Properties]: Properties[K]['encoder'] }>
+> =>
+  codec(
+    pipe(
+      components,
+      R.map((c) => c.decoder),
+      D.partial
+    ) as unknown as D.PartialD<{ [K in keyof Properties]: Properties[K]['decoder'] }>,
+    pipe(
+      components,
+      R.map((c) => c.encoder),
+      D.partial
+    ) as unknown as D.PartialD<{ [K in keyof Properties]: Properties[K]['encoder'] }>
+  )
 
 /**
  * @category combinators
  * @since 2.2.8
  */
-export const fromSum = <T extends string>(
-  tag: T
-): (<MS extends Record<string, Codec<any, any, any>>>(
-  members: MS
-) => Codec<InputOf<MS[keyof MS]>, OutputOf<MS[keyof MS]>, TypeOf<MS[keyof MS]>>) => {
-  const decoder = D.fromSum(tag)
-  const encoder = E.sum(tag)
-  return (members) => make(decoder(members) as any, encoder(members))
+export const fromTuple = <Components extends ReadonlyArray<AnyUC>>(
+  components: Components
+): Codec<
+  D.FromTupleD<{ [K in keyof Components]: Components[Extract<K, number>]['decoder'] }>,
+  D.FromTupleD<{ [K in keyof Components]: Components[Extract<K, number>]['encoder'] }>
+> =>
+  codec(
+    D.fromTuple(...components.map((c) => c.decoder)) as any,
+    D.fromTuple(...components.map((c) => c.encoder)) as any
+  )
+
+export const unexpectedIndexes = flow(D.unexpectedIndexes, fromDecoder)
+
+export const missingIndexes = flow(D.missingIndexes, fromDecoder)
+
+/**
+ * @category combinators
+ * @since 2.2.3
+ */
+export const tuple = <Components extends ReadonlyArray<AnyUC>>(
+  ...components: Components
+): Codec<
+  D.TupleD<{ [K in keyof Components]: Components[Extract<K, number>]['decoder'] }>,
+  D.TupleD<{ [K in keyof Components]: Components[Extract<K, number>]['encoder'] }>
+> => codec(D.tuple(...components.map((c) => c.decoder)) as any, D.tuple(...components.map((c) => c.encoder)) as any)
+
+/**
+ * @category combinators
+ * @since 2.2.3
+ */
+export const fromArray = <Item extends AnyUC>(
+  item: Item
+): Codec<D.FromArrayD<Item['decoder']>, D.FromArrayD<Item['encoder']>> =>
+  codec(pipe(item.decoder, D.fromArray), pipe(item.encoder, D.fromArray))
+
+/**
+ * @category combinators
+ * @since 2.2.3
+ */
+export const array = <Item extends AnyUC>(item: Item): Codec<D.ArrayD<Item['decoder']>, D.ArrayD<Item['encoder']>> =>
+  codec(pipe(item.decoder, D.array), pipe(item.encoder, D.array))
+
+/**
+ * @category combinators
+ * @since 2.2.3
+ */
+export const fromRecord = <Codomain extends AnyUC>(
+  codomain: Codomain
+): Codec<D.FromRecordD<Codomain['decoder']>, D.FromRecordD<Codomain['encoder']>> =>
+  codec(pipe(codomain.decoder, D.fromRecord), pipe(codomain.encoder, D.fromRecord))
+
+/**
+ * @since 2.2.17
+ */
+export interface AnyUC extends Codec<D.Decoder<unknown, any, any>, D.Decoder<any, any, any>> {}
+
+/**
+ * @category combinators
+ * @since 2.2.3
+ */
+export const record = <Codomain extends AnyUC>(
+  codomain: Codomain
+): Codec<D.RecordD<Codomain['decoder']>, D.RecordD<Codomain['encoder']>> =>
+  codec(pipe(codomain.decoder, D.record), pipe(codomain.encoder, D.record))
+
+export const union = <Members extends RNEA.ReadonlyNonEmptyArray<AnyC>>(
+  ...members: Members
+): Codec<
+  { [K in keyof Members]: Members[Extract<K, number>]['decoder'] },
+  { [K in keyof Members]: Members[Extract<K, number>]['encoder'] }
+> => {
+  const decodeMembers = pipe(
+    members,
+    RNEA.map((m) => m.decoder)
+  )
+  const encodeMembers = pipe(
+    members,
+    RNEA.map((m) => m.encoder)
+  )
+  return codec(
+    D.union(decodeMembers[0], ...RNEA.tail(decodeMembers)) as any,
+    D.union(encodeMembers[0], ...RNEA.tail(encodeMembers)) as any
+  )
 }
 
 /**
  * @category combinators
  * @since 2.2.3
  */
-export function sum<T extends string>(
-  tag: T
-): <M extends Record<string, Codec<unknown, any, any>>>(
-  members: M
-) => Codec<unknown, OutputOf<M[keyof M]>, TypeOf<M[keyof M]>> {
-  const sum = fromSum(tag)
-  return (members) => pipe(UnknownRecord, compose(sum(members) as any)) as any
-}
+export const refine = <A, B extends A, C, D extends C>(decode: Refinement<A, B>, encode: Refinement<C, D>) => <
+  I,
+  E,
+  I1,
+  E1
+>(
+  from: Codec<D.Decoder<I, E, A>, D.Decoder<I1, E1, C>>
+): Codec<D.Decoder<I, D.RefinementError<E, A, B>, B>, D.Decoder<I1, D.RefinementError<E1, C, D>, D>> =>
+  codec(pipe(from.decoder, D.refine(decode)), pipe(from.encoder, D.refine(encode)))
+
+export const parse = <A, B, E2, C, D, E3>(decode: (a: A) => TH.These<E2, B>, encode: (a: C) => TH.These<E3, D>) => <
+  I,
+  E,
+  I1,
+  E1
+>(
+  from: Codec<D.Decoder<I, E, A>, D.Decoder<I1, E1, C>>
+): Codec<D.Decoder<I, D.ParseError<E, E2>, B>, D.Decoder<I1, D.ParseError<E1, E3>, D>> =>
+  codec(pipe(from.decoder, D.parse(decode)), pipe(from.encoder, D.parse(encode)))
 
 /**
  * @category combinators
  * @since 2.2.3
  */
-export function lazy<I, O, A>(id: string, f: () => Codec<I, O, A>): Codec<I, O, A> {
-  return make(D.lazy(id, f), E.lazy(f))
-}
+export const nullable = <C extends AnyC>(or: C): Codec<D.NullableD<C['decoder']>, D.NullableD<C['encoder']>> =>
+  codec(pipe(or.decoder, D.nullable), pipe(or.encoder, D.nullable))
 
 /**
  * @category combinators
  * @since 2.2.16
  */
-export const readonly: <I, O, A>(codec: Codec<I, O, A>) => Codec<I, O, Readonly<A>> = identity
+export const readonly = flow(D.readonly, fromDecoder)
+
+export type AnyC = Codec<D.Decoder<any, any, any>, D.Decoder<any, any, any>>
+/**
+ * @category combinators
+ * @since 2.2.3
+ */
+export const intersect = <A extends AnyC>(right: A) => <B extends AnyC>(
+  left: B
+): Codec<D.IntersectD<A['decoder'], B['decoder']>, D.IntersectD<A['encoder'], B['encoder']>> =>
+  codec(pipe(left.decoder, D.intersect(right.decoder)), pipe(left.encoder, D.intersect(right.encoder)))
+
+/**
+ * @category meta
+ * @since 2.2.17
+ */
+export interface LazyC<C extends AnyC> extends Codec<C['decoder'], C['encoder']> {
+  readonly _tag: 'LazyD'
+  readonly id: string
+  readonly f: Lazy<Codec<C['decoder'], C['encoder']>>
+}
+
+/**
+ * @category combinators
+ * @since 2.2.3
+ */
+export const lazy = <C extends AnyC>(id: string, f: Lazy<Codec<C['decoder'], C['encoder']>>): LazyC<C> => {
+  const get = D.memoize<void, Codec<C['decoder'], C['encoder']>>(f)
+  return {
+    _tag: 'LazyD',
+    id,
+    f,
+    decoder: {
+      decode: (i) =>
+        pipe(
+          get().decoder.decode(i),
+          TH.mapLeft((e) => DE.lazyE(id, e))
+        )
+    },
+    encoder: {
+      decode: (i) =>
+        pipe(
+          get().encoder.decode(i),
+          TH.mapLeft((e) => DE.lazyE(id, e))
+        )
+    }
+  }
+}
 
 /**
  * @category combinators
  * @since 2.2.8
  */
-export const compose = <L, A extends L, P extends A, B>(to: Codec<L, P, B>) => <I, O>(
-  from: Codec<I, O, A>
-): Codec<I, O, B> => make(D.compose(to)(from), E.compose(from)(to))
+export const fromSum = <T extends string>(t: T) => <Members extends Record<string, AnyC>>(
+  members: Members
+): Codec<
+  D.FromSumD<T, { [K in keyof Members]: Members[K]['decoder'] }>,
+  D.FromSumD<T, { [K in keyof Members]: Members[K]['encoder'] }>
+> => ({
+  decoder: pipe(
+    members,
+    R.map((a) => a.decoder),
+    D.fromSum(t)
+  ) as unknown as D.FromSumD<T, { [K in keyof Members]: Members[K]['decoder'] }>,
+  encoder: pipe(
+    members,
+    R.map((a) => a.encoder),
+    D.fromSum(t)
+  ) as unknown as D.FromSumD<T, { [K in keyof Members]: Members[K]['encoder'] }>
+})
 
-// -------------------------------------------------------------------------------------
-// non-pipeables
-// -------------------------------------------------------------------------------------
-
-const imap_: Invariant3<URI>['imap'] = (fa, f, g) => make(D.Functor.map(fa, f), E.Contravariant.contramap(fa, g))
-
-// -------------------------------------------------------------------------------------
-// pipeables
-// -------------------------------------------------------------------------------------
-
+export interface AnyUCD extends Codec<D.Decoder<unknown, any, any>, D.Decoder<any, any, unknown>> {}
 /**
- * @category Invariant
+ * @category combinators
  * @since 2.2.3
  */
-export const imap: <I, O, A, B>(f: (a: A) => B, g: (b: B) => A) => (fa: Codec<I, O, A>) => Codec<I, O, B> = (f, g) => (
-  fa
-) => imap_(fa, f, g)
-
-// -------------------------------------------------------------------------------------
-// instances
-// -------------------------------------------------------------------------------------
+export const sum = <T extends string>(t: T) => <Members extends Record<string, AnyUCD>>(
+  members: Members
+): Codec<
+  D.SumD<T, { [K in keyof Members]: Members[K]['decoder'] }>,
+  D.SumD<T, { [K in keyof Members]: Members[K]['encoder'] }>
+> =>
+  codec(
+    pipe(
+      members,
+      R.map((a) => a.decoder),
+      D.sum(t)
+    ) as unknown as D.SumD<T, { [K in keyof Members]: Members[K]['decoder'] }>,
+    pipe(
+      members,
+      R.map((a) => a.encoder),
+      D.sum(t)
+    ) as unknown as D.SumD<T, { [K in keyof Members]: Members[K]['encoder'] }>
+  )
 
 /**
- * @category instances
+ * @category combinators
  * @since 2.2.3
  */
-export const URI = 'io-ts/Codec'
+export const map = <A, B, C, D>(f: (a: A) => B, g: (c: C) => D) => <I, E, I1, E1>(
+  from: Codec<D.Decoder<I, E, A>, D.Decoder<I1, E1, C>>
+): Codec<D.MapD<D.Decoder<I, E, A>, B>, D.MapD<D.Decoder<I1, E1, C>, D>> =>
+  codec(pipe(from.decoder, D.map(f)), pipe(from.encoder, D.map(g)))
 
 /**
- * @category instances
+ * @category combinators
  * @since 2.2.3
  */
-export type URI = typeof URI
-
-declare module 'fp-ts/lib/HKT' {
-  interface URItoKind3<R, E, A> {
-    readonly [URI]: Codec<R, E, A>
-  }
-}
+export const mapLeft = <E1, E2, E3, E4>(f: (e: E1) => E2, g: (e: E3) => E4) => <I, A, I1, B>(
+  from: Codec<D.Decoder<I, E1, A>, D.Decoder<I1, E3, B>>
+): Codec<D.MapLeftD<D.Decoder<I, E1, A>, E2>, D.MapLeftD<D.Decoder<I1, E3, B>, E4>> =>
+  codec(pipe(from.decoder, D.mapLeft(f)), pipe(from.encoder, D.mapLeft(g)))
 
 /**
- * @category instances
+ * @category instance operations
  * @since 2.2.8
  */
-export const Invariant: Invariant3<URI> = {
-  URI,
-  imap: imap_
-}
+export const id = <A = never>(): Codec<D.IdentityD<A>, D.IdentityD<A>> => codec(D.id<A>(), D.id<A>())
+
+// -------------------------------------------------------------------------------------
+// composition
+// -------------------------------------------------------------------------------------
+
+export const compose = <PD extends D.AnyD, ND extends D.Decoder<D.TypeOf<PD>, any, any>, NE extends D.AnyD>(
+  next: Codec<ND, NE>
+) => <PE extends D.Decoder<D.TypeOf<NE>, any, any>>(
+  prev: Codec<PD, PE>
+): Codec<D.CompositionD<PD, ND>, D.CompositionD<NE, PE>> =>
+  codec(pipe(prev.decoder, D.compose(next.decoder)), pipe(next.encoder, D.compose(prev.encoder)))
 
 // -------------------------------------------------------------------------------------
 // utils
@@ -374,14 +435,14 @@ export const Invariant: Invariant3<URI> = {
 /**
  * @since 2.2.8
  */
-export type InputOf<C> = D.InputOf<C>
+export type InputOf<C extends Codec<unknown, unknown>> = D.InputOf<C['decoder']>
 
 /**
  * @since 2.2.3
  */
-export type OutputOf<C> = E.OutputOf<C>
+export type OutputOf<C extends Codec<unknown, unknown>> = D.TypeOf<C['encoder']>
 
 /**
  * @since 2.2.3
  */
-export type TypeOf<C> = E.TypeOf<C>
+export type TypeOf<C extends Codec<unknown, unknown>> = D.TypeOf<C['decoder']>

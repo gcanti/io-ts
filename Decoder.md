@@ -25,8 +25,8 @@
 # Model
 
 ```ts
-interface Decoder<I, A> {
-  readonly decode: (i: I) => E.Either<DecodeError, A>
+interface Decoder<I, E, A> {
+  readonly decode: (i: I) => T.These<E, A>
 }
 ```
 
@@ -37,7 +37,13 @@ A decoder representing `string` can be defined as
 ```ts
 import * as D from 'io-ts/Decoder'
 
-export const string: D.Decoder<unknown, string> = {
+export interface StringE {
+  readonly _tag: 'StringE'
+  readonly actual: unknown
+}
+export interface StringLE extends LeafE<StringE> {}
+
+export const string: D.Decoder<unknown, StringLE, string> = {
   decode: (u) => (typeof u === 'string' ? D.success(u) : D.failure(u, 'string'))
 }
 ```
@@ -45,7 +51,7 @@ export const string: D.Decoder<unknown, string> = {
 and we can use it as follows:
 
 ```ts
-import { isRight } from 'fp-ts/Either'
+import { isRight } from 'fp-ts/These'
 
 console.log(isRight(string.decode('a'))) // => true
 console.log(isRight(string.decode(null))) // => false
@@ -55,7 +61,7 @@ More generally the result of calling `decode` can be handled using [`fold`](http
 
 ```ts
 import { pipe } from 'fp-ts/function'
-import { fold } from 'fp-ts/Either'
+import { fold } from 'fp-ts/These'
 
 console.log(
   pipe(
@@ -65,19 +71,22 @@ console.log(
       (errors) => `error: ${JSON.stringify(errors)}`,
       // success handler
       (a) => `success: ${JSON.stringify(a)}`
+      // warning handler
+      (errors, a) => `success: ${JSON.stringify(a)} with warning: ${JSON.stringify(errors)}`
     )
   )
 )
 // => error: {"_tag":"Of","value":{"_tag":"Leaf","actual":null,"error":"string"}}
 ```
+# FIXFIXFIXFIX - error: {...}
 
 # Built-in primitive decoders
 
-- `string: Decoder<unknown, string>`
-- `number: Decoder<unknown, number>`
-- `boolean: Decoder<unknown, boolean>`
-- `UnknownArray: Decoder<unknown, Array<unknown>>`
-- `UnknownRecord: Decoder<unknown, Record<string, unknown>>`
+- `string: Decoder<unknown, StringLE, string>`
+- `number: Decoder<unknown, NumberLE | NaNLE | InfinityLE, number>`
+- `boolean: Decoder<unknown, BooleanLE, boolean>`
+- `UnknownArray: Decoder<unknown, UnknownArrayLE, Array<unknown>>`
+- `UnknownRecord: Decoder<unknown, UnknownRecordLE, Record<string, unknown>>`
 
 # Combinators
 
@@ -88,8 +97,8 @@ We can combine these primitive decoders through _combinators_ to build composite
 The `literal` constructor describes one or more literals.
 
 ```ts
-export const MyLiteral: D.Decoder<unknown, 'a'> = D.literal('a')
-export const MyLiterals: D.Decoder<unknown, 'a' | 'b'> = D.literal('a', 'b')
+export const MyLiteral: D.LiteralD<["a"]> = D.literal('a')
+export const MyLiterals: D.LiteralD<["a", "b"]> = D.literal('a', 'b')
 ```
 
 ## The `nullable` combinator
@@ -97,7 +106,7 @@ export const MyLiterals: D.Decoder<unknown, 'a' | 'b'> = D.literal('a', 'b')
 The `nullable` combinator describes a nullable value
 
 ```ts
-export const NullableString: D.Decoder<unknown, null | string> = D.nullable(D.string)
+export const NullableString: D.NullableD<D.stringUD> = D.nullable(D.string)
 ```
 
 ## The `struct` combinator
@@ -120,6 +129,7 @@ The `struct` combinator will strip additional fields while decoding
 console.log(Person.decode({ name: 'name', age: 42, rememberMe: true }))
 // => { _tag: 'Right', right: { name: 'name', age: 42 } }
 ```
+# FIXFIXFIXFIX - { _tag: 'Right', ...}
 
 ## The `partial` combinator
 
@@ -141,13 +151,14 @@ The `partial` combinator will strip additional fields while decoding
 console.log(Person.decode({ name: 'name', rememberMe: true }))
 // => { _tag: 'Right', right: { name: 'name' } }
 ```
+# FIXFIXFIXFIX - { _tag: 'Right', ...}
 
 ## The `record` combinator
 
 The `record` combinator describes a `Record<string, ?>`
 
 ```ts
-export const MyRecord: D.Decoder<unknown, Record<string, number>> = D.record(D.number)
+export const MyRecord: D.RecordD<D.numberUD> = D.record(D.number)
 
 console.log(isRight(MyRecord.decode({ a: 1, b: 2 }))) // => true
 ```
@@ -157,7 +168,7 @@ console.log(isRight(MyRecord.decode({ a: 1, b: 2 }))) // => true
 The `array` combinator describes an array `Array<?>`
 
 ```ts
-export const MyArray: D.Decoder<unknown, Array<number>> = D.array(D.number)
+export const MyArray: D.ArrayD<D.numberUD> = D.array(D.number)
 
 console.log(isRight(MyArray.decode([1, 2, 3]))) // => true
 ```
@@ -167,7 +178,7 @@ console.log(isRight(MyArray.decode([1, 2, 3]))) // => true
 The `tuple` combinator describes a `n`-tuple
 
 ```ts
-export const MyTuple: D.Decoder<unknown, [string, number]> = D.tuple(D.string, D.number)
+export const MyTuple: D.TupleD<[D.stringUD, D.numberUD]> = D.tuple(D.string, D.number)
 
 console.log(isRight(MyTuple.decode(['a', 1]))) // => true
 ```
@@ -177,6 +188,7 @@ The `tuple` combinator will strip additional components while decoding
 ```ts
 console.log(MyTuple.decode(['a', 1, true])) // => { _tag: 'Right', right: [ 'a', 1 ] }
 ```
+# FIXFIXFIXFIX - { _tag: 'Both', ...}
 
 ## The `intersect` combinator
 
@@ -197,24 +209,26 @@ export const Person = pipe(
 console.log(isRight(Person.decode({ name: 'name' }))) // => true
 console.log(isRight(Person.decode({}))) // => false
 ```
+# FIXFIXFIXFIX - { _tag: 'Right', ...}
 
 ## The `sum` combinator
 
 The `sum` combinator describes tagged unions (aka sum types)
 
+Members = [UnknownRecordLE, UnknownArrayLE]
+DE.CompoundE<{ [K in keyof Members]: DE.MemberE<K, ErrorOf<Members[K]>> }[number]>
+
 ```ts
-export const MySum: D.Decoder<
-  unknown,
-  | {
-      type: 'A'
-      a: string
-    }
-  | {
-      type: 'B'
-      b: number
-    }
-  //        v--- tag name
-> = D.sum('type')({
+export const MySum: D.SumD<"type", {
+    A: D.StructD<{
+        type: D.LiteralD<["A"]>;
+        a: D.stringUD;
+    }>;
+    B: D.StructD<{
+        type: D.LiteralD<["B"]>;
+        b: D.numberUD;
+    }>;
+}> = D.sum('type')({
   //             +----- all union members in the dictionary must own a field named like the chosen tag ("type" in this case)
   //             |
   //             v               v----- this value must be equal to its corresponding dictionary key ("A" in this case)
@@ -229,17 +243,16 @@ export const MySum: D.Decoder<
 In case of non-`string` tag values, the respective key must be enclosed in brackets
 
 ```ts
-export const MySum: D.Decoder<
-  unknown,
-  | {
-      type: 1 // non-`string` tag value
-      a: string
-    }
-  | {
-      type: 2 // non-`string` tag value
-      b: number
-    }
-> = D.sum('type')({
+export const MySum: D.SumD<"type", {
+    1: D.StructD<{
+        type: D.LiteralD<[1]>;
+        a: D.stringUD;
+    }>;
+    2: D.StructD<{
+        type: D.LiteralD<[2]>;
+        b: D.numberUD;
+    }>;
+}> = D.sum('type')({
   [1]: D.struct({ type: D.literal(1), a: D.string }),
   [2]: D.struct({ type: D.literal(2), b: D.number })
 })
@@ -265,14 +278,17 @@ The `lazy` combinator allows to define recursive and mutually recursive decoders
 
 ```ts
 interface Category {
-  title: string
-  subcategory: null | Category
+  name: string
+  categories: ReadonlyArray<Category>
 }
-
-const Category: D.Decoder<unknown, Category> = D.lazy('Category', () =>
+const Category: D.LazyD<
+  unknown,
+  DE.DecodeError<DE.UnknownRecordE | DE.StringE | DE.UnknownArrayE>,
+  Category
+> = D.lazy('Category', () =>
   D.struct({
-    title: D.string,
-    subcategory: D.nullable(Category)
+    name: D.string,
+    categories: D.array(Category)
   })
 )
 ```
@@ -318,9 +334,13 @@ export interface PositiveBrand {
 
 export type Positive = number & PositiveBrand
 
-export const Positive: D.Decoder<unknown, Positive> = pipe(
+export const Positive: D.Decoder<
+  unknown, 
+  D.RefinementError<DE.NumberLE | DE.NaNLE | DE.InfinityLE, number, Positive>,
+  Positive
+> = pipe(
   D.number,
-  D.refine((n): n is Positive => n > 0, 'Positive')
+  D.refine((n): n is Positive => n > 0)
 )
 
 console.log(isRight(Positive.decode(1))) // => true
@@ -333,13 +353,30 @@ The `parse` combinator is more powerful than `refine` in that you can change the
 
 ```ts
 import { pipe } from 'fp-ts/function'
-import { isRight } from 'fp-ts/Either'
+import { isRight } from 'fp-ts/These'
 
-export const NumberFromString: D.Decoder<unknown, number> = pipe(
+export interface NumberFromStringE {
+  readonly _tag: 'NumberFromStringE'
+  readonly actual: unknown
+}
+export interface NumberFromStringLE extends LeafE<NumberFromStringE> {}
+
+export const NumberFromString: D.Decoder<
+  unknown,
+  D.ParseError<DE.StringLE, NumberFromStringLE>,
+  number
+> = pipe(
   D.string,
   D.parse((s) => {
     const n = parseFloat(s)
-    return isNaN(n) ? D.failure(s, 'NumberFromString') : D.success(n)
+    return isNaN(n) 
+      ? _.failure(
+        DE.leafE({ 
+          _tag: "NumberFromStringE" as const, 
+          actual: n
+        }) as NumberFromStringLE
+      )
+      : _.success(n)
   })
 )
 
@@ -369,6 +406,14 @@ type PersonInputType = D.InputOf<typeof Person>
 /*
 type PersonInputType = unknown
 */
+
+type PersonErrorType = D.ErrorOf<typeof Person>
+/*
+type PersonErrorType = D.StructD<{
+    name: D.stringUD;
+    age: D.numberUD;
+}>
+*/
 ```
 
 Note that you can define an `interface` instead of a type alias
@@ -380,7 +425,16 @@ export interface Person extends D.TypeOf<typeof Person> {}
 # Built-in error reporter
 
 ```ts
-import { isLeft } from 'fp-ts/Either'
+import * as TH from 'fp-ts/These'
+import { draw } from '../src/TreeReporter'
+
+const printValue = (a: unknown): string => 'Value:\n' + util.format(a)
+const printErrors = (s: string): string => 'Errors:\n' + s
+const printWarnings = (s: string): string => 'Warnings:\n' + s
+
+export const printAll = TH.fold(printErrors, printValue, (e, a) => printValue(a) + '\n' + printWarnings(e))
+
+export const print = flow(TH.mapLeft(draw), printAll)
 
 export const Person = D.struct({
   name: D.string,
@@ -388,8 +442,8 @@ export const Person = D.struct({
 })
 
 const result = Person.decode({})
-if (isLeft(result)) {
-  console.log(D.draw(result.left))
+if (!TH.isRight(result)) {
+  console.log(print(result))
 }
 /*
 required property "name"
