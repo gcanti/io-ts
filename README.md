@@ -23,6 +23,14 @@ npm i io-ts fp-ts
 **Note**. [`fp-ts`](https://github.com/gcanti/fp-ts) is a peer dependency for `io-ts`
 
 # Usage
+```ts
+import * as t from 'io-ts'
+
+const User = t.type({
+  userId: t.number,
+  name: t.string
+})
+```
 
 ## Stable features
 
