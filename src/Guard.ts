@@ -234,7 +234,7 @@ export const sum = <T extends string>(tag: T) => <A>(
     UnknownRecord,
     refine((r): r is any => {
       const v = r[tag] as keyof A
-      if (v in members) {
+      if (Object.prototype.hasOwnProperty.call(members, v)) {
         return members[v].is(r)
       }
       return false

@@ -297,7 +297,7 @@ export function fromSum<M extends URIS2, E>(
     return {
       decode: (ir) => {
         const v: any = ir[tag]
-        if (v in members) {
+        if (Object.prototype.hasOwnProperty.call(members, v)) {
           return (members as any)[v].decode(ir)
         }
         return M.throwError(onTagError(tag, v, keys))

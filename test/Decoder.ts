@@ -461,6 +461,10 @@ describe('Decoder', () => {
         decoder.decode({ _tag: 'A', a: 1 }),
         E.left(FS.of(DE.key('a', DE.required, FS.of(DE.leaf(1, 'string')))))
       )
+      U.deepStrictEqual(
+        decoder.decode({ _tag: 'toString', a: 1 }),
+        E.left(FS.of(DE.key('_tag', DE.required, FS.of(DE.leaf('toString', '"A" | "B"')))))
+      )
     })
 
     it('should support empty records', () => {
