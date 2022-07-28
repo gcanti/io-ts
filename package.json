@@ -1,6 +1,6 @@
 {
   "name": "io-ts",
-  "version": "2.2.16",
+  "version": "2.2.17",
   "description": "TypeScript runtime type system for IO decoding/encoding",
   "main": "lib/index.js",
   "module": "es6/index.js",
