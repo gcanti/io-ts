@@ -93,7 +93,7 @@ export const UnknownArray: Guard<unknown, Array<unknown>> = {
  * @since 2.2.0
  */
 export const UnknownRecord: Guard<unknown, Record<string, unknown>> = {
-  is: (u: unknown): u is Record<string, unknown> => u !== null && typeof u === 'object' && !Array.isArray(u)
+  is: (u: unknown): u is Record<string, unknown> => u !== null && u !== undefined && typeof u === 'object' && !Array.isArray(u)
 }
 
 // -------------------------------------------------------------------------------------
