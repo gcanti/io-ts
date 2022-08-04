@@ -1566,6 +1566,19 @@ export function union<CS extends [Mixed, Mixed, ...Array<Mixed>]>(
   name: string = getUnionName(codecs)
 ): UnionC<CS> {
   const index = getIndex(codecs)
+  const deoptimizedValidate: UnionC<CS>['validate'] = (u, c) => {
+    const errors: Errors = []
+    for (let i = 0; i < codecs.length; i++) {
+      const codec = codecs[i]
+      const result = codec.validate(u, appendContext(c, String(i), codec, u))
+      if (isLeft(result)) {
+        pushAll(errors, result.left)
+      } else {
+        return success(result.right)
+      }
+    }
+    return failures(errors)
+  }
   if (index !== undefined && codecs.length > 0) {
     const [tag, groups] = index
     const len = groups.length
@@ -1595,7 +1608,7 @@ export function union<CS extends [Mixed, Mixed, ...Array<Mixed>]>(
         const r = e.right
         const i = find(r[tag])
         if (i === undefined) {
-          return failure(u, c)
+          return deoptimizedValidate(u, c)
         }
         const codec = codecs[i]
         return codec.validate(r, appendContext(c, String(i), codec, r))
@@ -1618,19 +1631,7 @@ export function union<CS extends [Mixed, Mixed, ...Array<Mixed>]>(
     return new UnionType(
       name,
       (u): u is TypeOf<CS[number]> => codecs.some((type) => type.is(u)),
-      (u, c) => {
-        const errors: Errors = []
-        for (let i = 0; i < codecs.length; i++) {
-          const codec = codecs[i]
-          const result = codec.validate(u, appendContext(c, String(i), codec, u))
-          if (isLeft(result)) {
-            pushAll(errors, result.left)
-          } else {
-            return success(result.right)
-          }
-        }
-        return failures(errors)
-      },
+      deoptimizedValidate,
       useIdentity(codecs)
         ? identity
         : (a) => {

@@ -50,8 +50,16 @@ describe('taggedUnion', () => {
       assertSuccess(OptionNumber.decode({ type: 'None' }))
       assertSuccess(OptionNumber.decode({ type: 'Some', value: 1 }))
       assertFailure(OptionNumber, null, ['Invalid value null supplied to : OptionNumber'])
-      assertFailure(OptionNumber, {}, ['Invalid value {} supplied to : OptionNumber'])
-      assertFailure(OptionNumber, { type: 'A' }, ['Invalid value {"type":"A"} supplied to : OptionNumber'])
+      assertFailure(OptionNumber, {}, [
+        'Invalid value undefined supplied to : OptionNumber/0: None/type: "None"',
+        'Invalid value undefined supplied to : OptionNumber/1: Some/type: "Some"',
+        'Invalid value undefined supplied to : OptionNumber/1: Some/value: number'
+      ])
+      assertFailure(OptionNumber, { type: 'A' }, [
+        'Invalid value "A" supplied to : OptionNumber/0: None/type: "None"',
+        'Invalid value "A" supplied to : OptionNumber/1: Some/type: "Some"',
+        'Invalid value undefined supplied to : OptionNumber/1: Some/value: number'
+      ])
       assertFailure(OptionNumber, { type: 'Some' }, [
         'Invalid value undefined supplied to : OptionNumber/1: Some/value: number'
       ])

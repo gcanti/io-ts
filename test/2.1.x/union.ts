@@ -1,7 +1,7 @@
 import * as assert from 'assert'
 import * as t from '../../src/index'
 import { assertFailure, assertStrictEqual, assertSuccess, NumberFromString } from './helpers'
-import { either } from 'fp-ts/lib/Either'
+import { either, orElse } from 'fp-ts/lib/Either'
 
 describe('union', () => {
   describe('name', () => {
@@ -199,7 +199,7 @@ describe('union', () => {
         }
       )
       assert.strictEqual(
-        // @ts-expect-error
+        // @ts-expect-error The intersection '{ a: "a"; } & { a: "b"; }' was reduced to 'never' because property 'a' has conflicting types in some constituents
         t.getTags(t.intersection([t.type({ a: t.literal('a') }), t.type({ a: t.literal('b') })])),
         t.emptyTags
       )
@@ -251,5 +251,33 @@ describe('union', () => {
     assert.deepStrictEqual(t.getIndex([M1, M2, M3]), undefined)
     assert.deepStrictEqual(t.getIndex([M1, M2, M4]), ['tag', [['a'], ['b'], ['c']]])
     assert.deepStrictEqual(t.getIndex([U1, M4]), ['tag', [['a', 'b'], ['c']]])
+  })
+
+  it('should play well with withFallback', () => {
+    function clone<C extends t.Any>(t: C): C {
+      const r = Object.create(Object.getPrototypeOf(t))
+      Object.assign(r, t)
+      return r
+    }
+    function withValidate<C extends t.Any>(codec: C, validate: C['validate'], name: string = codec.name): C {
+      const r: any = clone(codec)
+      r.validate = validate
+      // tslint:disable-next-line: deprecation
+      r.decode = (i: any) => validate(i, t.getDefaultContext(r))
+      r.name = name
+      return r
+    }
+    function withFallback<C extends t.Any>(codec: C, a: t.TypeOf<C>, name = `withFallback(${codec.name})`): C {
+      return withValidate(codec, (u, c) => orElse(() => t.success(a))(codec.validate(u, c)), name)
+    }
+    const A = t.type({
+      premium: withFallback(t.literal(true), true)
+    })
+
+    const B = t.type({
+      premium: withFallback(t.literal(false), false)
+    })
+    const AB = t.union([A, B])
+    assertSuccess(AB.decode({}))
   })
 })

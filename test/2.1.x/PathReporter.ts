@@ -5,14 +5,22 @@ import { NumberFromString } from './helpers'
 
 describe('PathReporter', () => {
   it('should use the function name as error message', () => {
-    // tslint:disable-next-line: no-empty
-    assert.deepStrictEqual(PathReporter.report(t.number.decode(function () {})), [
-      'Invalid value <function0> supplied to : number'
-    ])
-    // tslint:disable-next-line: no-empty
-    assert.deepStrictEqual(PathReporter.report(t.number.decode(function f() {})), [
-      'Invalid value f supplied to : number'
-    ])
+    assert.deepStrictEqual(
+      PathReporter.report(
+        t.number.decode(function () {
+          return undefined
+        })
+      ),
+      ['Invalid value <function0> supplied to : number']
+    )
+    assert.deepStrictEqual(
+      PathReporter.report(
+        t.number.decode(function f() {
+          return undefined
+        })
+      ),
+      ['Invalid value f supplied to : number']
+    )
   })
 
   it('should say something when there are no errors', () => {
