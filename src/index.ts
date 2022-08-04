@@ -175,7 +175,7 @@ export class Type<A, O = A, I = unknown> implements Decoder<I, A>, Encoder<A, O>
   pipe<B, IB, A extends IB, OB extends A>(
     this: Type<A, O, I>,
     ab: Type<B, OB, IB>,
-    name: string = `pipe(${this.name}, ${ab.name})`
+    name = `pipe(${this.name}, ${ab.name})`
   ): Type<B, O, I> {
     return new Type(
       name,
@@ -327,7 +327,7 @@ function enumerableRecord<D extends Mixed, C extends Mixed>(
   keys: Array<string>,
   domain: D,
   codomain: C,
-  name: string = `{ [K in ${domain.name}]: ${codomain.name} }`
+  name = `{ [K in ${domain.name}]: ${codomain.name} }`
 ): RecordC<D, C> {
   const len = keys.length
   return new DictionaryType(
@@ -341,7 +341,7 @@ function enumerableRecord<D extends Mixed, C extends Mixed>(
       const o = e.right
       const a: { [key: string]: any } = {}
       const errors: Errors = []
-      let changed: boolean = false
+      let changed = false
       for (let i = 0; i < len; i++) {
         const k = keys[i]
         const ok = o[k]
@@ -392,7 +392,7 @@ export function getDomainKeys<D extends Mixed>(domain: D): Record<string, unknow
 function nonEnumerableRecord<D extends Mixed, C extends Mixed>(
   domain: D,
   codomain: C,
-  name: string = `{ [K in ${domain.name}]: ${codomain.name} }`
+  name = `{ [K in ${domain.name}]: ${codomain.name} }`
 ): RecordC<D, C> {
   return new DictionaryType(
     name,
@@ -408,7 +408,7 @@ function nonEnumerableRecord<D extends Mixed, C extends Mixed>(
         const errors: Errors = []
         const keys = Object.keys(u)
         const len = keys.length
-        let changed: boolean = false
+        let changed = false
         for (let i = 0; i < len; i++) {
           let k = keys[i]
           const ok = u[k]
@@ -460,6 +460,7 @@ function getUnionName<CS extends [Mixed, Mixed, ...Array<Mixed>]>(codecs: CS): s
 /**
  * @internal
  */
+// eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types
 export function mergeAll(base: any, us: Array<any>): any {
   let equal = true
   let primitive = true
@@ -480,7 +481,7 @@ export function mergeAll(base: any, us: Array<any>): any {
   const r: any = {}
   for (const u of us) {
     for (const k in u) {
-      if (!r.hasOwnProperty(k) || baseIsNotADictionary || u[k] !== base[k]) {
+      if (!hasOwnProperty.call(r, k) || baseIsNotADictionary || u[k] !== base[k]) {
         r[k] = u[k]
       }
     }
@@ -584,7 +585,7 @@ function mergeTags(a: Tags, b: Tags): Tags {
   }
   let r: Tags = Object.assign({}, a)
   for (const k in b) {
-    if (a.hasOwnProperty(k)) {
+    if (hasOwnProperty.call(a, k)) {
       const intersection = intersect(a[k], b[k])
       if (isNonEmpty(intersection)) {
         r[k] = intersection
@@ -605,7 +606,7 @@ function intersectTags(a: Tags, b: Tags): Tags {
   }
   let r: Tags = emptyTags
   for (const k in a) {
-    if (b.hasOwnProperty(k)) {
+    if (hasOwnProperty.call(b, k)) {
       const intersection = intersect(a[k], b[k])
       if (intersection.length === 0) {
         if (r === emptyTags) {
@@ -1268,7 +1269,7 @@ export interface ArrayC<C extends Mixed> extends ArrayType<C, Array<TypeOf<C>>, 
  * @category combinators
  * @since 1.0.0
  */
-export function array<C extends Mixed>(item: C, name: string = `Array<${item.name}>`): ArrayC<C> {
+export function array<C extends Mixed>(item: C, name = `Array<${item.name}>`): ArrayC<C> {
   return new ArrayType(
     name,
     (u): u is Array<TypeOf<C>> => UnknownArray.is(u) && u.every(item.is),
@@ -1711,7 +1712,7 @@ export function intersection<A extends Mixed, B extends Mixed, C extends Mixed>(
 export function intersection<A extends Mixed, B extends Mixed>(codecs: [A, B], name?: string): IntersectionC<[A, B]>
 export function intersection<CS extends [Mixed, Mixed, ...Array<Mixed>]>(
   codecs: CS,
-  name: string = `(${codecs.map((type) => type.name).join(' & ')})`
+  name = `(${codecs.map((type) => type.name).join(' & ')})`
 ): IntersectionC<CS> {
   const len = codecs.length
   return new IntersectionType(
@@ -1814,7 +1815,7 @@ export function tuple<A extends Mixed, B extends Mixed>(codecs: [A, B], name?: s
 export function tuple<A extends Mixed>(codecs: [A], name?: string): TupleC<[A]>
 export function tuple<CS extends [Mixed, ...Array<Mixed>]>(
   codecs: CS,
-  name: string = `[${codecs.map((type) => type.name).join(', ')}]`
+  name = `[${codecs.map((type) => type.name).join(', ')}]`
 ): TupleC<CS> {
   const len = codecs.length
   return new TupleType(
@@ -1881,7 +1882,7 @@ export interface ReadonlyC<C extends Mixed>
  * @category combinators
  * @since 1.0.0
  */
-export function readonly<C extends Mixed>(codec: C, name: string = `Readonly<${codec.name}>`): ReadonlyC<C> {
+export function readonly<C extends Mixed>(codec: C, name = `Readonly<${codec.name}>`): ReadonlyC<C> {
   return new ReadonlyType(name, codec.is, codec.validate, codec.encode, codec)
 }
 
@@ -1914,10 +1915,7 @@ export interface ReadonlyArrayC<C extends Mixed>
  * @category combinators
  * @since 1.0.0
  */
-export function readonlyArray<C extends Mixed>(
-  item: C,
-  name: string = `ReadonlyArray<${item.name}>`
-): ReadonlyArrayC<C> {
+export function readonlyArray<C extends Mixed>(item: C, name = `ReadonlyArray<${item.name}>`): ReadonlyArrayC<C> {
   const codec = array(item)
   return new ReadonlyArrayType(name, codec.is, codec.validate, codec.encode, item) as any
 }
@@ -2255,7 +2253,7 @@ export interface RefinementC<C extends Any> extends RefinementType<C, TypeOf<C>,
 export function refinement<C extends Any>(
   codec: C,
   predicate: Predicate<TypeOf<C>>,
-  name: string = `(${codec.name} | ${getFunctionName(predicate)})`
+  name = `(${codec.name} | ${getFunctionName(predicate)})`
 ): // tslint:disable-next-line: deprecation
 RefinementC<C> {
   return new RefinementType(
