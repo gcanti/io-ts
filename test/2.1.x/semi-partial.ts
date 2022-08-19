@@ -2,12 +2,12 @@ import * as assert from 'assert'
 import { fold } from 'fp-ts/lib/Either'
 import { pipe } from 'fp-ts/lib/pipeable'
 import * as t from '../../src/index'
-import { assertFailure, assertStrictEqual, assertSuccess, NumberFromString } from './helpers'
+import { asOptional, assertFailure, assertStrictEqual, assertSuccess, NumberFromString, withDefault } from './helpers'
 
 describe('type', () => {
   describe('name', () => {
     it('should assign a default name', () => {
-      const T = t.semiPartial({ a: t.string, b: { type: t.string, optional: true } })
+      const T = t.semiPartial({ a: t.string, b: asOptional(t.string) })
       assert.strictEqual(T.name, '{ a: string, b?: string }')
     })
 
@@ -19,13 +19,13 @@ describe('type', () => {
 
   describe('is', () => {
     it('should return `true` on valid inputs', () => {
-      const T = t.semiPartial({ a: t.string, b: { type: t.string, optional: true } })
+      const T = t.semiPartial({ a: t.string, b: asOptional(t.string) })
       assert.strictEqual(T.is({ a: 'a' }), true)
       assert.strictEqual(T.is({ a: 'a', b: 'b' }), true)
     })
 
     it('should return `false` on invalid inputs', () => {
-      const T = t.semiPartial({ a: t.string, b: { type: t.string, optional: true } })
+      const T = t.semiPartial({ a: t.string, b: asOptional(t.string) })
       assert.strictEqual(T.is({}), false)
       assert.strictEqual(T.is({ a: 1 }), false)
       assert.strictEqual(T.is({ b: 'b' }), false)
@@ -38,7 +38,7 @@ describe('type', () => {
     })
 
     it('should allow additional properties', () => {
-      const T = t.semiPartial({ a: t.string, b: { type: t.string, optional: true } })
+      const T = t.semiPartial({ a: t.string, b: asOptional(t.string) })
       assert.strictEqual(T.is({ a: 'a', b: 'b', c: 'c' }), true)
     })
 
@@ -61,7 +61,7 @@ describe('type', () => {
           return 'b'
         }
       }
-      const T = t.semiPartial({ a: t.string, b: { type: t.string, optional: true } })
+      const T = t.semiPartial({ a: t.string, b: asOptional(t.string) })
       assert.strictEqual(T.is(new A()), true)
       assert.strictEqual(T.is(new B()), true)
       assert.strictEqual(T.is(new C()), false)
@@ -70,13 +70,13 @@ describe('type', () => {
 
   describe('decode', () => {
     it('should decode a isomorphic value', () => {
-      const T = t.semiPartial({ a: t.string, b: { type: t.string, optional: true } })
+      const T = t.semiPartial({ a: t.string, b: asOptional(t.string) })
       assertSuccess(T.decode({ a: 'a' }))
       assertSuccess(T.decode({ a: 'a', b: 'b' }))
     })
 
     it('should decode a prismatic value', () => {
-      const T = t.semiPartial({ a: NumberFromString, b: { type: NumberFromString, optional: true } })
+      const T = t.semiPartial({ a: NumberFromString, b: asOptional(NumberFromString) })
       assertSuccess(T.decode({ a: '1' }), { a: 1 })
       assertSuccess(T.decode({ a: '1', b: '2' }), { a: 1, b: 2 })
     })
@@ -110,7 +110,7 @@ describe('type', () => {
     })
 
     it('should fail decoding an invalid value', () => {
-      const T = t.semiPartial({ a: t.string, b: { type: t.string, optional: true } })
+      const T = t.semiPartial({ a: t.string, b: asOptional(t.string) })
       assertFailure(T, 1, ['Invalid value 1 supplied to : { a: string, b?: string }'])
       assertFailure(T, {}, ['Invalid value undefined supplied to : { a: string, b?: string }/a: string'])
       assertFailure(T, { a: 1 }, ['Invalid value 1 supplied to : { a: string, b?: string }/a: string'])
@@ -129,11 +129,19 @@ describe('type', () => {
       const T = t.semiPartial({ a: t.string, b: t.string })
       assertSuccess(T.decode(new A()))
     })
+
+    it('should support default values', () => {
+      const T = t.semiPartial({
+        name: withDefault(t.string, 'foo')
+      })
+      assertSuccess(T.decode({}), { name: 'foo' })
+      assertSuccess(T.decode({ name: 'a' }), { name: 'a' })
+    })
   })
 
   describe('encode', () => {
     it('should encode a isomorphic value', () => {
-      const T = t.semiPartial({ a: t.string, b: { type: t.string, optional: true } })
+      const T = t.semiPartial({ a: t.string, b: asOptional(t.string) })
       assert.deepStrictEqual(T.encode({ a: 'a' }), { a: 'a' })
       assert.deepStrictEqual(T.encode({ a: 'a', b: 'b' }), { a: 'a', b: 'b' })
     })
@@ -162,7 +170,7 @@ describe('type', () => {
   })
 
   it('should return the same reference if validation succeeded and nothing changed', () => {
-    const T = t.semiPartial({ a: t.string, b: { type: t.string, optional: true } })
+    const T = t.semiPartial({ a: t.string, b: asOptional(t.string) })
     const value1 = { a: 's' }
     assertStrictEqual(T.decode(value1), value1)
     const value2 = { a: 's', b: 't' }
@@ -170,7 +178,7 @@ describe('type', () => {
   })
 
   it('should return the same reference while encoding', () => {
-    const T = t.semiPartial({ a: t.string, b: { type: t.string, optional: true } })
+    const T = t.semiPartial({ a: t.string, b: asOptional(t.string) })
     assert.strictEqual(T.encode, t.identity)
   })
 

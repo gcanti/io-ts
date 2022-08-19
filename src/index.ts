@@ -1304,6 +1304,127 @@ export function array<C extends Mixed>(item: C, name = `Array<${item.name}>`): A
   )
 }
 
+function testRequiredProps(value: { [key: string]: unknown }, count: number, keys: string[], types: Mixed[]): boolean {
+  for (let i = 0; i < count; ++i) {
+    const key = keys[i]
+    const propValue = value[key]
+    if (propValue === undefined && !hasOwnProperty.call(value, key)) {
+      return false
+    }
+    const type = types[i]
+    if (!type.is(propValue)) {
+      return false
+    }
+  }
+  return true
+}
+
+function testOptionalProps(value: { [key: string]: unknown }, count: number, keys: string[], types: Mixed[]): boolean {
+  for (let i = 0; i < count; ++i) {
+    const key = keys[i]
+    const type = types[i]
+    const propValue = value[key]
+    if (propValue !== undefined && !type.is(propValue)) {
+      return false
+    }
+  }
+  return true
+}
+
+function validateRequiredProps<R extends { [key: string]: unknown }>(
+  record: R,
+  count: number,
+  keys: string[],
+  types: Mixed[],
+  errors: Errors,
+  context: Context
+): R {
+  let validRecord = record
+  for (let i = 0; i < count; ++i) {
+    const key = keys[i]
+    const type = types[i]
+    const propValue = record[key]
+    const result = type.validate(propValue, appendContext(context, key, type, propValue))
+    if (isLeft(result)) {
+      pushAll(errors, result.left)
+      continue
+    }
+    const validPropValue = result.right
+    if (validPropValue !== propValue || (validPropValue === undefined && !hasOwnProperty.call(record, key))) {
+      if (validRecord === record) {
+        validRecord = { ...record }
+      }
+      validRecord[key as keyof R] = validPropValue
+    }
+  }
+  return validRecord
+}
+
+function validateOptionalProps<R extends { [key: string]: unknown }>(
+  record: R,
+  count: number,
+  keys: string[],
+  types: Mixed[],
+  errors: Errors,
+  context: Context
+): R {
+  let validRecord = record
+  for (let i = 0; i < count; ++i) {
+    const key = keys[i]
+    const propValue = record[key]
+    const type = types[i]
+    const result = type.validate(propValue, appendContext(context, key, type, propValue))
+    if (isLeft(result)) {
+      if (propValue !== undefined) {
+        pushAll(errors, result.left)
+      }
+    } else {
+      const validPropValue = result.right
+      if (validPropValue !== propValue) {
+        if (validRecord === record) {
+          validRecord = { ...record }
+        }
+        validRecord[key as keyof R] = validPropValue
+      }
+    }
+  }
+  return validRecord
+}
+
+function encodeRequiredProps<R extends { [x: string]: any }>(
+  record: R,
+  result: { [x: string]: any },
+  count: number,
+  keys: string[],
+  types: Mixed[]
+): void {
+  for (let i = 0; i < count; ++i) {
+    const key = keys[i]
+    const encode = types[i].encode
+    if (encode !== identity) {
+      const propValue = record[key]
+      result[key] = encode(propValue)
+    }
+  }
+}
+
+function encodeOptionalProps<R extends { [x: string]: any }>(
+  record: R,
+  result: { [x: string]: any },
+  count: number,
+  keys: string[],
+  types: Mixed[]
+): void {
+  for (let i = 0; i < count; ++i) {
+    const key = keys[i]
+    const propValue = record[key]
+    const encode = types[i].encode
+    if (propValue !== undefined && encode !== identity) {
+      result[key] = encode(propValue)
+    }
+  }
+}
+
 /**
  * @since 1.0.0
  */
@@ -1340,57 +1461,22 @@ export function type<P extends Props>(props: P, name: string = getInterfaceTypeN
   return new InterfaceType(
     name,
     (u): u is { [K in keyof P]: TypeOf<P[K]> } => {
-      if (UnknownRecord.is(u)) {
-        for (let i = 0; i < len; i++) {
-          const k = keys[i]
-          const uk = u[k]
-          if ((uk === undefined && !hasOwnProperty.call(u, k)) || !types[i].is(uk)) {
-            return false
-          }
-        }
-        return true
-      }
-      return false
+      return UnknownRecord.is(u) && testRequiredProps(u, len, keys, types)
     },
     (u, c) => {
       const e = UnknownRecord.validate(u, c)
       if (isLeft(e)) {
         return e
       }
-      const o = e.right
-      let a = o
       const errors: Errors = []
-      for (let i = 0; i < len; i++) {
-        const k = keys[i]
-        const ak = a[k]
-        const type = types[i]
-        const result = type.validate(ak, appendContext(c, k, type, ak))
-        if (isLeft(result)) {
-          pushAll(errors, result.left)
-        } else {
-          const vak = result.right
-          if (vak !== ak || (vak === undefined && !hasOwnProperty.call(a, k))) {
-            /* istanbul ignore next */
-            if (a === o) {
-              a = { ...o }
-            }
-            a[k] = vak
-          }
-        }
-      }
+      const a = validateRequiredProps(e.right, len, keys, types, errors, c)
       return errors.length > 0 ? failures(errors) : success(a as any)
     },
     useIdentity(types)
       ? identity
       : (a) => {
           const s: { [x: string]: any } = { ...a }
-          for (let i = 0; i < len; i++) {
-            const k = keys[i]
-            const encode = types[i].encode
-            if (encode !== identity) {
-              s[k] = encode(a[k])
-            }
-          }
+          encodeRequiredProps(a, s, len, keys, types)
           return s as any
         },
     props
@@ -1436,59 +1522,22 @@ export function partial<P extends Props>(
   return new PartialType(
     name,
     (u): u is { [K in keyof P]?: TypeOf<P[K]> } => {
-      if (UnknownRecord.is(u)) {
-        for (let i = 0; i < len; i++) {
-          const k = keys[i]
-          const uk = u[k]
-          if (uk !== undefined && !props[k].is(uk)) {
-            return false
-          }
-        }
-        return true
-      }
-      return false
+      return UnknownRecord.is(u) && testOptionalProps(u, len, keys, types)
     },
     (u, c) => {
       const e = UnknownRecord.validate(u, c)
       if (isLeft(e)) {
         return e
       }
-      const o = e.right
-      let a = o
       const errors: Errors = []
-      for (let i = 0; i < len; i++) {
-        const k = keys[i]
-        const ak = a[k]
-        const type = props[k]
-        const result = type.validate(ak, appendContext(c, k, type, ak))
-        if (isLeft(result)) {
-          if (ak !== undefined) {
-            pushAll(errors, result.left)
-          }
-        } else {
-          const vak = result.right
-          if (vak !== ak) {
-            /* istanbul ignore next */
-            if (a === o) {
-              a = { ...o }
-            }
-            a[k] = vak
-          }
-        }
-      }
+      const a = validateOptionalProps(e.right, len, keys, types, errors, c)
       return errors.length > 0 ? failures(errors) : success(a as any)
     },
     useIdentity(types)
       ? identity
       : (a) => {
           const s: { [key: string]: any } = { ...a }
-          for (let i = 0; i < len; i++) {
-            const k = keys[i]
-            const ak = a[k]
-            if (ak !== undefined) {
-              s[k] = types[i].encode(ak)
-            }
-          }
+          encodeOptionalProps(a, s, len, keys, types)
           return s as any
         },
     props
@@ -1561,17 +1610,17 @@ export interface SemiPartialC<P extends SemiProps>
     unknown
   > {}
 
-interface PropsInfo<P extends SemiProps> {
+interface SemiPropsFields<P extends SemiProps> {
   count: number
   keys?: StrKey<P>[]
   types?: AsType<P[StrKey<P>]>[]
 }
 
-interface AllPropsInfo<P extends SemiProps> {
+interface SemiPropsInfo<P extends SemiProps> {
   readonly name: string
   readonly useIdentity: boolean
-  readonly required: PropsInfo<P>
-  readonly optional: PropsInfo<P>
+  readonly required: SemiPropsFields<P>
+  readonly optional: SemiPropsFields<P>
 }
 
 function isTypedProp<T>(prop: AnyProp<T>): prop is TypedProp<T> {
@@ -1588,7 +1637,7 @@ function isTypedProp<T>(prop: AnyProp<T>): prop is TypedProp<T> {
   }
 }
 
-function getPartialPropsInfo<P extends SemiProps>(properties: P, name: string | undefined): AllPropsInfo<P> {
+function getPartialPropsInfo<P extends SemiProps>(properties: P, name: string | undefined): SemiPropsInfo<P> {
   let requiredKeys: StrKey<P>[] | undefined
   let requiredTypes: AsType<P[StrKey<P>]>[] | undefined
   let requiredCount = 0
@@ -1707,117 +1756,35 @@ export function semiPartial<P extends SemiProps>(properties: P, name?: string): 
 
   return new SemiPartialType(
     typeName,
-    (u): u is SemiPartialC<P> => {
-      // is it a record?
+    (u): u is { [K in keyof P]: TypeOf<AsType<P[K]>> } => {
       if (!UnknownRecord.is(u)) {
         return false
       }
-
-      // test all the required properties
-      for (let i = 0; i < required.count; ++i) {
-        const key = required.keys![i]
-        const propValue = u[key]
-        if (propValue === undefined && !hasOwnProperty.call(u, key)) {
-          return false
-        }
-        const type = required.types![i]
-        if (!type.is(propValue)) {
-          return false
-        }
+      if (!testRequiredProps(u, required.count, required.keys!, required.types!)) {
+        return false
       }
-
-      // test all the optional properties
-      for (let i = 0; i < optional.count; ++i) {
-        const key = optional.keys![i]
-        const type = optional.types![i]
-        const propValue = u[key]
-        if (propValue !== undefined && !type.is(propValue)) {
-          return false
-        }
+      if (!testOptionalProps(u, optional.count, optional.keys!, optional.types!)) {
+        return false
       }
-
       return true
     },
     (u, ctx) => {
-      // validate it is a record
-      const urv = UnknownRecord.validate(u, ctx)
-      if (isLeft(urv)) {
-        return urv
+      const e = UnknownRecord.validate(u, ctx)
+      if (isLeft(e)) {
+        return e
       }
-
-      const rec = urv.right
       const errors: Errors = []
-      let validRec = rec
-
-      // validate all required properties
-      for (let i = 0; i < required.count; ++i) {
-        const key = required.keys![i]
-        const type = required.types![i]
-        const propValue = rec[key]
-        const result = type.validate(propValue, appendContext(ctx, key, type, propValue))
-        if (isLeft(result)) {
-          pushAll(errors, result.left)
-          continue
-        }
-        const validPropValue = result.right
-        if (validPropValue !== propValue || (validPropValue === undefined && !hasOwnProperty.call(rec, key))) {
-          if (validRec === rec) {
-            validRec = { ...rec }
-          }
-          validRec[key] = validPropValue
-        }
-      }
-
-      // validate all optional properties
-      for (let i = 0; i < optional.count; ++i) {
-        const key = optional.keys![i]
-        const propValue = rec[key]
-        if (propValue === undefined) {
-          continue
-        }
-        const type = optional.types![i]
-        const result = type.validate(propValue, appendContext(ctx, key, type, propValue))
-        if (isLeft(result)) {
-          pushAll(errors, result.left)
-          continue
-        }
-        const validPropValue = result.right
-        if (validPropValue !== propValue) {
-          if (validRec === rec) {
-            validRec = { ...rec }
-          }
-          validRec[key] = validPropValue
-        }
-      }
-
-      if (errors !== undefined && errors.length > 0) {
-        return failures(errors)
-      }
-      return success(validRec as any)
+      let a = e.right
+      a = validateRequiredProps(a, required.count, required.keys!, required.types!, errors, ctx)
+      a = validateOptionalProps(a, optional.count, optional.keys!, optional.types!, errors, ctx)
+      return errors.length > 0 ? failures(errors) : success(a as any)
     },
     useIdentity
       ? identity
       : (a) => {
           const result: { [x: string]: any } = { ...a }
-
-          for (let i = 0; i < required.count; ++i) {
-            const key = required.keys![i]
-            const encode = required.types![i].encode
-            if (encode !== identity) {
-              const propValue = result[key]
-              result[key] = encode(propValue)
-            }
-          }
-
-          for (let i = 0; i < optional.count; ++i) {
-            const key = optional.keys![i]
-            const propValue = result[key]
-            const encode = optional.types![i].encode
-            if (propValue !== undefined && encode !== identity) {
-              result[key] = encode(propValue)
-            }
-          }
-
+          encodeRequiredProps(a, result, required.count, required.keys!, required.types!)
+          encodeOptionalProps(a, result, optional.count, optional.keys!, optional.types!)
           return result as any
         },
     properties
