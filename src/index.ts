@@ -1660,7 +1660,7 @@ function getPartialPropsInfo<P extends SemiProps>(properties: P, name: string | 
     let propType: AsType<P[StrKey<P>]>
 
     if (isTypedProp(prop)) {
-      propIsOptional = prop.optional ?? false
+      propIsOptional = prop.optional || false
       propType = prop.type as AsType<P[StrKey<P>]>
     } else {
       propIsOptional = false
