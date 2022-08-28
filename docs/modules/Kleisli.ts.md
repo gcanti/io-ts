@@ -314,8 +314,8 @@ Added in v2.2.7
 export declare function literal<M extends URIS2, E>(
   M: MonadThrow2C<M, E>
 ): <I>(
-  onError: (i: I, values: readonly [Literal, ...Array<Literal>]) => E
-) => <A extends readonly [L, ...ReadonlyArray<L>], L extends Literal = Literal>(
+  onError: (i: I, values: readonly [S.Literal, ...ReadonlyArray<S.Literal>]) => E
+) => <A extends readonly [L, ...ReadonlyArray<L>], L extends S.Literal = S.Literal>(
   ...values: A
 ) => Kleisli<M, I, E, A[number]>
 ```

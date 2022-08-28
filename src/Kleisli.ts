@@ -18,7 +18,7 @@ import { Kind2, URIS2 } from 'fp-ts/lib/HKT'
 import { Monad2C } from 'fp-ts/lib/Monad'
 import { MonadThrow2C } from 'fp-ts/lib/MonadThrow'
 import * as G from './Guard'
-import { intersect_, Literal, memoize } from './Schemable'
+import * as S from './Schemable'
 import { Lazy, Refinement } from 'fp-ts/lib/function'
 
 // -------------------------------------------------------------------------------------
@@ -56,11 +56,11 @@ export function fromRefinement<M extends URIS2, E>(
 export function literal<M extends URIS2, E>(
   M: MonadThrow2C<M, E>
 ): <I>(
-  onError: (i: I, values: readonly [Literal, ...Array<Literal>]) => E
-) => <A extends readonly [L, ...ReadonlyArray<L>], L extends Literal = Literal>(
+  onError: (i: I, values: readonly [S.Literal, ...ReadonlyArray<S.Literal>]) => E
+) => <A extends readonly [L, ...ReadonlyArray<L>], L extends S.Literal = S.Literal>(
   ...values: A
 ) => Kleisli<M, I, E, A[number]> {
-  return (onError) => <A extends readonly [Literal, ...Array<Literal>]>(...values: A) => ({
+  return (onError) => <A extends readonly [S.Literal, ...Array<S.Literal>]>(...values: A) => ({
     decode: (i) => (G.literal(...values).is(i) ? M.of<A[number]>(i) : M.throwError(onError(i, values)))
   })
 }
@@ -273,7 +273,7 @@ export function intersect<M extends URIS2, E>(
   ): Kleisli<M, IA & IB, E, A & B> => ({
     decode: (i) =>
       M.ap(
-        M.map(left.decode(i), (a: A) => (b: B) => intersect_(a, b)),
+        M.map(left.decode(i), (a: A) => (b: B) => S.intersect_(a, b)),
         right.decode(i)
       )
   })
@@ -319,7 +319,7 @@ export function lazy<M extends URIS2>(
     id: string,
     f: () => Kleisli<M, I, E, A>
   ): Kleisli<M, I, E, A> => {
-    const get = memoize<void, Kleisli<M, I, E, A>>(f)
+    const get = S.memoize<void, Kleisli<M, I, E, A>>(f)
     return {
       decode: (u) => M.mapLeft(get().decode(u), (e) => onError(id, e))
     }

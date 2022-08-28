@@ -17,7 +17,7 @@ export interface JsonSchema<A> {
 // constructors
 // -------------------------------------------------------------------------------------
 
-export function literal<A extends readonly [S.Literal, ...ReadonlyArray<S.Literal>]>(
+export function literal<A extends readonly [L, ...ReadonlyArray<L>], L extends S.Literal = S.Literal>(
   ...values: A
 ): JsonSchema<A[number]> {
   return {
