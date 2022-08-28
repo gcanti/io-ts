@@ -114,7 +114,7 @@ export function partial<A>(properties: { [K in keyof A]: Eq<A[K]> }): Eq<Partial
       for (const k in properties) {
         const xk = x[k]
         const yk = y[k]
-        if (!(xk === undefined || yk === undefined ? xk === yk : properties[k].equals(xk!, yk!))) {
+        if (!(xk === undefined || yk === undefined ? xk === yk : properties[k].equals(xk as any, yk as any))) {
           return false
         }
       }
@@ -160,7 +160,7 @@ export function sum<T extends string>(
 ): <A>(members: { [K in keyof A]: Eq<A[K] & Record<T, K>> }) => Eq<A[keyof A]> {
   return (members: Record<string, Eq<any>>) => {
     return {
-      equals: (x: Record<string, any>, y: Record<string, any>) => {
+      equals: (x: any, y: any) => {
         const vx = x[tag]
         const vy = y[tag]
         if (vx !== vy) {

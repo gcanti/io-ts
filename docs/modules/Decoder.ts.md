@@ -479,7 +479,7 @@ Added in v2.2.8
 **Signature**
 
 ```ts
-export declare const literal: <A extends readonly [S.Literal, ...S.Literal[]]>(
+export declare const literal: <A extends readonly [L, ...L[]], L extends S.Literal>(
   ...values: A
 ) => Decoder<unknown, A[number]>
 ```

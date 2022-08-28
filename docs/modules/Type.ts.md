@@ -198,7 +198,7 @@ Added in v2.2.3
 **Signature**
 
 ```ts
-export declare const literal: <A extends readonly [S.Literal, ...S.Literal[]]>(...values: A) => Type<A[number]>
+export declare const literal: <A extends readonly [L, ...L[]], L extends S.Literal>(...values: A) => Type<A[number]>
 ```
 
 Added in v2.2.3

@@ -129,7 +129,7 @@ export const fromGuard = <I, A extends I>(guard: G.Guard<I, A>, expected: string
  * @category constructors
  * @since 2.2.7
  */
-export const literal: <A extends readonly [S.Literal, ...Array<S.Literal>]>(
+export const literal: <A extends readonly [L, ...ReadonlyArray<L>], L extends S.Literal>(
   ...values: A
 ) => TaskDecoder<unknown, A[number]> =
   /*#__PURE__*/

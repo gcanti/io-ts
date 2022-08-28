@@ -57,7 +57,9 @@ export function literal<M extends URIS2, E>(
   M: MonadThrow2C<M, E>
 ): <I>(
   onError: (i: I, values: readonly [Literal, ...Array<Literal>]) => E
-) => <A extends readonly [Literal, ...Array<Literal>]>(...values: A) => Kleisli<M, I, E, A[number]> {
+) => <A extends readonly [L, ...ReadonlyArray<L>], L extends Literal = Literal>(
+  ...values: A
+) => Kleisli<M, I, E, A[number]> {
   return (onError) => <A extends readonly [Literal, ...Array<Literal>]>(...values: A) => ({
     decode: (i) => (G.literal(...values).is(i) ? M.of<A[number]>(i) : M.throwError(onError(i, values)))
   })

@@ -14,6 +14,11 @@
 **Note**: Gaps between patch versions are faulty/broken releases.
 **Note**: A feature tagged as Experimental is in a high state of flux, you're at risk of it changing without notice.
 
+# 2.2.18
+
+- **Bug Fix**
+  - fix `typescript@4.8` errors, closes #656, closes #647 (@gcanti)
+
 # 2.2.17
 
 - **Bug Fix**

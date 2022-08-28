@@ -255,7 +255,9 @@ Added in v2.2.0
 **Signature**
 
 ```ts
-export declare const literal: <A extends readonly [Literal, ...Literal[]]>(...values: A) => Guard<unknown, A[number]>
+export declare const literal: <A extends readonly [L, ...L[]], L extends Literal = Literal>(
+  ...values: A
+) => Guard<unknown, A[number]>
 ```
 
 Added in v2.2.0

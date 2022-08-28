@@ -25,12 +25,14 @@ export interface Leaf<E> {
  * @category model
  * @since 2.2.7
  */
+// eslint-disable-next-line @typescript-eslint/prefer-as-const
 export const required: 'required' = 'required'
 
 /**
  * @category model
  * @since 2.2.7
  */
+// eslint-disable-next-line @typescript-eslint/prefer-as-const
 export const optional: 'optional' = 'optional'
 
 /**

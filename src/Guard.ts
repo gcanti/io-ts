@@ -46,7 +46,9 @@ export type InputOf<G> = G extends Guard<infer I, any> ? I : never
  * @category constructors
  * @since 2.2.0
  */
-export const literal = <A extends readonly [Literal, ...Array<Literal>]>(...values: A): Guard<unknown, A[number]> => ({
+export const literal = <A extends readonly [L, ...ReadonlyArray<L>], L extends Literal = Literal>(
+  ...values: A
+): Guard<unknown, A[number]> => ({
   is: (u: unknown): u is A[number] => values.findIndex((a) => a === u) !== -1
 })
 

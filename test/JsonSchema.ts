@@ -144,7 +144,7 @@ export function lazy<A>(id: string, f: () => JsonSchema<A>): JsonSchema<A> {
   return {
     compile: (definitions) => {
       if (definitions !== undefined) {
-        if (definitions.hasOwnProperty(id)) {
+        if (Object.prototype.hasOwnProperty.call(definitions, id)) {
           return C.make({ $ref })
         }
         definitions[id] = undefined
