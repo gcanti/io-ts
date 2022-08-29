@@ -608,9 +608,9 @@ required property "d"
       assert.deepStrictEqual(
         await pipe(lazyDecoder.decode({ a: '1', b: {} }), TE.mapLeft(_.draw))(),
         E.left(`lazy type A
-└─ optional property \"b\"
+└─ optional property "b"
    └─ lazy type A
-      └─ required property \"a\"
+      └─ required property "a"
          └─ cannot decode undefined, should be string`)
       )
     })

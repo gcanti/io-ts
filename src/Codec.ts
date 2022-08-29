@@ -13,7 +13,7 @@ import { Invariant3 } from 'fp-ts/lib/Invariant'
 import { pipe } from 'fp-ts/lib/pipeable'
 import * as D from './Decoder'
 import * as E from './Encoder'
-import { Literal } from './Schemable'
+import * as S from './Schemable'
 
 // -------------------------------------------------------------------------------------
 // model
@@ -60,7 +60,7 @@ export function fromDecoder<I, A>(decoder: D.Decoder<I, A>): Codec<I, A, A> {
  * @category constructors
  * @since 2.2.3
  */
-export function literal<A extends readonly [Literal, ...Array<Literal>]>(
+export function literal<A extends readonly [L, ...ReadonlyArray<L>], L extends S.Literal = S.Literal>(
   ...values: A
 ): Codec<unknown, A[number], A[number]> {
   return fromDecoder(D.literal(...values))

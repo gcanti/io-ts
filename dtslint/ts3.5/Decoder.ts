@@ -20,6 +20,48 @@ export type TypeOfNumberFromString = _.TypeOf<typeof NumberFromString>
 export type InputOfNumberFromString = _.InputOf<typeof NumberFromString>
 
 //
+// literal
+//
+
+// $ExpectType Decoder<unknown, "A">
+_.literal('A')
+
+// $ExpectType Decoder<unknown, "A" | "B">
+_.literal('A', 'B')
+
+// $ExpectType Decoder<unknown, "A">
+_.union(_.literal('A'))
+
+// $ExpectType Decoder<unknown, "A" | "B">
+_.union(_.literal('A'), _.literal('B'))
+
+// $ExpectType Decoder<unknown, { a: "A"; }>
+_.struct({
+  a: _.literal('A')
+})
+
+// $ExpectType Decoder<unknown, { a: "A"; } & { b: "B"; }>
+pipe(
+  _.struct({
+    a: _.literal('A')
+  }),
+  _.intersect(
+    _.struct({
+      b: _.literal('B')
+    })
+  )
+)
+
+import * as S from '../../src/Schemable'
+declare const literal: <A extends readonly [L, ...ReadonlyArray<L>], L extends S.Literal = S.Literal>(
+  ...values: A
+) => _.Decoder<unknown, A[number]>
+// $ExpectType Decoder<unknown, { a: "A"; }>
+_.struct({
+  a: literal('A')
+})
+
+//
 // fromStruct
 //
 

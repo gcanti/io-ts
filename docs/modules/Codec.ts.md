@@ -352,7 +352,7 @@ Added in v2.2.3
 **Signature**
 
 ```ts
-export declare function literal<A extends readonly [Literal, ...Array<Literal>]>(
+export declare function literal<A extends readonly [L, ...ReadonlyArray<L>], L extends S.Literal = S.Literal>(
   ...values: A
 ): Codec<unknown, A[number], A[number]>
 ```

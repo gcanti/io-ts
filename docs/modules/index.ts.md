@@ -650,39 +650,15 @@ Keeps the codec "kind".
 ```ts
 export declare function alias<A, O, P, I>(
   codec: PartialType<P, A, O, I>
-): <
-  // tslint:disable-next-line: deprecation
-  AA extends Exact<A, AA>,
-  // tslint:disable-next-line: deprecation
-  OO extends Exact<O, OO> = O,
-  // tslint:disable-next-line: deprecation
-  PP extends Exact<P, PP> = P,
-  II extends I = I
->() => PartialType<PP, AA, OO, II>
+): <AA extends A, OO extends O = O, PP extends P = P, II extends I = I>() => PartialType<PP, AA, OO, II>
 export declare function alias<A, O, P, I>(
   // tslint:disable-next-line: deprecation
   codec: StrictType<P, A, O, I>
-): <
-  // tslint:disable-next-line: deprecation
-  AA extends Exact<A, AA>,
-  // tslint:disable-next-line: deprecation
-  OO extends Exact<O, OO> = O,
-  // tslint:disable-next-line: deprecation
-  PP extends Exact<P, PP> = P,
-  II extends I = I
->() => // tslint:disable-next-line: deprecation
+): <AA extends A, OO extends O = O, PP extends P = P, II extends I = I>() => // tslint:disable-next-line: deprecation
 StrictType<PP, AA, OO, II>
 export declare function alias<A, O, P, I>(
   codec: InterfaceType<P, A, O, I>
-): <
-  // tslint:disable-next-line: deprecation
-  AA extends Exact<A, AA>,
-  // tslint:disable-next-line: deprecation
-  OO extends Exact<O, OO> = O,
-  // tslint:disable-next-line: deprecation
-  PP extends Exact<P, PP> = P,
-  II extends I = I
->() => InterfaceType<PP, AA, OO, II>
+): <AA extends A, OO extends O = O, PP extends P = P, II extends I = I>() => InterfaceType<PP, AA, OO, II>
 ```
 
 Added in v1.1.0

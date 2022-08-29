@@ -27,6 +27,7 @@ export type OfTest = TypeOf<typeof OfTest> // $ExpectType { a: string; b: { c: n
 make((S) => S.literal())
 make((S) => S.literal('a')) // $ExpectType Schema<"a">
 make((S) => S.literal('a', 'b', null)) // $ExpectType Schema<"a" | "b" | null>
+make((S) => S.literal<['a']>('a')) // $ExpectType Schema<"a">
 
 //
 // string
@@ -57,6 +58,7 @@ make((S) => S.nullable(S.string)) // $ExpectType Schema<string | null>
 //
 
 make((S) => S.struct({ a: S.string, b: S.struct({ c: S.number }) })) // $ExpectType Schema<{ a: string; b: { c: number; }; }>
+make((S) => S.struct({ a: S.literal('a') })) // $ExpectType Schema<{ a: "a"; }>
 
 //
 // partial

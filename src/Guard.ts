@@ -10,7 +10,7 @@
  */
 import { identity, Refinement } from 'fp-ts/lib/function'
 import { pipe } from 'fp-ts/lib/pipeable'
-import { Literal, memoize, Schemable1, WithRefine1, WithUnion1, WithUnknownContainers1 } from './Schemable'
+import * as S from './Schemable'
 
 // -------------------------------------------------------------------------------------
 // model
@@ -46,7 +46,9 @@ export type InputOf<G> = G extends Guard<infer I, any> ? I : never
  * @category constructors
  * @since 2.2.0
  */
-export const literal = <A extends readonly [Literal, ...Array<Literal>]>(...values: A): Guard<unknown, A[number]> => ({
+export const literal = <A extends readonly [L, ...ReadonlyArray<L>], L extends S.Literal = S.Literal>(
+  ...values: A
+): Guard<unknown, A[number]> => ({
   is: (u: unknown): u is A[number] => values.findIndex((a) => a === u) !== -1
 })
 
@@ -246,7 +248,7 @@ export const sum = <T extends string>(tag: T) => <A>(
  * @since 2.2.0
  */
 export const lazy = <A>(f: () => Guard<unknown, A>): Guard<unknown, A> => {
-  const get = memoize<void, Guard<unknown, A>>(f)
+  const get = S.memoize<void, Guard<unknown, A>>(f)
   return {
     is: (u: unknown): u is A => get().is(u)
   }
@@ -316,7 +318,7 @@ declare module 'fp-ts/lib/HKT' {
  * @category instances
  * @since 2.2.8
  */
-export const Schemable: Schemable1<URI> = {
+export const Schemable: S.Schemable1<URI> = {
   URI,
   literal,
   string,
@@ -328,7 +330,7 @@ export const Schemable: Schemable1<URI> = {
   partial,
   record,
   array,
-  tuple: tuple as Schemable1<URI>['tuple'],
+  tuple: tuple as S.Schemable1<URI>['tuple'],
   intersect,
   sum,
   lazy: (_, f) => lazy(f),
@@ -339,7 +341,7 @@ export const Schemable: Schemable1<URI> = {
  * @category instances
  * @since 2.2.8
  */
-export const WithUnknownContainers: WithUnknownContainers1<URI> = {
+export const WithUnknownContainers: S.WithUnknownContainers1<URI> = {
   UnknownArray,
   UnknownRecord
 }
@@ -348,14 +350,14 @@ export const WithUnknownContainers: WithUnknownContainers1<URI> = {
  * @category instances
  * @since 2.2.8
  */
-export const WithUnion: WithUnion1<URI> = {
-  union: union as WithUnion1<URI>['union']
+export const WithUnion: S.WithUnion1<URI> = {
+  union: union as S.WithUnion1<URI>['union']
 }
 
 /**
  * @category instances
  * @since 2.2.8
  */
-export const WithRefine: WithRefine1<URI> = {
-  refine: refine as WithRefine1<URI>['refine']
+export const WithRefine: S.WithRefine1<URI> = {
+  refine: refine as S.WithRefine1<URI>['refine']
 }
