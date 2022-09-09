@@ -17,7 +17,7 @@ export interface JsonSchema<A> {
 // constructors
 // -------------------------------------------------------------------------------------
 
-export function literal<A extends readonly [S.Literal, ...ReadonlyArray<S.Literal>]>(
+export function literal<A extends readonly [L, ...ReadonlyArray<L>], L extends S.Literal = S.Literal>(
   ...values: A
 ): JsonSchema<A[number]> {
   return {
@@ -144,7 +144,7 @@ export function lazy<A>(id: string, f: () => JsonSchema<A>): JsonSchema<A> {
   return {
     compile: (definitions) => {
       if (definitions !== undefined) {
-        if (definitions.hasOwnProperty(id)) {
+        if (Object.prototype.hasOwnProperty.call(definitions, id)) {
           return C.make({ $ref })
         }
         definitions[id] = undefined

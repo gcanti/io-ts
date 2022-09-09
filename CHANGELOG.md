@@ -14,6 +14,16 @@
 **Note**: Gaps between patch versions are faulty/broken releases.
 **Note**: A feature tagged as Experimental is in a high state of flux, you're at risk of it changing without notice.
 
+# 2.2.18
+
+- **Bug Fix**
+  - fix `typescript@4.8` errors, closes #656, closes #647 (@gcanti)
+
+# 2.2.17
+
+- **Bug Fix**
+  - Don't throw a TypeError when trying to decode a sum value that contains a dangerous string, #650 (@thewilkybarkid)
+
 # 2.2.16
 
 Experimental modules require `fp-ts@^2.5.0`.

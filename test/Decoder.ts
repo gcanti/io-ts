@@ -474,6 +474,10 @@ describe('Decoder', () => {
         decoder.decode({ _tag: 'A', a: 1 }),
         E.left(FS.of(DE.key('a', DE.required, FS.of(DE.leaf(1, 'string')))))
       )
+      assert.deepStrictEqual(
+        decoder.decode({ _tag: 'toString', a: 1 }),
+        E.left(FS.of(DE.key('_tag', DE.required, FS.of(DE.leaf('toString', '"A" | "B"')))))
+      )
     })
 
     it('should support empty records', () => {
@@ -591,9 +595,9 @@ required property "d"
       assert.deepStrictEqual(
         pipe(lazyDecoder.decode({ a: '1', b: {} }), E.mapLeft(_.draw)),
         E.left(`lazy type A
-└─ optional property \"b\"
+└─ optional property "b"
    └─ lazy type A
-      └─ required property \"a\"
+      └─ required property "a"
          └─ cannot decode undefined, should be string`)
       )
     })

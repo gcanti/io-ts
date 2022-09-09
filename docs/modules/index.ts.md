@@ -289,7 +289,7 @@ Added in v1.0.0
 pipe<B, IB, A extends IB, OB extends A>(
     this: Type<A, O, I>,
     ab: Type<B, OB, IB>,
-    name: string = `pipe(${this.name}, ${ab.name})`
+    name = `pipe(${this.name}, ${ab.name})`
   ): Type<B, O, I>
 ```
 
@@ -468,7 +468,7 @@ Added in v1.0.0
 **Signature**
 
 ```ts
-export declare function array<C extends Mixed>(item: C, name: string = `Array<${item.name}>`): ArrayC<C>
+export declare function array<C extends Mixed>(item: C, name = `Array<${item.name}>`): ArrayC<C>
 ```
 
 Added in v1.0.0
@@ -545,7 +545,7 @@ Added in v1.0.0
 **Signature**
 
 ```ts
-export declare function readonly<C extends Mixed>(codec: C, name: string = `Readonly<${codec.name}>`): ReadonlyC<C>
+export declare function readonly<C extends Mixed>(codec: C, name = `Readonly<${codec.name}>`): ReadonlyC<C>
 ```
 
 Added in v1.0.0
@@ -555,10 +555,7 @@ Added in v1.0.0
 **Signature**
 
 ```ts
-export declare function readonlyArray<C extends Mixed>(
-  item: C,
-  name: string = `ReadonlyArray<${item.name}>`
-): ReadonlyArrayC<C>
+export declare function readonlyArray<C extends Mixed>(item: C, name = `ReadonlyArray<${item.name}>`): ReadonlyArrayC<C>
 ```
 
 Added in v1.0.0
@@ -653,39 +650,15 @@ Keeps the codec "kind".
 ```ts
 export declare function alias<A, O, P, I>(
   codec: PartialType<P, A, O, I>
-): <
-  // tslint:disable-next-line: deprecation
-  AA extends Exact<A, AA>,
-  // tslint:disable-next-line: deprecation
-  OO extends Exact<O, OO> = O,
-  // tslint:disable-next-line: deprecation
-  PP extends Exact<P, PP> = P,
-  II extends I = I
->() => PartialType<PP, AA, OO, II>
+): <AA extends A, OO extends O = O, PP extends P = P, II extends I = I>() => PartialType<PP, AA, OO, II>
 export declare function alias<A, O, P, I>(
   // tslint:disable-next-line: deprecation
   codec: StrictType<P, A, O, I>
-): <
-  // tslint:disable-next-line: deprecation
-  AA extends Exact<A, AA>,
-  // tslint:disable-next-line: deprecation
-  OO extends Exact<O, OO> = O,
-  // tslint:disable-next-line: deprecation
-  PP extends Exact<P, PP> = P,
-  II extends I = I
->() => // tslint:disable-next-line: deprecation
+): <AA extends A, OO extends O = O, PP extends P = P, II extends I = I>() => // tslint:disable-next-line: deprecation
 StrictType<PP, AA, OO, II>
 export declare function alias<A, O, P, I>(
   codec: InterfaceType<P, A, O, I>
-): <
-  // tslint:disable-next-line: deprecation
-  AA extends Exact<A, AA>,
-  // tslint:disable-next-line: deprecation
-  OO extends Exact<O, OO> = O,
-  // tslint:disable-next-line: deprecation
-  PP extends Exact<P, PP> = P,
-  II extends I = I
->() => InterfaceType<PP, AA, OO, II>
+): <AA extends A, OO extends O = O, PP extends P = P, II extends I = I>() => InterfaceType<PP, AA, OO, II>
 ```
 
 Added in v1.1.0
@@ -736,7 +709,7 @@ Use `brand` instead.
 export declare function refinement<C extends Any>(
   codec: C,
   predicate: Predicate<TypeOf<C>>,
-  name: string = `(${codec.name} | ${getFunctionName(predicate)})`
+  name = `(${codec.name} | ${getFunctionName(predicate)})`
 ): // tslint:disable-next-line: deprecation
 RefinementC<C>
 ```

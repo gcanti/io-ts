@@ -32,8 +32,9 @@ export interface Type<A> extends t.Type<A, unknown, unknown> {}
  * @category constructors
  * @since 2.2.3
  */
-export const literal = <A extends readonly [S.Literal, ...Array<S.Literal>]>(...values: A): Type<A[number]> =>
-  t.union(values.map((v) => t.literal(v as any)) as any)
+export const literal = <A extends readonly [L, ...ReadonlyArray<L>], L extends S.Literal = S.Literal>(
+  ...values: A
+): Type<A[number]> => t.union(values.map((v) => t.literal(v as any)) as any)
 
 // -------------------------------------------------------------------------------------
 // primitives

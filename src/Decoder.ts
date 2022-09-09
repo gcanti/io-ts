@@ -130,7 +130,7 @@ export const fromGuard = <I, A extends I>(guard: G.Guard<I, A>, expected: string
  * @category constructors
  * @since 2.2.7
  */
-export const literal: <A extends readonly [S.Literal, ...Array<S.Literal>]>(
+export const literal: <A extends readonly [L, ...ReadonlyArray<L>], L extends S.Literal = S.Literal>(
   ...values: A
 ) => Decoder<unknown, A[number]> =
   /*#__PURE__*/
@@ -598,15 +598,18 @@ const toForest = (e: DecodeError): ReadonlyArray<Tree<string>> => {
   const stack = []
   let focus = e
   const res = []
+  // eslint-disable-next-line no-constant-condition
   while (true) {
     switch (focus._tag) {
       case 'Of':
-        res.push(toTree(focus.value))
-        const tmp = stack.pop()
-        if (tmp === undefined) {
-          return res
-        } else {
-          focus = tmp
+        {
+          res.push(toTree(focus.value))
+          const tmp = stack.pop()
+          if (tmp === undefined) {
+            return res
+          } else {
+            focus = tmp
+          }
         }
         break
       case 'Concat':

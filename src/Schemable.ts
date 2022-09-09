@@ -21,7 +21,9 @@ export type Literal = string | number | boolean | null
  */
 export interface Schemable<S> {
   readonly URI: S
-  readonly literal: <A extends readonly [Literal, ...Array<Literal>]>(...values: A) => HKT<S, A[number]>
+  readonly literal: <A extends readonly [L, ...ReadonlyArray<L>], L extends Literal = Literal>(
+    ...values: A
+  ) => HKT<S, A[number]>
   readonly string: HKT<S, string>
   readonly number: HKT<S, number>
   readonly boolean: HKT<S, boolean>
@@ -46,7 +48,9 @@ export interface Schemable<S> {
  */
 export interface Schemable1<S extends URIS> {
   readonly URI: S
-  readonly literal: <A extends readonly [Literal, ...Array<Literal>]>(...values: A) => Kind<S, A[number]>
+  readonly literal: <A extends readonly [L, ...ReadonlyArray<L>], L extends Literal = Literal>(
+    ...values: A
+  ) => Kind<S, A[number]>
   readonly string: Kind<S, string>
   readonly number: Kind<S, number>
   readonly boolean: Kind<S, boolean>
@@ -71,7 +75,9 @@ export interface Schemable1<S extends URIS> {
  */
 export interface Schemable2C<S extends URIS2, E> {
   readonly URI: S
-  readonly literal: <A extends readonly [Literal, ...Array<Literal>]>(...values: A) => Kind2<S, E, A[number]>
+  readonly literal: <A extends readonly [L, ...ReadonlyArray<L>], L extends Literal = Literal>(
+    ...values: A
+  ) => Kind2<S, E, A[number]>
   readonly string: Kind2<S, E, string>
   readonly number: Kind2<S, E, number>
   readonly boolean: Kind2<S, E, boolean>
