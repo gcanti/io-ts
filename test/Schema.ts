@@ -5,6 +5,7 @@ import * as D from '../src/Decoder'
 import * as Eq from '../src/Eq'
 import * as G from '../src/Guard'
 import { interpreter, make, Schema } from '../src/Schema'
+import * as S from '../src/Schema'
 import * as A from './Arbitrary'
 
 function check<A>(schema: Schema<A>): void {
@@ -20,12 +21,24 @@ describe('Schema', () => {
     check(make((S) => S.string))
   })
 
+  it('string primitive', () => {
+    check(S.string)
+  })
+
   it('number', () => {
     check(make((S) => S.number))
   })
 
+  it('number primitive', () => {
+    check(S.number)
+  })
+
   it('boolean', () => {
     check(make((S) => S.boolean))
+  })
+
+  it('boolean primitive', () => {
+    check(S.boolean)
   })
 
   it('literal', () => {
@@ -34,8 +47,18 @@ describe('Schema', () => {
     check(make((S) => S.literal('a', null)))
   })
 
+  it('literal combinator', () => {
+    check(S.literal('a'))
+    check(S.literal('a', 1))
+    check(S.literal('a', null))
+  })
+
   it('nullable', () => {
     check(make((S) => S.nullable(S.string)))
+  })
+
+  it('nullable combinator', () => {
+    check(S.nullable(S.string))
   })
 
   it('struct', () => {
@@ -46,6 +69,15 @@ describe('Schema', () => {
           age: S.number
         })
       )
+    )
+  })
+
+  it('struct combinator', () => {
+    check(
+      S.struct({
+        name: S.string,
+        age: S.number
+      })
     )
   })
 
@@ -60,12 +92,29 @@ describe('Schema', () => {
     )
   })
 
+  it('partial combinator', () => {
+    check(
+      S.partial({
+        name: S.string,
+        age: S.number
+      })
+    )
+  })
+
   it('record', () => {
     check(make((S) => S.record(S.string)))
   })
 
+  it('record combinator', () => {
+    check(S.record(S.string))
+  })
+
   it('array', () => {
     check(make((S) => S.array(S.string)))
+  })
+
+  it('array combinator', () => {
+    check(S.array(S.string))
   })
 
   it('tuple', () => {
@@ -74,8 +123,18 @@ describe('Schema', () => {
     check(make((S) => S.tuple(S.string, S.number)))
   })
 
+  it('tuple combinator', () => {
+    check(S.tuple())
+    check(S.tuple(S.string))
+    check(S.tuple(S.string, S.number))
+  })
+
   it('intersect', () => {
     check(make((S) => pipe(S.struct({ a: S.string }), S.intersect(S.struct({ b: S.number })))))
+  })
+
+  it('intersect combinator', () => {
+    check(pipe(S.struct({ a: S.string }), S.intersect(S.struct({ b: S.number }))))
   })
 
   it('sum', () => {
@@ -84,15 +143,34 @@ describe('Schema', () => {
     check(make((S) => S.sum('_tag')({ A: A(S), B: B(S) })))
   })
 
-  it('lazy', () => {
-    interface A {
-      a: string
-      b?: A
-      c?: number
-    }
+  it('sum combinator', () => {
+    const schemaA = S.struct({ _tag: S.literal('A'), a: S.string })
+    const schemaB = S.struct({ _tag: S.literal('B'), b: S.number })
+    check(S.sum('_tag')({ A: schemaA, B: schemaB }))
+  })
 
+  interface A {
+    a: string
+    b?: A
+    c?: number
+  }
+
+  it('lazy', () => {
     const schema: Schema<A> = make((S) =>
       S.lazy('A', () => pipe(S.struct({ a: S.string }), S.intersect(S.partial({ b: schema(S), c: S.number }))))
+    )
+    check(schema)
+  })
+
+  it('lazy combinator', () => {
+    const schema: Schema<A> = make(
+      pipe(
+        () => pipe(
+          S.struct({ a: S.string }),
+          S.intersect(S.partial({ b: schema, c: S.number }))
+        ),
+        S.lazy('A'),
+      )
     )
     check(schema)
   })

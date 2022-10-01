@@ -9,7 +9,7 @@
  * @since 2.2.0
  */
 import { HKT, Kind, Kind2, URIS, URIS2 } from 'fp-ts/lib/HKT'
-import { memoize, Schemable, Schemable1, Schemable2C } from './Schemable'
+import { memoize, Schemable, Schemable1, Schemable2C, Literal } from './Schemable'
 
 // -------------------------------------------------------------------------------------
 // model
@@ -34,6 +34,120 @@ export interface Schema<A> {
 export function make<A>(schema: Schema<A>): Schema<A> {
   return memoize(schema)
 }
+
+// -------------------------------------------------------------------------------------
+// combinators
+// -------------------------------------------------------------------------------------
+
+/**
+ * @category combinators
+ */
+export function struct<A>(properties: { [K in keyof A]: Schema<A[K]> }): Schema<A> {
+  return <S>(S: Schemable<S>) => {
+    const evaluatedProperties: { [K in keyof A]: HKT<S, A[K]> } = {} as any;
+    for (const key in properties) {
+      evaluatedProperties[key] = properties[key](S);
+    }
+    return S.struct(evaluatedProperties);
+  };
+}
+
+/**
+ * @category combinators
+ */
+export function literal<A extends readonly [L, ...ReadonlyArray<L>], L extends Literal = Literal>(
+  ...values: A
+): Schema<A[number]> {
+  return (S) => S.literal(...values);
+}
+
+/**
+ * @category combinators
+ */
+export function nullable<A>(schema: Schema<A>): Schema<A | null> {
+  return (S) => S.nullable(schema(S));
+}
+
+/**
+ * @category combinators
+ */
+export function partial<A>(properties: { [K in keyof A]: Schema<A[K]> }): Schema<Partial<{ [K in keyof A]: A[K] }>> {
+  return <S>(S: Schemable<S>) => {
+    const evaluatedProperties = {} as any;
+    for (const key in properties) {
+      evaluatedProperties[key] = properties[key](S);
+    }
+    return S.partial(evaluatedProperties);
+  };
+}
+
+/**
+ * @category combinators
+ */
+export function record<A>(schema: Schema<A>): Schema<Record<string, A>> {
+  return (S) => S.record(schema(S));
+}
+
+/**
+ * @category combinators
+ */
+export function array<A>(schema: Schema<A>): Schema<A[]> {
+  return (S) => S.array(schema(S));
+}
+
+/**
+ * @category combinators
+ */
+export function tuple<A extends ReadonlyArray<unknown>>(...components: { [K in keyof A]: Schema<A[K]> }): Schema<A> {
+  return (S) => S.tuple(...components.map((schema) => schema(S)) as any);
+}
+
+/**
+ * @category combinators
+ */
+export function intersect<B>(right: Schema<B>): <A>(left: Schema<A>) => Schema<A & B> {
+  return (left) => (S) => S.intersect(right(S))(left(S));
+}
+
+/**
+ * @category combinators
+ */
+export function sum<T extends string>(tag: T): <A>(members: { [K in keyof A]: Schema<A[K] & Record<T, K>> }) => Schema<A[keyof A]> {
+  return (members) => (S) => {
+    const evaluatedMembers = {} as any;
+    for (const key in members) {
+      evaluatedMembers[key] = members[key](S);
+    }
+    return S.sum(tag)(evaluatedMembers);
+  };
+}
+
+/**
+ * @category combinators
+ */
+export function lazy(id: string): <A>(f: () => Schema<A>) => Schema<A> {
+  return (f) => (S) => S.lazy(id, () => f()(S));
+}
+
+// -------------------------------------------------------------------------------------
+// primitives
+// -------------------------------------------------------------------------------------
+
+/**
+ * @category primitives
+ */
+export const number: Schema<number> = (S) => S.number;
+
+/**
+ * @category primitives
+ */
+export const string: Schema<string> = (S) => S.string;
+
+/**
+ * @category primitives
+ */
+export const boolean: Schema<boolean> = (S) => S.boolean;
+
 
 // -------------------------------------------------------------------------------------
 // utils
