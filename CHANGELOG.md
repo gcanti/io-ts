@@ -14,6 +14,11 @@
 **Note**: Gaps between patch versions are faulty/broken releases.
 **Note**: A feature tagged as Experimental is in a high state of flux, you're at risk of it changing without notice.
 
+# 2.2.19
+
+- **Bug Fix**
+  - allow `Error` to be decoded with `UnknownRecord`, #664 (@mlegenhausen)
+
 # 2.2.18
 
 - **Bug Fix**
