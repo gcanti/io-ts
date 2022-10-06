@@ -8,12 +8,12 @@ describe('UnknownRecord', () => {
       const T = t.UnknownRecord
       assert.strictEqual(T.is({}), true)
       assert.strictEqual(T.is({ a: 1 }), true)
+      assert.strictEqual(T.is(new Number()), true)
     })
 
     it('should return `false` for invalid objects', () => {
       const T = t.UnknownRecord
       assert.strictEqual(T.is(undefined), false)
-      assert.strictEqual(T.is(new Number()), false)
       // #407
       assert.strictEqual(T.is([]), false)
     })
@@ -24,6 +24,7 @@ describe('UnknownRecord', () => {
       const T = t.UnknownRecord
       assertSuccess(T.decode({}))
       assertSuccess(T.decode({ a: 1 }))
+      assertSuccess(T.decode(new Number()))
     })
 
     it('should fail validating an invalid value', () => {
@@ -33,7 +34,6 @@ describe('UnknownRecord', () => {
       assertFailure(T, true, ['Invalid value true supplied to : UnknownRecord'])
       assertFailure(T, null, ['Invalid value null supplied to : UnknownRecord'])
       assertFailure(T, undefined, ['Invalid value undefined supplied to : UnknownRecord'])
-      assertFailure(T, new Number(), ['Invalid value 0 supplied to : UnknownRecord'])
       // #407
       assertFailure(T, [], ['Invalid value [] supplied to : UnknownRecord'])
     })
