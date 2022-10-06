@@ -992,10 +992,7 @@ export class AnyDictionaryType extends Type<{ [key: string]: unknown }> {
   constructor() {
     super(
       'UnknownRecord',
-      (u): u is { [key: string]: unknown } => {
-        const s = Object.prototype.toString.call(u)
-        return s === '[object Object]' || s === '[object Window]'
-      },
+      (u): u is { [key: string]: unknown } => u !== null && typeof u === 'object' && !Array.isArray(u),
       (u, c) => (this.is(u) ? success(u) : failure(u, c)),
       identity
     )

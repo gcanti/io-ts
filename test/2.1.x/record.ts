@@ -28,6 +28,7 @@ describe('record', () => {
         const T1 = t.record(t.string, t.number)
         assert.strictEqual(T1.is({}), true)
         assert.strictEqual(T1.is({ a: 1 }), true)
+        assert.strictEqual(T1.is(new Number()), true)
 
         const T2 = t.record(t.string, NumberFromString)
         assert.strictEqual(T2.is({}), true)
@@ -42,7 +43,6 @@ describe('record', () => {
         const T1 = t.record(t.string, t.number)
         assert.strictEqual(T1.is({ a: 'a' }), false)
         assert.strictEqual(T1.is(null), false)
-        assert.strictEqual(T1.is(new Number()), false)
         // #407
         assert.strictEqual(T1.is([]), false)
 
@@ -73,6 +73,7 @@ describe('record', () => {
         const T = t.record(t.string, t.number)
         assertSuccess(T.decode({}))
         assertSuccess(T.decode({ a: 1 }))
+        assertSuccess(T.decode(new Number()))
       })
 
       it('should return the same reference while decoding isomorphic values', () => {
@@ -106,7 +107,6 @@ describe('record', () => {
         const T1 = t.record(t.string, t.number)
         assertFailure(T1, 1, ['Invalid value 1 supplied to : { [K in string]: number }'])
         assertFailure(T1, { aa: 's' }, ['Invalid value "s" supplied to : { [K in string]: number }/aa: number'])
-        assertFailure(T1, new Number(), ['Invalid value 0 supplied to : { [K in string]: number }'])
         // #407
         assertFailure(T1, [], ['Invalid value [] supplied to : { [K in string]: number }'])
         // #407
