@@ -2,6 +2,18 @@
   "name": "io-ts",
   "version": "2.2.19",
   "description": "TypeScript runtime type system for IO decoding/encoding",
+  "exports": {
+    ".": {
+      "types": "./lib/index.d.ts",
+      "require": "./lib/index.js",
+      "import": "./es6/index.js"
+    },
+    "./*": {
+      "types": "./lib/*.d.ts",
+      "require": "./lib/*.js",
+      "import": "./es6/*.js"
+    }
+  },
   "main": "lib/index.js",
   "module": "es6/index.js",
   "typings": "lib/index.d.ts",
