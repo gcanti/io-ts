@@ -6,7 +6,7 @@ export function strictInterfaceWithOptionals<R extends t.Props, O extends t.Prop
   required: R,
   optional: O,
   name?: string
-): t.Type<t.TypeOfProps<R> & t.TypeOfPartialProps<O>, t.OutputOfProps<R> & t.OutputOfPartialProps<O>> {
+): t.Type<t.TypeOfWithOptionalProps<R> & t.TypeOfPartialProps<O>, t.OutputOfWithOptionalProps<R> & t.OutputOfPartialProps<O>> {
   return t.exact(t.intersection([t.type(required), t.partial(optional)]), name)
 }
 

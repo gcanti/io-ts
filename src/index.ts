@@ -1329,7 +1329,7 @@ export class InterfaceType<P, A = any, O = A, I = unknown> extends Type<A, O, I>
   }
 }
 
-type TypeOfWithOptionalProps<P extends AnyProps> = (
+export type TypeOfWithOptionalProps<P extends AnyProps> = (
   {
     [K in keyof P]?: TypeOf<P[K]>
   } &
@@ -1338,7 +1338,7 @@ type TypeOfWithOptionalProps<P extends AnyProps> = (
   }
 )
 
-type OutputOfWithOptionalProps<P extends AnyProps> = (
+export type OutputOfWithOptionalProps<P extends AnyProps> = (
   {
     [K in keyof P]?: OutputOf<P[K]>
   } &
@@ -1451,14 +1451,7 @@ export function optional<A, O = A, I = unknown>(
       }
       return codec.validate(u, c)
     },
-    codec.encode === identity
-      ? identity
-      : (u) => {
-        if (u === undefined) {
-          return undefined as any
-        }
-        return codec.encode(u)
-      },
+    codec.encode,
     codec
   )
 }
