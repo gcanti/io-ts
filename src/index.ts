@@ -3,6 +3,8 @@
  */
 import { Either, isLeft, left, right } from 'fp-ts/lib/Either'
 import { Predicate, Refinement } from 'fp-ts/lib/function'
+import { ReadonlyNonEmptyArray } from 'fp-ts/lib/ReadonlyNonEmptyArray'
+import { readonlyNonEmptyArray } from 'fp-ts'
 
 // -------------------------------------------------------------------------------------
 // Decode error
@@ -23,7 +25,7 @@ export interface ContextEntry {
  * @category Decode error
  * @since 1.0.0
  */
-export interface Context extends ReadonlyArray<ContextEntry> {}
+export interface Context extends ReadonlyNonEmptyArray<ContextEntry> {}
 
 /**
  * @category Decode error
@@ -237,15 +239,8 @@ export function getContextEntry(key: string, decoder: Decoder<any, any>): Contex
 /**
  * @since 1.0.0
  */
-export function appendContext(c: Context, key: string, decoder: Decoder<any, any>, actual?: unknown): Context {
-  const len = c.length
-  const r = Array(len + 1)
-  for (let i = 0; i < len; i++) {
-    r[i] = c[i]
-  }
-  r[len] = { key, type: decoder, actual }
-  return r
-}
+export const appendContext = (c: Context, key: string, decoder: Decoder<any, any>, actual?: unknown): Context =>
+  readonlyNonEmptyArray.snoc(c, { key, type: decoder, actual })
 
 function pushAll<A>(xs: Array<A>, ys: Array<A>): void {
   const l = ys.length

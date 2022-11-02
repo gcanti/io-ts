@@ -374,7 +374,7 @@ Added in v1.0.0
 **Signature**
 
 ```ts
-export interface Context extends ReadonlyArray<ContextEntry> {}
+export interface Context extends ReadonlyNonEmptyArray<ContextEntry> {}
 ```
 
 Added in v1.0.0
@@ -2123,7 +2123,7 @@ Added in v1.0.0
 **Signature**
 
 ```ts
-export declare function appendContext(c: Context, key: string, decoder: Decoder<any, any>, actual?: unknown): Context
+export declare const appendContext: (c: Context, key: string, decoder: Decoder<any, any>, actual?: unknown) => Context
 ```
 
 Added in v1.0.0
