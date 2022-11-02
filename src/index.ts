@@ -42,7 +42,7 @@ export interface ValidationError {
  * @category Decode error
  * @since 1.0.0
  */
-export interface Errors extends Array<ValidationError> {}
+export interface Errors extends NonEmptyArray<ValidationError> {}
 
 /**
  * @category Decode error
@@ -340,7 +340,7 @@ function enumerableRecord<D extends Mixed, C extends Mixed>(
       }
       const o = e.right
       const a: { [key: string]: any } = {}
-      const errors: Errors = []
+      const errors: ValidationError[] = []
       let changed = false
       for (let i = 0; i < len; i++) {
         const k = keys[i]
@@ -354,7 +354,7 @@ function enumerableRecord<D extends Mixed, C extends Mixed>(
           a[k] = vok
         }
       }
-      return errors.length > 0 ? failures(errors) : success((changed || Object.keys(o).length !== len ? a : o) as any)
+      return isNonEmpty(errors) ? failures(errors) : success((changed || Object.keys(o).length !== len ? a : o) as any)
     },
     codomain.encode === identity
       ? identity
@@ -405,7 +405,7 @@ function nonEnumerableRecord<D extends Mixed, C extends Mixed>(
     (u, c) => {
       if (UnknownRecord.is(u)) {
         const a: { [key: string]: any } = {}
-        const errors: Errors = []
+        const errors: ValidationError[] = []
         const keys = Object.keys(u)
         const len = keys.length
         let changed = false
@@ -429,7 +429,7 @@ function nonEnumerableRecord<D extends Mixed, C extends Mixed>(
             }
           }
         }
-        return errors.length > 0 ? failures(errors) : success((changed ? a : u) as any)
+        return isNonEmpty(errors) ? failures(errors) : success((changed ? a : u) as any)
       }
       if (isAnyC(codomain) && Array.isArray(u)) {
         return success(u)
@@ -1278,7 +1278,7 @@ export function array<C extends Mixed>(item: C, name = `Array<${item.name}>`): A
       const us = e.right
       const len = us.length
       let as: Array<TypeOf<C>> = us
-      const errors: Errors = []
+      const errors: ValidationError[] = []
       for (let i = 0; i < len; i++) {
         const ui = us[i]
         const result = item.validate(ui, appendContext(c, String(i), item, ui))
@@ -1294,7 +1294,7 @@ export function array<C extends Mixed>(item: C, name = `Array<${item.name}>`): A
           }
         }
       }
-      return errors.length > 0 ? failures(errors) : success(as)
+      return isNonEmpty(errors) ? failures(errors) : success(as)
     },
     item.encode === identity ? identity : (a) => a.map(item.encode),
     item
@@ -1356,7 +1356,7 @@ export function type<P extends Props>(props: P, name: string = getInterfaceTypeN
       }
       const o = e.right
       let a = o
-      const errors: Errors = []
+      const errors: ValidationError[] = []
       for (let i = 0; i < len; i++) {
         const k = keys[i]
         const ak = a[k]
@@ -1375,7 +1375,7 @@ export function type<P extends Props>(props: P, name: string = getInterfaceTypeN
           }
         }
       }
-      return errors.length > 0 ? failures(errors) : success(a as any)
+      return isNonEmpty(errors) ? failures(errors) : success(a as any)
     },
     useIdentity(types)
       ? identity
@@ -1452,7 +1452,7 @@ export function partial<P extends Props>(
       }
       const o = e.right
       let a = o
-      const errors: Errors = []
+      const errors: ValidationError[] = []
       for (let i = 0; i < len; i++) {
         const k = keys[i]
         const ak = a[k]
@@ -1473,7 +1473,7 @@ export function partial<P extends Props>(
           }
         }
       }
-      return errors.length > 0 ? failures(errors) : success(a as any)
+      return isNonEmpty(errors) ? failures(errors) : success(a as any)
     },
     useIdentity(types)
       ? identity
@@ -1616,7 +1616,7 @@ export function union<CS extends [Mixed, Mixed, ...Array<Mixed>]>(
       name,
       (u): u is TypeOf<CS[number]> => codecs.some((type) => type.is(u)),
       (u, c) => {
-        const errors: Errors = []
+        const errors: ValidationError[] = []
         for (let i = 0; i < codecs.length; i++) {
           const codec = codecs[i]
           const result = codec.validate(u, appendContext(c, String(i), codec, u))
@@ -1626,7 +1626,7 @@ export function union<CS extends [Mixed, Mixed, ...Array<Mixed>]>(
             return success(result.right)
           }
         }
-        return failures(errors)
+        return failures(errors as Errors)
       },
       useIdentity(codecs)
         ? identity
@@ -1719,7 +1719,7 @@ export function intersection<CS extends [Mixed, Mixed, ...Array<Mixed>]>(
       ? success
       : (u, c) => {
           const us: Array<unknown> = []
-          const errors: Errors = []
+          const errors: ValidationError[] = []
           for (let i = 0; i < len; i++) {
             const codec = codecs[i]
             const result = codec.validate(u, appendContext(c, String(i), codec, u))
@@ -1729,7 +1729,7 @@ export function intersection<CS extends [Mixed, Mixed, ...Array<Mixed>]>(
               us.push(result.right)
             }
           }
-          return errors.length > 0 ? failures(errors) : success(mergeAll(u, us))
+          return isNonEmpty(errors) ? failures(errors) : success(mergeAll(u, us))
         },
     codecs.length === 0
       ? identity
@@ -1825,7 +1825,7 @@ export function tuple<CS extends [Mixed, ...Array<Mixed>]>(
       }
       const us = e.right
       let as: Array<any> = us.length > len ? us.slice(0, len) : us // strip additional components
-      const errors: Errors = []
+      const errors: ValidationError[] = []
       for (let i = 0; i < len; i++) {
         const a = us[i]
         const type = codecs[i]
@@ -1843,7 +1843,7 @@ export function tuple<CS extends [Mixed, ...Array<Mixed>]>(
           }
         }
       }
-      return errors.length > 0 ? failures(errors) : success(as)
+      return isNonEmpty(errors) ? failures(errors) : success(as)
     },
     useIdentity(codecs) ? identity : (a) => codecs.map((type, i) => type.encode(a[i])),
     codecs

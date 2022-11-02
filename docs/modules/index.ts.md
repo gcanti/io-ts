@@ -399,7 +399,7 @@ Added in v1.0.0
 **Signature**
 
 ```ts
-export interface Errors extends Array<ValidationError> {}
+export interface Errors extends NonEmptyArray<ValidationError> {}
 ```
 
 Added in v1.0.0
