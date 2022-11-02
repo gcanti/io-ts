@@ -15,7 +15,7 @@ function stringify(v: any): string {
     }
     return v > 0 ? 'Infinity' : '-Infinity'
   }
-  return JSON.stringify(v)
+  return JSON.stringify(v, (_key: string, value: unknown) => (typeof value === 'bigint' ? `BigInt(${value})` : value))
 }
 
 function getContextPath(context: Context): string {
