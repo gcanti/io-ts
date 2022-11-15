@@ -57,12 +57,7 @@ export function struct<A>(properties: { [K in keyof A]: Arbitrary<A[K]> }): Arbi
 }
 
 export function partial<A>(properties: { [K in keyof A]: Arbitrary<A[K]> }): Arbitrary<Partial<A>> {
-  const keys = fc.oneof(...Object.keys(properties).map((p) => fc.constant(p)))
-  return keys.chain((key) => {
-    const p: any = { ...properties }
-    delete p[key]
-    return fc.record(p)
-  })
+  return fc.record(properties, { withDeletedKeys: true })
 }
 
 export function record<A>(codomain: Arbitrary<A>): Arbitrary<Record<string, A>> {
