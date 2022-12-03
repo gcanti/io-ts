@@ -45,6 +45,7 @@ Added in v1.0.0
   - [readonlyArray](#readonlyarray)
   - [record](#record)
   - [recursion](#recursion)
+  - [refinement](#refinement)
   - [strict](#strict)
   - [tuple](#tuple)
   - [type](#type)
@@ -53,17 +54,20 @@ Added in v1.0.0
   - [~~clean~~](#clean)
   - [~~dictionary~~](#dictionary)
   - [~~interface~~](#interface)
-  - [~~refinement~~](#refinement)
   - [~~taggedUnion~~](#taggedunion)
 - [constructors](#constructors)
   - [keyof](#keyof)
   - [literal](#literal)
 - [primitives](#primitives)
+  - [Function](#function)
   - [Int](#int)
+  - [Integer](#integer)
   - [UnknownArray](#unknownarray)
   - [UnknownRecord](#unknownrecord)
+  - [any](#any)
   - [bigint](#bigint)
   - [boolean](#boolean)
+  - [never](#never)
   - [null](#null)
   - [nullType](#nulltype)
   - [number](#number)
@@ -74,37 +78,39 @@ Added in v1.0.0
   - [voidType](#voidtype)
   - [~~Array~~](#array)
   - [~~Dictionary~~](#dictionary)
-  - [~~Function~~](#function)
-  - [~~Integer~~](#integer)
-  - [~~any~~](#any)
-  - [~~never~~](#never)
   - [~~object~~](#object)
 - [utils](#utils)
   - [Any (interface)](#any-interface)
   - [AnyArrayType (class)](#anyarraytype-class)
     - [\_tag (property)](#_tag-property)
+  - [AnyC (interface)](#anyc-interface)
   - [AnyDictionaryType (class)](#anydictionarytype-class)
     - [\_tag (property)](#_tag-property-1)
   - [AnyProps (interface)](#anyprops-interface)
+  - [AnyType (class)](#anytype-class)
+    - [\_tag (property)](#_tag-property-2)
   - [ArrayC (interface)](#arrayc-interface)
   - [ArrayType (class)](#arraytype-class)
-    - [\_tag (property)](#_tag-property-2)
+    - [\_tag (property)](#_tag-property-3)
   - [BigIntC (interface)](#bigintc-interface)
   - [BigIntType (class)](#biginttype-class)
-    - [\_tag (property)](#_tag-property-3)
+    - [\_tag (property)](#_tag-property-4)
   - [BooleanC (interface)](#booleanc-interface)
   - [BooleanType (class)](#booleantype-class)
-    - [\_tag (property)](#_tag-property-4)
+    - [\_tag (property)](#_tag-property-5)
   - [Brand (interface)](#brand-interface)
   - [BrandC (interface)](#brandc-interface)
   - [Branded (type alias)](#branded-type-alias)
   - [Decode (type alias)](#decode-type-alias)
   - [DictionaryType (class)](#dictionarytype-class)
-    - [\_tag (property)](#_tag-property-5)
+    - [\_tag (property)](#_tag-property-6)
   - [Encode (type alias)](#encode-type-alias)
   - [ExactC (interface)](#exactc-interface)
   - [ExactType (class)](#exacttype-class)
-    - [\_tag (property)](#_tag-property-6)
+    - [\_tag (property)](#_tag-property-7)
+  - [FunctionC (interface)](#functionc-interface)
+  - [FunctionType (class)](#functiontype-class)
+    - [\_tag (property)](#_tag-property-8)
   - [HasProps (type alias)](#hasprops-type-alias)
   - [HasPropsIntersection (interface)](#haspropsintersection-interface)
   - [HasPropsReadonly (interface)](#haspropsreadonly-interface)
@@ -112,88 +118,82 @@ Added in v1.0.0
   - [Int (type alias)](#int-type-alias)
   - [IntBrand (interface)](#intbrand-interface)
   - [InterfaceType (class)](#interfacetype-class)
-    - [\_tag (property)](#_tag-property-7)
+    - [\_tag (property)](#_tag-property-9)
   - [IntersectionC (interface)](#intersectionc-interface)
   - [IntersectionType (class)](#intersectiontype-class)
-    - [\_tag (property)](#_tag-property-8)
+    - [\_tag (property)](#_tag-property-10)
   - [Is (type alias)](#is-type-alias)
   - [KeyofC (interface)](#keyofc-interface)
   - [KeyofType (class)](#keyoftype-class)
-    - [\_tag (property)](#_tag-property-9)
+    - [\_tag (property)](#_tag-property-11)
   - [LiteralC (interface)](#literalc-interface)
   - [LiteralType (class)](#literaltype-class)
-    - [\_tag (property)](#_tag-property-10)
+    - [\_tag (property)](#_tag-property-12)
   - [Mixed (interface)](#mixed-interface)
+  - [NeverC (interface)](#neverc-interface)
+  - [NeverType (class)](#nevertype-class)
+    - [\_tag (property)](#_tag-property-13)
   - [NullC (interface)](#nullc-interface)
   - [NullType (class)](#nulltype-class)
-    - [\_tag (property)](#_tag-property-11)
+    - [\_tag (property)](#_tag-property-14)
   - [NumberC (interface)](#numberc-interface)
   - [NumberType (class)](#numbertype-class)
-    - [\_tag (property)](#_tag-property-12)
+    - [\_tag (property)](#_tag-property-15)
   - [OutputOfDictionary (type alias)](#outputofdictionary-type-alias)
   - [OutputOfPartialProps (type alias)](#outputofpartialprops-type-alias)
   - [OutputOfProps (type alias)](#outputofprops-type-alias)
   - [PartialC (interface)](#partialc-interface)
   - [PartialType (class)](#partialtype-class)
-    - [\_tag (property)](#_tag-property-13)
+    - [\_tag (property)](#_tag-property-16)
   - [Props (interface)](#props-interface)
   - [ReadonlyArrayC (interface)](#readonlyarrayc-interface)
   - [ReadonlyArrayType (class)](#readonlyarraytype-class)
-    - [\_tag (property)](#_tag-property-14)
+    - [\_tag (property)](#_tag-property-17)
   - [ReadonlyC (interface)](#readonlyc-interface)
   - [ReadonlyType (class)](#readonlytype-class)
-    - [\_tag (property)](#_tag-property-15)
+    - [\_tag (property)](#_tag-property-18)
   - [RecordC (interface)](#recordc-interface)
   - [RecursiveType (class)](#recursivetype-class)
-    - [\_tag (property)](#_tag-property-16)
+    - [\_tag (property)](#_tag-property-19)
     - [type (property)](#type-property)
+  - [RefinementC (interface)](#refinementc-interface)
   - [RefinementType (class)](#refinementtype-class)
-    - [\_tag (property)](#_tag-property-17)
+    - [\_tag (property)](#_tag-property-20)
   - [StringC (interface)](#stringc-interface)
   - [StringType (class)](#stringtype-class)
-    - [\_tag (property)](#_tag-property-18)
+    - [\_tag (property)](#_tag-property-21)
   - [TupleC (interface)](#tuplec-interface)
   - [TupleType (class)](#tupletype-class)
-    - [\_tag (property)](#_tag-property-19)
+    - [\_tag (property)](#_tag-property-22)
   - [TypeC (interface)](#typec-interface)
   - [TypeOfDictionary (type alias)](#typeofdictionary-type-alias)
   - [TypeOfPartialProps (type alias)](#typeofpartialprops-type-alias)
   - [TypeOfProps (type alias)](#typeofprops-type-alias)
   - [UndefinedC (interface)](#undefinedc-interface)
   - [UndefinedType (class)](#undefinedtype-class)
-    - [\_tag (property)](#_tag-property-20)
+    - [\_tag (property)](#_tag-property-23)
   - [UnionC (interface)](#unionc-interface)
   - [UnionType (class)](#uniontype-class)
-    - [\_tag (property)](#_tag-property-21)
+    - [\_tag (property)](#_tag-property-24)
   - [UnknownArrayC (interface)](#unknownarrayc-interface)
   - [UnknownC (interface)](#unknownc-interface)
   - [UnknownRecordC (interface)](#unknownrecordc-interface)
   - [UnknownType (class)](#unknowntype-class)
-    - [\_tag (property)](#_tag-property-22)
+    - [\_tag (property)](#_tag-property-25)
   - [Validate (type alias)](#validate-type-alias)
   - [VoidC (interface)](#voidc-interface)
   - [VoidType (class)](#voidtype-class)
-    - [\_tag (property)](#_tag-property-23)
+    - [\_tag (property)](#_tag-property-26)
   - [appendContext](#appendcontext)
   - [getContextEntry](#getcontextentry)
   - [getFunctionName](#getfunctionname)
   - [identity](#identity)
-  - [~~AnyC~~ (interface)](#anyc-interface)
-  - [~~AnyType~~ (class)](#anytype-class)
-    - [\_tag (property)](#_tag-property-24)
   - [~~Compact~~ (type alias)](#compact-type-alias)
   - [~~Exact~~ (type alias)](#exact-type-alias)
-  - [~~FunctionC~~ (interface)](#functionc-interface)
-  - [~~FunctionType~~ (class)](#functiontype-class)
-    - [\_tag (property)](#_tag-property-25)
-  - [~~NeverC~~ (interface)](#neverc-interface)
-  - [~~NeverType~~ (class)](#nevertype-class)
-    - [\_tag (property)](#_tag-property-26)
   - [~~ObjectC~~ (interface)](#objectc-interface)
   - [~~ObjectType~~ (class)](#objecttype-class)
     - [\_tag (property)](#_tag-property-27)
   - [~~PropsOf~~ (type alias)](#propsof-type-alias)
-  - [~~RefinementC~~ (interface)](#refinementc-interface)
   - [~~StrictC~~ (interface)](#strictc-interface)
   - [~~StrictType~~ (class)](#stricttype-class)
     - [\_tag (property)](#_tag-property-28)
@@ -583,6 +583,25 @@ export declare function recursion<A, O = A, I = unknown, C extends Type<A, O, I>
 
 Added in v1.0.0
 
+## refinement
+
+**Signature**
+
+```ts
+export declare function refinement<C extends Any, B extends TypeOf<C>>(
+  codec: C,
+  refinement: Refinement<TypeOf<C>, B>,
+  name?: string
+): RefinementC<C, B>
+export declare function refinement<C extends Any>(
+  codec: C,
+  predicate: Predicate<TypeOf<C>>,
+  name?: string
+): RefinementC<C>
+```
+
+Added in v1.0.0
+
 ## strict
 
 Strips additional properties, equivalent to `exact(type(props))`.
@@ -699,23 +718,6 @@ export declare const interface: typeof type
 
 Added in v1.0.0
 
-## ~~refinement~~
-
-Use `brand` instead.
-
-**Signature**
-
-```ts
-export declare function refinement<C extends Any>(
-  codec: C,
-  predicate: Predicate<TypeOf<C>>,
-  name = `(${codec.name} | ${getFunctionName(predicate)})`
-): // tslint:disable-next-line: deprecation
-RefinementC<C>
-```
-
-Added in v1.0.0
-
 ## ~~taggedUnion~~
 
 Use `union` instead.
@@ -761,6 +763,16 @@ Added in v1.0.0
 
 # primitives
 
+## Function
+
+**Signature**
+
+```ts
+export declare const Function: FunctionC
+```
+
+Added in v1.0.0
+
 ## Int
 
 A branded codec representing an integer
@@ -772,6 +784,16 @@ export declare const Int: BrandC<NumberC, IntBrand>
 ```
 
 Added in v1.8.1
+
+## Integer
+
+**Signature**
+
+```ts
+export declare const Integer: RefinementC<NumberC, number>
+```
+
+Added in v1.0.0
 
 ## UnknownArray
 
@@ -793,6 +815,16 @@ export declare const UnknownRecord: UnknownRecordC
 
 Added in v1.7.1
 
+## any
+
+**Signature**
+
+```ts
+export declare const any: AnyC
+```
+
+Added in v1.0.0
+
 ## bigint
 
 **Signature**
@@ -809,6 +841,16 @@ Added in v2.1.0
 
 ```ts
 export declare const boolean: BooleanC
+```
+
+Added in v1.0.0
+
+## never
+
+**Signature**
+
+```ts
+export declare const never: NeverC
 ```
 
 Added in v1.0.0
@@ -917,50 +959,6 @@ export declare const Dictionary: UnknownRecordC
 
 Added in v1.0.0
 
-## ~~Function~~
-
-**Signature**
-
-```ts
-export declare const Function: FunctionC
-```
-
-Added in v1.0.0
-
-## ~~Integer~~
-
-Use `Int` instead.
-
-**Signature**
-
-```ts
-export declare const Integer: RefinementC<NumberC>
-```
-
-Added in v1.0.0
-
-## ~~any~~
-
-Use `unknown` instead.
-
-**Signature**
-
-```ts
-export declare const any: AnyC
-```
-
-Added in v1.0.0
-
-## ~~never~~
-
-**Signature**
-
-```ts
-export declare const never: NeverC
-```
-
-Added in v1.0.0
-
 ## ~~object~~
 
 Use `UnknownRecord` instead.
@@ -1007,6 +1005,16 @@ readonly _tag: "AnyArrayType"
 
 Added in v1.0.0
 
+## AnyC (interface)
+
+**Signature**
+
+```ts
+export interface AnyC extends AnyType {}
+```
+
+Added in v1.5.3
+
 ## AnyDictionaryType (class)
 
 **Signature**
@@ -1037,6 +1045,28 @@ Added in v1.0.0
 export interface AnyProps {
   [key: string]: Any
 }
+```
+
+Added in v1.0.0
+
+## AnyType (class)
+
+**Signature**
+
+```ts
+export declare class AnyType {
+  constructor()
+}
+```
+
+Added in v1.0.0
+
+### \_tag (property)
+
+**Signature**
+
+```ts
+readonly _tag: "AnyType"
 ```
 
 Added in v1.0.0
@@ -1258,6 +1288,38 @@ Added in v1.1.0
 
 ```ts
 readonly _tag: "ExactType"
+```
+
+Added in v1.0.0
+
+## FunctionC (interface)
+
+**Signature**
+
+```ts
+export interface FunctionC extends FunctionType {}
+```
+
+Added in v1.5.3
+
+## FunctionType (class)
+
+**Signature**
+
+```ts
+export declare class FunctionType {
+  constructor()
+}
+```
+
+Added in v1.0.0
+
+### \_tag (property)
+
+**Signature**
+
+```ts
+readonly _tag: "FunctionType"
 ```
 
 Added in v1.0.0
@@ -1511,6 +1573,38 @@ Added in v1.0.0
 
 ```ts
 export interface Mixed extends Type<any, any, unknown> {}
+```
+
+Added in v1.0.0
+
+## NeverC (interface)
+
+**Signature**
+
+```ts
+export interface NeverC extends NeverType {}
+```
+
+Added in v1.5.3
+
+## NeverType (class)
+
+**Signature**
+
+```ts
+export declare class NeverType {
+  constructor()
+}
+```
+
+Added in v1.0.0
+
+### \_tag (property)
+
+**Signature**
+
+```ts
+readonly _tag: "NeverType"
 ```
 
 Added in v1.0.0
@@ -1786,6 +1880,16 @@ readonly type: C
 ```
 
 Added in v1.0.0
+
+## RefinementC (interface)
+
+**Signature**
+
+```ts
+export interface RefinementC<C extends Any, B = TypeOf<C>> extends RefinementType<C, B, OutputOf<C>, InputOf<C>> {}
+```
+
+Added in v1.5.3
 
 ## RefinementType (class)
 
@@ -2158,38 +2262,6 @@ export declare const identity: <A>(a: A) => A
 
 Added in v1.0.0
 
-## ~~AnyC~~ (interface)
-
-**Signature**
-
-```ts
-export interface AnyC extends AnyType {}
-```
-
-Added in v1.5.3
-
-## ~~AnyType~~ (class)
-
-**Signature**
-
-```ts
-export declare class AnyType {
-  constructor()
-}
-```
-
-Added in v1.0.0
-
-### \_tag (property)
-
-**Signature**
-
-```ts
-readonly _tag: "AnyType"
-```
-
-Added in v1.0.0
-
 ## ~~Compact~~ (type alias)
 
 **Signature**
@@ -2210,70 +2282,6 @@ export type Exact<T, X extends T> = T &
 ```
 
 Added in v1.1.0
-
-## ~~FunctionC~~ (interface)
-
-**Signature**
-
-```ts
-export interface FunctionC extends FunctionType {}
-```
-
-Added in v1.5.3
-
-## ~~FunctionType~~ (class)
-
-**Signature**
-
-```ts
-export declare class FunctionType {
-  constructor()
-}
-```
-
-Added in v1.0.0
-
-### \_tag (property)
-
-**Signature**
-
-```ts
-readonly _tag: "FunctionType"
-```
-
-Added in v1.0.0
-
-## ~~NeverC~~ (interface)
-
-**Signature**
-
-```ts
-export interface NeverC extends NeverType {}
-```
-
-Added in v1.5.3
-
-## ~~NeverType~~ (class)
-
-**Signature**
-
-```ts
-export declare class NeverType {
-  constructor()
-}
-```
-
-Added in v1.0.0
-
-### \_tag (property)
-
-**Signature**
-
-```ts
-readonly _tag: "NeverType"
-```
-
-Added in v1.0.0
 
 ## ~~ObjectC~~ (interface)
 
@@ -2316,18 +2324,6 @@ export type PropsOf<T extends { props: any }> = T['props']
 ```
 
 Added in v1.0.0
-
-## ~~RefinementC~~ (interface)
-
-Use `BrandC` instead.
-
-**Signature**
-
-```ts
-export interface RefinementC<C extends Any> extends RefinementType<C, TypeOf<C>, OutputOf<C>, InputOf<C>> {}
-```
-
-Added in v1.5.3
 
 ## ~~StrictC~~ (interface)
 

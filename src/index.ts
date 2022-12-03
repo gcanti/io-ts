@@ -2064,12 +2064,18 @@ export const any: AnyC = new AnyType()
 /**
  * @since 1.5.3
  */
-export interface RefinementC<C extends Any> extends RefinementType<C, TypeOf<C>, OutputOf<C>, InputOf<C>> {}
+export interface RefinementC<C extends Any, B = TypeOf<C>> extends RefinementType<C, B, OutputOf<C>, InputOf<C>> {}
 
 /**
  * @category combinators
  * @since 1.0.0
  */
+export function refinement<C extends Any, B extends TypeOf<C>>(
+  codec: C,
+  refinement: Refinement<TypeOf<C>, B>,
+  name?: string
+): RefinementC<C, B>
+export function refinement<C extends Any>(codec: C, predicate: Predicate<TypeOf<C>>, name?: string): RefinementC<C>
 export function refinement<C extends Any>(
   codec: C,
   predicate: Predicate<TypeOf<C>>,

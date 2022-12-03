@@ -20,6 +20,7 @@
 - undeprecate `NeverType`, `NeverC`, `never`
 - undeprecate `AnyType`, `AnyC`, `any`
 - undeprecate `RefinementC`, `refinement`, `Integer`
+- add refinement overload to allow custom branding, closes #373
 
 # 2.2.19
 
