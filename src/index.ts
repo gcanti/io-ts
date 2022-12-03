@@ -2038,6 +2038,30 @@ export interface NeverC extends NeverType {}
  */
 export const never: NeverC = new NeverType()
 
+/**
+ * @since 1.0.0
+ */
+export class AnyType extends Type<any> {
+  /**
+   * @since 1.0.0
+   */
+  readonly _tag: 'AnyType' = 'AnyType'
+  constructor() {
+    super('any', (_): _ is any => true, success, identity)
+  }
+}
+
+/**
+ * @since 1.5.3
+ */
+export interface AnyC extends AnyType {}
+
+/**
+ * @category primitives
+ * @since 1.0.0
+ */
+export const any: AnyC = new AnyType()
+
 // -------------------------------------------------------------------------------------
 // deprecated
 // -------------------------------------------------------------------------------------
@@ -2145,37 +2169,6 @@ export const getValidationError /* istanbul ignore next */ = (value: unknown, co
 export const getDefaultContext /* istanbul ignore next */ = (decoder: Decoder<any, any>): Context => [
   { key: '', type: decoder }
 ]
-
-/**
- * @since 1.0.0
- * @deprecated
- */
-export class AnyType extends Type<any> {
-  /**
-   * @since 1.0.0
-   */
-  readonly _tag: 'AnyType' = 'AnyType'
-  constructor() {
-    super('any', (_): _ is any => true, success, identity)
-  }
-}
-
-/**
- * @since 1.5.3
- * @deprecated
- */
-// tslint:disable-next-line: deprecation
-export interface AnyC extends AnyType {}
-
-/**
- * Use `unknown` instead.
- *
- * @category primitives
- * @since 1.0.0
- * @deprecated
- */
-// tslint:disable-next-line: deprecation
-export const any: AnyC = new AnyType()
 
 /**
  * Use `UnknownRecord` instead.

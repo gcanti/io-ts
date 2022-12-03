@@ -62,7 +62,6 @@ describe('record', () => {
       })
 
       it('should accept an array if the codomain is `any`', () => {
-        // tslint:disable-next-line: deprecation
         const T = t.record(t.string, t.any)
         assert.strictEqual(T.is([]), true)
       })
@@ -98,7 +97,6 @@ describe('record', () => {
       })
 
       it('should decode an array if the codomain is `any`', () => {
-        // tslint:disable-next-line: deprecation
         const T = t.record(t.string, t.any)
         assertSuccess(T.decode([1]))
       })
@@ -141,7 +139,6 @@ describe('record', () => {
       })
 
       it('should accept an array if the codomain is `any`', () => {
-        // tslint:disable-next-line: deprecation
         const T = t.record(t.string, t.any)
         const a = [1]
         assert.strictEqual(T.encode(a), a)

@@ -197,44 +197,26 @@ describe('Function', () => {
 
 describe('any', () => {
   it('should decode any value', () => {
-    // tslint:disable-next-line: deprecation
     assertSuccess(t.any.decode(null))
-    // tslint:disable-next-line: deprecation
     assertSuccess(t.any.decode(undefined))
-    // tslint:disable-next-line: deprecation
     assertSuccess(t.any.decode('foo'))
-    // tslint:disable-next-line: deprecation
     assertSuccess(t.any.decode(1))
-    // tslint:disable-next-line: deprecation
     assertSuccess(t.any.decode(true))
-    // tslint:disable-next-line: deprecation
     assertSuccess(t.any.decode(t.identity))
-    // tslint:disable-next-line: deprecation
     assertSuccess(t.any.decode({}))
-    // tslint:disable-next-line: deprecation
     assertSuccess(t.any.decode([]))
-    // tslint:disable-next-line: deprecation
     assertSuccess(t.any.decode(/a/))
   })
 
   it('should accept any value', () => {
-    // tslint:disable-next-line: deprecation
     assert.ok(t.any.is(null))
-    // tslint:disable-next-line: deprecation
     assert.ok(t.any.is(undefined))
-    // tslint:disable-next-line: deprecation
     assert.ok(t.any.is('foo'))
-    // tslint:disable-next-line: deprecation
     assert.ok(t.any.is(1))
-    // tslint:disable-next-line: deprecation
     assert.ok(t.any.is(true))
-    // tslint:disable-next-line: deprecation
     assert.ok(t.any.is(t.identity))
-    // tslint:disable-next-line: deprecation
     assert.ok(t.any.is({}))
-    // tslint:disable-next-line: deprecation
     assert.ok(t.any.is([]))
-    // tslint:disable-next-line: deprecation
     assert.ok(t.any.is(/a/))
   })
 })

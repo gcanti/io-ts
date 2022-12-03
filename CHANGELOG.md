@@ -18,6 +18,7 @@
 
 - undeprecate `FunctionType`, `FunctionC`, `Function`
 - undeprecate `NeverType`, `NeverC`, `never`
+- undeprecate `AnyType`, `AnyC`, `any`
 
 # 2.2.19
 
