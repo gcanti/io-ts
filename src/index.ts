@@ -2006,6 +2006,38 @@ export interface FunctionC extends FunctionType {}
  */
 export const Function: FunctionC = new FunctionType()
 
+/**
+ * @since 1.0.0
+ */
+export class NeverType extends Type<never> {
+  /**
+   * @since 1.0.0
+   */
+  readonly _tag: 'NeverType' = 'NeverType'
+  constructor() {
+    super(
+      'never',
+      (_): _ is never => false,
+      (u, c) => failure(u, c),
+      /* istanbul ignore next */
+      () => {
+        throw new Error('cannot encode never')
+      }
+    )
+  }
+}
+
+/**
+ * @since 1.5.3
+ */
+export interface NeverC extends NeverType {}
+
+/**
+ * @category primitives
+ * @since 1.0.0
+ */
+export const never: NeverC = new NeverType()
+
 // -------------------------------------------------------------------------------------
 // deprecated
 // -------------------------------------------------------------------------------------
@@ -2113,43 +2145,6 @@ export const getValidationError /* istanbul ignore next */ = (value: unknown, co
 export const getDefaultContext /* istanbul ignore next */ = (decoder: Decoder<any, any>): Context => [
   { key: '', type: decoder }
 ]
-
-/**
- * @since 1.0.0
- * @deprecated
- */
-export class NeverType extends Type<never> {
-  /**
-   * @since 1.0.0
-   */
-  readonly _tag: 'NeverType' = 'NeverType'
-  constructor() {
-    super(
-      'never',
-      (_): _ is never => false,
-      (u, c) => failure(u, c),
-      /* istanbul ignore next */
-      () => {
-        throw new Error('cannot encode never')
-      }
-    )
-  }
-}
-
-/**
- * @since 1.5.3
- * @deprecated
- */
-// tslint:disable-next-line: deprecation
-export interface NeverC extends NeverType {}
-
-/**
- * @category primitives
- * @since 1.0.0
- * @deprecated
- */
-// tslint:disable-next-line: deprecation
-export const never: NeverC = new NeverType()
 
 /**
  * @since 1.0.0

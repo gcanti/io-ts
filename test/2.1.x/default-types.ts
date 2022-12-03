@@ -241,7 +241,6 @@ describe('any', () => {
 
 describe('never', () => {
   it('should not decode any value', () => {
-    // tslint:disable-next-line: deprecation
     const T = (t.never as any) as t.Any
     assertFailure(T, null, ['Invalid value null supplied to : never'])
     assertFailure(T, undefined, ['Invalid value undefined supplied to : never'])
@@ -255,23 +254,14 @@ describe('never', () => {
   })
 
   it('should not accept any value', () => {
-    // tslint:disable-next-line: deprecation
     assert.ok(!t.never.is(null))
-    // tslint:disable-next-line: deprecation
     assert.ok(!t.never.is(undefined))
-    // tslint:disable-next-line: deprecation
     assert.ok(!t.never.is('foo'))
-    // tslint:disable-next-line: deprecation
     assert.ok(!t.never.is(1))
-    // tslint:disable-next-line: deprecation
     assert.ok(!t.never.is(true))
-    // tslint:disable-next-line: deprecation
     assert.ok(!t.never.is(t.identity))
-    // tslint:disable-next-line: deprecation
     assert.ok(!t.never.is({}))
-    // tslint:disable-next-line: deprecation
     assert.ok(!t.never.is([]))
-    // tslint:disable-next-line: deprecation
     assert.ok(!t.never.is(/a/))
   })
 })
