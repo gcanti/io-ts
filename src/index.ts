@@ -1976,13 +1976,8 @@ export function exact<C extends HasProps>(codec: C, name: string = getExactTypeN
   )
 }
 
-// -------------------------------------------------------------------------------------
-// deprecated
-// -------------------------------------------------------------------------------------
-
 /**
  * @since 1.0.0
- * @deprecated
  */
 export class FunctionType extends Type<Function> {
   /**
@@ -2002,18 +1997,18 @@ export class FunctionType extends Type<Function> {
 
 /**
  * @since 1.5.3
- * @deprecated
  */
-// tslint:disable-next-line: deprecation
 export interface FunctionC extends FunctionType {}
 
 /**
  * @category primitives
  * @since 1.0.0
- * @deprecated
  */
-// tslint:disable-next-line: deprecation
 export const Function: FunctionC = new FunctionType()
+
+// -------------------------------------------------------------------------------------
+// deprecated
+// -------------------------------------------------------------------------------------
 
 /**
  * @since 1.3.0

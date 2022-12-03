@@ -186,12 +186,10 @@ describe('object', () => {
 
 describe('Function', () => {
   it('should decode functions', () => {
-    // tslint:disable-next-line: deprecation
     assertSuccess(t.Function.decode(t.identity))
   })
 
   it('should not decode non-functions', () => {
-    // tslint:disable-next-line: deprecation
     const T = t.Function
     assertFailure(T, 1, ['Invalid value 1 supplied to : Function'])
   })
