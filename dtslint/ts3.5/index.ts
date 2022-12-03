@@ -63,13 +63,21 @@ type Keyof1OutputTest = t.OutputOf<typeof Keyof1> // $ExpectType "a" | "b"
 // refinement
 //
 
-const Refinement1 = t.refinement(t.number, (n) => n % 2 === 0) // $ExpectType RefinementC<NumberC>
+const Refinement1 = t.refinement(t.number, (n) => n % 2 === 0) // $ExpectType RefinementC<NumberC, number>
 type Refinement1TypeTest = t.TypeOf<typeof Refinement1> // $ExpectType number
 type Refinement1OutputTest = t.OutputOf<typeof Refinement1> // $ExpectType number
 
-const Refinement2 = t.refinement(NumberFromString, (n) => n % 2 === 0) // $ExpectType RefinementC<Type<number, string, unknown>>
+const Refinement2 = t.refinement(NumberFromString, (n) => n % 2 === 0) // $ExpectType RefinementC<Type<number, string, unknown>, number>
 type Refinement2TypeTest = t.TypeOf<typeof Refinement2> // $ExpectType number
 type Refinement2OutputTest = t.OutputOf<typeof Refinement2> // $ExpectType string
+
+type Int = number & { __brand__: 'Int' }
+
+// $ExpectType RefinementC<NumberC, Int>
+t.refinement(t.number, (n): n is Int => Number.isInteger(n), 'Int')
+
+// $ExpectType RefinementC<NumberC, number>
+t.refinement(t.number, Number.isInteger, 'Integer')
 
 //
 // array
