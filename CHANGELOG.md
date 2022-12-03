@@ -19,6 +19,7 @@
 - undeprecate `FunctionType`, `FunctionC`, `Function`
 - undeprecate `NeverType`, `NeverC`, `never`
 - undeprecate `AnyType`, `AnyC`, `any`
+- undeprecate `RefinementC`, `refinement`, `Integer`
 
 # 2.2.19
 
