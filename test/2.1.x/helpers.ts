@@ -4,6 +4,7 @@ import * as t from '../../src/index'
 import { PathReporter } from '../../src/PathReporter'
 import { pipe } from 'fp-ts/lib/pipeable'
 
+// eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types
 export function assertStrictEqual<T>(result: t.Validation<T>, expected: any): void {
   pipe(
     result,
@@ -95,7 +96,6 @@ export const HyphenatedString = new t.Type<string, string, unknown>(
   (a) => a[0] + a[2]
 )
 
-// tslint:disable-next-line: deprecation
 export const IntegerFromString = t.refinement(NumberFromString, t.Integer.is, 'IntegerFromString')
 
 export function withDefault<T extends t.Mixed>(

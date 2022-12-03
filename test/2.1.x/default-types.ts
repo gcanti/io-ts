@@ -139,7 +139,6 @@ describe('bigint', () => {
 
 describe('Integer', () => {
   it('should validate integers', () => {
-    // tslint:disable-next-line: deprecation
     const T = t.Integer
     assertSuccess(T.decode(1))
     assertFailure(T, 0.5, ['Invalid value 0.5 supplied to : Integer'])

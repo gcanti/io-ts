@@ -1157,7 +1157,6 @@ export function brand<C extends Any, N extends string, B extends { readonly [K i
   predicate: Refinement<TypeOf<C>, Branded<TypeOf<C>, B>>,
   name: N
 ): BrandC<C, B> {
-  // tslint:disable-next-line: deprecation
   return refinement(codec, predicate, name)
 }
 
@@ -2062,6 +2061,43 @@ export interface AnyC extends AnyType {}
  */
 export const any: AnyC = new AnyType()
 
+/**
+ * @since 1.5.3
+ */
+export interface RefinementC<C extends Any> extends RefinementType<C, TypeOf<C>, OutputOf<C>, InputOf<C>> {}
+
+/**
+ * @category combinators
+ * @since 1.0.0
+ */
+export function refinement<C extends Any>(
+  codec: C,
+  predicate: Predicate<TypeOf<C>>,
+  name = `(${codec.name} | ${getFunctionName(predicate)})`
+): RefinementC<C> {
+  return new RefinementType(
+    name,
+    (u): u is TypeOf<C> => codec.is(u) && predicate(u),
+    (i, c) => {
+      const e = codec.validate(i, c)
+      if (isLeft(e)) {
+        return e
+      }
+      const a = e.right
+      return predicate(a) ? success(a) : failure(a, c)
+    },
+    codec.encode,
+    codec,
+    predicate
+  )
+}
+
+/**
+ * @category primitives
+ * @since 1.0.0
+ */
+export const Integer = refinement(number, Number.isInteger, 'Integer')
+
 // -------------------------------------------------------------------------------------
 // deprecated
 // -------------------------------------------------------------------------------------
@@ -2214,54 +2250,6 @@ export interface ObjectC extends ObjectType {}
  */
 // tslint:disable-next-line: deprecation
 export const object: ObjectC = new ObjectType()
-
-/**
- * Use `BrandC` instead.
- *
- * @since 1.5.3
- * @deprecated
- */
-export interface RefinementC<C extends Any> extends RefinementType<C, TypeOf<C>, OutputOf<C>, InputOf<C>> {}
-
-/**
- * Use `brand` instead.
- *
- * @category combinators
- * @since 1.0.0
- * @deprecated
- */
-export function refinement<C extends Any>(
-  codec: C,
-  predicate: Predicate<TypeOf<C>>,
-  name = `(${codec.name} | ${getFunctionName(predicate)})`
-): // tslint:disable-next-line: deprecation
-RefinementC<C> {
-  return new RefinementType(
-    name,
-    (u): u is TypeOf<C> => codec.is(u) && predicate(u),
-    (i, c) => {
-      const e = codec.validate(i, c)
-      if (isLeft(e)) {
-        return e
-      }
-      const a = e.right
-      return predicate(a) ? success(a) : failure(a, c)
-    },
-    codec.encode,
-    codec,
-    predicate
-  )
-}
-
-/**
- * Use `Int` instead.
- *
- * @category primitives
- * @since 1.0.0
- * @deprecated
- */
-// tslint:disable-next-line: deprecation
-export const Integer = refinement(number, Number.isInteger, 'Integer')
 
 /**
  * Use `record` instead.
