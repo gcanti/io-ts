@@ -122,6 +122,14 @@ export const nullable = <I, A extends I>(or: Guard<I, A>): Guard<null | I, null 
 
 /**
  * @category combinators
+ * @since 2.3.0
+ */
+export const optional = <I, A extends I>(or: Guard<I, A>): Guard<undefined | I, undefined | A> => ({
+  is: (i): i is undefined | A => i === undefined || or.is(i)
+})
+
+/**
+ * @category combinators
  * @since 2.2.15
  */
 export const struct = <A>(
@@ -325,6 +333,7 @@ export const Schemable: S.Schemable1<URI> = {
   number,
   boolean,
   nullable,
+  optional,
   type,
   struct,
   partial,

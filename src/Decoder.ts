@@ -228,6 +228,14 @@ export const nullable: <I, A>(or: Decoder<I, A>) => Decoder<null | I, null | A> 
 
 /**
  * @category combinators
+ * @since 2.3.0
+ */
+export const optional: <I, A>(or: Decoder<I, A>) => Decoder<undefined | I, undefined | A> =
+  /*#__PURE__*/
+  K.optional(M)((u, e) => FS.concat(FS.of(DE.member(0, error(u, 'undefined'))), FS.of(DE.member(1, e))))
+
+/**
+ * @category combinators
  * @since 2.2.15
  */
 export const fromStruct = <P extends Record<string, Decoder<any, any>>>(
@@ -488,6 +496,7 @@ export const Schemable: S.Schemable2C<URI, unknown> = {
   number,
   boolean,
   nullable,
+  optional,
   type,
   struct,
   partial,

@@ -44,6 +44,7 @@ Added in v2.2.7
   - [lazy](#lazy)
   - [mapLeftWithInput](#mapleftwithinput)
   - [nullable](#nullable)
+  - [optional](#optional)
   - [parse](#parse)
   - [partial](#partial)
   - [readonly](#readonly)
@@ -309,6 +310,16 @@ export declare const nullable: <I, A>(or: TaskDecoder<I, A>) => TaskDecoder<I, A
 ```
 
 Added in v2.2.7
+
+## optional
+
+**Signature**
+
+```ts
+export declare const optional: <I, A>(or: TaskDecoder<I, A>) => TaskDecoder<I, A>
+```
+
+Added in v2.3.0
 
 ## parse
 

@@ -153,6 +153,36 @@ describe('Decoder', () => {
     })
   })
 
+  describe('optional', () => {
+    it('should decode a valid input', () => {
+      const decoder = _.optional(H.decoderNumberFromUnknownString)
+      assert.deepStrictEqual(decoder.decode(undefined), _.success(undefined))
+      assert.deepStrictEqual(decoder.decode('1'), _.success(1))
+    })
+
+    it('should reject an invalid input', () => {
+      const decoder = _.optional(H.decoderNumberFromUnknownString)
+      assert.deepStrictEqual(
+        decoder.decode(null),
+        E.left(
+          FS.concat(
+            FS.of(DE.member(0, FS.of(DE.leaf(null, 'undefined')))),
+            FS.of(DE.member(1, FS.of(DE.leaf(null, 'string'))))
+          )
+        )
+      )
+      assert.deepStrictEqual(
+        decoder.decode('a'),
+        E.left(
+          FS.concat(
+            FS.of(DE.member(0, FS.of(DE.leaf('a', 'undefined')))),
+            FS.of(DE.member(1, FS.of(DE.leaf('a', 'parsable to a number'))))
+          )
+        )
+      )
+    })
+  })
+
   describe('struct', () => {
     it('should decode a valid input', async () => {
       const decoder = _.struct({

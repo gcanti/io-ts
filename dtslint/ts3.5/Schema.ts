@@ -54,6 +54,12 @@ make((S) => S.boolean) // $ExpectType Schema<boolean>
 make((S) => S.nullable(S.string)) // $ExpectType Schema<string | null>
 
 //
+// optional
+//
+
+make((S) => S.optional(S.string)) // $ExpectType Schema<string | undefined>
+
+//
 // struct
 //
 

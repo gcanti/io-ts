@@ -24,6 +24,7 @@ Added in v2.2.2
   - [intersect](#intersect)
   - [lazy](#lazy)
   - [nullable](#nullable)
+  - [optional](#optional)
   - [partial](#partial)
   - [readonly](#readonly)
   - [record](#record)
@@ -88,6 +89,16 @@ export declare function nullable<A>(or: Eq<A>): Eq<null | A>
 ```
 
 Added in v2.2.2
+
+## optional
+
+**Signature**
+
+```ts
+export declare function optional<A>(or: Eq<A>): Eq<undefined | A>
+```
+
+Added in v2.3.0
 
 ## partial
 

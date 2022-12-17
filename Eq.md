@@ -45,6 +45,7 @@ export const string: Eq<string> = {
 
 - `literal`
 - `nullable`
+- `optional`
 - `type`
 - `partial`
 - `record`

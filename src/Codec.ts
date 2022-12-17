@@ -144,6 +144,14 @@ export function nullable<I, O, A>(or: Codec<I, O, A>): Codec<null | I, null | O,
 
 /**
  * @category combinators
+ * @since 2.3.0
+ */
+export function optional<I, O, A>(or: Codec<I, O, A>): Codec<undefined | I, undefined | O, undefined | A> {
+  return make(D.optional(or), E.optional(or))
+}
+
+/**
+ * @category combinators
  * @since 2.2.15
  */
 export function fromStruct<P extends Record<string, Codec<any, any, any>>>(

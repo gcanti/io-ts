@@ -196,6 +196,36 @@ describe('UnknownTaskDecoder', () => {
     })
   })
 
+  describe('optional', () => {
+    it('should decode a valid input', async () => {
+      const decoder = _.optional(NumberFromString)
+      assert.deepStrictEqual(await decoder.decode(undefined)(), D.success(undefined))
+      assert.deepStrictEqual(await decoder.decode('1')(), D.success(1))
+    })
+
+    it('should reject an invalid input', async () => {
+      const decoder = _.optional(NumberFromString)
+      assert.deepStrictEqual(
+        await decoder.decode(null)(),
+        E.left(
+          FS.concat(
+            FS.of(DE.member(0, FS.of(DE.leaf(null, 'undefined')))),
+            FS.of(DE.member(1, FS.of(DE.leaf(null, 'string'))))
+          )
+        )
+      )
+      assert.deepStrictEqual(
+        await decoder.decode('a')(),
+        E.left(
+          FS.concat(
+            FS.of(DE.member(0, FS.of(DE.leaf('a', 'undefined')))),
+            FS.of(DE.member(1, FS.of(DE.leaf('a', 'parsable to a number'))))
+          )
+        )
+      )
+    })
+  })
+
   describe('struct', () => {
     it('should decode a valid input', async () => {
       const decoder = _.struct({

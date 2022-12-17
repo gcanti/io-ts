@@ -24,6 +24,7 @@ Added in v2.2.3
   - [intersect](#intersect)
   - [lazy](#lazy)
   - [nullable](#nullable)
+  - [optional](#optional)
   - [partial](#partial)
   - [readonly](#readonly)
   - [record](#record)
@@ -94,6 +95,16 @@ export declare const nullable: <A>(or: Type<A>) => Type<A>
 ```
 
 Added in v2.2.3
+
+## optional
+
+**Signature**
+
+```ts
+export declare const optional: <A>(or: Type<A>) => Type<A>
+```
+
+Added in v2.3.0
 
 ## partial
 
