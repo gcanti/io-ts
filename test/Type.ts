@@ -262,4 +262,8 @@ describe('Type', () => {
     const uint32: G.TypeOf<typeof _.uint32> = 4294967296;
     assert.equal(_.uint32.validate(uint32, [])._tag, 'Left')
   })
+  it('Not success uint32 (int)', () => {
+    const uint32: G.TypeOf<typeof _.uint32> = 4.5;
+    assert.equal(_.uint32.validate(uint32, [])._tag, 'Left')
+  })
 })

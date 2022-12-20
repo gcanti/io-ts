@@ -246,36 +246,36 @@ export const WithRefine: S.WithRefine1<URI> = {
 export const int8 = new t.Type<number>(
   'Int8',
   t.number.is,
-  (s, context) => (typeof s === 'number' && s <= 127 && s >= -128 ? t.success(s) : t.failure(s, context)),
+  (s, context) => (typeof s === 'number' && s <= 127 && s >= -128 && Number.isInteger(s) ? t.success(s) : t.failure(s, context)),
   t.identity,
 );
 export const uint8 = new t.Type<number>(
   'Uint8',
   t.number.is,
-  (s, context) => (typeof s === 'number' && s <= 255 && s >= 0 ? t.success(s) : t.failure(s, context)),
+  (s, context) => (typeof s === 'number' && s <= 255 && s >= 0 && Number.isInteger(s) ? t.success(s) : t.failure(s, context)),
   t.identity,
 );
 export const int16 = new t.Type<number>(
   'Int16',
   t.number.is,
-  (s, context) => (typeof s === 'number' && s <= 32767 && s >= -32767 ? t.success(s) : t.failure(s, context)),
+  (s, context) => (typeof s === 'number' && s <= 32767 && s >= -32767 && Number.isInteger(s) ? t.success(s) : t.failure(s, context)),
   t.identity,
 );
 export const uint16 = new t.Type<number>(
   'Uint16',
   t.number.is,
-  (s, context) => (typeof s === 'number' && s <= 65535 && s >= 0 ? t.success(s) : t.failure(s, context)),
+  (s, context) => (typeof s === 'number' && s <= 65535 && s >= 0 && Number.isInteger(s) ? t.success(s) : t.failure(s, context)),
   t.identity,
 );
 export const int32 = new t.Type<number>(
   'Int32',
   t.number.is,
-  (s, context) => (typeof s === 'number' && s <= 2147483647 && s >= -2147483648 ? t.success(s) : t.failure(s, context)),
+  (s, context) => (typeof s === 'number' && s <= 2147483647 && s >= -2147483648 && Number.isInteger(s) ? t.success(s) : t.failure(s, context)),
   t.identity,
 );
 export const uint32 = new t.Type<number>(
   'Uint32',
   t.number.is,
-  (s, context) => (typeof s === 'number' && s <= 4294967295 && s >= 0 ? t.success(s) : t.failure(s, context)),
+  (s, context) => (typeof s === 'number' && s <= 4294967295 && s >= 0 && Number.isInteger(s) ? t.success(s) : t.failure(s, context)),
   t.identity,
 );
