@@ -21,6 +21,91 @@
 
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
 
+# Basic usage
+
+```ts
+import * as t from 'io-ts'
+
+const User = t.type({
+  userId: t.number,
+  name: t.string
+})
+```
+
+This is equivalent to defining something like:
+
+```ts
+type User = {
+  userId: number
+  name: string
+}
+```
+
+The advantage of using `io-ts` to define the runtime type is that we can validate the type at runtime, and we can also extract the corresponding static type, so we don’t have to define it twice.
+
+You can use this runtime type to validate or decode untrusted data:
+
+```ts
+import * as t from "io-ts";
+import { PathReporter } from "io-ts/PathReporter";
+import { isLeft } from "fp-ts/Either";
+
+const User = t.type({
+  userId: t.number,
+  name: t.string,
+});
+
+const data: unknown = { userId: 123, name: "foo" }; // data that looks like User but from an unknown source
+
+const decoded = User.decode(data); // Either<Errors, User>
+if (isLeft(decoded)) {
+  throw Error(
+    `Could not validate data: ${PathReporter.report(decoded).join("\n")}`
+  );
+  // e.g.: Could not validate data: Invalid value "foo" supplied to : { userId: number, name: string }/userId: number
+}
+
+type UserT = t.TypeOf<typeof User>; // compile-time type
+const decodedUser: UserT = decoded.right; // now safely the correct type
+
+console.log("decoded user id:", decodedUser.userId);
+```
+
+io-ts also supports more complex encoding/decoding (serialization/deserialization) scenarios where the output type of `decode()` is not necessarily the same as the input type. This allows you to, for example, encode a `Date` object as a string and decode it back into a `Date` object (see [Custom types](#custom-types)).
+
+# Implemented types / combinators
+
+| Type                        | TypeScript                  | codec / combinator                                                   |
+| --------------------------- | --------------------------- | -------------------------------------------------------------------- |
+| null                        | `null`                      | `t.null` or `t.nullType`                                             |
+| undefined                   | `undefined`                 | `t.undefined`                                                        |
+| void                        | `void`                      | `t.void` or `t.voidType`                                             |
+| string                      | `string`                    | `t.string`                                                           |
+| number                      | `number`                    | `t.number`                                                           |
+| boolean                     | `boolean`                   | `t.boolean`                                                          |
+| unknown                     | `unknown`                   | `t.unknown`                                                          |
+| array of unknown            | `Array<unknown>`            | `t.UnknownArray`                                                     |
+| array of type               | `Array<A>`                  | `t.array(A)`                                                         |
+| record of unknown           | `Record<string, unknown>`   | `t.UnknownRecord`                                                    |
+| record of type              | `Record<K, A>`              | `t.record(K, A)`                                                     |
+| function                    | `Function`                  | `t.Function`                                                         |
+| literal                     | `'s'`                       | `t.literal('s')`                                                     |
+| partial                     | `Partial<{ name: string }>` | `t.partial({ name: t.string })`                                      |
+| readonly                    | `Readonly<A>`               | `t.readonly(A)`                                                      |
+| readonly array              | `ReadonlyArray<A>`          | `t.readonlyArray(A)`                                                 |
+| type alias                  | `type T = { name: A }`      | `t.type({ name: A })`                                                |
+| tuple                       | `[ A, B ]`                  | `t.tuple([ A, B ])`                                                  |
+| union                       | `A \| B`                    | `t.union([ A, B ])`                                                  |
+| intersection                | `A & B`                     | `t.intersection([ A, B ])`                                           |
+| keyof                       | `keyof M`                   | `t.keyof(M)` (**only supports string keys**)                         |
+| recursive types             |                             | `t.recursion(name, definition)`                                      |
+| branded types / refinements | ✘                           | `t.brand(A, predicate, brand)`                                       |
+| integer                     | ✘                           | `t.Int` (built-in branded codec)                                     |
+| exact types                 | ✘                           | `t.exact(type)` (no unknown extra properties)                        |
+| strict                      | ✘                           | `t.strict({ name: A })` (an alias of `t.exact(t.type({ name: A })))` |
+
+
+
 # The idea
 
 A value of type `Type<A, O, I>` (called "codec") is the runtime representation of the static type `A`.
@@ -116,27 +201,7 @@ pipe(t.string.decode(null), fold(onLeft, onRight))
 // => "1 error(s) found"
 ```
 
-We can combine these codecs through [combinators](#implemented-types--combinators) to build composite types which represent entities like domain models, request payloads etc. in our applications:
-
-```ts
-import * as t from 'io-ts'
-
-const User = t.type({
-  userId: t.number,
-  name: t.string
-})
-```
-
-So this is equivalent to defining something like:
-
-```ts
-type User = {
-  userId: number
-  name: string
-}
-```
-
-The advantage of using `io-ts` to define the runtime type is that we can validate the type at runtime, and we can also extract the corresponding static type, so we don’t have to define it twice.
+We can combine these codecs through [combinators](#implemented-types--combinators) to build composite types which represent entities like domain models, request payloads etc. in our applications.
 
 # TypeScript integration
 
@@ -265,37 +330,6 @@ console.log(PathReporter.report(NumberFromString.decode('a')))
 ```
 
 You can also use the [`withMessage`](https://gcanti.github.io/io-ts-types/modules/withMessage.ts.html) helper from [io-ts-types](https://github.com/gcanti/io-ts-types)
-
-# Implemented types / combinators
-
-| Type                        | TypeScript                  | codec / combinator                                                   |
-| --------------------------- | --------------------------- | -------------------------------------------------------------------- |
-| null                        | `null`                      | `t.null` or `t.nullType`                                             |
-| undefined                   | `undefined`                 | `t.undefined`                                                        |
-| void                        | `void`                      | `t.void` or `t.voidType`                                             |
-| string                      | `string`                    | `t.string`                                                           |
-| number                      | `number`                    | `t.number`                                                           |
-| boolean                     | `boolean`                   | `t.boolean`                                                          |
-| unknown                     | `unknown`                   | `t.unknown`                                                          |
-| array of unknown            | `Array<unknown>`            | `t.UnknownArray`                                                     |
-| array of type               | `Array<A>`                  | `t.array(A)`                                                         |
-| record of unknown           | `Record<string, unknown>`   | `t.UnknownRecord`                                                    |
-| record of type              | `Record<K, A>`              | `t.record(K, A)`                                                     |
-| function                    | `Function`                  | `t.Function`                                                         |
-| literal                     | `'s'`                       | `t.literal('s')`                                                     |
-| partial                     | `Partial<{ name: string }>` | `t.partial({ name: t.string })`                                      |
-| readonly                    | `Readonly<A>`               | `t.readonly(A)`                                                      |
-| readonly array              | `ReadonlyArray<A>`          | `t.readonlyArray(A)`                                                 |
-| type alias                  | `type T = { name: A }`      | `t.type({ name: A })`                                                |
-| tuple                       | `[ A, B ]`                  | `t.tuple([ A, B ])`                                                  |
-| union                       | `A \| B`                    | `t.union([ A, B ])`                                                  |
-| intersection                | `A & B`                     | `t.intersection([ A, B ])`                                           |
-| keyof                       | `keyof M`                   | `t.keyof(M)` (**only supports string keys**)                         |
-| recursive types             |                             | `t.recursion(name, definition)`                                      |
-| branded types / refinements | ✘                           | `t.brand(A, predicate, brand)`                                       |
-| integer                     | ✘                           | `t.Int` (built-in branded codec)                                     |
-| exact types                 | ✘                           | `t.exact(type)`                                                      |
-| strict                      | ✘                           | `t.strict({ name: A })` (an alias of `t.exact(t.type({ name: A })))` |
 
 # Recursive types
 

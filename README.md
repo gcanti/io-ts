@@ -23,9 +23,10 @@ npm i io-ts fp-ts
 
 # Usage
 
+
 ## Stable features
 
-- [`index.ts` module](index.md)
+- [Documentation of the main stable features (`index.ts` module)](index.md)
 
 ## Experimental modules (version `2.2+`)
 
