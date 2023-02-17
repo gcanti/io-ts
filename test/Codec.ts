@@ -205,6 +205,46 @@ describe('Codec', () => {
     })
   })
 
+  describe('optional', () => {
+    describe('decode', () => {
+      it('should decode a valid input', () => {
+        const codec = _.optional(codecNumber)
+        assert.deepStrictEqual(codec.decode(undefined), D.success(undefined))
+        assert.deepStrictEqual(codec.decode('1'), D.success(1))
+      })
+
+      it('should reject an invalid input', () => {
+        const codec = _.optional(codecNumber)
+        assert.deepStrictEqual(
+          codec.decode(null),
+          E.left(
+            FS.concat(
+              FS.of(DE.member(0, FS.of(DE.leaf(null, 'undefined')))),
+              FS.of(DE.member(1, FS.of(DE.leaf(null, 'string'))))
+            )
+          )
+        )
+        assert.deepStrictEqual(
+          codec.decode('a'),
+          E.left(
+            FS.concat(
+              FS.of(DE.member(0, FS.of(DE.leaf('a', 'undefined')))),
+              FS.of(DE.member(1, FS.of(DE.leaf('a', 'parsable to a number'))))
+            )
+          )
+        )
+      })
+    })
+
+    describe('encode', () => {
+      it('should encode a value', () => {
+        const codec = _.optional(codecNumber)
+        assert.strictEqual(codec.encode(undefined), undefined)
+        assert.strictEqual(codec.encode(1), '1')
+      })
+    })
+  })
+
   describe('struct', () => {
     describe('decode', () => {
       it('should decode a valid input', () => {

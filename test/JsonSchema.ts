@@ -58,8 +58,16 @@ const nullJsonSchema: JsonSchema<null> = {
   compile: () => C.make({ enum: [null] })
 }
 
+const undefinedJsonSchema: JsonSchema<undefined> = {
+  compile: () => C.make({ enum: [] })
+}
+
 export function nullable<A>(or: JsonSchema<A>): JsonSchema<null | A> {
   return union(nullJsonSchema, or)
+}
+
+export function optional<A>(or: JsonSchema<A>): JsonSchema<undefined | A> {
+  return union(undefinedJsonSchema, or)
 }
 
 export function struct<A>(properties: { [K in keyof A]: JsonSchema<A[K]> }): JsonSchema<A> {
@@ -194,6 +202,7 @@ export const Schemable: S.Schemable1<URI> & S.WithUnknownContainers1<URI> & S.Wi
   UnknownArray,
   UnknownRecord,
   nullable,
+  optional,
   type: struct,
   struct,
   partial,

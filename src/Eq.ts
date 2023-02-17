@@ -91,6 +91,16 @@ export function nullable<A>(or: Eq<A>): Eq<null | A> {
 
 /**
  * @category combinators
+ * @since 2.3.0
+ */
+export function optional<A>(or: Eq<A>): Eq<undefined | A> {
+  return {
+    equals: (x, y) => (x === undefined || y === undefined ? x === y : or.equals(x, y))
+  }
+}
+
+/**
+ * @category combinators
  * @since 2.2.15
  */
 export const struct: <A>(eqs: { [K in keyof A]: Eq<A[K]> }) => Eq<{ [K in keyof A]: A[K] }> = E.getStructEq
@@ -204,6 +214,7 @@ export const Schemable: Schemable1<E.URI> = {
   number,
   boolean,
   nullable,
+  optional,
   type,
   struct,
   partial,

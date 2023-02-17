@@ -6,6 +6,7 @@
 - [Combinators](#combinators)
   - [The `literal` constructor](#the-literal-constructor)
   - [The `nullable` combinator](#the-nullable-combinator)
+  - [The `optional` combinator](#the-optional-combinator)
   - [The `struct` combinator](#the-struct-combinator)
   - [The `partial` combinator](#the-partial-combinator)
   - [The `record` combinator](#the-record-combinator)
@@ -98,6 +99,14 @@ The `nullable` combinator describes a nullable value
 
 ```ts
 export const NullableString: D.Decoder<unknown, null | string> = D.nullable(D.string)
+```
+
+## The `optional` combinator
+
+The `optional` combinator describes a optional value
+
+```ts
+export const OptionalString: D.Decoder<unknown, undefined | string> = D.optional(D.string)
 ```
 
 ## The `struct` combinator

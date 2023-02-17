@@ -41,6 +41,16 @@ export function nullable<O, A>(or: Encoder<O, A>): Encoder<null | O, null | A> {
 
 /**
  * @category combinators
+ * @since 2.3.0
+ */
+export function optional<O, A>(or: Encoder<O, A>): Encoder<undefined | O, undefined | A> {
+  return {
+    encode: (a) => (a === undefined ? undefined : or.encode(a))
+  }
+}
+
+/**
+ * @category combinators
  * @since 2.2.15
  */
 export function struct<P extends Record<string, Encoder<any, any>>>(

@@ -27,6 +27,7 @@ Added in v2.2.0
   - [intersect](#intersect)
   - [lazy](#lazy)
   - [nullable](#nullable)
+  - [optional](#optional)
   - [partial](#partial)
   - [readonly](#readonly)
   - [record](#record)
@@ -131,6 +132,16 @@ export declare const nullable: <I, A extends I>(or: Guard<I, A>) => Guard<I, A>
 ```
 
 Added in v2.2.0
+
+## optional
+
+**Signature**
+
+```ts
+export declare const optional: <I, A extends I>(or: Guard<I, A>) => Guard<I, A>
+```
+
+Added in v2.3.0
 
 ## partial
 

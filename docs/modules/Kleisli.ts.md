@@ -34,6 +34,7 @@ Added in v2.2.7
   - [map](#map)
   - [mapLeftWithInput](#mapleftwithinput)
   - [nullable](#nullable)
+  - [optional](#optional)
   - [parse](#parse)
   - [refine](#refine)
   - [union](#union)
@@ -236,6 +237,18 @@ export declare function nullable<M extends URIS2, E>(
 ```
 
 Added in v2.2.7
+
+## optional
+
+**Signature**
+
+```ts
+export declare function optional<M extends URIS2, E>(
+  M: Applicative2C<M, E> & Bifunctor2<M>
+): <I>(onError: (i: I, e: E) => E) => <A>(or: Kleisli<M, I, E, A>) => Kleisli<M, undefined | I, E, undefined | A>
+```
+
+Added in v2.3.0
 
 ## parse
 

@@ -38,6 +38,10 @@ describe('Schema', () => {
     check(make((S) => S.nullable(S.string)))
   })
 
+  it('optional', () => {
+    check(make((S) => S.optional(S.string)))
+  })
+
   it('struct', () => {
     check(
       make((S) =>

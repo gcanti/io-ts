@@ -79,6 +79,19 @@ describe('Guard', () => {
     })
   })
 
+  describe('optional', () => {
+    it('should accept valid inputs', () => {
+      const guard = G.optional(G.string)
+      assert.strictEqual(guard.is(undefined), true)
+      assert.strictEqual(guard.is('a'), true)
+    })
+
+    it('should reject invalid inputs', () => {
+      const guard = G.optional(G.string)
+      assert.strictEqual(guard.is(1), false)
+    })
+  })
+
   describe('struct', () => {
     it('should accept valid inputs', () => {
       const guard = G.struct({ a: G.string, b: G.number })

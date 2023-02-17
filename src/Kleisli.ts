@@ -125,6 +125,28 @@ export function nullable<M extends URIS2, E>(
 
 /**
  * @category combinators
+ * @since 2.3.0
+ */
+export function optional<M extends URIS2, E>(
+  M: Applicative2C<M, E> & Bifunctor2<M>
+): <I>(
+  onError: (i: I, e: E) => E
+) => <A>(or: Kleisli<M, I, E, A>) => Kleisli<M, undefined | I, E, undefined | A> {
+  return <I>(onError: (i: I, e: E) => E) =>
+    <A>(or: Kleisli<M, I, E, A>): Kleisli<M, undefined | I, E, undefined | A> => ({
+      decode: (i) =>
+        i === undefined
+          ? M.of<undefined | A>(undefined)
+          : M.bimap(
+              or.decode(i),
+              (e) => onError(i, e),
+              (a): A | undefined => a
+            )
+    })
+}
+
+/**
+ * @category combinators
  * @since 2.2.15
  */
 export function fromStruct<M extends URIS2, E>(

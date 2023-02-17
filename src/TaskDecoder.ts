@@ -231,6 +231,14 @@ export const nullable: <I, A>(or: TaskDecoder<I, A>) => TaskDecoder<null | I, nu
 
 /**
  * @category combinators
+ * @since 2.2.7
+ */
+export const optional: <I, A>(or: TaskDecoder<I, A>) => TaskDecoder<undefined | I, undefined | A> =
+  /*#__PURE__*/
+  K.optional(M)((u, e) => FS.concat(FS.of(DE.member(0, error(u, 'undefined'))), FS.of(DE.member(1, e))))
+
+/**
+ * @category combinators
  * @since 2.2.15
  */
 export const fromStruct = <P extends Record<string, TaskDecoder<any, any>>>(
@@ -494,6 +502,7 @@ export const Schemable: S.Schemable2C<URI, unknown> = {
   number,
   boolean,
   nullable,
+  optional,
   type,
   struct,
   partial,

@@ -63,6 +63,7 @@ export interface Schemable<S> {
   readonly number: HKT<S, number>
   readonly boolean: HKT<S, boolean>
   readonly nullable: <A>(or: HKT<S, A>) => HKT<S, null | A>
+  readonly optional: <A>(or: HKT<S, A>) => HKT<S, undefined | A>
   /** @deprecated */
   readonly type: <A>(properties: { [K in keyof A]: HKT<S, A[K]> }) => HKT<S, { [K in keyof A]: A[K] }>
   readonly struct: <A>(properties: { [K in keyof A]: HKT<S, A[K]> }) => HKT<S, { [K in keyof A]: A[K] }>
@@ -95,6 +96,7 @@ export interface Schemable1<S extends URIS> {
   readonly number: Kind<S, number>
   readonly boolean: Kind<S, boolean>
   readonly nullable: <A>(or: Kind<S, A>) => Kind<S, null | A>
+  readonly optional: <A>(or: Kind<S, A>) => Kind<S, undefined | A>
   /** @deprecated */
   readonly type: <A>(properties: { [K in keyof A]: Kind<S, A[K]> }) => Kind<S, { [K in keyof A]: A[K] }>
   readonly struct: <A>(properties: { [K in keyof A]: Kind<S, A[K]> }) => Kind<S, { [K in keyof A]: A[K] }>
@@ -127,6 +129,7 @@ export interface Schemable2C<S extends URIS2, E> {
   readonly number: Kind2<S, E, number>
   readonly boolean: Kind2<S, E, boolean>
   readonly nullable: <A>(or: Kind2<S, E, A>) => Kind2<S, E, null | A>
+  readonly optional: <A>(or: Kind2<S, E, A>) => Kind2<S, E, undefined | A>
   /** @deprecated */
   readonly type: <A>(properties: { [K in keyof A]: Kind2<S, E, A[K]> }) => Kind2<S, E, { [K in keyof A]: A[K] }>
   readonly struct: <A>(properties: { [K in keyof A]: Kind2<S, E, A[K]> }) => Kind2<S, E, { [K in keyof A]: A[K] }>

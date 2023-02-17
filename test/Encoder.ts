@@ -20,6 +20,12 @@ describe('Encoder', () => {
     assert.deepStrictEqual(encoder.encode(null), null)
   })
 
+  it('optional', () => {
+    const encoder = E.optional(H.encoderNumberToString)
+    assert.deepStrictEqual(encoder.encode(1), '1')
+    assert.deepStrictEqual(encoder.encode(undefined), undefined)
+  })
+
   it('struct', () => {
     const encoder = E.struct({ a: H.encoderNumberToString, b: H.encoderBooleanToNumber })
     assert.deepStrictEqual(encoder.encode({ a: 1, b: true }), { a: '1', b: 1 })

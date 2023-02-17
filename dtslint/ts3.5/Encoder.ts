@@ -27,6 +27,11 @@ export type OfTestOutput = E.OutputOf<typeof OfTest> // $ExpectType { a: string;
 E.nullable(NumberToString) // $ExpectType Encoder<string | null, number | null>
 
 //
+// optional
+//
+E.optional(NumberToString) // $ExpectType Encoder<string | undefined, number | undefined>
+
+//
 // struct
 //
 E.struct({ a: E.struct({ b: NumberToString }) }) // $ExpectType Encoder<{ a: { b: string; }; }, { a: { b: number; }; }>

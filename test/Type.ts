@@ -105,6 +105,13 @@ describe('Type', () => {
     )
   })
 
+  it('optional', () => {
+    check(
+      make((S) => S.optional(S.string)),
+      t.union([t.undefined, t.string])
+    )
+  })
+
   it('struct', () => {
     check(
       make((S) =>

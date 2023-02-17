@@ -30,6 +30,7 @@ Added in v2.2.3
   - [intersect](#intersect)
   - [lazy](#lazy)
   - [nullable](#nullable)
+  - [optional](#optional)
   - [partial](#partial)
   - [readonly](#readonly)
   - [record](#record)
@@ -127,6 +128,16 @@ export declare function nullable<O, A>(or: Encoder<O, A>): Encoder<null | O, nul
 ```
 
 Added in v2.2.3
+
+## optional
+
+**Signature**
+
+```ts
+export declare function optional<O, A>(or: Encoder<O, A>): Encoder<undefined | O, undefined | A>
+```
+
+Added in v2.3.0
 
 ## partial
 

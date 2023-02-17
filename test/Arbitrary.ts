@@ -52,6 +52,10 @@ export function nullable<A>(or: Arbitrary<A>): Arbitrary<null | A> {
   return fc.oneof(fc.constant(null), or)
 }
 
+export function optional<A>(or: Arbitrary<A>): Arbitrary<undefined | A> {
+  return fc.oneof(fc.constant(undefined), or)
+}
+
 export function struct<A>(properties: { [K in keyof A]: Arbitrary<A[K]> }): Arbitrary<A> {
   return fc.record(properties)
 }
@@ -125,6 +129,7 @@ export const Schemable: S.Schemable1<URI> & S.WithUnknownContainers1<URI> & S.Wi
   number,
   boolean,
   nullable,
+  optional,
   type: struct,
   struct,
   partial,

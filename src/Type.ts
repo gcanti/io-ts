@@ -99,6 +99,12 @@ export const nullable = <A>(or: Type<A>): Type<null | A> => t.union([t.null, or]
 
 /**
  * @category combinators
+ * @since 2.3.0
+ */
+export const optional = <A>(or: Type<A>): Type<undefined | A> => t.union([t.undefined, or])
+
+/**
+ * @category combinators
  * @since 2.2.15
  */
 export const struct = <A>(properties: { [K in keyof A]: Type<A[K]> }): Type<{ [K in keyof A]: A[K] }> =>
@@ -206,6 +212,7 @@ export const Schemable: S.Schemable1<URI> = {
   number,
   boolean,
   nullable,
+  optional,
   type,
   struct,
   partial,
