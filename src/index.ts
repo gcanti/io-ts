@@ -265,7 +265,12 @@ export interface AnyProps {
 
 function getNameFromProps(props: Props): string {
   return Object.keys(props)
-    .map((k) => `${k}: ${props[k].name}`)
+    .map((k) => {
+      if (isOptional(props[k])) {
+        return `${k}?: ${props[k].name}`
+      }
+      return `${k}: ${props[k].name}`
+    })
     .join(', ')
 }
 
@@ -664,6 +669,10 @@ function isUnionC(codec: Any): codec is UnionC<[Mixed, Mixed, ...Array<Mixed>]> 
 
 function isRecursiveC(codec: Any): codec is RecursiveType<Any> {
   return (codec as any)._tag === 'RecursiveType'
+}
+
+function isOptional(codec: Any): codec is OptionalType {
+  return (codec as any)._tag === 'OptionalType'
 }
 
 const lazyCodecs: Array<Any> = []
@@ -1319,11 +1328,29 @@ export class InterfaceType<P, A = any, O = A, I = unknown> extends Type<A, O, I>
   }
 }
 
+export type TypeOfWithOptionalProps<P extends AnyProps> = (
+  {
+    [K in keyof P]?: TypeOf<P[K]>
+  } &
+  {
+    [K in keyof P as P[K] extends OptionalType ? never : K]-?: TypeOf<P[K]>
+  }
+)
+
+export type OutputOfWithOptionalProps<P extends AnyProps> = (
+  {
+    [K in keyof P]?: OutputOf<P[K]>
+  } &
+  {
+    [K in keyof P as P[K] extends OptionalType<any> ? never : K]-?: OutputOf<P[K]>
+  }
+)
+
 /**
  * @since 1.5.3
  */
 export interface TypeC<P extends Props>
-  extends InterfaceType<P, { [K in keyof P]: TypeOf<P[K]> }, { [K in keyof P]: OutputOf<P[K]> }, unknown> {}
+  extends InterfaceType<P, TypeOfWithOptionalProps<P>, OutputOfWithOptionalProps<P>, unknown> {}
 
 /**
  * @category combinators
@@ -1340,7 +1367,9 @@ export function type<P extends Props>(props: P, name: string = getInterfaceTypeN
         for (let i = 0; i < len; i++) {
           const k = keys[i]
           const uk = u[k]
-          if ((uk === undefined && !hasOwnProperty.call(u, k)) || !types[i].is(uk)) {
+          if (uk === undefined && !hasOwnProperty.call(u, k)) {
+            return isOptional(props[k])
+          } else if (!types[i].is(uk)) {
             return false
           }
         }
@@ -1365,7 +1394,7 @@ export function type<P extends Props>(props: P, name: string = getInterfaceTypeN
           pushAll(errors, result.left)
         } else {
           const vak = result.right
-          if (vak !== ak || (vak === undefined && !hasOwnProperty.call(a, k))) {
+          if (vak !== ak || (vak === undefined && !hasOwnProperty.call(a, k) && !isOptional(type))) {
             /* istanbul ignore next */
             if (a === o) {
               a = { ...o }
@@ -1383,13 +1412,46 @@ export function type<P extends Props>(props: P, name: string = getInterfaceTypeN
           for (let i = 0; i < len; i++) {
             const k = keys[i]
             const encode = types[i].encode
-            if (encode !== identity) {
-              s[k] = encode(a[k])
+            const av = a[k]
+            if (encode !== identity && (av !== undefined || !isOptional(types[i]))) {
+              s[k] = encode(av)
             }
           }
           return s as any
         },
     props
+  )
+}
+
+export class OptionalType<A = any, O = A, I = unknown> extends Type<A, O, I> {
+  constructor(name: string,
+              is: OptionalType<A, O, I>['is'],
+              validate: OptionalType<A, O, I>['validate'],
+              encode: OptionalType<A, O, I>['encode'],
+              codec: Type<A, O, I>) {
+    super(name, is, validate, encode)
+    this._type = codec
+  }
+
+  readonly _type: Type<A, O, I>
+  readonly _tag: 'OptionalType' = 'OptionalType'
+}
+
+export function optional<A, O = A, I = unknown>(
+  codec: Type<A, O, I>,
+  name?: string
+): OptionalType<A, O, I> {
+  return new OptionalType<A, O, I>(
+    name || codec.name,
+    codec.is,
+    (u, c) => {
+      if (u === undefined) {
+        return success(undefined as A)
+      }
+      return codec.validate(u, c)
+    },
+    codec.encode,
+    codec
   )
 }
 
