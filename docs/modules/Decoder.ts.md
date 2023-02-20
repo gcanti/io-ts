@@ -70,6 +70,8 @@ Added in v2.2.7
   - [WithRefine](#withrefine)
   - [WithUnion](#withunion)
   - [WithUnknownContainers](#withunknowncontainers)
+- [interop](#interop)
+  - [tryCatch](#trycatch)
 - [model](#model)
   - [Decoder (interface)](#decoder-interface)
 - [primitives](#primitives)
@@ -577,6 +579,20 @@ export declare const WithUnknownContainers: S.WithUnknownContainers2C<'io-ts/Dec
 ```
 
 Added in v2.2.8
+
+# interop
+
+## tryCatch
+
+Constructs a new `Decoder` from a function that might throw.
+
+**Signature**
+
+```ts
+export declare const tryCatch: <I, A>(f: (i: I) => A, id: string) => Decoder<I, A>
+```
+
+Added in v2.2.17
 
 # model
 

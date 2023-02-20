@@ -576,6 +576,26 @@ describe('UnknownTaskDecoder', () => {
   })
 
   // -------------------------------------------------------------------------------------
+  // interop
+  // -------------------------------------------------------------------------------------
+
+  describe('tryCatch', () => {
+    it('should decode when the promise resolves with a value', async () => {
+      const f = async (value: number) => value + 1
+
+      assert.deepStrictEqual(await _.tryCatch(f, 'Number').decode(1)(), D.success(2))
+    })
+
+    it('should reject when the promise rejects', async () => {
+      const f = async () => {
+        throw new Error('Some error')
+      }
+
+      assert.deepStrictEqual(await _.tryCatch(f, 'Number').decode(1)(), E.left(FS.of(DE.leaf(1, 'Number'))))
+    })
+  })
+
+  // -------------------------------------------------------------------------------------
   // utils
   // -------------------------------------------------------------------------------------
 

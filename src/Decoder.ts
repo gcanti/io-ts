@@ -381,6 +381,24 @@ export const lazy: <I, A>(id: string, f: () => Decoder<I, A>) => Decoder<I, A> =
 export const readonly: <I, A>(decoder: Decoder<I, A>) => Decoder<I, Readonly<A>> = identity
 
 // -------------------------------------------------------------------------------------
+// interop
+// -------------------------------------------------------------------------------------
+
+/**
+ * Constructs a new `Decoder` from a function that might throw.
+ *
+ * @category interop
+ * @since 2.2.17
+ */
+export const tryCatch: <I, A>(f: (i: I) => A, id: string) => Decoder<I, A> = (f, id) => ({
+  decode: (i) =>
+    E.tryCatch(
+      () => f(i),
+      () => error(i, id)
+    )
+})
+
+// -------------------------------------------------------------------------------------
 // non-pipeables
 // -------------------------------------------------------------------------------------
 

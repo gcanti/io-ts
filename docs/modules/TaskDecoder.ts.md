@@ -71,6 +71,8 @@ Added in v2.2.7
   - [WithRefine](#withrefine)
   - [WithUnion](#withunion)
   - [WithUnknownContainers](#withunknowncontainers)
+- [interop](#interop)
+  - [tryCatch](#trycatch)
 - [model](#model)
   - [TaskDecoder (interface)](#taskdecoder-interface)
 - [primitives](#primitives)
@@ -593,6 +595,20 @@ export declare const WithUnknownContainers: S.WithUnknownContainers2C<'io-ts/Tas
 ```
 
 Added in v2.2.8
+
+# interop
+
+## tryCatch
+
+Constructs a new `Decoder` from a function that returns a `Promise`.
+
+**Signature**
+
+```ts
+export declare const tryCatch: <I, A>(f: (i: I) => Promise<A>, id: string) => TaskDecoder<I, A>
+```
+
+Added in v2.2.17
 
 # model
 
