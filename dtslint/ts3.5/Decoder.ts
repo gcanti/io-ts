@@ -200,3 +200,10 @@ _.readonly(
     a: _.string
   })
 )
+
+//
+// optional
+//
+
+// $ExpectType Decoder<string | undefined, Option<number>>
+_.optional(NumberFromString)

@@ -15,6 +15,7 @@ import * as E from 'fp-ts/lib/Either'
 import { identity, Refinement } from 'fp-ts/lib/function'
 import { Functor2 } from 'fp-ts/lib/Functor'
 import { MonadThrow2C } from 'fp-ts/lib/MonadThrow'
+import * as O from 'fp-ts/lib/Option'
 import { pipe } from 'fp-ts/lib/pipeable'
 import * as DE from './DecodeError'
 import * as FS from './FreeSemigroup'
@@ -379,6 +380,14 @@ export const lazy: <I, A>(id: string, f: () => Decoder<I, A>) => Decoder<I, A> =
  * @since 2.2.15
  */
 export const readonly: <I, A>(decoder: Decoder<I, A>) => Decoder<I, Readonly<A>> = identity
+
+/**
+ * @category combinators
+ * @since 2.2.17
+ */
+export const optional: <I, A>(or: Decoder<I, A>) => Decoder<I | undefined, O.Option<A>> = (or) => ({
+  decode: (i) => (i === undefined ? E.right(O.none) : pipe(i, or.decode, E.map(O.some)))
+})
 
 // -------------------------------------------------------------------------------------
 // non-pipeables

@@ -34,6 +34,7 @@ Added in v2.2.3
   - [lazy](#lazy)
   - [mapLeftWithInput](#mapleftwithinput)
   - [nullable](#nullable)
+  - [optional](#optional)
   - [partial](#partial)
   - [readonly](#readonly)
   - [record](#record)
@@ -225,6 +226,16 @@ export declare function nullable<I, O, A>(or: Codec<I, O, A>): Codec<null | I, n
 ```
 
 Added in v2.2.3
+
+## optional
+
+**Signature**
+
+```ts
+export declare const optional: <I, O, A>(codec: Codec<I, O, A>) => Codec<I, O, Option<A>>
+```
+
+Added in v2.2.17
 
 ## partial
 

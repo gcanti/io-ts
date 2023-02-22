@@ -11,7 +11,8 @@
 import { Contravariant2 } from 'fp-ts/lib/Contravariant'
 import { Category2 } from 'fp-ts/lib/Category'
 import { memoize, intersect_ } from './Schemable'
-import { identity } from 'fp-ts/lib/function'
+import { flow, identity } from 'fp-ts/lib/function'
+import * as O from 'fp-ts/lib/Option'
 
 // -------------------------------------------------------------------------------------
 // model
@@ -167,6 +168,14 @@ export function lazy<O, A>(f: () => Encoder<O, A>): Encoder<O, A> {
  * @since 2.2.16
  */
 export const readonly: <O, A>(decoder: Encoder<O, A>) => Encoder<O, Readonly<A>> = identity
+
+/**
+ * @category combinators
+ * @since 2.2.17
+ */
+export const optional: <O, A>(or: Encoder<O, A>) => Encoder<O | undefined, O.Option<A>> = (or) => ({
+  encode: flow(O.map(or.encode), O.toUndefined)
+})
 
 // -------------------------------------------------------------------------------------
 // non-pipeables
