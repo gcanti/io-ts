@@ -29,9 +29,12 @@ Added in v2.2.3
   - [array](#array)
   - [intersect](#intersect)
   - [lazy](#lazy)
+  - [nonEmptyArray](#nonemptyarray)
   - [nullable](#nullable)
   - [partial](#partial)
   - [readonly](#readonly)
+  - [readonlyArray](#readonlyarray)
+  - [readonlyNonEmptyArray](#readonlynonemptyarray)
   - [record](#record)
   - [struct](#struct)
   - [sum](#sum)
@@ -118,6 +121,16 @@ export declare function lazy<O, A>(f: () => Encoder<O, A>): Encoder<O, A>
 
 Added in v2.2.3
 
+## nonEmptyArray
+
+**Signature**
+
+```ts
+export declare const nonEmptyArray: <O, A>(item: Encoder<O, A>) => Encoder<NonEmptyArray<O>, NonEmptyArray<A>>
+```
+
+Added in v2.2.17
+
 ## nullable
 
 **Signature**
@@ -149,6 +162,28 @@ export declare const readonly: <O, A>(decoder: Encoder<O, A>) => Encoder<O, Read
 ```
 
 Added in v2.2.16
+
+## readonlyArray
+
+**Signature**
+
+```ts
+export declare const readonlyArray: <O, A>(item: Encoder<O, A>) => Encoder<readonly O[], readonly A[]>
+```
+
+Added in v2.2.17
+
+## readonlyNonEmptyArray
+
+**Signature**
+
+```ts
+export declare const readonlyNonEmptyArray: <O, A>(
+  item: Encoder<O, A>
+) => Encoder<ReadonlyNonEmptyArray<O>, ReadonlyNonEmptyArray<A>>
+```
+
+Added in v2.2.17
 
 ## record
 

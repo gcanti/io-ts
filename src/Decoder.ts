@@ -9,6 +9,10 @@
  * @since 2.2.7
  */
 import { Alt2, Alt2C } from 'fp-ts/lib/Alt'
+import * as A from 'fp-ts/lib/Array'
+import { NonEmptyArray } from 'fp-ts/lib/NonEmptyArray'
+import * as RA from 'fp-ts/lib/ReadonlyArray'
+import { ReadonlyNonEmptyArray } from 'fp-ts/lib/ReadonlyNonEmptyArray'
 import { Bifunctor2 } from 'fp-ts/lib/Bifunctor'
 import { Category2 } from 'fp-ts/lib/Category'
 import * as E from 'fp-ts/lib/Either'
@@ -291,6 +295,27 @@ export const fromArray = <I, A>(item: Decoder<I, A>): Decoder<Array<I>, Array<A>
  */
 export const array = <A>(item: Decoder<unknown, A>): Decoder<unknown, Array<A>> =>
   pipe(UnknownArray, compose(fromArray(item)))
+
+/**
+ * @category combinators
+ * @since 2.2.17
+ */
+export const readonlyArray = <A>(item: Decoder<unknown, A>): Decoder<unknown, ReadonlyArray<A>> =>
+  pipe(array(item), readonly)
+
+/**
+ * @category combinators
+ * @since 2.2.17
+ */
+export const nonEmptyArray = <A>(item: Decoder<unknown, A>): Decoder<unknown, NonEmptyArray<A>> =>
+  pipe(array(item), refine(A.isNonEmpty, 'NonEmptyArray<unknown>'))
+
+/**
+ * @category combinators
+ * @since 2.2.17
+ */
+export const readonlyNonEmptyArray = <A>(item: Decoder<unknown, A>): Decoder<unknown, ReadonlyNonEmptyArray<A>> =>
+  pipe(readonlyArray(item), refine(RA.isNonEmpty, 'ReadonlyNonEmptyArray<unknown>'))
 
 /**
  * @category combinators

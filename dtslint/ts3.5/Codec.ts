@@ -65,6 +65,27 @@ _.fromArray(NumberFromString)
 _.array(_.string)
 
 //
+// readonlyArray
+//
+
+// $ExpectType Codec<unknown, ReadonlyArray<string>, ReadonlyArray<string>>
+_.readonlyArray(_.string)
+
+//
+// nonEmptyArray
+//
+
+// $ExpectType Codec<unknown, NonEmptyArray<string>, NonEmptyArray<string>>
+_.nonEmptyArray(_.string)
+
+//
+// readonlyNonEmptyArray
+//
+
+// $ExpectType Codec<unknown, ReadonlyNonEmptyArray<string>, ReadonlyNonEmptyArray<string>>
+_.readonlyNonEmptyArray(_.string)
+
+//
 // fromRecord
 //
 

@@ -10,6 +10,8 @@
  */
 import { Contravariant2 } from 'fp-ts/lib/Contravariant'
 import { Category2 } from 'fp-ts/lib/Category'
+import { NonEmptyArray } from 'fp-ts/lib/NonEmptyArray'
+import { ReadonlyNonEmptyArray } from 'fp-ts/lib/ReadonlyNonEmptyArray'
 import { memoize, intersect_ } from './Schemable'
 import { identity } from 'fp-ts/lib/function'
 
@@ -114,6 +116,26 @@ export function array<O, A>(item: Encoder<O, A>): Encoder<Array<O>, Array<A>> {
     encode: (as) => as.map(item.encode)
   }
 }
+
+/**
+ * @category combinators
+ * @since 2.2.17
+ */
+export const readonlyArray: <O, A>(item: Encoder<O, A>) => Encoder<ReadonlyArray<O>, ReadonlyArray<A>> = array as any
+
+/**
+ * @category combinators
+ * @since 2.2.17
+ */
+export const nonEmptyArray: <O, A>(item: Encoder<O, A>) => Encoder<NonEmptyArray<O>, NonEmptyArray<A>> = array as any
+
+/**
+ * @category combinators
+ * @since 2.2.17
+ */
+export const readonlyNonEmptyArray: <O, A>(
+  item: Encoder<O, A>
+) => Encoder<ReadonlyNonEmptyArray<O>, ReadonlyNonEmptyArray<A>> = readonlyArray as any
 
 /**
  * @category combinators

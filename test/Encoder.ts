@@ -44,6 +44,21 @@ describe('Encoder', () => {
     assert.deepStrictEqual(encoder.encode([1, 2]), ['1', '2'])
   })
 
+  it('readonlyArray', () => {
+    const encoder = E.readonlyArray(H.encoderNumberToString)
+    assert.deepStrictEqual(encoder.encode([1, 2]), ['1', '2'])
+  })
+
+  it('nonEmptyArray', () => {
+    const encoder = E.nonEmptyArray(H.encoderNumberToString)
+    assert.deepStrictEqual(encoder.encode([1, 2]), ['1', '2'])
+  })
+
+  it('readonlyNonEmptyArray', () => {
+    const encoder = E.readonlyNonEmptyArray(H.encoderNumberToString)
+    assert.deepStrictEqual(encoder.encode([1, 2]), ['1', '2'])
+  })
+
   it('tuple', () => {
     const encoder = E.tuple(H.encoderNumberToString, H.encoderBooleanToNumber)
     assert.deepStrictEqual(encoder.encode([3, true]), ['3', 1])

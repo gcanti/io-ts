@@ -10,6 +10,8 @@
  */
 import { identity, Refinement } from 'fp-ts/lib/function'
 import { Invariant3 } from 'fp-ts/lib/Invariant'
+import { NonEmptyArray } from 'fp-ts/lib/NonEmptyArray'
+import { ReadonlyNonEmptyArray } from 'fp-ts/lib/ReadonlyNonEmptyArray'
 import { pipe } from 'fp-ts/lib/pipeable'
 import * as D from './Decoder'
 import * as E from './Encoder'
@@ -218,6 +220,32 @@ export function fromArray<I, O, A>(item: Codec<I, O, A>): Codec<Array<I>, Array<
  */
 export function array<O, A>(item: Codec<unknown, O, A>): Codec<unknown, Array<O>, Array<A>> {
   return pipe(UnknownArray, compose(fromArray(item))) as any
+}
+
+/**
+ * @category combinators
+ * @since 2.2.17
+ */
+export function readonlyArray<O, A>(item: Codec<unknown, O, A>): Codec<unknown, ReadonlyArray<O>, ReadonlyArray<A>> {
+  return make(D.readonlyArray(item), E.readonlyArray(item))
+}
+
+/**
+ * @category combinators
+ * @since 2.2.17
+ */
+export function nonEmptyArray<O, A>(item: Codec<unknown, O, A>): Codec<unknown, NonEmptyArray<O>, NonEmptyArray<A>> {
+  return make(D.nonEmptyArray(item), E.nonEmptyArray(item))
+}
+
+/**
+ * @category combinators
+ * @since 2.2.17
+ */
+export function readonlyNonEmptyArray<O, A>(
+  item: Codec<unknown, O, A>
+): Codec<unknown, ReadonlyNonEmptyArray<O>, ReadonlyNonEmptyArray<A>> {
+  return make(D.readonlyNonEmptyArray(item), E.readonlyNonEmptyArray(item))
 }
 
 /**

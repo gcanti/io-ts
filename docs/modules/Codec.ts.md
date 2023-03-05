@@ -33,9 +33,12 @@ Added in v2.2.3
   - [intersect](#intersect)
   - [lazy](#lazy)
   - [mapLeftWithInput](#mapleftwithinput)
+  - [nonEmptyArray](#nonemptyarray)
   - [nullable](#nullable)
   - [partial](#partial)
   - [readonly](#readonly)
+  - [readonlyArray](#readonlyarray)
+  - [readonlyNonEmptyArray](#readonlynonemptyarray)
   - [record](#record)
   - [refine](#refine)
   - [struct](#struct)
@@ -216,6 +219,18 @@ export declare const mapLeftWithInput: <I>(
 
 Added in v2.2.3
 
+## nonEmptyArray
+
+**Signature**
+
+```ts
+export declare function nonEmptyArray<O, A>(
+  item: Codec<unknown, O, A>
+): Codec<unknown, NonEmptyArray<O>, NonEmptyArray<A>>
+```
+
+Added in v2.2.17
+
 ## nullable
 
 **Signature**
@@ -247,6 +262,30 @@ export declare const readonly: <I, O, A>(codec: Codec<I, O, A>) => Codec<I, O, R
 ```
 
 Added in v2.2.16
+
+## readonlyArray
+
+**Signature**
+
+```ts
+export declare function readonlyArray<O, A>(
+  item: Codec<unknown, O, A>
+): Codec<unknown, ReadonlyArray<O>, ReadonlyArray<A>>
+```
+
+Added in v2.2.17
+
+## readonlyNonEmptyArray
+
+**Signature**
+
+```ts
+export declare function readonlyNonEmptyArray<O, A>(
+  item: Codec<unknown, O, A>
+): Codec<unknown, ReadonlyNonEmptyArray<O>, ReadonlyNonEmptyArray<A>>
+```
+
+Added in v2.2.17
 
 ## record
 
