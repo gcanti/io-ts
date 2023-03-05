@@ -28,6 +28,7 @@ Added in v2.2.3
 - [combinators](#combinators)
   - [array](#array)
   - [intersect](#intersect)
+  - [json](#json)
   - [lazy](#lazy)
   - [nullable](#nullable)
   - [partial](#partial)
@@ -107,6 +108,16 @@ export declare const intersect: <P, B>(right: Encoder<P, B>) => <O, A>(left: Enc
 ```
 
 Added in v2.2.3
+
+## json
+
+**Signature**
+
+```ts
+export declare const json: Encoder<string, Json>
+```
+
+Added in v2.2.17
 
 ## lazy
 

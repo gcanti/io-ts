@@ -8,6 +8,7 @@
  *
  * @since 2.2.3
  */
+import { Json } from 'fp-ts/lib/Json'
 import { identity, Refinement } from 'fp-ts/lib/function'
 import { Invariant3 } from 'fp-ts/lib/Invariant'
 import { pipe } from 'fp-ts/lib/pipeable'
@@ -141,6 +142,12 @@ export const refine = <A, B extends A>(
 export function nullable<I, O, A>(or: Codec<I, O, A>): Codec<null | I, null | O, null | A> {
   return make(D.nullable(or), E.nullable(or))
 }
+
+/**
+ * @category combinators
+ * @since 2.2.17
+ */
+export const json: Codec<unknown, string, Json> = make(D.json, E.json)
 
 /**
  * @category combinators

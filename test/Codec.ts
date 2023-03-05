@@ -205,6 +205,33 @@ describe('Codec', () => {
     })
   })
 
+  describe('json', () => {
+    describe('decode', () => {
+      it('should decode valid JSON', () => {
+        assert.deepStrictEqual(_.json.decode('null'), D.success(null))
+        assert.deepStrictEqual(_.json.decode('"a"'), D.success('a'))
+        assert.deepStrictEqual(_.json.decode('{"a":1}'), D.success({ a: 1 }))
+      })
+
+      it('should reject invalid JSON', () => {
+        assert.deepStrictEqual(_.json.decode(undefined), D.failure(undefined, 'string'))
+        assert.deepStrictEqual(_.json.decode('{"a":}'), D.failure('{"a":}', 'JSON'))
+      })
+    })
+
+    describe('encode', () => {
+      it('should encode a value', () => {
+        const circular: any = { ref: null }
+        circular.ref = circular
+
+        assert.deepStrictEqual(_.json.encode(null), 'null')
+        assert.deepStrictEqual(_.json.encode('a'), '"a"')
+        assert.deepStrictEqual(_.json.encode({ a: 1 }), '{"a":1}')
+        assert.deepStrictEqual(_.json.encode(circular), '{"ref":"[Circular]"}')
+      })
+    })
+  })
+
   describe('struct', () => {
     describe('decode', () => {
       it('should decode a valid input', () => {

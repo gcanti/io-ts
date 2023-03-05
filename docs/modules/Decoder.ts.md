@@ -41,6 +41,7 @@ Added in v2.2.7
   - [fromSum](#fromsum)
   - [fromTuple](#fromtuple)
   - [intersect](#intersect)
+  - [json](#json)
   - [lazy](#lazy)
   - [mapLeftWithInput](#mapleftwithinput)
   - [nullable](#nullable)
@@ -274,6 +275,16 @@ export declare const intersect: <IB, B>(
 ```
 
 Added in v2.2.7
+
+## json
+
+**Signature**
+
+```ts
+export declare const json: Decoder<unknown, J.Json>
+```
+
+Added in v2.2.17
 
 ## lazy
 
