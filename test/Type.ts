@@ -215,55 +215,68 @@ describe('Type', () => {
     assert.deepStrictEqual(isRight(type.decode('')), false)
   })
   it('Success int8', () => {
-    const int8: G.TypeOf<typeof _.int8> = 127;
-    assert.equal(_.int8.validate(int8, [])._tag, 'Right')
+    const tint8 = _.int(8)
+    const int8: G.TypeOf<typeof tint8> = 127;
+    assert.equal(tint8.validate(int8, [])._tag, 'Right')
   })
   it('Not success int8', () => {
-    const int8: G.TypeOf<typeof _.int8> = 128;
-    assert.equal(_.int8.validate(int8, [])._tag, 'Left')
+    const tint8 = _.int(8)
+    const int8: G.TypeOf<typeof tint8> = 128;
+    assert.equal(tint8.validate(int8, [])._tag, 'Left')
   })
   it('Success uint8', () => {
-    const uint8: G.TypeOf<typeof _.uint8> = 255;
-    assert.equal(_.uint8.validate(uint8, [])._tag, 'Right')
+    const tuint8 = _.uint(8)
+    const uint8: G.TypeOf<typeof tuint8> = 255;
+    assert.equal(tuint8.validate(uint8, [])._tag, 'Right')
   })
   it('Not success uint8', () => {
-    const uint8: G.TypeOf<typeof _.uint8> = 256;
-    assert.equal(_.uint8.validate(uint8, [])._tag, 'Left')
+    const tuint8 = _.uint(8)
+    const uint8: G.TypeOf<typeof tuint8> = 256;
+    assert.equal(tuint8.validate(uint8, [])._tag, 'Left')
   })
   it('Success int16', () => {
-    const int16: G.TypeOf<typeof _.int16> = 32767;
-    assert.equal(_.int16.validate(int16, [])._tag, 'Right')
+    const tint16 = _.int(16)
+    const int16: G.TypeOf<typeof tint16> = 32767;
+    assert.equal(tint16.validate(int16, [])._tag, 'Right')
   })
   it('Not success int16', () => {
-    const int16: G.TypeOf<typeof _.int16> = 32768;
-    assert.equal(_.int16.validate(int16, [])._tag, 'Left')
+    const tint16 = _.int(16)
+    const int16: G.TypeOf<typeof tint16> = 32768;
+    assert.equal(tint16.validate(int16, [])._tag, 'Left')
   })
   it('Success uint16', () => {
-    const uint16: G.TypeOf<typeof _.uint16> = 65535;
-    assert.equal(_.uint16.validate(uint16, [])._tag, 'Right')
+    const tuint16 = _.uint(16)
+    const uint16: G.TypeOf<typeof tuint16> = 65535;
+    assert.equal(tuint16.validate(uint16, [])._tag, 'Right')
   })
   it('Not success uint16', () => {
-    const uint16: G.TypeOf<typeof _.uint16> = 65536;
-    assert.equal(_.uint16.validate(uint16, [])._tag, 'Left')
+    const tuint16 = _.uint(16)
+    const uint16: G.TypeOf<typeof tuint16> = 65536;
+    assert.equal(tuint16.validate(uint16, [])._tag, 'Left')
   })
   it('Success int32', () => {
-    const int32: G.TypeOf<typeof _.int32> = 2147483647;
-    assert.equal(_.int32.validate(int32, [])._tag, 'Right')
+    const tint32 = _.int(32)
+    const int32: G.TypeOf<typeof tint32> = 2147483647;
+    assert.equal(tint32.validate(int32, [])._tag, 'Right')
   })
   it('Not success int32', () => {
-    const int32: G.TypeOf<typeof _.int32> = 2147483648;
-    assert.equal(_.int32.validate(int32, [])._tag, 'Left')
+    const tint32 = _.int(32)
+    const int32: G.TypeOf<typeof tint32> = 2147483648;
+    assert.equal(tint32.validate(int32, [])._tag, 'Left')
   })
   it('Success uint32', () => {
-    const uint32: G.TypeOf<typeof _.uint32> = 4294967295;
-    assert.equal(_.uint32.validate(uint32, [])._tag, 'Right')
+    const tuint32 = _.uint(32)
+    const uint32: G.TypeOf<typeof tuint32> = 4294967295;
+    assert.equal(tuint32.validate(uint32, [])._tag, 'Right')
   })
   it('Not success uint32', () => {
-    const uint32: G.TypeOf<typeof _.uint32> = 4294967296;
-    assert.equal(_.uint32.validate(uint32, [])._tag, 'Left')
+    const tuint32 = _.uint(32)
+    const uint32: G.TypeOf<typeof tuint32> = 4294967296;
+    assert.equal(tuint32.validate(uint32, [])._tag, 'Left')
   })
   it('Not success uint32 (int)', () => {
-    const uint32: G.TypeOf<typeof _.uint32> = 4.5;
-    assert.equal(_.uint32.validate(uint32, [])._tag, 'Left')
+    const tuint32 = _.uint(32)
+    const uint32: G.TypeOf<typeof tuint32> = 4.5;
+    assert.equal(tuint32.validate(uint32, [])._tag, 'Left')
   })
 })

@@ -243,39 +243,27 @@ export const WithRefine: S.WithRefine1<URI> = {
   refine: refine as S.WithRefine1<URI>['refine']
 }
 
-export const int8 = new t.Type<number>(
-  'Int8',
-  t.number.is,
-  (s, context) => (typeof s === 'number' && s <= 127 && s >= -128 && Number.isInteger(s) ? t.success(s) : t.failure(s, context)),
-  t.identity,
-);
-export const uint8 = new t.Type<number>(
-  'Uint8',
-  t.number.is,
-  (s, context) => (typeof s === 'number' && s <= 255 && s >= 0 && Number.isInteger(s) ? t.success(s) : t.failure(s, context)),
-  t.identity,
-);
-export const int16 = new t.Type<number>(
-  'Int16',
-  t.number.is,
-  (s, context) => (typeof s === 'number' && s <= 32767 && s >= -32767 && Number.isInteger(s) ? t.success(s) : t.failure(s, context)),
-  t.identity,
-);
-export const uint16 = new t.Type<number>(
-  'Uint16',
-  t.number.is,
-  (s, context) => (typeof s === 'number' && s <= 65535 && s >= 0 && Number.isInteger(s) ? t.success(s) : t.failure(s, context)),
-  t.identity,
-);
-export const int32 = new t.Type<number>(
-  'Int32',
-  t.number.is,
-  (s, context) => (typeof s === 'number' && s <= 2147483647 && s >= -2147483648 && Number.isInteger(s) ? t.success(s) : t.failure(s, context)),
-  t.identity,
-);
-export const uint32 = new t.Type<number>(
-  'Uint32',
-  t.number.is,
-  (s, context) => (typeof s === 'number' && s <= 4294967295 && s >= 0 && Number.isInteger(s) ? t.success(s) : t.failure(s, context)),
-  t.identity,
-);
+export const int = (int: number): t.Type<number, number, unknown> => {
+  const i = BigInt(int-1);
+  const two = BigInt(2)
+  const max = BigInt((((two<<i)/two)-BigInt(1)));
+  const min = -BigInt(((two<<(i))/two));
+  return new t.Type<number>(
+    'int',
+    t.number.is,
+    (s, context) => (typeof s === 'number' && Number.isInteger(s) && BigInt(s) >= min && BigInt(s) <= max ? t.success(s) : t.failure(s, context)),
+    t.identity,
+  );
+}
+
+export const uint = (int: number): t.Type<number, number, unknown> => {
+  const i = BigInt(int-1);
+  const two = BigInt(2)
+  const max = BigInt((((two<<i))-BigInt(1)));
+  return new t.Type<number>(
+    'uint',
+    t.number.is,
+    (s, context) => (typeof s === 'number' && Number.isInteger(s) && s >= 0 && BigInt(s) <= max ? t.success(s) : t.failure(s, context)),
+    t.identity,
+  );
+}
