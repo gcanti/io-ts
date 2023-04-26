@@ -1,9 +1,10 @@
 import * as assert from 'assert'
-import * as E from '../src/Encoder'
 import { pipe } from 'fp-ts/lib/pipeable'
+
+import * as E from '../src/Encoder'
 import * as H from './helpers'
 
-describe('Encoder', () => {
+describe.concurrent('Encoder', () => {
   it('contramap', () => {
     const encoder = E.contramap((s: string) => s.length)(H.encoderNumberToString)
     assert.deepStrictEqual(encoder.encode('aaa'), '3')

@@ -1,7 +1,8 @@
 import * as assert from 'assert'
-import * as G from '../src/Guard'
 import { pipe } from 'fp-ts/lib/pipeable'
 import { Stream } from 'stream'
+
+import * as G from '../src/Guard'
 
 interface NonEmptyStringBrand {
   readonly NonEmptyString: unique symbol
@@ -13,7 +14,7 @@ const NonEmptyString: G.Guard<string, NonEmptyString> = {
   is: (s): s is NonEmptyString => s.length > 0
 }
 
-describe('Guard', () => {
+describe.concurrent('Guard', () => {
   it('alt', () => {
     const guard = pipe(
       G.string,
@@ -41,13 +42,13 @@ describe('Guard', () => {
     assert.strictEqual(guard.is('a'), true)
   })
 
-  describe('number', () => {
+  describe.concurrent('number', () => {
     it('should exclude NaN', () => {
       assert.deepStrictEqual(G.number.is(NaN), false)
     })
   })
 
-  describe('refine', () => {
+  describe.concurrent('refine', () => {
     it('should accept valid inputs', () => {
       const guard = pipe(
         G.string,
@@ -66,7 +67,7 @@ describe('Guard', () => {
     })
   })
 
-  describe('nullable', () => {
+  describe.concurrent('nullable', () => {
     it('should accept valid inputs', () => {
       const guard = G.nullable(G.string)
       assert.strictEqual(guard.is(null), true)
@@ -79,7 +80,7 @@ describe('Guard', () => {
     })
   })
 
-  describe('struct', () => {
+  describe.concurrent('struct', () => {
     it('should accept valid inputs', () => {
       const guard = G.struct({ a: G.string, b: G.number })
       assert.strictEqual(guard.is({ a: 'a', b: 1 }), true)
@@ -118,7 +119,7 @@ describe('Guard', () => {
     })
   })
 
-  describe('partial', () => {
+  describe.concurrent('partial', () => {
     it('should accept valid inputs', () => {
       const guard = G.partial({ a: G.string, b: G.number })
       assert.strictEqual(guard.is({ a: 'a', b: 1 }), true)
@@ -152,7 +153,7 @@ describe('Guard', () => {
     })
   })
 
-  describe('record', () => {
+  describe.concurrent('record', () => {
     it('should accept valid inputs', () => {
       const guard = G.record(G.string)
       assert.strictEqual(guard.is({}), true)
@@ -166,7 +167,7 @@ describe('Guard', () => {
     })
   })
 
-  describe('array', () => {
+  describe.concurrent('array', () => {
     it('should accept valid inputs', () => {
       const guard = G.array(G.number)
       assert.strictEqual(guard.is([]), true)
@@ -180,7 +181,7 @@ describe('Guard', () => {
     })
   })
 
-  describe('tuple', () => {
+  describe.concurrent('tuple', () => {
     it('should accept valid inputs', () => {
       const guard = G.tuple(G.string, G.number)
       assert.strictEqual(guard.is(['a', 1]), true)
@@ -202,7 +203,7 @@ describe('Guard', () => {
     })
   })
 
-  describe('intersect', () => {
+  describe.concurrent('intersect', () => {
     it('should accept valid inputs', () => {
       const guard = pipe(G.struct({ a: G.string }), G.intersect(G.struct({ b: G.number })))
       assert.strictEqual(guard.is({ a: 'a', b: 1 }), true)
@@ -214,7 +215,7 @@ describe('Guard', () => {
     })
   })
 
-  describe('union', () => {
+  describe.concurrent('union', () => {
     it('should accept valid inputs', () => {
       const guard = G.union(G.string, G.number)
       assert.strictEqual(guard.is('a'), true)
@@ -227,7 +228,7 @@ describe('Guard', () => {
     })
   })
 
-  describe('lazy', () => {
+  describe.concurrent('lazy', () => {
     interface A {
       a: number
       b: Array<A>
@@ -251,7 +252,7 @@ describe('Guard', () => {
     })
   })
 
-  describe('sum', () => {
+  describe.concurrent('sum', () => {
     const sum = G.sum('_tag')
 
     it('should accept valid inputs', () => {
@@ -283,7 +284,7 @@ describe('Guard', () => {
     })
   })
 
-  describe('UnknownRecord', () => {
+  describe.concurrent('UnknownRecord', () => {
     it('should accept valid inputs', () => {
       assert.deepStrictEqual(G.UnknownRecord.is({}), true)
       assert.deepStrictEqual(G.UnknownRecord.is(new String()), true)

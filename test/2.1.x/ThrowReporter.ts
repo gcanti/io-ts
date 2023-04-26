@@ -1,8 +1,9 @@
 import * as assert from 'assert'
+
 import * as t from '../../src'
 import { ThrowReporter } from '../../src/ThrowReporter'
 
-describe('ThrowReporter', () => {
+describe.concurrent('ThrowReporter', () => {
   it('should throw on invalid inputs', () => {
     assert.throws(() => {
       // tslint:disable-next-line: deprecation

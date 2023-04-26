@@ -85,9 +85,11 @@ export interface Schemable2C<S extends URIS2, E> {
   /** @deprecated */
   readonly type: <A>(properties: { [K in keyof A]: Kind2<S, E, A[K]> }) => Kind2<S, E, { [K in keyof A]: A[K] }>
   readonly struct: <A>(properties: { [K in keyof A]: Kind2<S, E, A[K]> }) => Kind2<S, E, { [K in keyof A]: A[K] }>
-  readonly partial: <A>(
-    properties: { [K in keyof A]: Kind2<S, E, A[K]> }
-  ) => Kind2<S, E, Partial<{ [K in keyof A]: A[K] }>>
+  readonly partial: <A>(properties: { [K in keyof A]: Kind2<S, E, A[K]> }) => Kind2<
+    S,
+    E,
+    Partial<{ [K in keyof A]: A[K] }>
+  >
   readonly record: <A>(codomain: Kind2<S, E, A>) => Kind2<S, E, Record<string, A>>
   readonly array: <A>(item: Kind2<S, E, A>) => Kind2<S, E, Array<A>>
   readonly tuple: <A extends ReadonlyArray<unknown>>(

@@ -1,11 +1,12 @@
 import * as assert from 'assert'
 import { fold } from 'fp-ts/lib/Either'
 import { pipe } from 'fp-ts/lib/pipeable'
+
 import * as t from '../../src/index'
 import { assertFailure, assertStrictEqual, assertSuccess, NumberFromString } from './helpers'
 
-describe('type', () => {
-  describe('name', () => {
+describe.concurrent('type', () => {
+  describe.concurrent('name', () => {
     it('should assign a default name', () => {
       const T = t.type({ a: t.string })
       assert.strictEqual(T.name, '{ a: string }')
@@ -17,7 +18,7 @@ describe('type', () => {
     })
   })
 
-  describe('is', () => {
+  describe.concurrent('is', () => {
     it('should return `true` on valid inputs', () => {
       const T = t.type({ a: t.string })
       assert.strictEqual(T.is({ a: 'a' }), true)
@@ -56,7 +57,7 @@ describe('type', () => {
     })
   })
 
-  describe('decode', () => {
+  describe.concurrent('decode', () => {
     it('should decode a isomorphic value', () => {
       const T = t.type({ a: t.string })
       assertSuccess(T.decode({ a: 'a' }))
@@ -109,7 +110,7 @@ describe('type', () => {
     })
   })
 
-  describe('encode', () => {
+  describe.concurrent('encode', () => {
     it('should encode a isomorphic value', () => {
       const T = t.type({ a: t.string })
       assert.deepStrictEqual(T.encode({ a: 'a' }), { a: 'a' })

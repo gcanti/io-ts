@@ -1,9 +1,10 @@
 import * as assert from 'assert'
-import * as t from '../../src/index'
-import { assertSuccess, assertFailure } from './helpers'
 
-describe('literal', () => {
-  describe('name', () => {
+import * as t from '../../src/index'
+import { assertFailure, assertSuccess } from './helpers'
+
+describe.concurrent('literal', () => {
+  describe.concurrent('name', () => {
     it('should assign a default name', () => {
       const T = t.literal('a')
       assert.strictEqual(T.name, '"a"')
@@ -15,7 +16,7 @@ describe('literal', () => {
     })
   })
 
-  describe('is', () => {
+  describe.concurrent('is', () => {
     it('should check a isomorphic value', () => {
       const T = t.literal('a')
       assert.strictEqual(T.is('a'), true)
@@ -23,7 +24,7 @@ describe('literal', () => {
     })
   })
 
-  describe('decode', () => {
+  describe.concurrent('decode', () => {
     it('should decode a isomorphic value', () => {
       const T = t.literal('a')
       assertSuccess(T.decode('a'))
@@ -35,7 +36,7 @@ describe('literal', () => {
     })
   })
 
-  describe('encode', () => {
+  describe.concurrent('encode', () => {
     it('should encode a isomorphic value', () => {
       const T = t.literal('a')
       assert.strictEqual(T.encode('a'), 'a')

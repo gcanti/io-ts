@@ -1,9 +1,10 @@
-import * as t from '../../src/index'
-import { assertSuccess, assertFailure, assertStrictEqual, NumberFromString } from './helpers'
 import * as assert from 'assert'
 
-describe('exact', () => {
-  describe('name', () => {
+import * as t from '../../src/index'
+import { assertFailure, assertStrictEqual, assertSuccess, NumberFromString } from './helpers'
+
+describe.concurrent('exact', () => {
+  describe.concurrent('name', () => {
     it('should assign a default name', () => {
       const T = t.exact(t.type({ foo: t.string }))
       assert.strictEqual(T.name, '{| foo: string |}')
@@ -15,7 +16,7 @@ describe('exact', () => {
     })
   })
 
-  describe('is', () => {
+  describe.concurrent('is', () => {
     it('should check a isomorphic value', () => {
       const T = t.exact(t.type({ a: t.number }))
       assert.strictEqual(T.is({ a: 0 }), true)
@@ -31,7 +32,7 @@ describe('exact', () => {
     })
   })
 
-  describe('decode', () => {
+  describe.concurrent('decode', () => {
     it('should succeed validating a valid value (type)', () => {
       const T = t.exact(t.type({ foo: t.string }))
       assertSuccess(T.decode({ foo: 'foo' }))
@@ -127,7 +128,7 @@ describe('exact', () => {
     })
   })
 
-  describe('encode', () => {
+  describe.concurrent('encode', () => {
     it('should encode a prismatic value', () => {
       const T = t.exact(t.type({ a: NumberFromString }))
       assert.deepStrictEqual(T.encode({ a: 1 }), { a: '1' })

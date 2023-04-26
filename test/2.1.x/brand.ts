@@ -1,6 +1,7 @@
 import * as assert from 'assert'
+
 import * as t from '../../src/index'
-import { assertSuccess, assertFailure, assertStrictEqual, NumberFromString } from './helpers'
+import { assertFailure, assertStrictEqual, assertSuccess, NumberFromString } from './helpers'
 
 interface PositiveBrand {
   readonly Positive: unique symbol
@@ -40,15 +41,15 @@ const MyNumberFromStringArray = t.brand(
 
 const IntFromString = NumberFromString.pipe(t.Int, 'IntFromString')
 
-describe('brand', () => {
-  describe('name', () => {
+describe.concurrent('brand', () => {
+  describe.concurrent('name', () => {
     it('should accept a name', () => {
       const T = Positive
       assert.strictEqual(T.name, 'Positive')
     })
   })
 
-  describe('is', () => {
+  describe.concurrent('is', () => {
     it('should check a isomorphic value', () => {
       const T = t.Int
       assert.strictEqual(T.is(1.2), false)
@@ -64,7 +65,7 @@ describe('brand', () => {
     })
   })
 
-  describe('decode', () => {
+  describe.concurrent('decode', () => {
     it('should succeed validating a valid value', () => {
       const T = Positive
       assertSuccess(T.decode(0))
@@ -90,7 +91,7 @@ describe('brand', () => {
     })
   })
 
-  describe('encode', () => {
+  describe.concurrent('encode', () => {
     it('should encode a prismatic value', () => {
       const T = MyNumberFromStringArray
       assert.deepStrictEqual(T.encode([1] as any), ['1'])

@@ -1,8 +1,9 @@
 import * as assert from 'assert'
+
 import * as S from '../src/Schemable'
 
-describe('DecoderT', () => {
-  describe('intersect', () => {
+describe.concurrent('DecoderT', () => {
+  describe.concurrent('intersect', () => {
     it('should concat strings', () => {
       assert.deepStrictEqual(S.intersect_('a', 'b'), 'b')
     })

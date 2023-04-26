@@ -1,6 +1,7 @@
 import * as assert from 'assert'
 import { Either, fold, right } from 'fp-ts/lib/Either'
 import { pipe } from 'fp-ts/lib/pipeable'
+
 import * as t from '../../src/index'
 import { assertFailure, assertSuccess } from './helpers'
 
@@ -16,7 +17,7 @@ const BAA = new t.Type<number, string, string>(
 
 const BAI = t.string.pipe(BAA, 'T')
 
-describe('Type', () => {
+describe.concurrent('Type', () => {
   it('should auto bind decode', () => {
     function clone<C extends t.Any>(t: C): C {
       const r = Object.create(Object.getPrototypeOf(t))
@@ -46,7 +47,7 @@ describe('Type', () => {
     assert.strictEqual(decode(clone(A).decode, { a: { a: null } }), true)
   })
 
-  describe('pipe', () => {
+  describe.concurrent('pipe', () => {
     it('should assign a default name', () => {
       const AOI = t.string
       const T = AOI.pipe(BAA)
@@ -77,20 +78,20 @@ describe('Type', () => {
     })
   })
 
-  describe('asDecoder', () => {
+  describe.concurrent('asDecoder', () => {
     it('should return a decoder', () => {
       assertSuccess(t.string.asDecoder().decode('1'))
     })
   })
 
-  describe('asEncoder', () => {
+  describe.concurrent('asEncoder', () => {
     it('should return an encoder', () => {
       assert.strictEqual(BAI.asEncoder().encode(2), '2')
     })
   })
 })
 
-describe('getContextEntry', () => {
+describe.concurrent('getContextEntry', () => {
   it('should return a ContextEntry', () => {
     assert.deepStrictEqual(t.getContextEntry('key', t.string), {
       key: 'key',
@@ -99,7 +100,7 @@ describe('getContextEntry', () => {
   })
 })
 
-describe('clean', () => {
+describe.concurrent('clean', () => {
   it('should return the same type', () => {
     const T = t.type({ a: t.string })
     // tslint:disable-next-line: deprecation
@@ -107,7 +108,7 @@ describe('clean', () => {
   })
 })
 
-describe('alias', () => {
+describe.concurrent('alias', () => {
   it('should return the same type', () => {
     const T = t.type({ a: t.string })
     assert.strictEqual(t.alias(T)(), T)

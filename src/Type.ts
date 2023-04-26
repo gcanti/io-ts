@@ -11,6 +11,7 @@
 import * as E from 'fp-ts/lib/Either'
 import { identity, Refinement } from 'fp-ts/lib/function'
 import { pipe } from 'fp-ts/lib/pipeable'
+
 import * as t from './index'
 import * as S from './Schemable'
 
@@ -87,9 +88,11 @@ export const UnknownRecord: Type<Record<string, unknown>> = t.UnknownRecord
  * @category combinators
  * @since 2.2.3
  */
-export const refine = <A, B extends A>(refinement: Refinement<A, B>, id: string) => (from: Type<A>): Type<B> =>
-  // tslint:disable-next-line: deprecation
-  t.refinement(from, refinement, id) as any
+export const refine =
+  <A, B extends A>(refinement: Refinement<A, B>, id: string) =>
+  (from: Type<A>): Type<B> =>
+    // tslint:disable-next-line: deprecation
+    t.refinement(from, refinement, id) as any
 
 /**
  * @category combinators
@@ -143,7 +146,10 @@ export const tuple = <A extends ReadonlyArray<unknown>>(...components: { [K in k
  * @category combinators
  * @since 2.2.3
  */
-export const intersect = <B>(right: Type<B>) => <A>(left: Type<A>): Type<A & B> => t.intersection([left, right])
+export const intersect =
+  <B>(right: Type<B>) =>
+  <A>(left: Type<A>): Type<A & B> =>
+    t.intersection([left, right])
 
 /**
  * @category combinators
@@ -161,9 +167,10 @@ export const readonly: <A>(type: Type<A>) => Type<Readonly<A>> = identity
  * @category combinators
  * @since 2.2.3
  */
-export const sum = <T extends string>(_tag: T) => <A>(
-  members: { [K in keyof A]: Type<A[K] & Record<T, K>> }
-): Type<A[keyof A]> => t.union(Object.values(members) as any)
+export const sum =
+  <T extends string>(_tag: T) =>
+  <A>(members: { [K in keyof A]: Type<A[K] & Record<T, K>> }): Type<A[keyof A]> =>
+    t.union(Object.values(members) as any)
 
 /**
  * @category combinators

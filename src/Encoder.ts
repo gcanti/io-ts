@@ -8,10 +8,11 @@
  *
  * @since 2.2.3
  */
-import { Contravariant2 } from 'fp-ts/lib/Contravariant'
 import { Category2 } from 'fp-ts/lib/Category'
-import { memoize, intersect_ } from './Schemable'
+import { Contravariant2 } from 'fp-ts/lib/Contravariant'
 import { identity } from 'fp-ts/lib/function'
+
+import { intersect_, memoize } from './Schemable'
 
 // -------------------------------------------------------------------------------------
 // model
@@ -131,9 +132,11 @@ export function tuple<C extends ReadonlyArray<Encoder<any, any>>>(
  * @category combinators
  * @since 2.2.3
  */
-export const intersect = <P, B>(right: Encoder<P, B>) => <O, A>(left: Encoder<O, A>): Encoder<O & P, A & B> => ({
-  encode: (ab) => intersect_(left.encode(ab), right.encode(ab))
-})
+export const intersect =
+  <P, B>(right: Encoder<P, B>) =>
+  <O, A>(left: Encoder<O, A>): Encoder<O & P, A & B> => ({
+    encode: (ab) => intersect_(left.encode(ab), right.encode(ab))
+  })
 
 /**
  * @category combinators

@@ -302,7 +302,7 @@ Added in v2.2.7
 **Signature**
 
 ```ts
-export declare const nullable: <I, A>(or: Decoder<I, A>) => Decoder<I, A>
+export declare const nullable: <I, A>(or: Decoder<I, A>) => Decoder<I | null, A | null>
 ```
 
 Added in v2.2.7
@@ -324,9 +324,10 @@ Added in v2.2.7
 **Signature**
 
 ```ts
-export declare const partial: <A>(
-  properties: { [K in keyof A]: Decoder<unknown, A[K]> }
-) => Decoder<unknown, Partial<{ [K in keyof A]: A[K] }>>
+export declare const partial: <A>(properties: { [K in keyof A]: Decoder<unknown, A[K]> }) => Decoder<
+  unknown,
+  Partial<{ [K in keyof A]: A[K] }>
+>
 ```
 
 Added in v2.2.7
@@ -369,9 +370,10 @@ Added in v2.2.7
 **Signature**
 
 ```ts
-export declare const struct: <A>(
-  properties: { [K in keyof A]: Decoder<unknown, A[K]> }
-) => Decoder<unknown, { [K in keyof A]: A[K] }>
+export declare const struct: <A>(properties: { [K in keyof A]: Decoder<unknown, A[K]> }) => Decoder<
+  unknown,
+  { [K in keyof A]: A[K] }
+>
 ```
 
 Added in v2.2.15
@@ -445,9 +447,10 @@ Use `struct` instead.
 **Signature**
 
 ```ts
-export declare const type: <A>(
-  properties: { [K in keyof A]: Decoder<unknown, A[K]> }
-) => Decoder<unknown, { [K in keyof A]: A[K] }>
+export declare const type: <A>(properties: { [K in keyof A]: Decoder<unknown, A[K]> }) => Decoder<
+  unknown,
+  { [K in keyof A]: A[K] }
+>
 ```
 
 Added in v2.2.7

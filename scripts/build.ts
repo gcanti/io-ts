@@ -1,9 +1,10 @@
-import * as path from 'path'
 import * as E from 'fp-ts/lib/Either'
 import { pipe } from 'fp-ts/lib/pipeable'
 import * as RTE from 'fp-ts/lib/ReaderTaskEither'
 import * as A from 'fp-ts/lib/ReadonlyArray'
 import * as TE from 'fp-ts/lib/TaskEither'
+import * as path from 'path'
+
 import { FileSystem, fileSystem } from './FileSystem'
 import { run } from './run'
 

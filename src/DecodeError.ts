@@ -9,6 +9,7 @@
  * @since 2.2.7
  */
 import { Semigroup } from 'fp-ts/lib/Semigroup'
+
 import * as FS from './FreeSemigroup'
 
 /**

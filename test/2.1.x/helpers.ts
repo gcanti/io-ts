@@ -1,8 +1,9 @@
 import * as assert from 'assert'
-import { right, either, fold } from 'fp-ts/lib/Either'
+import { either, fold, right } from 'fp-ts/lib/Either'
+import { pipe } from 'fp-ts/lib/pipeable'
+
 import * as t from '../../src/index'
 import { PathReporter } from '../../src/PathReporter'
-import { pipe } from 'fp-ts/lib/pipeable'
 
 // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types
 export function assertStrictEqual<T>(result: t.Validation<T>, expected: any): void {

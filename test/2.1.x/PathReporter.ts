@@ -1,15 +1,16 @@
 import * as assert from 'assert'
+
 import * as t from '../../src'
 import { PathReporter } from '../../src/PathReporter'
 import { NumberFromString } from './helpers'
 
-describe('PathReporter', () => {
+describe.concurrent('PathReporter', () => {
   it('should use the function name as error message', () => {
-    // tslint:disable-next-line: no-empty
+    // eslint-disable-next-line @typescript-eslint/no-empty-function
     assert.deepStrictEqual(PathReporter.report(t.number.decode(function () {})), [
       'Invalid value <function0> supplied to : number'
     ])
-    // tslint:disable-next-line: no-empty
+    // eslint-disable-next-line @typescript-eslint/no-empty-function
     assert.deepStrictEqual(PathReporter.report(t.number.decode(function f() {})), [
       'Invalid value f supplied to : number'
     ])

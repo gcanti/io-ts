@@ -2,21 +2,43 @@
   "parserOptions": {
     "project": "./tsconfig.json"
   },
-  "plugins": [],
   "extends": [
     "eslint:recommended",
     "plugin:@typescript-eslint/eslint-recommended",
     "plugin:@typescript-eslint/recommended"
   ],
+  "plugins": ["deprecation", "import", "simple-import-sort"],
   "rules": {
+    "@typescript-eslint/array-type": [
+      "warn",
+      {
+        "default": "generic",
+        "readonly": "generic"
+      }
+    ],
+    "@typescript-eslint/prefer-readonly": "warn",
     "@typescript-eslint/member-delimiter-style": 0,
     "@typescript-eslint/no-non-null-assertion": "off",
     "@typescript-eslint/ban-types": "off",
     "@typescript-eslint/no-explicit-any": "off",
     "@typescript-eslint/no-empty-interface": "off",
     "no-unused-vars": "off",
-    "@typescript-eslint/no-unused-vars": ["error", { "argsIgnorePattern": "^_" }],
+    "@typescript-eslint/no-unused-vars": [
+      "error",
+      {
+        "argsIgnorePattern": "^_"
+      }
+    ],
+    "@typescript-eslint/prefer-as-const": "off",
     "prefer-rest-params": "off",
-    "prefer-spread": "off"
+    "prefer-spread": "off",
+    "deprecation/deprecation": "off",
+    "import/first": "error",
+    "import/no-cycle": "error",
+    "import/newline-after-import": "error",
+    "import/no-duplicates": "error",
+    "import/no-unresolved": "off",
+    "import/order": "off",
+    "simple-import-sort/imports": "error"
   }
 }

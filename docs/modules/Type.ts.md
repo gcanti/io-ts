@@ -90,7 +90,7 @@ Added in v2.2.3
 **Signature**
 
 ```ts
-export declare const nullable: <A>(or: Type<A>) => Type<A>
+export declare const nullable: <A>(or: Type<A>) => Type<A | null>
 ```
 
 Added in v2.2.3

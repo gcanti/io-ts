@@ -1,9 +1,10 @@
 import * as assert from 'assert'
+
 import * as t from '../../src/index'
 import { assertFailure, assertStrictEqual, assertStrictSuccess, assertSuccess, NumberFromString } from './helpers'
 
-describe('array', () => {
-  describe('name', () => {
+describe.concurrent('array', () => {
+  describe.concurrent('name', () => {
     it('should assign a default name', () => {
       const T = t.array(t.number)
       assert.strictEqual(T.name, 'Array<number>')
@@ -15,7 +16,7 @@ describe('array', () => {
     })
   })
 
-  describe('is', () => {
+  describe.concurrent('is', () => {
     it('should check a isomorphic value', () => {
       const T = t.array(t.number)
       assert.strictEqual(T.is([]), true)
@@ -24,7 +25,7 @@ describe('array', () => {
     })
   })
 
-  describe('decode', () => {
+  describe.concurrent('decode', () => {
     it('should decode a isomorphic value', () => {
       const T = t.array(t.number)
       assertSuccess(T.decode([]), [])
@@ -50,7 +51,7 @@ describe('array', () => {
     })
   })
 
-  describe('encode', () => {
+  describe.concurrent('encode', () => {
     it('should encode a isomorphic value', () => {
       const T = t.array(t.number)
       assert.deepStrictEqual(T.encode([1, 2, 3]), [1, 2, 3])

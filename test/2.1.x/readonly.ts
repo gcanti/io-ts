@@ -1,9 +1,10 @@
 import * as assert from 'assert'
+
 import * as t from '../../src/index'
 import { assertFailure, assertSuccess, NumberFromString } from './helpers'
 
-describe('readonly', () => {
-  describe('name', () => {
+describe.concurrent('readonly', () => {
+  describe.concurrent('name', () => {
     it('should assign a default name', () => {
       const T = t.readonly(t.type({ a: t.number }))
       assert.strictEqual(T.name, 'Readonly<{ a: number }>')
@@ -15,7 +16,7 @@ describe('readonly', () => {
     })
   })
 
-  describe('is', () => {
+  describe.concurrent('is', () => {
     it('should check a isomorphic value', () => {
       const T = t.readonly(t.type({ a: t.number }))
       assert.strictEqual(T.is({ a: 1 }), true)
@@ -31,7 +32,7 @@ describe('readonly', () => {
     })
   })
 
-  describe('decode', () => {
+  describe.concurrent('decode', () => {
     it('should succeed validating a valid value', () => {
       const T = t.readonly(t.type({ a: t.number }))
       assertSuccess(T.decode({ a: 1 }))
@@ -43,7 +44,7 @@ describe('readonly', () => {
     })
   })
 
-  describe('encode', () => {
+  describe.concurrent('encode', () => {
     it('should encode a prismatic value', () => {
       const T = t.readonly(t.type({ a: NumberFromString }))
       assert.deepStrictEqual(T.encode({ a: 1 }), { a: '1' })

@@ -1,9 +1,10 @@
 import * as assert from 'assert'
-import * as t from '../../src/index'
-import { assertSuccess, assertFailure, assertStrictEqual, withDefault, NumberFromString } from './helpers'
 
-describe('partial', () => {
-  describe('name', () => {
+import * as t from '../../src/index'
+import { assertFailure, assertStrictEqual, assertSuccess, NumberFromString, withDefault } from './helpers'
+
+describe.concurrent('partial', () => {
+  describe.concurrent('name', () => {
     it('should assign a default name', () => {
       const T = t.partial({ a: t.number })
       assert.strictEqual(T.name, 'Partial<{ a: number }>')
@@ -15,7 +16,7 @@ describe('partial', () => {
     })
   })
 
-  describe('is', () => {
+  describe.concurrent('is', () => {
     it('should return `true` on valid inputs', () => {
       const T1 = t.partial({ a: t.number })
       assert.strictEqual(T1.is({}), true)
@@ -41,7 +42,7 @@ describe('partial', () => {
     })
   })
 
-  describe('decode', () => {
+  describe.concurrent('decode', () => {
     it('should succeed on valid inputs', () => {
       const T = t.partial({ a: t.number })
       assertSuccess(T.decode({}), {})
@@ -83,7 +84,7 @@ describe('partial', () => {
     })
   })
 
-  describe('encode', () => {
+  describe.concurrent('encode', () => {
     it('should encode a isomorphic value', () => {
       const T = t.partial({ a: t.number })
       assert.deepStrictEqual(T.encode({}), {})

@@ -1,9 +1,10 @@
 import * as assert from 'assert'
-import * as t from '../../src/index'
-import { assertSuccess, assertFailure, assertStrictEqual, IntegerFromString, NumberFromString } from './helpers'
 
-describe('refinement', () => {
-  describe('name', () => {
+import * as t from '../../src/index'
+import { assertFailure, assertStrictEqual, assertSuccess, IntegerFromString, NumberFromString } from './helpers'
+
+describe.concurrent('refinement', () => {
+  describe.concurrent('name', () => {
     it('should assign a default name', () => {
       const T = t.refinement(t.number, (n) => n >= 0)
       assert.strictEqual(T.name, '(number | <function1>)')
@@ -15,7 +16,7 @@ describe('refinement', () => {
     })
   })
 
-  describe('is', () => {
+  describe.concurrent('is', () => {
     it('should check a isomorphic value', () => {
       const T = t.Integer
       assert.strictEqual(T.is(1.2), false)
@@ -31,7 +32,7 @@ describe('refinement', () => {
     })
   })
 
-  describe('decode', () => {
+  describe.concurrent('decode', () => {
     it('should succeed validating a valid value', () => {
       const T = t.refinement(t.number, (n) => n >= 0)
       assertSuccess(T.decode(0))
@@ -61,7 +62,7 @@ describe('refinement', () => {
     })
   })
 
-  describe('encode', () => {
+  describe.concurrent('encode', () => {
     it('should encode a prismatic value', () => {
       const T = t.refinement(t.array(NumberFromString), () => true)
       assert.deepStrictEqual(T.encode([1]), ['1'])

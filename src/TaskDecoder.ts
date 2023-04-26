@@ -18,6 +18,7 @@ import { MonadThrow2C } from 'fp-ts/lib/MonadThrow'
 import { pipe } from 'fp-ts/lib/pipeable'
 import * as T from 'fp-ts/lib/Task'
 import * as TE from 'fp-ts/lib/TaskEither'
+
 import * as DE from './DecodeError'
 import * as D from './Decoder'
 import * as FS from './FreeSemigroup'
@@ -251,9 +252,10 @@ export const fromType = fromStruct
  * @category combinators
  * @since 2.2.15
  */
-export const struct = <A>(
-  properties: { [K in keyof A]: TaskDecoder<unknown, A[K]> }
-): TaskDecoder<unknown, { [K in keyof A]: A[K] }> => pipe(UnknownRecord as any, compose(fromStruct(properties)))
+export const struct = <A>(properties: { [K in keyof A]: TaskDecoder<unknown, A[K]> }): TaskDecoder<
+  unknown,
+  { [K in keyof A]: A[K] }
+> => pipe(UnknownRecord as any, compose(fromStruct(properties)))
 
 /**
  * Use `struct` instead.
@@ -277,10 +279,10 @@ export const fromPartial = <P extends Record<string, TaskDecoder<any, any>>>(
  * @category combinators
  * @since 2.2.7
  */
-export const partial = <A>(
-  properties: { [K in keyof A]: TaskDecoder<unknown, A[K]> }
-): TaskDecoder<unknown, Partial<{ [K in keyof A]: A[K] }>> =>
-  pipe(UnknownRecord as any, compose(fromPartial(properties)))
+export const partial = <A>(properties: { [K in keyof A]: TaskDecoder<unknown, A[K]> }): TaskDecoder<
+  unknown,
+  Partial<{ [K in keyof A]: A[K] }>
+> => pipe(UnknownRecord as any, compose(fromPartial(properties)))
 
 /**
  * @category combinators
@@ -351,26 +353,29 @@ export const intersect: <IB, B>(
  * @category combinators
  * @since 2.2.8
  */
-export const fromSum = <T extends string>(tag: T) => <MS extends Record<string, TaskDecoder<any, any>>>(
-  members: MS
-): TaskDecoder<InputOf<MS[keyof MS]>, TypeOf<MS[keyof MS]>> =>
-  K.fromSum(M)((tag, value, keys) =>
-    FS.of(
-      DE.key(
-        tag,
-        DE.required,
-        error(value, keys.length === 0 ? 'never' : keys.map((k) => JSON.stringify(k)).join(' | '))
+export const fromSum =
+  <T extends string>(tag: T) =>
+  <MS extends Record<string, TaskDecoder<any, any>>>(
+    members: MS
+  ): TaskDecoder<InputOf<MS[keyof MS]>, TypeOf<MS[keyof MS]>> =>
+    K.fromSum(M)((tag, value, keys) =>
+      FS.of(
+        DE.key(
+          tag,
+          DE.required,
+          error(value, keys.length === 0 ? 'never' : keys.map((k) => JSON.stringify(k)).join(' | '))
+        )
       )
-    )
-  )(tag)(members)
+    )(tag)(members)
 
 /**
  * @category combinators
  * @since 2.2.7
  */
-export const sum = <T extends string>(tag: T) => <A>(
-  members: { [K in keyof A]: TaskDecoder<unknown, A[K] & Record<T, K>> }
-): TaskDecoder<unknown, A[keyof A]> => pipe(UnknownRecord as any, compose(fromSum(tag)(members)))
+export const sum =
+  <T extends string>(tag: T) =>
+  <A>(members: { [K in keyof A]: TaskDecoder<unknown, A[K] & Record<T, K>> }): TaskDecoder<unknown, A[keyof A]> =>
+    pipe(UnknownRecord as any, compose(fromSum(tag)(members)))
 
 /**
  * @category combinators

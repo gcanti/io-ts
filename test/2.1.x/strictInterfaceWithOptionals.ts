@@ -1,6 +1,7 @@
-import * as t from '../../src/index'
-import { assertSuccess, assertFailure, NumberFromString } from './helpers'
 import * as assert from 'assert'
+
+import * as t from '../../src/index'
+import { assertFailure, assertSuccess, NumberFromString } from './helpers'
 
 export function strictInterfaceWithOptionals<R extends t.Props, O extends t.Props>(
   required: R,
@@ -10,7 +11,7 @@ export function strictInterfaceWithOptionals<R extends t.Props, O extends t.Prop
   return t.exact(t.intersection([t.type(required), t.partial(optional)]), name)
 }
 
-describe('strictInterfaceWithOptionals', () => {
+describe.concurrent('strictInterfaceWithOptionals', () => {
   it('should succeed validating a valid value', () => {
     const T = strictInterfaceWithOptionals({ foo: t.string }, { bar: t.string }, 'T')
     assertSuccess(T.decode({ foo: 'foo' }))

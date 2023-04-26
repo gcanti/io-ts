@@ -1,6 +1,6 @@
 import * as FS from '../src/FreeSemigroup'
 
-describe('FreeSemigroup', () => {
+describe.concurrent('FreeSemigroup', () => {
   it('fold', () => {
     const sum: (input: FS.FreeSemigroup<string>) => string = FS.fold(
       (value) => value,

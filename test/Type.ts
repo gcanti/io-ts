@@ -1,25 +1,26 @@
 import * as assert from 'assert'
 import * as fc from 'fast-check'
-import { isRight, isLeft } from 'fp-ts/lib/Either'
-import { Kind, URIS, HKT, URIS2, Kind2 } from 'fp-ts/lib/HKT'
+import { isLeft, isRight } from 'fp-ts/lib/Either'
+import { HKT, Kind, Kind2, URIS, URIS2 } from 'fp-ts/lib/HKT'
+import { pipe } from 'fp-ts/lib/pipeable'
+
 import * as t from '../src'
 import * as D from '../src/Decoder'
 import * as G from '../src/Guard'
 import {
   memoize,
   Schemable,
-  WithUnion,
   Schemable1,
+  Schemable2C,
+  WithUnion,
   WithUnion1,
+  WithUnion2C,
   WithUnknownContainers,
   WithUnknownContainers1,
-  Schemable2C,
-  WithUnknownContainers2C,
-  WithUnion2C
+  WithUnknownContainers2C
 } from '../src/Schemable'
 import * as _ from '../src/Type'
 import * as A from './Arbitrary'
-import { pipe } from 'fp-ts/lib/pipeable'
 
 interface Schema<A> {
   <S>(S: Schemable<S> & WithUnknownContainers<S> & WithUnion<S>): HKT<S, A>
@@ -49,7 +50,7 @@ function check<A>(schema: Schema<A>, type: t.Type<A>): void {
   fc.assert(fc.property(arb, (a) => guard.is(a) === type.is(a)))
 }
 
-describe('Type', () => {
+describe.concurrent('Type', () => {
   it('string', () => {
     check(
       make((S) => S.string),
@@ -57,7 +58,7 @@ describe('Type', () => {
     )
   })
 
-  describe('number', () => {
+  describe.concurrent('number', () => {
     it('number', () => {
       check(
         make((S) => S.number),

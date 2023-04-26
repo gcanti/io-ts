@@ -436,7 +436,7 @@ Added in v1.0.0
 **Signature**
 
 ```ts
-export declare const failure: <T>(value: unknown, context: Context, message?: string) => Either<Errors, T>
+export declare const failure: <T>(value: unknown, context: Context, message?: string | undefined) => Either<Errors, T>
 ```
 
 Added in v1.0.0
@@ -609,7 +609,7 @@ Strips additional properties, equivalent to `exact(type(props))`.
 **Signature**
 
 ```ts
-export declare const strict: <P extends Props>(props: P, name?: string) => ExactC<TypeC<P>>
+export declare const strict: <P extends Props>(props: P, name?: string | undefined) => ExactC<TypeC<P>>
 ```
 
 Added in v1.0.0
@@ -2277,8 +2277,9 @@ Added in v1.4.2
 **Signature**
 
 ```ts
-export type Exact<T, X extends T> = T &
-  { [K in ({ [K in keyof X]: K } & { [K in keyof T]: never } & { [key: string]: never })[keyof X]]?: never }
+export type Exact<T, X extends T> = T & {
+  [K in ({ [K in keyof X]: K } & { [K in keyof T]: never } & { [key: string]: never })[keyof X]]?: never
+}
 ```
 
 Added in v1.1.0
@@ -2330,7 +2331,7 @@ Added in v1.0.0
 **Signature**
 
 ```ts
-export interface StrictC<P extends Props>  // tslint:disable-next-line: deprecation
+export interface StrictC<P extends Props> // tslint:disable-next-line: deprecation
   extends StrictType<P, { [K in keyof P]: TypeOf<P[K]> }, { [K in keyof P]: OutputOf<P[K]> }, unknown> {}
 ```
 
@@ -2422,7 +2423,7 @@ Added in v1.3.0
 **Signature**
 
 ```ts
-export interface TaggedIntersection<Tag extends string, A, O = A>  // tslint:disable-next-line: deprecation
+export interface TaggedIntersection<Tag extends string, A, O = A> // tslint:disable-next-line: deprecation
   extends IntersectionType<TaggedIntersectionArgument<Tag>, A, O> {}
 ```
 
@@ -2453,7 +2454,7 @@ Added in v1.3.0
 **Signature**
 
 ```ts
-export interface TaggedUnionC<Tag extends string, CS extends [Mixed, Mixed, ...Array<Mixed>]>  // tslint:disable-next-line: deprecation
+export interface TaggedUnionC<Tag extends string, CS extends [Mixed, Mixed, ...Array<Mixed>]> // tslint:disable-next-line: deprecation
   extends TaggedUnionType<Tag, CS, TypeOf<CS[number]>, OutputOf<CS[number]>, unknown> {}
 ```
 

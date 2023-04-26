@@ -127,7 +127,7 @@ Added in v2.2.0
 **Signature**
 
 ```ts
-export declare const nullable: <I, A extends I>(or: Guard<I, A>) => Guard<I, A>
+export declare const nullable: <I, A extends I>(or: Guard<I, A>) => Guard<I | null, A | null>
 ```
 
 Added in v2.2.0
@@ -137,9 +137,10 @@ Added in v2.2.0
 **Signature**
 
 ```ts
-export declare const partial: <A>(
-  properties: { [K in keyof A]: Guard<unknown, A[K]> }
-) => Guard<unknown, Partial<{ [K in keyof A]: A[K] }>>
+export declare const partial: <A>(properties: { [K in keyof A]: Guard<unknown, A[K]> }) => Guard<
+  unknown,
+  Partial<{ [K in keyof A]: A[K] }>
+>
 ```
 
 Added in v2.2.0
@@ -181,9 +182,10 @@ Added in v2.2.0
 **Signature**
 
 ```ts
-export declare const struct: <A>(
-  properties: { [K in keyof A]: Guard<unknown, A[K]> }
-) => Guard<unknown, { [K in keyof A]: A[K] }>
+export declare const struct: <A>(properties: { [K in keyof A]: Guard<unknown, A[K]> }) => Guard<
+  unknown,
+  { [K in keyof A]: A[K] }
+>
 ```
 
 Added in v2.2.15
@@ -241,9 +243,10 @@ Use `struct` instead.
 **Signature**
 
 ```ts
-export declare const type: <A>(
-  properties: { [K in keyof A]: Guard<unknown, A[K]> }
-) => Guard<unknown, { [K in keyof A]: A[K] }>
+export declare const type: <A>(properties: { [K in keyof A]: Guard<unknown, A[K]> }) => Guard<
+  unknown,
+  { [K in keyof A]: A[K] }
+>
 ```
 
 Added in v2.2.0

@@ -3,6 +3,7 @@
  */
 import * as fc from 'fast-check'
 import { identity, Refinement } from 'fp-ts/lib/function'
+
 import * as S from '../src/Schemable'
 
 // -------------------------------------------------------------------------------------
@@ -45,8 +46,10 @@ export const UnknownRecord: Arbitrary<Record<string, unknown>> = fc.dictionary(s
 // combinators
 // -------------------------------------------------------------------------------------
 
-export const refine = <A, B extends A>(refinement: Refinement<A, B>) => (from: Arbitrary<A>): Arbitrary<B> =>
-  from.filter(refinement)
+export const refine =
+  <A, B extends A>(refinement: Refinement<A, B>) =>
+  (from: Arbitrary<A>): Arbitrary<B> =>
+    from.filter(refinement)
 
 export function nullable<A>(or: Arbitrary<A>): Arbitrary<null | A> {
   return fc.oneof(fc.constant(null), or)
@@ -82,8 +85,10 @@ export function tuple<A extends ReadonlyArray<unknown>>(
   return (fc.tuple as any)(...components)
 }
 
-export const intersect = <B>(right: Arbitrary<B>) => <A>(left: Arbitrary<A>): Arbitrary<A & B> =>
-  fc.tuple(left, right).map(([a, b]) => S.intersect_(a, b))
+export const intersect =
+  <B>(right: Arbitrary<B>) =>
+  <A>(left: Arbitrary<A>): Arbitrary<A & B> =>
+    fc.tuple(left, right).map(([a, b]) => S.intersect_(a, b))
 
 export function sum<T extends string>(
   _tag: T

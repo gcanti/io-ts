@@ -1,8 +1,9 @@
 import * as assert from 'assert'
+
 import * as t from '../../src/index'
 import { assertFailure, assertStrictEqual, assertSuccess, NumberFromString } from './helpers'
 
-describe('intersection', () => {
+describe.concurrent('intersection', () => {
   it('mergeAll', () => {
     assert.deepStrictEqual(t.mergeAll(undefined, [{ prop1: 'b', prop2: 2 }, { prop1: 'a' }, { prop2: 1 }]), {
       prop1: 'a',
@@ -10,7 +11,7 @@ describe('intersection', () => {
     })
   })
 
-  describe('name', () => {
+  describe.concurrent('name', () => {
     it('should assign a default name', () => {
       const T = t.intersection([t.type({ a: t.string }), t.type({ b: t.number })])
       assert.strictEqual(T.name, '({ a: string } & { b: number })')
@@ -22,7 +23,7 @@ describe('intersection', () => {
     })
   })
 
-  describe('is', () => {
+  describe.concurrent('is', () => {
     it('should check a isomorphic value', () => {
       const T = t.intersection([t.type({ a: t.string }), t.type({ b: t.number })])
       assert.strictEqual(T.is({}), false)
@@ -47,7 +48,7 @@ describe('intersection', () => {
     })
   })
 
-  describe('decode', () => {
+  describe.concurrent('decode', () => {
     it('should decode a isomorphic value', () => {
       const T = t.intersection([t.type({ a: t.string }), t.type({ b: t.number })])
       assertSuccess(T.decode({ a: 'a', b: 1 }))
@@ -123,7 +124,7 @@ describe('intersection', () => {
     })
   })
 
-  describe('encode', () => {
+  describe.concurrent('encode', () => {
     it('should encode a isomorphic value', () => {
       const T = t.intersection([t.type({ a: t.string }), t.type({ b: t.number })])
       assert.deepStrictEqual(T.encode({ a: 'a', b: 1 }), { a: 'a', b: 1 })
