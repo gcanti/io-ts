@@ -1,6 +1,7 @@
 import * as assert from 'assert'
+
 import * as t from '../../src/index'
-import { assertSuccess, assertFailure, assertStrictEqual, NumberFromString } from './helpers'
+import { assertFailure, assertStrictEqual, assertSuccess, NumberFromString } from './helpers'
 
 type T = {
   a: number
@@ -13,8 +14,8 @@ const T: t.Type<T> = t.recursion('T', (self) =>
   })
 )
 
-describe('recursion', () => {
-  describe('is', () => {
+describe.concurrent('recursion', () => {
+  describe.concurrent('is', () => {
     it('should check a isomorphic value', () => {
       type A = {
         a: number
@@ -50,7 +51,7 @@ describe('recursion', () => {
     })
   })
 
-  describe('decode', () => {
+  describe.concurrent('decode', () => {
     it('should succeed validating a valid value', () => {
       assertSuccess(T.decode({ a: 1, b: null }))
       assertSuccess(T.decode({ a: 1, b: { a: 2, b: null } }))
@@ -82,7 +83,7 @@ describe('recursion', () => {
     })
   })
 
-  describe('encode', () => {
+  describe.concurrent('encode', () => {
     it('should encode a prismatic value', () => {
       type A = {
         a: number

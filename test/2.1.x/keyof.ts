@@ -1,9 +1,10 @@
 import * as assert from 'assert'
-import * as t from '../../src/index'
-import { assertSuccess, assertFailure } from './helpers'
 
-describe('keyof', () => {
-  describe('name', () => {
+import * as t from '../../src/index'
+import { assertFailure, assertSuccess } from './helpers'
+
+describe.concurrent('keyof', () => {
+  describe.concurrent('name', () => {
     it('should assign a default name', () => {
       const T = t.keyof({ a: 1, b: 2 })
       assert.strictEqual(T.name, '"a" | "b"')
@@ -15,7 +16,7 @@ describe('keyof', () => {
     })
   })
 
-  describe('is', () => {
+  describe.concurrent('is', () => {
     it('should check a isomorphic value', () => {
       const T = t.keyof({ a: 1, b: 2 })
       assert.strictEqual(T.is(null), false)
@@ -25,7 +26,7 @@ describe('keyof', () => {
     })
   })
 
-  describe('decode', () => {
+  describe.concurrent('decode', () => {
     it('should decode a isomorphic value', () => {
       const T = t.keyof({ a: 1, b: 2 })
       assertSuccess(T.decode('a'))

@@ -1,4 +1,5 @@
 import * as assert from 'assert'
+
 import * as t from '../../src/index'
 import { assertFailure, assertStrictEqual, assertSuccess, NumberFromString } from './helpers'
 
@@ -16,8 +17,8 @@ const OptionNumberFromString = t.taggedUnion(
   'OptionNumberFromString'
 )
 
-describe('taggedUnion', () => {
-  describe('name', () => {
+describe.concurrent('taggedUnion', () => {
+  describe.concurrent('name', () => {
     it('should assign a default name', () => {
       // tslint:disable-next-line: deprecation
       const OptionNumber = t.taggedUnion('type', [
@@ -34,7 +35,7 @@ describe('taggedUnion', () => {
     })
   })
 
-  describe('is', () => {
+  describe.concurrent('is', () => {
     it('should check a isomorphic value', () => {
       assert.strictEqual(OptionNumber.is(null), false)
       assert.strictEqual(OptionNumber.is({}), false)
@@ -45,7 +46,7 @@ describe('taggedUnion', () => {
     })
   })
 
-  describe('decode', () => {
+  describe.concurrent('decode', () => {
     it('should decode a isomorphic value', () => {
       assertSuccess(OptionNumber.decode({ type: 'None' }))
       assertSuccess(OptionNumber.decode({ type: 'Some', value: 1 }))
@@ -172,7 +173,7 @@ describe('taggedUnion', () => {
     })
   })
 
-  describe('encode', () => {
+  describe.concurrent('encode', () => {
     it('should encode a isomorphic value', () => {
       assert.deepStrictEqual(OptionNumber.encode({ type: 'Some', value: 1 }), { type: 'Some', value: 1 })
     })

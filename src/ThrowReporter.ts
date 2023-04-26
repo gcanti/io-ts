@@ -2,9 +2,10 @@
  * @deprecated
  * @since 1.0.0
  */
-import { Reporter } from './Reporter'
-import { PathReporter } from './PathReporter'
 import { isLeft } from 'fp-ts/lib/Either'
+
+import { PathReporter } from './PathReporter'
+import { Reporter } from './Reporter'
 
 /**
  * @category deprecated

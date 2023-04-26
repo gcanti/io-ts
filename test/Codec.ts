@@ -1,10 +1,11 @@
 import * as assert from 'assert'
-import * as _ from '../src/Codec'
-import * as D from '../src/Decoder'
-import { pipe } from 'fp-ts/lib/pipeable'
-import * as DE from '../src/DecodeError'
-import * as FS from '../src/FreeSemigroup'
 import * as E from 'fp-ts/lib/Either'
+import { pipe } from 'fp-ts/lib/pipeable'
+
+import * as _ from '../src/Codec'
+import * as DE from '../src/DecodeError'
+import * as D from '../src/Decoder'
+import * as FS from '../src/FreeSemigroup'
 import * as H from './helpers'
 
 const codecNumberFromString: _.Codec<string, string, number> = _.make(
@@ -32,8 +33,8 @@ export function parseJSON<E>(s: string, onError: (reason: unknown) => E): E.Eith
   return E.tryCatch(() => JSON.parse(s), onError)
 }
 
-describe('Codec', () => {
-  describe('Invariant', () => {
+describe.concurrent('Codec', () => {
+  describe.concurrent('Invariant', () => {
     it('imap', () => {
       const codec = _.Invariant.imap(
         _.string,
@@ -57,8 +58,8 @@ describe('Codec', () => {
     assert.deepStrictEqual(codec.encode({ value: 'a' }), 'a')
   })
 
-  describe('mapLeftWithInput', () => {
-    describe('decode', () => {
+  describe.concurrent('mapLeftWithInput', () => {
+    describe.concurrent('decode', () => {
       it('should, return the provided expected', () => {
         const decoder = pipe(
           _.number,
@@ -69,8 +70,8 @@ describe('Codec', () => {
     })
   })
 
-  describe('string', () => {
-    describe('decode', () => {
+  describe.concurrent('string', () => {
+    describe.concurrent('decode', () => {
       it('should decode a valid input', () => {
         const codec = _.string
         assert.deepStrictEqual(codec.decode('a'), D.success('a'))
@@ -83,8 +84,8 @@ describe('Codec', () => {
     })
   })
 
-  describe('number', () => {
-    describe('decode', () => {
+  describe.concurrent('number', () => {
+    describe.concurrent('decode', () => {
       it('should decode a valid input', () => {
         const codec = _.number
         assert.deepStrictEqual(codec.decode(1), D.success(1))
@@ -97,8 +98,8 @@ describe('Codec', () => {
     })
   })
 
-  describe('boolean', () => {
-    describe('decode', () => {
+  describe.concurrent('boolean', () => {
+    describe.concurrent('decode', () => {
       it('should decode a valid input', () => {
         const codec = _.boolean
         assert.deepStrictEqual(codec.decode(true), D.success(true))
@@ -112,8 +113,8 @@ describe('Codec', () => {
     })
   })
 
-  describe('literal', () => {
-    describe('decode', () => {
+  describe.concurrent('literal', () => {
+    describe.concurrent('decode', () => {
       it('should decode a valid input', () => {
         const codec = _.literal('a', null, 'b', 1, true)
         assert.deepStrictEqual(codec.decode('a'), D.success('a'))
@@ -126,7 +127,7 @@ describe('Codec', () => {
       })
     })
 
-    describe('encode', () => {
+    describe.concurrent('encode', () => {
       it('should encode a value', () => {
         const codec = _.literal('a')
         assert.deepStrictEqual(codec.encode('a'), 'a')
@@ -134,8 +135,8 @@ describe('Codec', () => {
     })
   })
 
-  describe('refine', () => {
-    describe('decode', () => {
+  describe.concurrent('refine', () => {
+    describe.concurrent('decode', () => {
       it('should decode a valid input', () => {
         const codec = pipe(
           _.string,
@@ -154,7 +155,7 @@ describe('Codec', () => {
       })
     })
 
-    describe('encode', () => {
+    describe.concurrent('encode', () => {
       it('should encode a value', () => {
         const codec = pipe(
           _.string,
@@ -165,8 +166,8 @@ describe('Codec', () => {
     })
   })
 
-  describe('nullable', () => {
-    describe('decode', () => {
+  describe.concurrent('nullable', () => {
+    describe.concurrent('decode', () => {
       it('should decode a valid input', () => {
         const codec = _.nullable(codecNumber)
         assert.deepStrictEqual(codec.decode(null), D.success(null))
@@ -196,7 +197,7 @@ describe('Codec', () => {
       })
     })
 
-    describe('encode', () => {
+    describe.concurrent('encode', () => {
       it('should encode a value', () => {
         const codec = _.nullable(codecNumber)
         assert.strictEqual(codec.encode(null), null)
@@ -205,8 +206,8 @@ describe('Codec', () => {
     })
   })
 
-  describe('struct', () => {
-    describe('decode', () => {
+  describe.concurrent('struct', () => {
+    describe.concurrent('decode', () => {
       it('should decode a valid input', () => {
         const codec = _.struct({
           a: _.string
@@ -269,7 +270,7 @@ describe('Codec', () => {
       })
     })
 
-    describe('encode', () => {
+    describe.concurrent('encode', () => {
       it('should encode a value', () => {
         const codec = _.struct({ a: codecNumber })
         assert.deepStrictEqual(codec.encode({ a: 1 }), { a: '1' })
@@ -283,8 +284,8 @@ describe('Codec', () => {
     })
   })
 
-  describe('partial', () => {
-    describe('decode', () => {
+  describe.concurrent('partial', () => {
+    describe.concurrent('decode', () => {
       it('should decode a valid input', () => {
         const codec = _.partial({ a: _.string })
         assert.deepStrictEqual(codec.decode({ a: 'a' }), D.success({ a: 'a' }))
@@ -345,7 +346,7 @@ describe('Codec', () => {
       })
     })
 
-    describe('encode', () => {
+    describe.concurrent('encode', () => {
       it('should encode a value', () => {
         const codec = _.partial({ a: codecNumber })
         assert.deepStrictEqual(codec.encode({}), {})
@@ -370,8 +371,8 @@ describe('Codec', () => {
     })
   })
 
-  describe('record', () => {
-    describe('decode', () => {
+  describe.concurrent('record', () => {
+    describe.concurrent('decode', () => {
       it('should decode a valid value', () => {
         const codec = _.record(_.number)
         assert.deepStrictEqual(codec.decode({}), D.success({}))
@@ -401,7 +402,7 @@ describe('Codec', () => {
       })
     })
 
-    describe('encode', () => {
+    describe.concurrent('encode', () => {
       it('should encode a value', () => {
         const codec = _.record(codecNumber)
         assert.deepStrictEqual(codec.encode({ a: 1, b: 2 }), { a: '1', b: '2' })
@@ -409,8 +410,8 @@ describe('Codec', () => {
     })
   })
 
-  describe('array', () => {
-    describe('decode', () => {
+  describe.concurrent('array', () => {
+    describe.concurrent('decode', () => {
       it('should decode a valid input', () => {
         const codec = _.array(_.string)
         assert.deepStrictEqual(codec.decode([]), D.success([]))
@@ -437,7 +438,7 @@ describe('Codec', () => {
       })
     })
 
-    describe('encode', () => {
+    describe.concurrent('encode', () => {
       it('should encode a value', () => {
         const codec = _.array(codecNumber)
         assert.deepStrictEqual(codec.encode([1, 2]), ['1', '2'])
@@ -445,8 +446,8 @@ describe('Codec', () => {
     })
   })
 
-  describe('tuple', () => {
-    describe('decode', () => {
+  describe.concurrent('tuple', () => {
+    describe.concurrent('decode', () => {
       it('should decode a valid input', () => {
         const codec = _.tuple(_.string, _.number)
         assert.deepStrictEqual(codec.decode(['a', 1]), D.success(['a', 1]))
@@ -488,7 +489,7 @@ describe('Codec', () => {
       })
     })
 
-    describe('encode', () => {
+    describe.concurrent('encode', () => {
       it('should encode a value', () => {
         const codec = _.tuple(codecNumber, _.string)
         assert.deepStrictEqual(codec.encode([1, 'a']), ['1', 'a'])
@@ -496,8 +497,8 @@ describe('Codec', () => {
     })
   })
 
-  describe('intersect', () => {
-    describe('decode', () => {
+  describe.concurrent('intersect', () => {
+    describe.concurrent('decode', () => {
       it('should decode a valid input', () => {
         const codec = pipe(_.struct({ a: _.string }), _.intersect(_.struct({ b: _.number })))
         assert.deepStrictEqual(codec.decode({ a: 'a', b: 1 }), D.success({ a: 'a', b: 1 }))
@@ -509,7 +510,7 @@ describe('Codec', () => {
       })
     })
 
-    describe('encode', () => {
+    describe.concurrent('encode', () => {
       it('should encode a value', () => {
         const codec = pipe(_.struct({ a: _.string }), _.intersect(_.struct({ b: codecNumber })))
         assert.deepStrictEqual(codec.encode({ a: 'a', b: 1 }), { a: 'a', b: '1' })
@@ -522,10 +523,10 @@ describe('Codec', () => {
     })
   })
 
-  describe('sum', () => {
+  describe.concurrent('sum', () => {
     const sum = _.sum('_tag')
 
-    describe('decode', () => {
+    describe.concurrent('decode', () => {
       it('should decode a valid input', () => {
         const A = _.struct({ _tag: _.literal('A'), a: _.string })
         const B = _.struct({ _tag: _.literal('B'), b: _.number })
@@ -558,7 +559,7 @@ describe('Codec', () => {
       })
     })
 
-    describe('encode', () => {
+    describe.concurrent('encode', () => {
       it('should encode a value', () => {
         const A = _.struct({ _tag: _.literal('A'), a: _.string })
         const B = _.struct({ _tag: _.literal('B'), b: codecNumber })
@@ -569,7 +570,7 @@ describe('Codec', () => {
     })
   })
 
-  describe('lazy', () => {
+  describe.concurrent('lazy', () => {
     interface A {
       a: number
       b?: A
@@ -583,7 +584,7 @@ describe('Codec', () => {
       pipe(_.struct({ a: codecNumber }), _.intersect(_.partial({ b: lazyCodec })))
     )
 
-    describe('decode', () => {
+    describe.concurrent('decode', () => {
       it('should decode a valid input', () => {
         assert.deepStrictEqual(lazyCodec.decode({ a: '1' }), D.success({ a: 1 }))
         assert.deepStrictEqual(lazyCodec.decode({ a: '1', b: { a: '2' } }), D.success({ a: 1, b: { a: 2 } }))
@@ -618,7 +619,7 @@ describe('Codec', () => {
       })
     })
 
-    describe('encode', () => {
+    describe.concurrent('encode', () => {
       it('should encode a value', () => {
         assert.deepStrictEqual(lazyCodec.encode({ a: 1 }), { a: '1' })
         assert.deepStrictEqual(lazyCodec.encode({ a: 1, b: { a: 2 } }), { a: '1', b: { a: '2' } })

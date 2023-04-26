@@ -1,4 +1,5 @@
 import * as assert from 'assert'
+
 import * as t from '../../src/index'
 import {
   assertFailure,
@@ -9,9 +10,9 @@ import {
   NumberFromString
 } from './helpers'
 
-describe('record', () => {
-  describe('nonEnumerableRecord', () => {
-    describe('name', () => {
+describe.concurrent('record', () => {
+  describe.concurrent('nonEnumerableRecord', () => {
+    describe.concurrent('name', () => {
       it('should assign a default name', () => {
         const T = t.record(t.string, t.number)
         assert.strictEqual(T.name, '{ [K in string]: number }')
@@ -23,7 +24,7 @@ describe('record', () => {
       })
     })
 
-    describe('is', () => {
+    describe.concurrent('is', () => {
       it('should return `true` on valid inputs', () => {
         const T1 = t.record(t.string, t.number)
         assert.strictEqual(T1.is({}), true)
@@ -67,7 +68,7 @@ describe('record', () => {
       })
     })
 
-    describe('decode', () => {
+    describe.concurrent('decode', () => {
       it('should decode a isomorphic value', () => {
         const T = t.record(t.string, t.number)
         assertSuccess(T.decode({}))
@@ -116,7 +117,7 @@ describe('record', () => {
       })
     })
 
-    describe('encode', () => {
+    describe.concurrent('encode', () => {
       it('should encode a isomorphic value', () => {
         const T = t.record(t.string, t.number)
         assert.deepStrictEqual(T.encode({ a: 1 }), { a: 1 })
@@ -165,8 +166,8 @@ describe('record', () => {
     })
   })
 
-  describe('enumerableRecord', () => {
-    describe('getDomainKeys', () => {
+  describe.concurrent('enumerableRecord', () => {
+    describe.concurrent('getDomainKeys', () => {
       it('should handle literal', () => {
         assert.deepStrictEqual(t.getDomainKeys(t.literal('a')), { a: null })
         assert.deepStrictEqual(t.getDomainKeys(t.literal(1)), undefined)
@@ -182,7 +183,7 @@ describe('record', () => {
       })
     })
 
-    describe('name', () => {
+    describe.concurrent('name', () => {
       it('should assign a default name', () => {
         const T = t.record(t.literal('a'), t.number)
         assert.strictEqual(T.name, '{ [K in "a"]: number }')
@@ -194,7 +195,7 @@ describe('record', () => {
       })
     })
 
-    describe('is', () => {
+    describe.concurrent('is', () => {
       it('should return `true` on valid inputs', () => {
         const T = t.record(t.literal('a'), t.string)
         assert.strictEqual(T.is({ a: 'a' }), true)
@@ -207,7 +208,7 @@ describe('record', () => {
       })
     })
 
-    describe('decode', () => {
+    describe.concurrent('decode', () => {
       it('should support literals as domain type', () => {
         const T = t.record(t.literal('a'), t.string)
         assertSuccess(T.decode({ a: 'a' }), { a: 'a' })
@@ -244,7 +245,7 @@ describe('record', () => {
       })
     })
 
-    describe('encode', () => {
+    describe.concurrent('encode', () => {
       it('should encode a isomorphic value', () => {
         const T = t.record(t.literal('a'), t.number)
         assert.deepStrictEqual(T.encode({ a: 1 }), { a: 1 })

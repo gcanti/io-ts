@@ -1,9 +1,10 @@
 import * as assert from 'assert'
-import * as E from '../src/Eq'
 import { Eq } from 'fp-ts/lib/Eq'
 import { pipe } from 'fp-ts/lib/pipeable'
 
-describe('Eq', () => {
+import * as E from '../src/Eq'
+
+describe.concurrent('Eq', () => {
   it('literal', () => {
     const eq = E.Schemable.literal('a', null)
     assert.deepStrictEqual(eq.equals('a', 'a'), true)

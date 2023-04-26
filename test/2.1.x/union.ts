@@ -1,10 +1,11 @@
 import * as assert from 'assert'
-import * as t from '../../src/index'
-import { assertFailure, assertStrictEqual, assertSuccess, NumberFromString } from './helpers'
 import { either } from 'fp-ts/lib/Either'
 
-describe('union', () => {
-  describe('name', () => {
+import * as t from '../../src/index'
+import { assertFailure, assertStrictEqual, assertSuccess, NumberFromString } from './helpers'
+
+describe.concurrent('union', () => {
+  describe.concurrent('name', () => {
     it('should assign a default name', () => {
       const T = t.union([t.string, t.number])
       assert.strictEqual(T.name, '(string | number)')
@@ -16,7 +17,7 @@ describe('union', () => {
     })
   })
 
-  describe('is', () => {
+  describe.concurrent('is', () => {
     it('should check a isomorphic value', () => {
       const T = t.union([t.string, t.number])
       assert.strictEqual(T.is(0), true)
@@ -32,7 +33,7 @@ describe('union', () => {
     })
   })
 
-  describe('decode', () => {
+  describe.concurrent('decode', () => {
     it('should decode a isomorphic value', () => {
       const T = t.union([t.string, t.number])
       assertSuccess(T.decode('s'))
@@ -61,7 +62,7 @@ describe('union', () => {
       assertStrictEqual(T.decode(value), value)
     })
 
-    describe('robustness', () => {
+    describe.concurrent('robustness', () => {
       it('should handle one codec', () => {
         const T = t.union([t.string] as any)
         assertSuccess(T.decode('s'))
@@ -70,7 +71,7 @@ describe('union', () => {
     })
   })
 
-  describe('encode', () => {
+  describe.concurrent('encode', () => {
     it('should encode a prismatic value', () => {
       const T1 = t.union([t.type({ a: NumberFromString }), t.number])
       assert.deepStrictEqual(T1.encode({ a: 1 }), { a: '1' })
@@ -133,7 +134,7 @@ describe('union', () => {
     })
   })
 
-  describe('getTags', () => {
+  describe.concurrent('getTags', () => {
     it('not eligible', () => {
       assert.strictEqual(t.getTags(t.string), t.emptyTags)
     })

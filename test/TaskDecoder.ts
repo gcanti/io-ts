@@ -2,10 +2,11 @@ import * as assert from 'assert'
 import * as E from 'fp-ts/lib/Either'
 import { pipe } from 'fp-ts/lib/pipeable'
 import * as TE from 'fp-ts/lib/TaskEither'
+
 import * as DE from '../src/DecodeError'
+import * as D from '../src/Decoder'
 import * as FS from '../src/FreeSemigroup'
 import * as G from '../src/Guard'
-import * as D from '../src/Decoder'
 import * as _ from '../src/TaskDecoder'
 
 const undefinedGuard: G.Guard<unknown, undefined> = {
@@ -39,7 +40,7 @@ const Int: _.TaskDecoder<unknown, Int> = pipe(
   _.refine((n): n is Int => Number.isInteger(n), 'Int')
 )
 
-describe('UnknownTaskDecoder', () => {
+describe.concurrent('UnknownTaskDecoder', () => {
   // -------------------------------------------------------------------------------------
   // instances
   // -------------------------------------------------------------------------------------
@@ -110,7 +111,7 @@ describe('UnknownTaskDecoder', () => {
     assert.deepStrictEqual(await decoder.decode(null)(), D.failure(null, 'string'))
   })
 
-  describe('literal', () => {
+  describe.concurrent('literal', () => {
     it('should decode a valid input', async () => {
       const decoder = _.literal('a', null, 'b', 1, true)
       assert.deepStrictEqual(await decoder.decode('a')(), D.success('a'))
@@ -166,7 +167,7 @@ describe('UnknownTaskDecoder', () => {
     assert.deepStrictEqual(await decoder.decode(1.2)(), D.failure(1.2, 'IntFromNumber'))
   })
 
-  describe('nullable', () => {
+  describe.concurrent('nullable', () => {
     it('should decode a valid input', async () => {
       const decoder = _.nullable(NumberFromString)
       assert.deepStrictEqual(await decoder.decode(null)(), D.success(null))
@@ -196,7 +197,7 @@ describe('UnknownTaskDecoder', () => {
     })
   })
 
-  describe('struct', () => {
+  describe.concurrent('struct', () => {
     it('should decode a valid input', async () => {
       const decoder = _.struct({
         a: _.string
@@ -259,7 +260,7 @@ describe('UnknownTaskDecoder', () => {
     })
   })
 
-  describe('partial', () => {
+  describe.concurrent('partial', () => {
     it('should decode a valid input', async () => {
       const decoder = _.partial({ a: _.string })
       assert.deepStrictEqual(await decoder.decode({ a: 'a' })(), D.success({ a: 'a' }))
@@ -320,7 +321,7 @@ describe('UnknownTaskDecoder', () => {
     })
   })
 
-  describe('array', () => {
+  describe.concurrent('array', () => {
     it('should decode a valid input', async () => {
       const decoder = _.array(_.string)
       assert.deepStrictEqual(await decoder.decode([])(), D.success([]))
@@ -350,7 +351,7 @@ describe('UnknownTaskDecoder', () => {
     })
   })
 
-  describe('record', () => {
+  describe.concurrent('record', () => {
     it('should decode a valid value', async () => {
       const decoder = _.record(_.number)
       assert.deepStrictEqual(await decoder.decode({})(), D.success({}))
@@ -380,7 +381,7 @@ describe('UnknownTaskDecoder', () => {
     })
   })
 
-  describe('tuple', () => {
+  describe.concurrent('tuple', () => {
     it('should decode a valid input', async () => {
       const decoder = _.tuple(_.string, _.number)
       assert.deepStrictEqual(await decoder.decode(['a', 1])(), D.success(['a', 1]))
@@ -422,7 +423,7 @@ describe('UnknownTaskDecoder', () => {
     })
   })
 
-  describe('union', () => {
+  describe.concurrent('union', () => {
     it('should decode a valid input', async () => {
       assert.deepStrictEqual(await _.union(_.string).decode('a')(), D.success('a'))
       const decoder = _.union(_.string, _.number)
@@ -444,7 +445,7 @@ describe('UnknownTaskDecoder', () => {
     })
   })
 
-  describe('refine', () => {
+  describe.concurrent('refine', () => {
     it('should decode a valid input', async () => {
       const decoder = pipe(
         _.string,
@@ -463,7 +464,7 @@ describe('UnknownTaskDecoder', () => {
     })
   })
 
-  describe('intersect', () => {
+  describe.concurrent('intersect', () => {
     it('should decode a valid input', async () => {
       const decoder = pipe(_.struct({ a: _.string }), _.intersect(_.struct({ b: _.number })))
       assert.deepStrictEqual(await decoder.decode({ a: 'a', b: 1 })(), D.success({ a: 'a', b: 1 }))
@@ -496,7 +497,7 @@ describe('UnknownTaskDecoder', () => {
     })
   })
 
-  describe('sum', () => {
+  describe.concurrent('sum', () => {
     const sum = _.sum('_tag')
 
     it('should decode a valid input', async () => {
@@ -540,7 +541,7 @@ describe('UnknownTaskDecoder', () => {
     pipe(_.struct({ a: NumberFromString }), _.intersect(_.partial({ b: lazyDecoder })))
   )
 
-  describe('lazy', () => {
+  describe.concurrent('lazy', () => {
     it('should decode a valid input', async () => {
       assert.deepStrictEqual(await lazyDecoder.decode({ a: '1' })(), D.success({ a: 1 }))
       assert.deepStrictEqual(await lazyDecoder.decode({ a: '1', b: { a: '2' } })(), D.success({ a: 1, b: { a: 2 } }))
@@ -579,7 +580,7 @@ describe('UnknownTaskDecoder', () => {
   // utils
   // -------------------------------------------------------------------------------------
 
-  describe('draw', () => {
+  describe.concurrent('draw', () => {
     it('draw', async () => {
       const decoder = _.struct({
         a: _.string,

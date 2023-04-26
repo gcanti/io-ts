@@ -14,7 +14,9 @@
     "moduleResolution": "node",
     "forceConsistentCasingInFileNames": true,
     "stripInternal": true,
-    "lib": ["es2015", "ESNext.BigInt"]
+    "lib": ["es2015", "ESNext.BigInt"],
+    "skipLibCheck": true,
+    "types": ["vitest/globals"]
   },
   "include": ["./src", "./test", "./scripts"]
 }

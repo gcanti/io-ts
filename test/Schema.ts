@@ -1,6 +1,7 @@
 import * as fc from 'fast-check'
 import { isRight } from 'fp-ts/lib/Either'
 import { pipe } from 'fp-ts/lib/pipeable'
+
 import * as D from '../src/Decoder'
 import * as Eq from '../src/Eq'
 import * as G from '../src/Guard'
@@ -15,7 +16,7 @@ function check<A>(schema: Schema<A>): void {
   // decoders, guards and eqs should be aligned
   fc.assert(fc.property(arb, (a) => isRight(decoder.decode(a)) && guard.is(a) && eq.equals(a, a)))
 }
-describe('Schema', () => {
+describe.concurrent('Schema', () => {
   it('string', () => {
     check(make((S) => S.string))
   })

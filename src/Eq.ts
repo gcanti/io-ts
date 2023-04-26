@@ -12,6 +12,7 @@ import * as A from 'fp-ts/lib/Array'
 import * as E from 'fp-ts/lib/Eq'
 import { identity } from 'fp-ts/lib/function'
 import * as R from 'fp-ts/lib/Record'
+
 import { memoize, Schemable1, WithRefine1, WithUnknownContainers1 } from './Schemable'
 import Eq = E.Eq
 
@@ -139,17 +140,18 @@ export const array: <A>(eq: Eq<A>) => Eq<Array<A>> = A.getEq
  * @category combinators
  * @since 2.2.2
  */
-export const tuple: <A extends ReadonlyArray<unknown>>(
-  ...components: { [K in keyof A]: Eq<A[K]> }
-) => Eq<A> = E.getTupleEq as any
+export const tuple: <A extends ReadonlyArray<unknown>>(...components: { [K in keyof A]: Eq<A[K]> }) => Eq<A> =
+  E.getTupleEq as any
 
 /**
  * @category combinators
  * @since 2.2.2
  */
-export const intersect = <B>(right: Eq<B>) => <A>(left: Eq<A>): Eq<A & B> => ({
-  equals: (x, y) => left.equals(x, y) && right.equals(x, y)
-})
+export const intersect =
+  <B>(right: Eq<B>) =>
+  <A>(left: Eq<A>): Eq<A & B> => ({
+    equals: (x, y) => left.equals(x, y) && right.equals(x, y)
+  })
 
 /**
  * @category combinators

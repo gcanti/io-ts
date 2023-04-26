@@ -1,9 +1,10 @@
 import * as assert from 'assert'
-import * as t from '../../src/index'
-import { assertSuccess, assertFailure } from './helpers'
 
-describe('UnknownRecord', () => {
-  describe('is', () => {
+import * as t from '../../src/index'
+import { assertFailure, assertSuccess } from './helpers'
+
+describe.concurrent('UnknownRecord', () => {
+  describe.concurrent('is', () => {
     it('should return `true` for valid objects', () => {
       const T = t.UnknownRecord
       assert.strictEqual(T.is({}), true)
@@ -19,7 +20,7 @@ describe('UnknownRecord', () => {
     })
   })
 
-  describe('decode', () => {
+  describe.concurrent('decode', () => {
     it('should succeed validating a valid value', () => {
       const T = t.UnknownRecord
       assertSuccess(T.decode({}))
@@ -40,7 +41,7 @@ describe('UnknownRecord', () => {
   })
 })
 
-describe('UnknownArray', () => {
+describe.concurrent('UnknownArray', () => {
   it('should succeed decoding a valid value', () => {
     const T = t.UnknownArray
     assertSuccess(T.decode([]))
@@ -57,7 +58,7 @@ describe('UnknownArray', () => {
   })
 })
 
-describe('null', () => {
+describe.concurrent('null', () => {
   it('should succeed decoding a valid value', () => {
     assertSuccess(t.null.decode(null))
   })
@@ -67,7 +68,7 @@ describe('null', () => {
   })
 })
 
-describe('undefined', () => {
+describe.concurrent('undefined', () => {
   it('should succeed decoding a valid value', () => {
     assertSuccess(t.undefined.decode(undefined))
   })
@@ -77,7 +78,7 @@ describe('undefined', () => {
   })
 })
 
-describe('unknown', () => {
+describe.concurrent('unknown', () => {
   it('should decode any value', () => {
     assertSuccess(t.unknown.decode(null))
     assertSuccess(t.unknown.decode(undefined))
@@ -101,7 +102,7 @@ describe('unknown', () => {
   })
 })
 
-describe('boolean', () => {
+describe.concurrent('boolean', () => {
   it('should decode boolean values', () => {
     const T = t.boolean
     assertSuccess(T.decode(true))
@@ -114,7 +115,7 @@ describe('boolean', () => {
   })
 })
 
-describe('bigint', () => {
+describe.concurrent('bigint', () => {
   const T = t.bigint
   it('should decode bigint values', () => {
     assertSuccess(T.decode(BigInt(0)))
@@ -137,7 +138,7 @@ describe('bigint', () => {
   })
 })
 
-describe('Integer', () => {
+describe.concurrent('Integer', () => {
   it('should validate integers', () => {
     const T = t.Integer
     assertSuccess(T.decode(1))
@@ -148,7 +149,7 @@ describe('Integer', () => {
   })
 })
 
-describe('void', () => {
+describe.concurrent('void', () => {
   it('should support the alias `voidType`', () => {
     const T = t.void
     assertSuccess(t.voidType.decode(undefined))
@@ -156,7 +157,7 @@ describe('void', () => {
   })
 })
 
-describe('object', () => {
+describe.concurrent('object', () => {
   it('should decode arrays', () => {
     // tslint:disable-next-line: deprecation
     assertSuccess(t.object.decode([]))
@@ -183,7 +184,7 @@ describe('object', () => {
   })
 })
 
-describe('Function', () => {
+describe.concurrent('Function', () => {
   it('should decode functions', () => {
     assertSuccess(t.Function.decode(t.identity))
   })
@@ -194,7 +195,7 @@ describe('Function', () => {
   })
 })
 
-describe('any', () => {
+describe.concurrent('any', () => {
   it('should decode any value', () => {
     assertSuccess(t.any.decode(null))
     assertSuccess(t.any.decode(undefined))
@@ -220,9 +221,9 @@ describe('any', () => {
   })
 })
 
-describe('never', () => {
+describe.concurrent('never', () => {
   it('should not decode any value', () => {
-    const T = (t.never as any) as t.Any
+    const T = t.never as any as t.Any
     assertFailure(T, null, ['Invalid value null supplied to : never'])
     assertFailure(T, undefined, ['Invalid value undefined supplied to : never'])
     assertFailure(T, 'foo', ['Invalid value "foo" supplied to : never'])

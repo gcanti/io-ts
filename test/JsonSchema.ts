@@ -3,6 +3,7 @@ import { identity } from 'fp-ts/lib/function'
 import { pipe } from 'fp-ts/lib/pipeable'
 import * as R from 'fp-ts/lib/ReadonlyRecord'
 import { JSONSchema7 } from 'json-schema'
+
 import * as S from '../src/Schemable'
 
 // -------------------------------------------------------------------------------------
@@ -125,9 +126,11 @@ export function tuple<A extends ReadonlyArray<unknown>>(
   }
 }
 
-export const intersect = <B>(right: JsonSchema<B>) => <A>(left: JsonSchema<A>): JsonSchema<A & B> => ({
-  compile: (lazy) => C.make({ allOf: [left.compile(lazy), right.compile(lazy)] })
-})
+export const intersect =
+  <B>(right: JsonSchema<B>) =>
+  <A>(left: JsonSchema<A>): JsonSchema<A & B> => ({
+    compile: (lazy) => C.make({ allOf: [left.compile(lazy), right.compile(lazy)] })
+  })
 
 export function sum<T extends string>(
   _tag: T

@@ -1,9 +1,10 @@
-import * as t from '../../src/index'
-import { assertSuccess, assertFailure, assertStrictEqual, NumberFromString } from './helpers'
 import * as assert from 'assert'
 
-describe('strict', () => {
-  describe('name', () => {
+import * as t from '../../src/index'
+import { assertFailure, assertStrictEqual, assertSuccess, NumberFromString } from './helpers'
+
+describe.concurrent('strict', () => {
+  describe.concurrent('name', () => {
     it('should assign a default name', () => {
       const T = t.strict({ foo: t.string })
       assert.strictEqual(T.name, '{| foo: string |}')
@@ -15,7 +16,7 @@ describe('strict', () => {
     })
   })
 
-  describe('is', () => {
+  describe.concurrent('is', () => {
     it('should check a isomorphic value', () => {
       const T = t.strict({ a: t.number })
       assert.strictEqual(T.is({ a: 0 }), true)
@@ -44,7 +45,7 @@ describe('strict', () => {
     })
   })
 
-  describe('decode', () => {
+  describe.concurrent('decode', () => {
     it('should succeed validating a valid value', () => {
       const T = t.strict({ foo: t.string })
       assertSuccess(T.decode({ foo: 'foo' }))
@@ -85,7 +86,7 @@ describe('strict', () => {
     })
   })
 
-  describe('encode', () => {
+  describe.concurrent('encode', () => {
     it('should encode a prismatic value', () => {
       const T = t.strict({ a: NumberFromString })
       assert.deepStrictEqual(T.encode({ a: 1 }), { a: '1' })

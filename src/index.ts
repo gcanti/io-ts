@@ -2138,7 +2138,7 @@ export class TaggedUnionType<
  * @since 1.5.3
  * @deprecated
  */
-export interface TaggedUnionC<Tag extends string, CS extends [Mixed, Mixed, ...Array<Mixed>]>  // tslint:disable-next-line: deprecation
+export interface TaggedUnionC<Tag extends string, CS extends [Mixed, Mixed, ...Array<Mixed>]> // tslint:disable-next-line: deprecation
   extends TaggedUnionType<Tag, CS, TypeOf<CS[number]>, OutputOf<CS[number]>, unknown> {}
 
 /**
@@ -2299,7 +2299,7 @@ export class StrictType<P, A = any, O = A, I = unknown> extends Type<A, O, I> {
  * @since 1.5.3
  * @deprecated
  */
-export interface StrictC<P extends Props>  // tslint:disable-next-line: deprecation
+export interface StrictC<P extends Props> // tslint:disable-next-line: deprecation
   extends StrictType<P, { [K in keyof P]: TypeOf<P[K]> }, { [K in keyof P]: OutputOf<P[K]> }, unknown> {}
 
 /**
@@ -2362,7 +2362,7 @@ export type TaggedIntersectionArgument<Tag extends string> =
  * @since 1.3.0
  * @deprecated
  */
-export interface TaggedIntersection<Tag extends string, A, O = A>  // tslint:disable-next-line: deprecation
+export interface TaggedIntersection<Tag extends string, A, O = A> // tslint:disable-next-line: deprecation
   extends IntersectionType<TaggedIntersectionArgument<Tag>, A, O> {}
 
 /**
@@ -2412,8 +2412,9 @@ export type PropsOf<T extends { props: any }> = T['props']
  * @since 1.1.0
  * @deprecated
  */
-export type Exact<T, X extends T> = T &
-  { [K in ({ [K in keyof X]: K } & { [K in keyof T]: never } & { [key: string]: never })[keyof X]]?: never }
+export type Exact<T, X extends T> = T & {
+  [K in ({ [K in keyof X]: K } & { [K in keyof T]: never } & { [key: string]: never })[keyof X]]?: never
+}
 
 /**
  * Keeps the codec "kind".

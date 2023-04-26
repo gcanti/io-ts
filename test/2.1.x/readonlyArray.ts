@@ -1,9 +1,10 @@
 import * as assert from 'assert'
+
 import * as t from '../../src/index'
 import { assertFailure, assertSuccess, NumberFromString } from './helpers'
 
-describe('readonlyArray', () => {
-  describe('name', () => {
+describe.concurrent('readonlyArray', () => {
+  describe.concurrent('name', () => {
     it('should assign a default name', () => {
       const T = t.readonlyArray(t.number)
       assert.strictEqual(T.name, 'ReadonlyArray<number>')
@@ -15,7 +16,7 @@ describe('readonlyArray', () => {
     })
   })
 
-  describe('is', () => {
+  describe.concurrent('is', () => {
     it('should check a isomorphic value', () => {
       const T = t.readonlyArray(t.number)
       assert.strictEqual(T.is([]), true)
@@ -33,7 +34,7 @@ describe('readonlyArray', () => {
     })
   })
 
-  describe('decode', () => {
+  describe.concurrent('decode', () => {
     it('should succeed validating a valid value', () => {
       const T = t.readonlyArray(t.number)
       assertSuccess(T.decode([1]))
@@ -45,7 +46,7 @@ describe('readonlyArray', () => {
     })
   })
 
-  describe('encode', () => {
+  describe.concurrent('encode', () => {
     it('should encode a prismatic value', () => {
       const T = t.readonlyArray(NumberFromString)
       assert.deepStrictEqual(T.encode([0, 1]), ['0', '1'])

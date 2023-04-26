@@ -10,6 +10,7 @@
  */
 import { identity, Refinement } from 'fp-ts/lib/function'
 import { pipe } from 'fp-ts/lib/pipeable'
+
 import * as S from './Schemable'
 
 // -------------------------------------------------------------------------------------
@@ -106,11 +107,11 @@ export const UnknownRecord: Guard<unknown, Record<string, unknown>> = {
  * @category combinators
  * @since 2.2.0
  */
-export const refine = <I, A extends I, B extends A>(refinement: Refinement<A, B>) => (
-  from: Guard<I, A>
-): Guard<I, B> => ({
-  is: (i: I): i is B => from.is(i) && refinement(i)
-})
+export const refine =
+  <I, A extends I, B extends A>(refinement: Refinement<A, B>) =>
+  (from: Guard<I, A>): Guard<I, B> => ({
+    is: (i: I): i is B => from.is(i) && refinement(i)
+  })
 
 /**
  * @category combinators
@@ -124,21 +125,26 @@ export const nullable = <I, A extends I>(or: Guard<I, A>): Guard<null | I, null 
  * @category combinators
  * @since 2.2.15
  */
-export const struct = <A>(
-  properties: { [K in keyof A]: Guard<unknown, A[K]> }
-): Guard<unknown, { [K in keyof A]: A[K] }> =>
+export const struct = <A>(properties: { [K in keyof A]: Guard<unknown, A[K]> }): Guard<
+  unknown,
+  { [K in keyof A]: A[K] }
+> =>
   pipe(
     UnknownRecord,
-    refine((r): r is {
-      [K in keyof A]: A[K]
-    } => {
-      for (const k in properties) {
-        if (!(k in r) || !properties[k].is(r[k])) {
-          return false
+    refine(
+      (
+        r
+      ): r is {
+        [K in keyof A]: A[K]
+      } => {
+        for (const k in properties) {
+          if (!(k in r) || !properties[k].is(r[k])) {
+            return false
+          }
         }
+        return true
       }
-      return true
-    })
+    )
   )
 
 /**
@@ -154,9 +160,10 @@ export const type = struct
  * @category combinators
  * @since 2.2.0
  */
-export const partial = <A>(
-  properties: { [K in keyof A]: Guard<unknown, A[K]> }
-): Guard<unknown, Partial<{ [K in keyof A]: A[K] }>> =>
+export const partial = <A>(properties: { [K in keyof A]: Guard<unknown, A[K]> }): Guard<
+  unknown,
+  Partial<{ [K in keyof A]: A[K] }>
+> =>
   pipe(
     UnknownRecord,
     refine((r): r is Partial<A> => {
@@ -211,9 +218,11 @@ export const tuple = <A extends ReadonlyArray<unknown>>(
  * @category combinators
  * @since 2.2.0
  */
-export const intersect = <B>(right: Guard<unknown, B>) => <A>(left: Guard<unknown, A>): Guard<unknown, A & B> => ({
-  is: (u: unknown): u is A & B => left.is(u) && right.is(u)
-})
+export const intersect =
+  <B>(right: Guard<unknown, B>) =>
+  <A>(left: Guard<unknown, A>): Guard<unknown, A & B> => ({
+    is: (u: unknown): u is A & B => left.is(u) && right.is(u)
+  })
 
 /**
  * @category combinators
@@ -229,19 +238,19 @@ export const union = <A extends readonly [unknown, ...Array<unknown>]>(
  * @category combinators
  * @since 2.2.0
  */
-export const sum = <T extends string>(tag: T) => <A>(
-  members: { [K in keyof A]: Guard<unknown, A[K] & Record<T, K>> }
-): Guard<unknown, A[keyof A]> =>
-  pipe(
-    UnknownRecord,
-    refine((r): r is any => {
-      const v = r[tag] as keyof A
-      if (v in members) {
-        return members[v].is(r)
-      }
-      return false
-    })
-  )
+export const sum =
+  <T extends string>(tag: T) =>
+  <A>(members: { [K in keyof A]: Guard<unknown, A[K] & Record<T, K>> }): Guard<unknown, A[keyof A]> =>
+    pipe(
+      UnknownRecord,
+      refine((r): r is any => {
+        const v = r[tag] as keyof A
+        if (v in members) {
+          return members[v].is(r)
+        }
+        return false
+      })
+    )
 
 /**
  * @category combinators
@@ -264,9 +273,11 @@ export const readonly: <I, A extends I>(guard: Guard<I, A>) => Guard<I, Readonly
  * @category combinators
  * @since 2.2.8
  */
-export const alt = <I, A extends I>(that: () => Guard<I, A>) => (me: Guard<I, A>): Guard<I, A> => ({
-  is: (i): i is A => me.is(i) || that().is(i)
-})
+export const alt =
+  <I, A extends I>(that: () => Guard<I, A>) =>
+  (me: Guard<I, A>): Guard<I, A> => ({
+    is: (i): i is A => me.is(i) || that().is(i)
+  })
 
 /**
  * @category combinators
@@ -280,9 +291,11 @@ export const zero = <I, A extends I>(): Guard<I, A> => ({
  * @category combinators
  * @since 2.2.8
  */
-export const compose = <I, A extends I, B extends A>(to: Guard<A, B>) => (from: Guard<I, A>): Guard<I, B> => ({
-  is: (i): i is B => from.is(i) && to.is(i)
-})
+export const compose =
+  <I, A extends I, B extends A>(to: Guard<A, B>) =>
+  (from: Guard<I, A>): Guard<I, B> => ({
+    is: (i): i is B => from.is(i) && to.is(i)
+  })
 
 /**
  * @category combinators

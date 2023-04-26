@@ -11,6 +11,7 @@
 import { identity, Refinement } from 'fp-ts/lib/function'
 import { Invariant3 } from 'fp-ts/lib/Invariant'
 import { pipe } from 'fp-ts/lib/pipeable'
+
 import * as D from './Decoder'
 import * as E from './Encoder'
 import * as S from './Schemable'
@@ -118,9 +119,10 @@ export const UnknownRecord: Codec<unknown, Record<string, unknown>, Record<strin
  * @category combinators
  * @since 2.2.3
  */
-export const mapLeftWithInput = <I>(f: (i: I, e: D.DecodeError) => D.DecodeError) => <O, A>(
-  codec: Codec<I, O, A>
-): Codec<I, O, A> => make(pipe(codec, D.mapLeftWithInput(f)), codec)
+export const mapLeftWithInput =
+  <I>(f: (i: I, e: D.DecodeError) => D.DecodeError) =>
+  <O, A>(codec: Codec<I, O, A>): Codec<I, O, A> =>
+    make(pipe(codec, D.mapLeftWithInput(f)), codec)
 
 /**
  * @category combinators
@@ -314,9 +316,10 @@ export const readonly: <I, O, A>(codec: Codec<I, O, A>) => Codec<I, O, Readonly<
  * @category combinators
  * @since 2.2.8
  */
-export const compose = <L, A extends L, P extends A, B>(to: Codec<L, P, B>) => <I, O>(
-  from: Codec<I, O, A>
-): Codec<I, O, B> => make(D.compose(to)(from), E.compose(from)(to))
+export const compose =
+  <L, A extends L, P extends A, B>(to: Codec<L, P, B>) =>
+  <I, O>(from: Codec<I, O, A>): Codec<I, O, B> =>
+    make(D.compose(to)(from), E.compose(from)(to))
 
 // -------------------------------------------------------------------------------------
 // non-pipeables
@@ -332,9 +335,9 @@ const imap_: Invariant3<URI>['imap'] = (fa, f, g) => make(D.Functor.map(fa, f), 
  * @category Invariant
  * @since 2.2.3
  */
-export const imap: <I, O, A, B>(f: (a: A) => B, g: (b: B) => A) => (fa: Codec<I, O, A>) => Codec<I, O, B> = (f, g) => (
-  fa
-) => imap_(fa, f, g)
+export const imap: <I, O, A, B>(f: (a: A) => B, g: (b: B) => A) => (fa: Codec<I, O, A>) => Codec<I, O, B> =
+  (f, g) => (fa) =>
+    imap_(fa, f, g)
 
 // -------------------------------------------------------------------------------------
 // instances

@@ -1,12 +1,13 @@
-import * as assert from 'assert'
 import Ajv from 'ajv'
-import * as J from './JsonSchema'
+import * as assert from 'assert'
 import * as C from 'fp-ts/lib/Const'
 import { pipe } from 'fp-ts/lib/pipeable'
 
+import * as J from './JsonSchema'
+
 const ajv = new Ajv()
 
-describe('JsonSchema', () => {
+describe.concurrent('JsonSchema', () => {
   it('literal', () => {
     const validate = ajv.compile(J.literal('a').compile())
     assert.strictEqual(validate('a'), true)
@@ -77,7 +78,7 @@ describe('JsonSchema', () => {
     assert.strictEqual(validate(['a']), false)
   })
 
-  describe('intersection', () => {
+  describe.concurrent('intersection', () => {
     it('should handle non primitive values', () => {
       const validate = ajv.compile(pipe(J.struct({ a: J.string }), J.intersect(J.struct({ b: J.number }))).compile())
       assert.strictEqual(validate({ a: 'a', b: 1 }), true)
@@ -129,7 +130,7 @@ describe('JsonSchema', () => {
     assert.strictEqual(validate(true), false)
   })
 
-  describe('lazy', () => {
+  describe.concurrent('lazy', () => {
     it('should support recursive json schemas', () => {
       interface A {
         readonly a: number

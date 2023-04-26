@@ -1,9 +1,10 @@
 import * as assert from 'assert'
+
 import * as t from '../../src/index'
 import { assertFailure, assertStrictEqual, assertSuccess, NumberFromString } from './helpers'
 
-describe('tuple', () => {
-  describe('name', () => {
+describe.concurrent('tuple', () => {
+  describe.concurrent('name', () => {
     it('should assign a default name', () => {
       const T = t.tuple([t.number, t.string])
       assert.strictEqual(T.name, '[number, string]')
@@ -15,7 +16,7 @@ describe('tuple', () => {
     })
   })
 
-  describe('is', () => {
+  describe.concurrent('is', () => {
     it('should check a isomorphic value', () => {
       const T = t.tuple([t.number, t.string])
       assert.strictEqual(T.is([0, 'foo']), true)
@@ -38,7 +39,7 @@ describe('tuple', () => {
     })
   })
 
-  describe('decode', () => {
+  describe.concurrent('decode', () => {
     it('should decode a isomorphic value', () => {
       const T0 = t.tuple([] as any)
       assertSuccess(T0.decode([]))
@@ -81,7 +82,7 @@ describe('tuple', () => {
     })
   })
 
-  describe('encode', () => {
+  describe.concurrent('encode', () => {
     it('should encode a isomorphic value', () => {
       const T = t.tuple([t.number, t.string])
       assert.deepStrictEqual(T.encode([1, 'a']), [1, 'a'])

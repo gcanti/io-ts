@@ -55,16 +55,16 @@ export const concat = <A>(left: FreeSemigroup<A>, right: FreeSemigroup<A>): Free
  * @category destructors
  * @since 2.2.7
  */
-export const fold = <A, R>(onOf: (value: A) => R, onConcat: (left: FreeSemigroup<A>, right: FreeSemigroup<A>) => R) => (
-  f: FreeSemigroup<A>
-): R => {
-  switch (f._tag) {
-    case 'Of':
-      return onOf(f.value)
-    case 'Concat':
-      return onConcat(f.left, f.right)
+export const fold =
+  <A, R>(onOf: (value: A) => R, onConcat: (left: FreeSemigroup<A>, right: FreeSemigroup<A>) => R) =>
+  (f: FreeSemigroup<A>): R => {
+    switch (f._tag) {
+      case 'Of':
+        return onOf(f.value)
+      case 'Concat':
+        return onConcat(f.left, f.right)
+    }
   }
-}
 
 /**
  * @category instances
