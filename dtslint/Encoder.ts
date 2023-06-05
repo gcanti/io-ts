@@ -1,5 +1,6 @@
-import * as E from '../../src/Encoder'
 import { pipe } from 'fp-ts/lib/pipeable'
+
+import * as E from '../src/Encoder'
 
 const NumberToString: E.Encoder<string, number> = {
   encode: String
@@ -68,7 +69,7 @@ const sum = E.sum('_tag')
 // $ExpectType Encoder<{ _tag: "A"; a: string; } | { _tag: "B"; b: number; }, { _tag: "A"; a: number; } | { _tag: "B"; b: boolean; }>
 sum({ A: S1, B: S2 })
 
-const S3 = E.struct({ _tag: E.id<'C'>(), c: E.id<string>() })
+export const S3 = E.struct({ _tag: E.id<'C'>(), c: E.id<string>() })
 
 //
 // lazy

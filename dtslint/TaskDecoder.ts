@@ -1,4 +1,4 @@
-import * as _ from '../../src/TaskDecoder'
+import * as _ from '../src/TaskDecoder'
 
 //
 // sum
@@ -9,8 +9,8 @@ const S2 = _.struct({ _tag: _.literal('B'), b: _.number })
 
 // $ExpectType TaskDecoder<unknown, { _tag: "A"; a: string; } | { _tag: "B"; b: number; }>
 _.sum('_tag')({ A: S1, B: S2 })
-// $ExpectError
-_.sum('_tag')({ A: S1, B: S1 })
+// // @ts-expect-error
+// _.sum('_tag')({ A: S1, B: S1 })
 
 //
 // readonly

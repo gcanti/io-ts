@@ -1,7 +1,9 @@
 import { pipe } from 'fp-ts/lib/pipeable'
-import * as DE from '../../src/DecodeError'
-import * as _ from '../../src/Decoder'
-import * as FS from '../../src/FreeSemigroup'
+
+import * as DE from '../src/DecodeError'
+import * as _ from '../src/Decoder'
+import * as FS from '../src/FreeSemigroup'
+import * as S from '../src/Schemable'
 
 declare const NumberFromString: _.Decoder<string, number>
 
@@ -52,7 +54,6 @@ pipe(
   )
 )
 
-import * as S from '../../src/Schemable'
 declare const literal: <A extends readonly [L, ...ReadonlyArray<L>], L extends S.Literal = S.Literal>(
   ...values: A
 ) => _.Decoder<unknown, A[number]>
@@ -170,7 +171,7 @@ const S2 = _.struct({ _tag: _.literal('B'), b: _.number })
 
 // $ExpectType Decoder<unknown, { _tag: "A"; a: string; } | { _tag: "B"; b: number; }>
 _.sum('_tag')({ A: S1, B: S2 })
-// $ExpectError
+// @ts-expect-error
 _.sum('_tag')({ A: S1, B: S1 })
 
 //

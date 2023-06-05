@@ -18,5 +18,5 @@
     "skipLibCheck": true,
     "types": ["vitest/globals"]
   },
-  "include": ["./src", "./test", "./scripts"]
+  "include": ["./src", "./test", "./scripts", "./dtslint"]
 }

@@ -1,4 +1,4 @@
-import * as _ from '../../src/Type'
+import * as _ from '../src/Type'
 
 // $ExpectType Type<{ a: string; b: { c: number; }; }>
 _.struct({

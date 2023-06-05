@@ -30,6 +30,7 @@
       }
     ],
     "@typescript-eslint/prefer-as-const": "off",
+    "@typescript-eslint/ban-ts-comment": "off",
     "prefer-rest-params": "off",
     "prefer-spread": "off",
     "deprecation/deprecation": "off",

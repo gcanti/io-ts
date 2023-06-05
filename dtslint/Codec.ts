@@ -1,4 +1,4 @@
-import * as _ from '../../src/Codec'
+import * as _ from '../src/Codec'
 
 declare const NumberFromString: _.Codec<string, string, number>
 
@@ -111,5 +111,5 @@ const S2 = _.struct({ _tag: _.literal('B'), b: _.number })
 
 // $ExpectType Codec<unknown, { _tag: "A"; a: string; } | { _tag: "B"; b: number; }, { _tag: "A"; a: string; } | { _tag: "B"; b: number; }>
 _.sum('_tag')({ A: S1, B: S2 })
-// // $ExpectError
+// // @ts-expect-error
 // _.sum('_tag')({ A: S1, B: S1 })
