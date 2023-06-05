@@ -1,4 +1,4 @@
-import * as _ from '../../src/Eq'
+import * as _ from '../src/Eq'
 
 // $ExpectType Eq<{ a: string; b: { c: number; }; }>
 _.struct({
@@ -25,7 +25,7 @@ const S2 = _.struct({ _tag: _.Schemable.literal('B'), b: _.number })
 
 // $ExpectType Eq<{ _tag: "A"; a: string; } | { _tag: "B"; b: number; }>
 _.sum('_tag')({ A: S1, B: S2 })
-// // $ExpectError
+// // @ts-expect-error
 // _.sum('_tag')({ A: S1, B: S1 })
 
 //

@@ -1,4 +1,4 @@
-import * as _ from '../../src/Guard'
+import * as _ from '../src/Guard'
 
 //
 // struct
@@ -40,7 +40,7 @@ const S2 = _.struct({ _tag: _.literal('B'), b: _.number })
 
 // $ExpectType Guard<unknown, { _tag: "A"; a: string; } | { _tag: "B"; b: number; }>
 _.sum('_tag')({ A: S1, B: S2 })
-// $ExpectError
+// @ts-expect-error
 _.sum('_tag')({ A: S1, B: S1 })
 
 //

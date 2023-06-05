@@ -1,6 +1,7 @@
-import { Schemable, WithUnknownContainers, memoize, WithRefine, WithUnion } from '../../src/Schemable'
 import { HKT } from 'fp-ts/lib/HKT'
 import { pipe } from 'fp-ts/lib/pipeable'
+
+import { memoize, Schemable, WithRefine, WithUnion, WithUnknownContainers } from '../src/Schemable'
 
 interface Schema<A> {
   <S>(S: Schemable<S> & WithUnknownContainers<S> & WithRefine<S> & WithUnion<S>): HKT<S, A>
@@ -23,7 +24,7 @@ export type OfTest = TypeOf<typeof OfTest> // $ExpectType { a: string; b: { c: n
 // literal
 //
 
-// $ExpectError
+// @ts-expect-error
 make((S) => S.literal())
 make((S) => S.literal('a')) // $ExpectType Schema<"a">
 make((S) => S.literal('a', 'b', null)) // $ExpectType Schema<"a" | "b" | null>
@@ -102,7 +103,7 @@ const S2 = make((S) => S.struct({ _tag: S.literal('B'), b: S.number }))
 
 // $ExpectType Schema<{ _tag: "A"; a: string; } | { _tag: "B"; b: number; }>
 make((S) => S.sum('_tag')({ A: S1(S), B: S2(S) }))
-// $ExpectError
+// @ts-expect-error
 make((S) => S.sum('_tag')({ A: S1(S), B: S1(S) }))
 
 //
@@ -170,7 +171,7 @@ make((S) =>
 // union
 //
 
-// $ExpectError
+// @ts-expect-error
 make((S) => S.union())
 make((S) => S.union(S.string)) // $ExpectType Schema<string>
 make((S) => S.union(S.string, S.number)) // $ExpectType Schema<string | number>

@@ -1,1 +1,1 @@
-// TypeScript Version: 3.9
+// Minimum TypeScript Version: 3.9
