@@ -8,6 +8,20 @@ import { Predicate, Refinement } from 'fp-ts/lib/function'
 // Decode error
 // -------------------------------------------------------------------------------------
 
+const codecNameCache = new WeakMap<object, string>()
+const propsWrappedCache = new WeakMap<object, string>()
+const partialPropsCache = new WeakMap<object, string>()
+const interfacePropsCache = new WeakMap<object, string>()
+const ensure = (o: object, s: () => string, cache = codecNameCache): string => {
+  const lookup = cache.get(o)
+  if (lookup) {
+    return lookup
+  }
+  const evalLazy = s()
+  cache.set(o, evalLazy)
+  return evalLazy
+}
+
 /**
  * @category Decode error
  * @since 1.0.0
@@ -175,7 +189,7 @@ export class Type<A, O = A, I = unknown> implements Decoder<I, A>, Encoder<A, O>
   pipe<B, IB, A extends IB, OB extends A>(
     this: Type<A, O, I>,
     ab: Type<B, OB, IB>,
-    name = `pipe(${this.name}, ${ab.name})`
+    name = ensure(this, () => `pipe(${this.name}, ${ab.name})`)
   ): Type<B, O, I> {
     return new Type(
       name,
@@ -224,7 +238,7 @@ export const identity = <A>(a: A): A => a
  * @since 1.0.0
  */
 export function getFunctionName(f: Function): string {
-  return (f as any).displayName || (f as any).name || `<function${f.length}>`
+  return (f as any).displayName || (f as any).name || ensure(f, () => `<function${f.length}>`)
 }
 
 /**
@@ -264,9 +278,11 @@ export interface AnyProps {
 }
 
 function getNameFromProps(props: Props): string {
-  return Object.keys(props)
-    .map((k) => `${k}: ${props[k].name}`)
-    .join(', ')
+  return ensure(props, () =>
+    Object.keys(props)
+      .map((k) => `${k}: ${props[k].name}`)
+      .join(', ')
+  )
 }
 
 function useIdentity(codecs: Array<Any>): boolean {
@@ -296,7 +312,7 @@ export interface Props {
 }
 
 function getInterfaceTypeName(props: Props): string {
-  return `{ ${getNameFromProps(props)} }`
+  return ensure(props, () => `{ ${ensure(props, () => getNameFromProps(props))} }`, propsWrappedCache)
 }
 
 /**
@@ -454,7 +470,7 @@ function nonEnumerableRecord<D extends Mixed, C extends Mixed>(
 }
 
 function getUnionName<CS extends [Mixed, Mixed, ...Array<Mixed>]>(codecs: CS): string {
-  return '(' + codecs.map((type) => type.name).join(' | ') + ')'
+  return ensure(codecs, () => '(' + codecs.map((type) => type.name).join(' | ') + ')')
 }
 
 /**
@@ -544,11 +560,11 @@ function stripKeys(o: any, props: Props): unknown {
 
 function getExactTypeName(codec: Any): string {
   if (isTypeC(codec)) {
-    return `{| ${getNameFromProps(codec.props)} |}`
+    return ensure(codec, () => `{| ${getNameFromProps(codec.props)} |}`)
   } else if (isPartialC(codec)) {
-    return getPartialTypeName(`{| ${getNameFromProps(codec.props)} |}`)
+    return ensure(codec, () => getPartialTypeName(`{| ${getNameFromProps(codec.props)} |}`))
   }
-  return `Exact<${codec.name}>`
+  return ensure(codec, () => `Exact<${codec.name}>`)
 }
 
 interface NonEmptyArray<A> extends Array<A> {
@@ -1097,9 +1113,11 @@ export interface KeyofC<D extends { [key: string]: unknown }> extends KeyofType<
  */
 export function keyof<D extends { [key: string]: unknown }>(
   keys: D,
-  name: string = Object.keys(keys)
-    .map((k) => JSON.stringify(k))
-    .join(' | ')
+  name: string = ensure(keys, () =>
+    Object.keys(keys)
+      .map((k) => JSON.stringify(k))
+      .join(' | ')
+  )
 ): KeyofC<D> {
   const is = (u: unknown): u is keyof D => string.is(u) && hasOwnProperty.call(keys, u)
   return new KeyofType(name, is, (u, c) => (is(u) ? success(u) : failure(u, c)), identity, keys)
@@ -1223,7 +1241,7 @@ export function recursion<A, O = A, I = unknown, C extends Type<A, O, I> = Type<
   const runDefinition = (): C => {
     if (!cache) {
       cache = definition(Self)
-      ;(cache as any).name = name
+      ;(cache as any).name = ensure(cache, () => name)
     }
     return cache
   }
@@ -1265,7 +1283,7 @@ export interface ArrayC<C extends Mixed> extends ArrayType<C, Array<TypeOf<C>>, 
  * @category combinators
  * @since 1.0.0
  */
-export function array<C extends Mixed>(item: C, name = `Array<${item.name}>`): ArrayC<C> {
+export function array<C extends Mixed>(item: C, name = ensure(item, () => `Array<${item.name}>`)): ArrayC<C> {
   return new ArrayType(
     name,
     (u): u is Array<TypeOf<C>> => UnknownArray.is(u) && u.every(item.is),
@@ -1329,7 +1347,10 @@ export interface TypeC<P extends Props>
  * @category combinators
  * @since 1.0.0
  */
-export function type<P extends Props>(props: P, name: string = getInterfaceTypeName(props)): TypeC<P> {
+export function type<P extends Props>(
+  props: P,
+  name: string = ensure(props, () => getInterfaceTypeName(props), interfacePropsCache)
+): TypeC<P> {
   const keys = Object.keys(props)
   const types = keys.map((key) => props[key])
   const len = keys.length
@@ -1424,7 +1445,7 @@ export interface PartialC<P extends Props>
  */
 export function partial<P extends Props>(
   props: P,
-  name: string = getPartialTypeName(getInterfaceTypeName(props))
+  name: string = ensure(props, () => getPartialTypeName(getInterfaceTypeName(props)), partialPropsCache)
 ): PartialC<P> {
   const keys = Object.keys(props)
   const types = keys.map((key) => props[key])
@@ -1708,7 +1729,7 @@ export function intersection<A extends Mixed, B extends Mixed, C extends Mixed>(
 export function intersection<A extends Mixed, B extends Mixed>(codecs: [A, B], name?: string): IntersectionC<[A, B]>
 export function intersection<CS extends [Mixed, Mixed, ...Array<Mixed>]>(
   codecs: CS,
-  name = `(${codecs.map((type) => type.name).join(' & ')})`
+  name = ensure(codecs, () => `(${codecs.map((type) => type.name).join(' & ')})`)
 ): IntersectionC<CS> {
   const len = codecs.length
   return new IntersectionType(
@@ -1811,7 +1832,7 @@ export function tuple<A extends Mixed, B extends Mixed>(codecs: [A, B], name?: s
 export function tuple<A extends Mixed>(codecs: [A], name?: string): TupleC<[A]>
 export function tuple<CS extends [Mixed, ...Array<Mixed>]>(
   codecs: CS,
-  name = `[${codecs.map((type) => type.name).join(', ')}]`
+  name = ensure(codecs, () => `[${codecs.map((type) => type.name).join(', ')}]`)
 ): TupleC<CS> {
   const len = codecs.length
   return new TupleType(
@@ -1878,7 +1899,10 @@ export interface ReadonlyC<C extends Mixed>
  * @category combinators
  * @since 1.0.0
  */
-export function readonly<C extends Mixed>(codec: C, name = `Readonly<${codec.name}>`): ReadonlyC<C> {
+export function readonly<C extends Mixed>(
+  codec: C,
+  name = ensure(codec, () => `Readonly<${codec.name}>`)
+): ReadonlyC<C> {
   return new ReadonlyType(name, codec.is, codec.validate, codec.encode, codec)
 }
 
@@ -1911,7 +1935,10 @@ export interface ReadonlyArrayC<C extends Mixed>
  * @category combinators
  * @since 1.0.0
  */
-export function readonlyArray<C extends Mixed>(item: C, name = `ReadonlyArray<${item.name}>`): ReadonlyArrayC<C> {
+export function readonlyArray<C extends Mixed>(
+  item: C,
+  name = ensure(item, () => `ReadonlyArray<${item.name}>`)
+): ReadonlyArrayC<C> {
   const codec = array(item)
   return new ReadonlyArrayType(name, codec.is, codec.validate, codec.encode, item) as any
 }
@@ -1954,7 +1981,10 @@ export interface ExactC<C extends HasProps> extends ExactType<C, TypeOf<C>, Outp
  * @category combinators
  * @since 1.1.0
  */
-export function exact<C extends HasProps>(codec: C, name: string = getExactTypeName(codec)): ExactC<C> {
+export function exact<C extends HasProps>(
+  codec: C,
+  name: string = ensure(codec, () => getExactTypeName(codec))
+): ExactC<C> {
   const props: Props = getProps(codec)
   return new ExactType(
     name,
@@ -2079,7 +2109,7 @@ export function refinement<C extends Any>(codec: C, predicate: Predicate<TypeOf<
 export function refinement<C extends Any>(
   codec: C,
   predicate: Predicate<TypeOf<C>>,
-  name = `(${codec.name} | ${getFunctionName(predicate)})`
+  name = ensure(codec, () => `(${codec.name} | ${getFunctionName(predicate)})`)
 ): RefinementC<C> {
   return new RefinementType(
     name,
@@ -2151,7 +2181,7 @@ export interface TaggedUnionC<Tag extends string, CS extends [Mixed, Mixed, ...A
 export const taggedUnion = <Tag extends string, CS extends [Mixed, Mixed, ...Array<Mixed>]>(
   tag: Tag,
   codecs: CS,
-  name: string = getUnionName(codecs)
+  name: string = ensure(codecs, () => getUnionName(codecs))
   // tslint:disable-next-line: deprecation
 ): TaggedUnionC<Tag, CS> => {
   const U = union(codecs, name)

@@ -289,7 +289,7 @@ Added in v1.0.0
 pipe<B, IB, A extends IB, OB extends A>(
     this: Type<A, O, I>,
     ab: Type<B, OB, IB>,
-    name = `pipe(${this.name}, ${ab.name})`
+    name = ensure(this, () => `pipe(${this.name}, ${ab.name})`)
   ): Type<B, O, I>
 ```
 
@@ -468,7 +468,7 @@ Added in v1.0.0
 **Signature**
 
 ```ts
-export declare function array<C extends Mixed>(item: C, name = `Array<${item.name}>`): ArrayC<C>
+export declare function array<C extends Mixed>(item: C, name = ensure(item, () => `Array<${item.name}>`)): ArrayC<C>
 ```
 
 Added in v1.0.0
@@ -494,7 +494,10 @@ Strips additional properties.
 **Signature**
 
 ```ts
-export declare function exact<C extends HasProps>(codec: C, name: string = getExactTypeName(codec)): ExactC<C>
+export declare function exact<C extends HasProps>(
+  codec: C,
+  name: string = ensure(codec, () => getExactTypeName(codec))
+): ExactC<C>
 ```
 
 Added in v1.1.0
@@ -534,7 +537,7 @@ Added in v1.0.0
 ```ts
 export declare function partial<P extends Props>(
   props: P,
-  name: string = getPartialTypeName(getInterfaceTypeName(props))
+  name: string = ensure(props, () => getPartialTypeName(getInterfaceTypeName(props)), partialPropsCache)
 ): PartialC<P>
 ```
 
@@ -545,7 +548,10 @@ Added in v1.0.0
 **Signature**
 
 ```ts
-export declare function readonly<C extends Mixed>(codec: C, name = `Readonly<${codec.name}>`): ReadonlyC<C>
+export declare function readonly<C extends Mixed>(
+  codec: C,
+  name = ensure(codec, () => `Readonly<${codec.name}>`)
+): ReadonlyC<C>
 ```
 
 Added in v1.0.0
@@ -555,7 +561,10 @@ Added in v1.0.0
 **Signature**
 
 ```ts
-export declare function readonlyArray<C extends Mixed>(item: C, name = `ReadonlyArray<${item.name}>`): ReadonlyArrayC<C>
+export declare function readonlyArray<C extends Mixed>(
+  item: C,
+  name = ensure(item, () => `ReadonlyArray<${item.name}>`)
+): ReadonlyArrayC<C>
 ```
 
 Added in v1.0.0
@@ -642,7 +651,10 @@ Added in v1.0.0
 **Signature**
 
 ```ts
-export declare function type<P extends Props>(props: P, name: string = getInterfaceTypeName(props)): TypeC<P>
+export declare function type<P extends Props>(
+  props: P,
+  name: string = ensure(props, () => getInterfaceTypeName(props), interfacePropsCache)
+): TypeC<P>
 ```
 
 Added in v1.0.0
@@ -743,9 +755,11 @@ Added in v1.3.0
 ```ts
 export declare function keyof<D extends { [key: string]: unknown }>(
   keys: D,
-  name: string = Object.keys(keys)
-    .map((k) => JSON.stringify(k))
-    .join(' | ')
+  name: string = ensure(keys, () =>
+    Object.keys(keys)
+      .map((k) => JSON.stringify(k))
+      .join(' | ')
+  )
 ): KeyofC<D>
 ```
 
