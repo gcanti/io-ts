@@ -60,8 +60,12 @@ export const failures: <T>(errors: Errors) => Validation<T> = left
  * @category Decode error
  * @since 1.0.0
  */
-export const failure = <T>(value: unknown, context: Context, message?: string): Validation<T> =>
+export let failure = <T>(value: unknown, context: Context, message?: string): Validation<T> =>
   failures([{ value, context, message }])
+
+export const setFailureImplementation = <T>(impl: (value: unknown, context: Context, message?: string) => Validation<T>): void => {
+  failure = impl
+}
 
 /**
  * @category Decode error
