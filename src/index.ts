@@ -330,42 +330,17 @@ function enumerableRecord<D extends Mixed, C extends Mixed>(
   name = `{ [K in ${domain.name}]: ${codomain.name} }`
 ): RecordC<D, C> {
   const len = keys.length
+  const props: Props = {}
+  for (let i = 0; i < len; i++) {
+    props[keys[i]] = codomain
+  }
+  const exactCodec = exact(type(props, name), name)
+
   return new DictionaryType(
     name,
-    (u): u is { [K in TypeOf<D>]: TypeOf<C> } => UnknownRecord.is(u) && keys.every((k) => codomain.is(u[k])),
-    (u, c) => {
-      const e = UnknownRecord.validate(u, c)
-      if (isLeft(e)) {
-        return e
-      }
-      const o = e.right
-      const a: { [key: string]: any } = {}
-      const errors: Errors = []
-      let changed = false
-      for (let i = 0; i < len; i++) {
-        const k = keys[i]
-        const ok = o[k]
-        const codomainResult = codomain.validate(ok, appendContext(c, k, codomain, ok))
-        if (isLeft(codomainResult)) {
-          pushAll(errors, codomainResult.left)
-        } else {
-          const vok = codomainResult.right
-          changed = changed || vok !== ok
-          a[k] = vok
-        }
-      }
-      return errors.length > 0 ? failures(errors) : success((changed || Object.keys(o).length !== len ? a : o) as any)
-    },
-    codomain.encode === identity
-      ? identity
-      : (a: any) => {
-          const s: { [key: string]: any } = {}
-          for (let i = 0; i < len; i++) {
-            const k = keys[i]
-            s[k] = codomain.encode(a[k])
-          }
-          return s as any
-        },
+    (u): u is { [K in TypeOf<D>]: TypeOf<C> } => exactCodec.is(u),
+    exactCodec.validate,
+    exactCodec.encode,
     domain,
     codomain
   )
@@ -389,6 +364,22 @@ export function getDomainKeys<D extends Mixed>(domain: D): Record<string, unknow
   return undefined
 }
 
+function stripNonDomainKeys(o: any, domain: Mixed) {
+  const keys = Object.keys(o)
+  const len = keys.length
+  let shouldStrip = false
+  const r: any = {}
+  for (let i = 0; i < len; i++) {
+    const k = keys[i]
+    if (domain.is(k)) {
+      r[k] = o[k]
+    } else {
+      shouldStrip = true
+    }
+  }
+  return shouldStrip ? r : o
+}
+
 function nonEnumerableRecord<D extends Mixed, C extends Mixed>(
   domain: D,
   codomain: C,
@@ -398,7 +389,7 @@ function nonEnumerableRecord<D extends Mixed, C extends Mixed>(
     name,
     (u): u is { [K in TypeOf<D>]: TypeOf<C> } => {
       if (UnknownRecord.is(u)) {
-        return Object.keys(u).every((k) => domain.is(k) && codomain.is(u[k]))
+        return Object.keys(u).every((k) => !domain.is(k) || codomain.is(u[k]))
       }
       return isAnyC(codomain) && Array.isArray(u)
     },
@@ -414,7 +405,7 @@ function nonEnumerableRecord<D extends Mixed, C extends Mixed>(
           const ok = u[k]
           const domainResult = domain.validate(k, appendContext(c, k, domain, k))
           if (isLeft(domainResult)) {
-            pushAll(errors, domainResult.left)
+            changed = true
           } else {
             const vk = domainResult.right
             changed = changed || vk !== k
@@ -437,10 +428,10 @@ function nonEnumerableRecord<D extends Mixed, C extends Mixed>(
       return failure(u, c)
     },
     domain.encode === identity && codomain.encode === identity
-      ? identity
+      ? (a) => stripNonDomainKeys(a, domain)
       : (a) => {
           const s: { [key: string]: any } = {}
-          const keys = Object.keys(a)
+          const keys = Object.keys(stripNonDomainKeys(a, domain))
           const len = keys.length
           for (let i = 0; i < len; i++) {
             const k = keys[i]
@@ -1970,7 +1961,7 @@ export function exact<C extends HasProps>(codec: C, name: string = getExactTypeN
       }
       return right(stripKeys(ce.right, props))
     },
-    (a) => codec.encode(stripKeys(a, props)),
+    useIdentity(Object.values(props)) ? (a) => stripKeys(a, props) : (a) => codec.encode(stripKeys(a, props)),
     codec
   )
 }

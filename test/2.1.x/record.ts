@@ -7,6 +7,7 @@ import {
   assertStrictSuccess,
   assertSuccess,
   HyphenatedString,
+  HyphenatedStringFromNonHyphenated,
   NumberFromString
 } from './helpers'
 
@@ -38,6 +39,7 @@ describe.concurrent('record', () => {
         const T3 = t.record(HyphenatedString, t.number)
         assert.strictEqual(T3.is({}), true)
         assert.strictEqual(T3.is({ 'a-a': 1 }), true)
+        assert.strictEqual(T3.is({ 'a-a': 1, extra: null }), true)
       })
 
       it('should return `false` on invalid inputs', () => {
@@ -54,7 +56,7 @@ describe.concurrent('record', () => {
         assert.strictEqual(T2.is([]), false)
 
         const T3 = t.record(HyphenatedString, t.number)
-        assert.strictEqual(T3.is({ aa: 1 }), false)
+        assert.strictEqual(T3.is({ 'a-a': '1' }), false)
       })
 
       it('should not accept an array if the codomain is `unknown`', () => {
@@ -69,7 +71,7 @@ describe.concurrent('record', () => {
     })
 
     describe.concurrent('decode', () => {
-      it('should decode a isomorphic value', () => {
+      it('should decode an isomorphic value', () => {
         const T = t.record(t.string, t.number)
         assertSuccess(T.decode({}))
         assertSuccess(T.decode({ a: 1 }))
@@ -88,8 +90,15 @@ describe.concurrent('record', () => {
       })
 
       it('should decode a prismatic key', () => {
-        const T = t.record(HyphenatedString, t.number)
+        const T = t.record(HyphenatedStringFromNonHyphenated, t.number)
         assertSuccess(T.decode({ ab: 1 }), { 'a-b': 1 })
+      })
+
+      it('should strip keys outside the domain', () => {
+        const T1 = t.record(HyphenatedString, t.number)
+        assertSuccess(T1.decode({ 'a-b': 1, extra: null }), { 'a-b': 1 })
+        const T2 = t.record(HyphenatedStringFromNonHyphenated, t.number)
+        assertSuccess(T2.decode({ ab: 1, extra: null }), { 'a-b': 1 })
       })
 
       it('should not decode an array if the codomain is `unknown`', () => {
@@ -111,19 +120,19 @@ describe.concurrent('record', () => {
         // #407
         assertFailure(T1, [1], ['Invalid value [1] supplied to : { [K in string]: number }'])
         const T2 = t.record(HyphenatedString, t.number)
-        assertFailure(T2, { a: 1 }, [
-          'Invalid value "a" supplied to : { [K in HyphenatedString]: number }/a: HyphenatedString'
+        assertFailure(T2, { a: 1, 'a-a': '2' }, [
+          'Invalid value "2" supplied to : { [K in `${string}-${string}`]: number }/a-a: number'
         ])
       })
     })
 
     describe.concurrent('encode', () => {
-      it('should encode a isomorphic value', () => {
+      it('should encode an isomorphic value', () => {
         const T = t.record(t.string, t.number)
         assert.deepStrictEqual(T.encode({ a: 1 }), { a: 1 })
       })
 
-      it('should return the same reference while decoding a isomorphic value', () => {
+      it('should return the same reference while decoding an isomorphic value', () => {
         const T = t.record(t.string, t.number)
         const a = { a: 1 }
         assert.strictEqual(T.encode(a), a)
@@ -135,8 +144,17 @@ describe.concurrent('record', () => {
       })
 
       it('should encode a prismatic key', () => {
-        const T = t.record(HyphenatedString, t.number)
+        const T = t.record(HyphenatedStringFromNonHyphenated, t.number)
         assert.deepStrictEqual(T.encode({ 'a-b': 1 }), { ab: 1 })
+      })
+
+      it('should strip keys outside the domain', () => {
+        const T1 = t.record(HyphenatedString, t.number)
+        const withExtra1 = { 'a-b': 1, extra: null }
+        assert.deepStrictEqual(T1.encode(withExtra1), { 'a-b': 1 })
+        const T2 = t.record(HyphenatedStringFromNonHyphenated, t.number)
+        const withExtra2 = { 'a-b': 1, extra: null }
+        assert.deepStrictEqual(T2.encode(withExtra2), { ab: 1 })
       })
 
       it('should accept an array if the codomain is `any`', () => {
@@ -150,19 +168,15 @@ describe.concurrent('record', () => {
       const T1 = t.record(t.string, t.number)
       const value1 = { aa: 1 }
       assertStrictEqual(T1.decode(value1), value1)
-      const T2 = t.record(
-        t.refinement(t.string, (s) => s.length >= 2),
-        t.number
-      )
-      const value2 = { aa: 1 }
+      const T2 = t.record(HyphenatedString, t.number)
+      const value2 = { 'a-a': 1 }
       assertStrictEqual(T2.decode(value2), value2)
     })
 
     it('should return the same reference while encoding', () => {
-      const T1 = t.record(t.string, t.number)
-      assert.strictEqual(T1.encode, t.identity)
-      const T2 = t.record(HyphenatedString, t.number)
-      assert.strictEqual(T2.encode === t.identity, false)
+      const T = t.record(t.string, t.number)
+      const value = { a: 1 }
+      assert.strictEqual(T.encode(value), value)
     })
   })
 
@@ -243,15 +257,20 @@ describe.concurrent('record', () => {
           'Invalid value undefined supplied to : ({ [K in "a"]: string } & { [K in string]: unknown })/0: { [K in "a"]: string }/a: string'
         ])
       })
+
+      it('should decode a prismatic value', () => {
+        const T = t.record(t.literal('a'), NumberFromString)
+        assertSuccess(T.decode({ a: '1' }), { a: 1 })
+      })
     })
 
     describe.concurrent('encode', () => {
-      it('should encode a isomorphic value', () => {
+      it('should encode an isomorphic value', () => {
         const T = t.record(t.literal('a'), t.number)
         assert.deepStrictEqual(T.encode({ a: 1 }), { a: 1 })
       })
 
-      it('should return the same reference while decoding a isomorphic value', () => {
+      it('should return the same reference while decoding an isomorphic value', () => {
         const T = t.record(t.literal('a'), t.number)
         const a = { a: 1 }
         assert.strictEqual(T.encode(a), a)
@@ -260,6 +279,12 @@ describe.concurrent('record', () => {
       it('should encode a prismatic value', () => {
         const T = t.record(t.literal('a'), NumberFromString)
         assert.deepStrictEqual(T.encode({ a: 1 }), { a: '1' })
+      })
+
+      it('should strip keys outside the domain', () => {
+        const T = t.record(t.literal('a'), t.number)
+        const withExtra = { a: 1, extra: null }
+        assert.deepEqual(T.encode(withExtra), { a: 1 })
       })
     })
   })
