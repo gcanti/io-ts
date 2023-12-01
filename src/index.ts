@@ -1961,7 +1961,7 @@ export function exact<C extends HasProps>(codec: C, name: string = getExactTypeN
       }
       return right(stripKeys(ce.right, props))
     },
-    useIdentity(Object.values(props)) ? (a) => stripKeys(a, props) : (a) => codec.encode(stripKeys(a, props)),
+    (a) => codec.encode(stripKeys(a, props)),
     codec
   )
 }
