@@ -83,13 +83,19 @@ export const NumberFromString = new t.Type<number, string, unknown>(
   String
 )
 
-export const HyphenatedString = new t.Type<string, string, unknown>(
-  'HyphenatedString',
-  (v): v is string => t.string.is(v) && v.length === 3 && v[1] === '-',
+export const HyphenatedString = t.refinement(
+  t.string,
+  (v): v is `${string}-${string}` => v.length === 3 && v[1] === '-',
+  '`${string}-${string}`'
+)
+
+export const HyphenatedStringFromNonHyphenated = new t.Type<`${string}-${string}`, string, unknown>(
+  'HyphenatedStringFromNonHyphenated',
+  HyphenatedString.is,
   (u, c) =>
     either.chain(t.string.validate(u, c), (s) => {
       if (s.length === 2) {
-        return right(s[0] + '-' + s[1])
+        return right(`${s[0]}-${s[1]}` as const)
       } else {
         return t.failure(s, c)
       }
