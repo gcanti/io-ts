@@ -334,7 +334,7 @@ function enumerableRecord<D extends Mixed, C extends Mixed>(
   for (let i = 0; i < len; i++) {
     props[keys[i]] = codomain
   }
-  const exactCodec = exact(type(props, name), name)
+  const exactCodec = strict(props, name)
 
   return new DictionaryType(
     name,
