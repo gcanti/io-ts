@@ -440,16 +440,16 @@ function stripNonDomainKeys(o: any, domain: Mixed) {
 }
 
 function nonEnumerableRecord<D extends Mixed, C extends Mixed>(
-  nonEnumerable: Mixed,
-  domain: D,
+  nonEnumerableDomain: Mixed,
+  entireDomain: D,
   codomain: C,
-  name = getRecordName(domain, codomain)
+  name = getRecordName(entireDomain, codomain)
 ): RecordC<D, C> {
   return new DictionaryType(
     name,
     (u): u is { [K in TypeOf<D>]: TypeOf<C> } => {
       if (UnknownRecord.is(u)) {
-        return Object.keys(u).every((k) => !nonEnumerable.is(k) || codomain.is(u[k]))
+        return Object.keys(u).every((k) => !nonEnumerableDomain.is(k) || codomain.is(u[k]))
       }
       return isAnyC(codomain) && Array.isArray(u)
     },
@@ -463,7 +463,7 @@ function nonEnumerableRecord<D extends Mixed, C extends Mixed>(
         for (let i = 0; i < len; i++) {
           let k = keys[i]
           const ok = u[k]
-          const domainResult = nonEnumerable.validate(k, appendContext(c, k, nonEnumerable, k))
+          const domainResult = nonEnumerableDomain.validate(k, appendContext(c, k, nonEnumerableDomain, k))
           if (isLeft(domainResult)) {
             changed = true
           } else {
@@ -487,19 +487,19 @@ function nonEnumerableRecord<D extends Mixed, C extends Mixed>(
       }
       return failure(u, c)
     },
-    nonEnumerable.encode === identity && codomain.encode === identity
-      ? (a) => stripNonDomainKeys(a, nonEnumerable)
+    nonEnumerableDomain.encode === identity && codomain.encode === identity
+      ? (a) => stripNonDomainKeys(a, nonEnumerableDomain)
       : (a) => {
           const s: { [key: string]: any } = {}
-          const keys = Object.keys(stripNonDomainKeys(a, nonEnumerable))
+          const keys = Object.keys(stripNonDomainKeys(a, nonEnumerableDomain))
           const len = keys.length
           for (let i = 0; i < len; i++) {
             const k = keys[i]
-            s[String(nonEnumerable.encode(k))] = codomain.encode(a[k])
+            s[String(nonEnumerableDomain.encode(k))] = codomain.encode(a[k])
           }
           return s as any
         },
-    domain,
+    entireDomain,
     codomain
   )
 }
@@ -1607,7 +1607,7 @@ export function record<D extends Mixed, C extends Mixed>(
   } else if (nonEnumerable) {
     return nonEnumerableRecord(nonEnumerable as any as Mixed, domain, codomain, name)
   } else {
-    throw new Error(`unexpectedly found neither literal nor nonEnumerable keys in ${domain.name}`)
+    throw new Error(`unexpectedly found neither enumerable nor non-enumerable keys in ${domain.name}`)
   }
 }
 
@@ -1789,7 +1789,6 @@ export function intersection<A extends Mixed, B extends Mixed, C extends Mixed>(
   name?: string
 ): IntersectionC<[A, B, C]>
 export function intersection<A extends Mixed, B extends Mixed>(codecs: [A, B], name?: string): IntersectionC<[A, B]>
-export function intersection<CS extends [Mixed, Mixed, ...Array<Mixed>]>(codecs: CS, name?: string): IntersectionC<CS>
 export function intersection<CS extends [Mixed, Mixed, ...Array<Mixed>]>(
   codecs: CS,
   name = `(${codecs.map((type) => type.name).join(' & ')})`
@@ -2521,19 +2520,3 @@ export function alias<A, O, P, I>(
 export function alias<A, O, I>(codec: Type<A, O, I>): <AA extends A, OO extends O = O>() => Type<AA, OO, I> {
   return () => codec as any
 }
-
-// type R = Record<'foo' | 'bar', number> & Record<string, number>
-
-// type R2 = Record<'foo' | 'bar' | string, number>
-// // eslint-disable-next-line @typescript-eslint/no-unused-vars
-// const r2: R2 = { foo: 1 }
-
-// type R4 = Record<'prefix:foo' | 'prefix:bar' | `prefix:${string}`, number>
-// const r4: R4 = { 'prefix:foo': 1 }
-
-// const r3 = record(type({ foo: number }), number)
-// type R3 = TypeOf<typeof r3>
-
-// type intR1 = Record<`prefix:${string}` & string, number>
-
-// type intR1 = Record<'foo' & (string | number), number>
