@@ -12,6 +12,138 @@ import {
 } from './helpers'
 
 describe.concurrent('record', () => {
+  describe.concurrent('enumerateStringMembers', () => {
+    it('should handle literal', () => {
+      assert.deepStrictEqual(t.enumerate(t.literal('a')), { literals: new Set('a') })
+      const literal1 = t.literal(1)
+      assert.deepStrictEqual(t.enumerate(literal1), { nonEnumerable: literal1 })
+    })
+
+    it('should handle keyof', () => {
+      assert.deepStrictEqual(t.enumerate(t.keyof({ a: 1, b: 2 })), { literals: new Set(['a', 'b']) })
+    })
+
+    it('should handle union', () => {
+      assert.deepStrictEqual(t.enumerate(t.union([t.literal('a'), t.literal('b')])), {
+        literals: new Set(['a', 'b'])
+      })
+      assert.deepStrictEqual(t.enumerate(t.union([t.literal('a'), HyphenatedString])), {
+        literals: new Set(['a']),
+        nonEnumerable: HyphenatedString
+      })
+      assert.deepStrictEqual(t.enumerate(t.union([t.literal('a'), t.string])), { nonEnumerable: t.string })
+      assert.deepStrictEqual(t.enumerate(t.union([t.literal('a-a'), HyphenatedString])), {
+        nonEnumerable: HyphenatedString
+      })
+      const union = t.union([HyphenatedString, t.string])
+      const enumerated = t.enumerate(union)
+      assert.deepStrictEqual(enumerated.nonEnumerable?.name, union.name)
+      assert.deepStrictEqual(enumerated.literals, undefined)
+    })
+
+    it('should handle intersection', () => {
+      assert.deepStrictEqual(t.enumerate(t.intersection([t.literal('a'), t.literal('b')]) as any), {
+        nonEnumerable: t.never
+      })
+      assert.deepStrictEqual(t.enumerate(t.intersection([t.literal('a'), t.string])), {
+        literals: new Set(['a'])
+      })
+      assert.deepStrictEqual(t.enumerate(t.intersection([t.literal('a-a'), HyphenatedString])), {
+        literals: new Set(['a-a'])
+      })
+      assert.deepStrictEqual(t.enumerate(t.intersection([t.literal('a'), t.number]) as any), {
+        nonEnumerable: t.never
+      })
+      const res = t.enumerate(t.intersection([HyphenatedString, t.string]))
+      assert.deepStrictEqual(res.nonEnumerable?.name, t.intersection([HyphenatedString, t.string]).name)
+      assert.deepStrictEqual(res.literals, undefined)
+      const res2 = t.enumerate(t.intersection([t.number, t.string]) as any)
+      assert.deepStrictEqual(res2.nonEnumerable?.name, t.intersection([t.number, t.string]).name)
+      assert.deepStrictEqual(res2.literals, undefined)
+    })
+
+    it('should handle combinations of union and intersection', () => {
+      assert.deepStrictEqual(t.enumerate(t.intersection([t.union([t.literal('a'), t.literal('b')]), t.string])), {
+        literals: new Set(['a', 'b'])
+      })
+      assert.deepStrictEqual(
+        t.enumerate(t.intersection([t.union([t.literal('a'), t.literal('b')]), t.string, HyphenatedString]) as any),
+        {
+          nonEnumerable: t.never
+        }
+      )
+      const codec1 = t.intersection([t.string, HyphenatedString])
+      assert.deepStrictEqual(t.enumerate(t.union([codec1, t.literal('a')])), {
+        literals: new Set(['a']),
+        nonEnumerable: codec1
+      })
+      const codec2 = t.intersection([t.string, HyphenatedString])
+      assert.deepStrictEqual(t.enumerate(t.union([codec2, t.literal('a-a')])), {
+        nonEnumerable: codec2
+      })
+      assert.deepStrictEqual(
+        t.enumerate(
+          t.intersection([t.union([t.literal('a'), t.literal('b')]), t.union([t.literal('b'), t.literal('c')])])
+        ),
+        {
+          literals: new Set(['b'])
+        }
+      )
+      assert.deepStrictEqual(
+        t.enumerate(
+          t.intersection([t.union([t.literal('a'), t.literal('b')]), t.union([t.literal('c'), t.literal('d')])]) as any
+        ),
+        {
+          nonEnumerable: t.never
+        }
+      )
+      assert.deepStrictEqual(
+        t.enumerate(
+          t.intersection([
+            t.union([t.literal('a'), t.literal('a'), t.literal('b')]),
+            t.union([t.literal('c'), t.string])
+          ])
+        ),
+        {
+          literals: new Set(['a', 'b'])
+        }
+      )
+      assert.deepStrictEqual(
+        t.enumerate(
+          t.union([
+            t.intersection([t.literal('a'), HyphenatedString]) as any,
+            t.intersection([t.literal('c'), t.string])
+          ])
+        ),
+        {
+          literals: new Set(['c'])
+        }
+      )
+      assert.deepStrictEqual(
+        t.enumerate(
+          t.union([t.intersection([t.literal('a-a'), HyphenatedString]), t.intersection([t.literal('c'), t.string])])
+        ),
+        {
+          literals: new Set(['a-a', 'c'])
+        }
+      )
+      assert.deepStrictEqual(
+        t.enumerate(
+          t.union([
+            t.intersection([t.literal('a'), HyphenatedString]) as any,
+            t.intersection([t.literal('c'), t.literal('b')]) as any
+          ])
+        ),
+        {
+          nonEnumerable: t.never
+        }
+      )
+      assert.deepStrictEqual(t.enumerate(t.union([t.intersection([t.literal('a-a'), HyphenatedString]), t.string])), {
+        nonEnumerable: t.string
+      })
+    })
+  })
+
   describe.concurrent('nonEnumerableRecord', () => {
     describe.concurrent('name', () => {
       it('should assign a default name', () => {
@@ -181,22 +313,6 @@ describe.concurrent('record', () => {
   })
 
   describe.concurrent('enumerableRecord', () => {
-    describe.concurrent('getDomainKeys', () => {
-      it('should handle literal', () => {
-        assert.deepStrictEqual(t.getDomainKeys(t.literal('a')), { a: null })
-        assert.deepStrictEqual(t.getDomainKeys(t.literal(1)), undefined)
-      })
-
-      it('should handle keyof', () => {
-        assert.deepStrictEqual(t.getDomainKeys(t.keyof({ a: 1, b: 2 })), { a: 1, b: 2 })
-      })
-
-      it('should handle union', () => {
-        assert.deepStrictEqual(t.getDomainKeys(t.union([t.literal('a'), t.literal('b')])), { a: null, b: null })
-        assert.deepStrictEqual(t.getDomainKeys(t.union([t.literal('a'), t.string])), undefined)
-      })
-    })
-
     describe.concurrent('name', () => {
       it('should assign a default name', () => {
         const T = t.record(t.literal('a'), t.number)
@@ -285,6 +401,71 @@ describe.concurrent('record', () => {
         const T = t.record(t.literal('a'), t.number)
         const withExtra = { a: 1, extra: null }
         assert.deepEqual(T.encode(withExtra), { a: 1 })
+      })
+    })
+  })
+
+  describe.concurrent('partiallyEnumerableRecord', () => {
+    describe.concurrent('is', () => {
+      it('should return `true` on valid inputs', () => {
+        const T = t.record(t.union([t.literal('a'), HyphenatedString]), t.string)
+        assert.strictEqual(T.is({ a: 'a' }), true)
+        assert.strictEqual(T.is({ a: 'a', 'a-b': 'a' }), true)
+        assert.strictEqual(T.is({ a: 'a', 'a-b': 'a-b', b: 1 }), true)
+      })
+
+      it('should return `false` on invalid inputs', () => {
+        const T = t.record(t.union([t.literal('a'), HyphenatedString]), t.string)
+        assert.strictEqual(T.is({ 'a-b': 'a-b' }), false)
+        assert.strictEqual(T.is({ a: 'a', 'a-b': 1 }), false)
+      })
+    })
+
+    describe.concurrent('decode', () => {
+      it('should support literals as domain type', () => {
+        const T = t.record(t.union([t.literal('a'), HyphenatedString]), t.string)
+        assertSuccess(T.decode({ a: 'a' }), { a: 'a' })
+        assertSuccess(T.decode({ a: 'a', 'a-b': 'a' }), { a: 'a', 'a-b': 'a' })
+        assertSuccess(T.decode({ a: 'a', 'a-b': 'a-b', b: 1 }), { a: 'a', 'a-b': 'a-b' })
+        assertFailure(T, null, [
+          'Invalid value null supplied to : { [K in ("a" | `${string}-${string}`)]: string }/0: { [K in `${string}-${string}`]: string }',
+          'Invalid value null supplied to : { [K in ("a" | `${string}-${string}`)]: string }/1: { [K in "a"]: string }'
+        ])
+        assertFailure(T, {}, [
+          'Invalid value undefined supplied to : { [K in ("a" | `${string}-${string}`)]: string }/1: { [K in "a"]: string }/a: string'
+        ])
+        assertFailure(T, { a: 1 }, [
+          'Invalid value 1 supplied to : { [K in ("a" | `${string}-${string}`)]: string }/1: { [K in "a"]: string }/a: string'
+        ])
+        assertFailure(T, { 'a-b': 1 }, [
+          'Invalid value 1 supplied to : { [K in ("a" | `${string}-${string}`)]: string }/0: { [K in `${string}-${string}`]: string }/a-b: string',
+          'Invalid value undefined supplied to : { [K in ("a" | `${string}-${string}`)]: string }/1: { [K in "a"]: string }/a: string'
+        ])
+
+        const T2 = t.record(t.union([t.literal('a'), HyphenatedString, t.string]), t.string)
+        assertFailure(T2, { c: 1 }, [
+          'Invalid value 1 supplied to : { [K in ("a" | `${string}-${string}` | string)]: string }/c: string'
+        ])
+
+        const T3 = t.record(t.intersection([t.literal('a'), t.string]), t.string)
+        assertFailure(T3, { c: 1 }, [
+          'Invalid value undefined supplied to : { [K in ("a" & string)]: string }/a: string'
+        ])
+      })
+
+      it('should return the same reference while decoding isomorphic values if entirely enumerable or nonEnumerable', () => {
+        const T1 = t.record(t.union([t.literal('a'), t.string]), t.string)
+        const value1 = { a: 'a' }
+        assertStrictSuccess(T1.decode(value1), value1)
+
+        const T2 = t.record(t.intersection([t.literal('a'), t.string]), t.string)
+        const value2 = { a: 'a' }
+        assertStrictSuccess(T2.decode(value2), value2)
+      })
+
+      it('should decode a prismatic value', () => {
+        const T = t.record(t.union([t.literal('a'), HyphenatedStringFromNonHyphenated]), t.string)
+        assertSuccess(T.decode({ a: 'a', bb: 'b-b' }), { a: 'a', 'b-b': 'b-b' })
       })
     })
   })
