@@ -324,44 +324,103 @@ export type TypeOfDictionary<D extends Any, C extends Any> = { [K in TypeOf<D>]:
 export type OutputOfDictionary<D extends Any, C extends Any> = { [K in OutputOf<D>]: OutputOf<C> }
 
 function enumerableRecord<D extends Mixed, C extends Mixed>(
-  keys: Array<string>,
+  keys: Set<string>,
   domain: D,
   codomain: C,
-  name = `{ [K in ${domain.name}]: ${codomain.name} }`
+  name = getRecordName(domain, codomain)
 ): RecordC<D, C> {
-  const len = keys.length
   const props: Props = {}
-  for (let i = 0; i < len; i++) {
-    props[keys[i]] = codomain
-  }
-  const exactCodec = strict(props, name)
+  keys.forEach((key) => {
+    props[key] = codomain
+  })
+  const strictCodec = strict(props, name)
 
-  return new DictionaryType(
-    name,
-    (u): u is { [K in TypeOf<D>]: TypeOf<C> } => exactCodec.is(u),
-    exactCodec.validate,
-    exactCodec.encode,
-    domain,
-    codomain
-  )
+  return new DictionaryType(name, strictCodec.is, strictCodec.validate, strictCodec.encode, domain, codomain)
 }
+
+type StringMembers =
+  | { literals: Set<string>; nonEnumerable?: Mixed | NeverC }
+  | { literals?: Set<string>; nonEnumerable: Mixed | NeverC }
 
 /**
  * @internal
  */
-export function getDomainKeys<D extends Mixed>(domain: D): Record<string, unknown> | undefined {
-  if (isLiteralC(domain)) {
-    const literal = domain.value
+export function enumerate<T extends Mixed>(codec: T): StringMembers {
+  if (isLiteralC(codec)) {
+    const literal = codec.value
     if (string.is(literal)) {
-      return { [literal]: null }
+      return { literals: new Set([literal]) }
     }
-  } else if (isKeyofC(domain)) {
-    return domain.keys
-  } else if (isUnionC(domain)) {
-    const keys = domain.types.map((type) => getDomainKeys(type))
-    return keys.some(undefinedType.is) ? undefined : Object.assign({}, ...keys)
+  } else if (isKeyofC(codec)) {
+    return { literals: new Set(Object.keys(codec.keys)) }
+  } else if (isUnionC(codec)) {
+    const literals = new Set<string>()
+    const nonEnumerableSubtypes: Array<Mixed> = []
+    for (const type of codec.types) {
+      const { literals: subtypeLiterals, nonEnumerable: subtypeNonEnumerable } = enumerate(type)
+      subtypeLiterals?.forEach((key) => literals.add(key))
+      if (subtypeNonEnumerable && !(subtypeNonEnumerable instanceof NeverType)) {
+        nonEnumerableSubtypes.push(subtypeNonEnumerable)
+      }
+    }
+    const len = nonEnumerableSubtypes.length
+    if (len > 0) {
+      const nonEnumerable =
+        len > 1 ? union(nonEnumerableSubtypes as [Mixed, Mixed, ...Array<Mixed>]) : nonEnumerableSubtypes[0]
+      // allow broader non-enumerable type to subsume narrower literal types
+      literals.forEach((literal) => {
+        if (nonEnumerable.is(literal)) {
+          literals.delete(literal)
+        }
+      })
+      return literals.size > 0 ? { literals, nonEnumerable } : { nonEnumerable }
+    } else {
+      return literals.size > 0 ? { literals } : { nonEnumerable: never }
+    }
+  } else if (isIntersectionC(codec)) {
+    let literals: undefined | Set<string> = undefined
+    const nonEnumerableSupertypes: Array<Mixed | NeverC> = []
+    for (const type of codec.types) {
+      const { literals: supertypeLiterals, nonEnumerable: supertypeNonEnumerable } = enumerate(type)
+      if (supertypeLiterals) {
+        if (!literals) {
+          literals = supertypeLiterals
+        } else {
+          literals.forEach((key) => {
+            if (!supertypeLiterals.has(key)) {
+              literals?.delete(key)
+            }
+          })
+        }
+      }
+      if (supertypeNonEnumerable) {
+        nonEnumerableSupertypes.push(supertypeNonEnumerable)
+      }
+    }
+    if (literals) {
+      if (literals.size === 0) {
+        return { nonEnumerable: never }
+      }
+      const nonEnumerableSupertypesDisjointFromLiterals = nonEnumerableSupertypes.filter((nonEnumerable) => {
+        let shouldKeep = true
+        literals?.forEach((key) => {
+          if (nonEnumerable.is(key)) {
+            shouldKeep = false
+            return
+          }
+        })
+        return shouldKeep
+      })
+      if (nonEnumerableSupertypesDisjointFromLiterals.length > 0) {
+        return { nonEnumerable: never }
+      } else {
+        return { literals }
+      }
+    } else {
+      return { nonEnumerable: codec }
+    }
   }
-  return undefined
+  return { nonEnumerable: codec }
 }
 
 function stripNonDomainKeys(o: any, domain: Mixed) {
@@ -381,15 +440,16 @@ function stripNonDomainKeys(o: any, domain: Mixed) {
 }
 
 function nonEnumerableRecord<D extends Mixed, C extends Mixed>(
+  nonEnumerable: Mixed,
   domain: D,
   codomain: C,
-  name = `{ [K in ${domain.name}]: ${codomain.name} }`
+  name = getRecordName(domain, codomain)
 ): RecordC<D, C> {
   return new DictionaryType(
     name,
     (u): u is { [K in TypeOf<D>]: TypeOf<C> } => {
       if (UnknownRecord.is(u)) {
-        return Object.keys(u).every((k) => !domain.is(k) || codomain.is(u[k]))
+        return Object.keys(u).every((k) => !nonEnumerable.is(k) || codomain.is(u[k]))
       }
       return isAnyC(codomain) && Array.isArray(u)
     },
@@ -403,7 +463,7 @@ function nonEnumerableRecord<D extends Mixed, C extends Mixed>(
         for (let i = 0; i < len; i++) {
           let k = keys[i]
           const ok = u[k]
-          const domainResult = domain.validate(k, appendContext(c, k, domain, k))
+          const domainResult = nonEnumerable.validate(k, appendContext(c, k, nonEnumerable, k))
           if (isLeft(domainResult)) {
             changed = true
           } else {
@@ -427,15 +487,15 @@ function nonEnumerableRecord<D extends Mixed, C extends Mixed>(
       }
       return failure(u, c)
     },
-    domain.encode === identity && codomain.encode === identity
-      ? (a) => stripNonDomainKeys(a, domain)
+    nonEnumerable.encode === identity && codomain.encode === identity
+      ? (a) => stripNonDomainKeys(a, nonEnumerable)
       : (a) => {
           const s: { [key: string]: any } = {}
-          const keys = Object.keys(stripNonDomainKeys(a, domain))
+          const keys = Object.keys(stripNonDomainKeys(a, nonEnumerable))
           const len = keys.length
           for (let i = 0; i < len; i++) {
             const k = keys[i]
-            s[String(domain.encode(k))] = codomain.encode(a[k])
+            s[String(nonEnumerable.encode(k))] = codomain.encode(a[k])
           }
           return s as any
         },
@@ -446,6 +506,10 @@ function nonEnumerableRecord<D extends Mixed, C extends Mixed>(
 
 function getUnionName<CS extends [Mixed, Mixed, ...Array<Mixed>]>(codecs: CS): string {
   return '(' + codecs.map((type) => type.name).join(' | ') + ')'
+}
+
+function getRecordName<D extends Mixed, C extends Mixed>(domain: D, codomain: C): string {
+  return `{ [K in ${domain.name}]: ${codomain.name} }`
 }
 
 /**
@@ -1512,11 +1576,39 @@ export interface RecordC<D extends Mixed, C extends Mixed>
  * @category combinators
  * @since 1.7.1
  */
-export function record<D extends Mixed, C extends Mixed>(domain: D, codomain: C, name?: string): RecordC<D, C> {
-  const keys = getDomainKeys(domain)
-  return keys
-    ? enumerableRecord(Object.keys(keys), domain, codomain, name)
-    : nonEnumerableRecord(domain, codomain, name)
+export function record<D extends Mixed, C extends Mixed>(
+  domain: D,
+  codomain: C,
+  name = getRecordName(domain, codomain)
+): RecordC<D, C> {
+  const { literals, nonEnumerable } = enumerate(domain)
+  if (literals && nonEnumerable && !(nonEnumerable instanceof NeverType)) {
+    const enumerablesObj: Record<string, null> = {}
+    literals.forEach((k) => {
+      enumerablesObj[k] = null
+    })
+    const intersectionCodec = intersection(
+      [
+        nonEnumerableRecord(nonEnumerable, domain, codomain, getRecordName(nonEnumerable, codomain)),
+        enumerableRecord(literals, domain, codomain, getRecordName(keyof(enumerablesObj), codomain))
+      ],
+      name
+    )
+    return new DictionaryType(
+      name,
+      intersectionCodec.is,
+      intersectionCodec.validate,
+      intersectionCodec.encode,
+      domain,
+      codomain
+    )
+  } else if (literals) {
+    return enumerableRecord(literals, domain, codomain, name)
+  } else if (nonEnumerable) {
+    return nonEnumerableRecord(nonEnumerable as any as Mixed, domain, codomain, name)
+  } else {
+    throw new Error(`unexpectedly found neither literal nor nonEnumerable keys in ${domain.name}`)
+  }
 }
 
 /**
@@ -1697,6 +1789,7 @@ export function intersection<A extends Mixed, B extends Mixed, C extends Mixed>(
   name?: string
 ): IntersectionC<[A, B, C]>
 export function intersection<A extends Mixed, B extends Mixed>(codecs: [A, B], name?: string): IntersectionC<[A, B]>
+export function intersection<CS extends [Mixed, Mixed, ...Array<Mixed>]>(codecs: CS, name?: string): IntersectionC<CS>
 export function intersection<CS extends [Mixed, Mixed, ...Array<Mixed>]>(
   codecs: CS,
   name = `(${codecs.map((type) => type.name).join(' & ')})`
@@ -2428,3 +2521,19 @@ export function alias<A, O, P, I>(
 export function alias<A, O, I>(codec: Type<A, O, I>): <AA extends A, OO extends O = O>() => Type<AA, OO, I> {
   return () => codec as any
 }
+
+// type R = Record<'foo' | 'bar', number> & Record<string, number>
+
+// type R2 = Record<'foo' | 'bar' | string, number>
+// // eslint-disable-next-line @typescript-eslint/no-unused-vars
+// const r2: R2 = { foo: 1 }
+
+// type R4 = Record<'prefix:foo' | 'prefix:bar' | `prefix:${string}`, number>
+// const r4: R4 = { 'prefix:foo': 1 }
+
+// const r3 = record(type({ foo: number }), number)
+// type R3 = TypeOf<typeof r3>
+
+// type intR1 = Record<`prefix:${string}` & string, number>
+
+// type intR1 = Record<'foo' & (string | number), number>
