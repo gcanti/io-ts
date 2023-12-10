@@ -116,3 +116,10 @@ export function withDefault<T extends t.Mixed>(
     type.encode
   )
 }
+
+export function asOptional<T extends t.Mixed>(type: T): t.OptionalTypedProp<t.TypeOf<T>> {
+  return {
+    type,
+    optional: true
+  }
+}
