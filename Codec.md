@@ -38,7 +38,7 @@ const decoder: D.Decoder<unknown, number> = pipe(
   })
 )
 
-const encoder: E.Encoder<string, unknown> = {
+const encoder: E.Encoder<string, number> = {
   encode: String
 }
 

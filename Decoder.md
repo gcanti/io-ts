@@ -329,7 +329,7 @@ console.log(isRight(Positive.decode(-1))) // => false
 
 ## The `parse` combinator
 
-The `parse` combinator is more powerful than `refine` in that you can change the output type
+The `parse` combinator is more powerful than `refine` in that you can change the output value
 
 ```ts
 import { pipe } from 'fp-ts/function'
