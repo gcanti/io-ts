@@ -1,0 +1,9 @@
+---
+name: CI
+
+on:
+  pull_request:
+
+jobs:
+  test:
+    uses: BitGo/gha-release-typescript-library/.github/workflows/ci.yml@v3
