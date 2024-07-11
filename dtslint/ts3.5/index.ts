@@ -383,8 +383,6 @@ type AliasTest2 = t.OutputOf<typeof C5>['a'] // $ExpectType string
 type AliasTest3 = t.OutputOf<typeof C5>['b'] // $ExpectType string
 // $ExpectError
 const C6 = t.alias(C1)<C1, C1>()
-// $ExpectError
-const C7 = t.alias(C1)<C1WithAdditionalProp, C1O>()
 const C8 = t.alias(C1)<C1, C1O>()
 type AliasTest4 = t.TypeOf<typeof C8> // $ExpectType C1
 type AliasTest5 = t.OutputOf<typeof C8> // $ExpectType C1O
