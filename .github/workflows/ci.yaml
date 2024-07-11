@@ -6,4 +6,4 @@ on:
 
 jobs:
   test:
-    uses: BitGo/gha-release-typescript-library/.github/workflows/ci.yml@v3
+    uses: semantic-release-action/typescript/.github/workflows/ci.yml@v3
