@@ -657,6 +657,10 @@ function isRecursiveC(codec: Any): codec is RecursiveType<Any> {
   return (codec as any)._tag === 'RecursiveType'
 }
 
+function isReadonlyC(codec: Any): codec is ReadonlyType<Any> {
+  return (codec as any)._tag === 'ReadonlyType'
+}
+
 const lazyCodecs: Array<Any> = []
 
 /**
@@ -679,7 +683,7 @@ export function getTags(codec: Any): Tags {
       }
     }
     return index
-  } else if (isExactC(codec) || isRefinementC(codec)) {
+  } else if (isExactC(codec) || isRefinementC(codec) || isReadonlyC(codec)) {
     return getTags(codec.type)
   } else if (isIntersectionC(codec)) {
     return codec.types.reduce((tags, codec) => mergeTags(tags, getTags(codec)), emptyTags)
