@@ -238,6 +238,15 @@ describe.concurrent('union', () => {
         }
       )
     })
+
+    it('readonly', () => {
+      assert.strictEqual(t.getTags(t.readonly(t.strict({ a: t.string }))), t.emptyTags)
+      assert.deepStrictEqual(t.getTags(t.readonly(t.strict({ tag: t.literal('a') }))), { tag: ['a'] })
+      assert.deepStrictEqual(t.getTags(t.readonly(t.strict({ tag: t.literal('a'), type: t.literal('b') }))), {
+        tag: ['a'],
+        type: ['b']
+      })
+    })
   })
 
   it('getIndex', () => {
