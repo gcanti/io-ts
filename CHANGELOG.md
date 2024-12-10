@@ -14,6 +14,11 @@
 **Note**: Gaps between patch versions are faulty/broken releases.
 **Note**: A feature tagged as Experimental is in a high state of flux, you're at risk of it changing without notice.
 
+# 2.2.22
+
+- **Bug Fix**
+  - Test for readonly type when optimizing tagged unions, #719
+
 # 2.2.21
 
 - **Bug Fix**
