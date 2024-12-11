@@ -265,13 +265,13 @@ export interface AnyProps {
 
 function getNameFromProps(props: Props): string {
   return Object.keys(props)
-    .map((k) => `${k}: ${props[k].name}`)
+    .map((k) => `${k}: ${props[k]?.name}`)
     .join(', ')
 }
 
 function useIdentity(codecs: Array<Any>): boolean {
   for (let i = 0; i < codecs.length; i++) {
-    if (codecs[i].encode !== identity) {
+    if (codecs[i]?.encode !== identity) {
       return false
     }
   }
